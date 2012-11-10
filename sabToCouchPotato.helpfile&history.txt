@@ -1,0 +1,149 @@
+Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg
+
+Fill in the appropriate fields as they apply to your installation.
+
+[Notes_On_Delay]
+  delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotato 
+  performs a test to ensure files/folder are not newer than 1 minute to prevent renaming of 
+  files that are still extracting.
+
+[Notes_On_Method_renamer]
+  method "renamer" is the default which will cause CouchPotato to move and rename downloaded files
+  as specified in the CouchPotato renamer settings.
+  This will also add the movie to the manage list and initiate any configured notifications.
+  In this case SABnzbd (or your download client) must extract the files to the "from" folder 
+  as specified in your CouchPotato renamer settings. Renamer must be enabled but you should 
+  increase the "run every" option in CouchPotato renamer settings (advanced settings) to only 
+  run daily (1440) or weekly (10080) or automatic scan can be disabled by setting run every =0.
+
+[Notes_On_Method_manage]
+  method "manage" will make CouchPotato update the list of managed movies if manager 
+  is enabled but renamer is not enabled.
+  In this case SABnzbd (or your download client) must extract the files directly 
+  to your final movies folder (as configured in CouchPotato manage settings) and Manage must 
+  be enabled.
+ 
+If you have added .py to your PATHEXT (in windows) or you have given sabToCouchPotato.py executable 
+permissions, or you are using the compiled executables you can manually call this process outside of 
+sabnzbd for testing your configuration or in case a postprocessing event failed.
+To do this, execute sabToCouchPotato.py 
+e.g. via ssl issue the following command: #./sabToCouchPotato.py
+when in the directory where sabToCouchPotato.py is located.
+
+
+
+Change_LOG / History
+
+
+V2.2 05/10/2012
+
+Re-wrote the failed downlaod handling to just search for the imdb ttXXXX identifier (as received from the nzb name)
+Now issues only two api calls. movie.list and searcher.try_next
+
+Should be more robust with regards changes to CPS and also utilises less resources (i.e. less api call and and less processing).
+
+
+V2.1 04/10/2012
+
+detected a change in the movie release info format. Fixed the script to work with new format.
+
+
+V2.0 04/10/2012
+
+Fixed an issue with the failed download handling in that the status id for "snatched" can be different on each installation. now performs a status.list via api to verify the status.
+
+Also including a version print (currently 2.0... yeah original I know) so you know if you are current.
+
+removed the multiple versions. The former _recue version will perform the standard renamer only if "postprocess only verified downloads" (default) is enabled in SABnzbd. Also, the "unix" version works fine in Windows, only the "dos" version gave issue in Linux. In other words, this one version should work for all systems.
+For historical reasons, the former download stats apply to the old versions:
+sabToCouchPotato-dos - downloaded 143 times
+sabToCouchPotato-unix - downloaded 205 times
+sabToCouchPotato_recue - downloaded 105 times
+
+Also updated the Windows Build to include the same changes. I have removed the link to the linux build as this didn't work on all systems and it really shouldn't be necessary. Let me know if you need this updated. 
+
+
+V1.9 18/09/2012
+
+compiled (build) versions of sabToSickBeard and sabToCouchPotato added for both Linux and Windows. links at top of post.
+
+
+V1.9 16/09/2012
+
+Added a compiled .exe version for windows. Should prevent the "python not recognised" issue and allow this to be used in conjunction with the windows build on systems that do not have python installed.
+
+This is the full (_recue version) if sabnzbd is set to post ptocess only verified jobs, this will not recue and will function as a standard renamer.
+
+
+V1.9 27/08/2012
+
+Following the latest CPS update on the master branch, this script is not really needed as CPS actually polls the SABnzbd api and does the same as this script (internally).
+
+However, if you have any issues with CPS constantly downloading the same movies, or filling the log with polling SABnzbd for completed movies, or otherwise prefer to use this method, then you can still use this script and make the following changes in CPS:
+Settings, renamer, run every (advanced) = set to 1440 (or some longer interval)
+Settings, renamer, next On_failed = off
+Settings, downloaders, SABnzbd, Delete failed = off.
+
+V1.9 06/08/2012
+
+Also added the integer handling of status in the sabToSickBeard.py script to prevent SickBeard trying to postprocess a failed TV download. Only impacts the _recue version
+
+
+V1.8 05/08/2012
+
+Modified the _recue version as SABnzbd 0.7.3 now appears to pass the "status" variable as a string not an integer!!! (or i had it wrong on first attempt :~)
+This causes the old script to identify completed downloads as failed and recues the next download!
+
+The fix here should work with any conceivable subsequent updates in that I now make the sys.argv[7] an integer before passing it. if the variable already is an integer, this shouldn't cause any issues.
+
+status = int(sys.argv[7])
+autoProcessMovie.process(sys.argv[1], sys.argv[2], status)
+
+
+V1.7 02/08/2012
+
+Added a new version sabToCouchPotato_recue
+This works the same as the other versions, but includes support for recuing failed downloads.
+This is new, and only tested once (with success  ) at my end.
+
+To get this to run you will need to uncheck the "post-process only verified jobs" option in SABnzbd. Also, to avoid issues with SickBeard postprocessing, I have included a modified postprocessing for SickBeard that just checks for failed status and then exits (the SickBeard Team are currently working on failed download handling and I will hopefully make this script work with that in the future) 
+
+This re-cue works as follows:
+Performs an api call to CPS to get a list of all wanted movies (with all data including the releases and status etc)
+It finds the nzbname (from SABnzbd) in the json list returned from the api call (movie.list) and identifies the movie id and release id.
+It performs an api call to make the release as "ignore" and then performs another api call to refresh the movie.
+If another (next best) release that meets your criteria is already available it will send that to SABnzbd, otherwise it will wait until a new release becomes availabe.
+
+I have left the old versions here for now for those who don't want to try this. Also, if you don't uncheck the "post-process only verified jobs" in SABnzbd this code will perform the same as the previous versions.
+
+The next issue to tackle (if this works) is automating the deletion of failed download files in SABnzbd.... but I figured this was a start.
+
+
+V1.6 22/07/2012
+
+no functionality change, but providing scripts in both unix and dos format to prevent exit(127) errors.
+if you are using windows, use the dos format. if you are using linux, use the unix format and unzip the files in linux.
+
+
+V1.5 17/07/2012
+
+add back the web_root parameter to set the URL base.
+
+
+V1.4 17/07/2012
+
+Have uploaded the latest version. 
+changes
+Removed support for a movie.downlaoded api call that was only used in a seperate branch and is not expected to be merged.
+Modified the passthrough to allow a manual call to this script (i.e. does not need to be called from SABnzbd).
+Have added a helpfile that explains the setup options in a bit more detail.
+Modified the .cfg.sample file to use 60 as a default delay and now specify that 60 should be your minimum to ensure the renamer.scan finds newly extracted movies.
+
+
+V1.3 and earlier were not fully tracked, as the script itself (not files) was posted on the QNAP forums.
+
+
+
+
+
+
