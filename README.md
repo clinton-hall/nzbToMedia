@@ -5,14 +5,14 @@ Provides NZBGet postprocessing for CouchPotatoServer, based on sabToCouchPotato 
 
 To get this to work with NZBGet you have to do the following:
 
-1) Put all the files eg. in a directory named /scripts and change the permission so nzbget can use them.
+1) Put all the files eg. in a directory wherever you want to keep them (eg. /scripts/ in the home directory of nzbget) and change the permission accordingly so nzbget has access to this files.
 
-2) Add the following lines into postprocess.conf in the "PATH" section:
+2) Add the following lines into nzbget's postprocess.conf in the "PATH" section:
 
 	# Set the full path to sabToCouchpotato.py for Couchpotato's postprocessing
 	SabToCouchpotato=/usr/local/nzbget/var/scripts/sabToCouchpotato.py
 
-3) Add the following lines into postproecess.sh right before the line "# Check if destination directory was set in postprocessing parameters"
+3) Add the following lines into nzbget's postprocess.sh right before the line "# Check if destination directory was set in postprocessing parameters"
 
 	if [ $NZBPP_CATEGORY = "movies" -a -e "$SabToCouchpotato" ]; then
         # Call Couchpotatos postprocessing script
