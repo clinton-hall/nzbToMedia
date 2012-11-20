@@ -10,7 +10,7 @@ To get this to work with NZBGet you have to do the following:
 2) Add the following lines into nzbget's postprocess.conf in the "PATH" section:
 
 	# Set the full path to sabToCouchpotato.py for Couchpotato's postprocessing
-	SabToCouchpotato=/usr/local/nzbget/var/scripts/sabToCouchpotato.py
+	SabToCouchpotato=<your_path>/sabToCouchpotato.py
 
 3) Add the following lines into nzbget's postprocess.sh right before the line "# Check if destination directory was set in postprocessing parameters"
 
