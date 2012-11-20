@@ -1,15 +1,26 @@
-sabToCouchPotato
-================
+nzbgetToCouchPotato
+===================
 
-Provides SABnzbd postprocessing for CouchPotatoServer
+Provides NZBGet postprocessing for CouchPotatoServer, based on sabToCouchPotato from clinton-hall
 
-Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate fields as 
-they apply to your installation.
+To get this to work with NZBGet you have to do the following:
 
-In order to utilize failed download handling in CPS you will need to chnage the following settings in sabnzbd:
-sabnzbd, config, switches, Post-Process Only Verified Jobs = Off
-sabnzbd, config, special, empty_postproc = On
+1) Put all the files eg. in a directory named /scripts and change the permission so nzbget can use them.
 
+2) Add the following lines into postprocess.conf in the "PATH" section:
+
+	# Set the full path to sabToCouchpotato.py for Couchpotato's postprocessing
+	SabToCouchpotato=/usr/local/nzbget/var/scripts/sabToCouchpotato.py
+
+3) Add the following lines into postproecess.sh right before the line "# Check if destination directory was set in postprocessing parameters"
+
+	if [ $NZBPP_CATEGORY = "movies" -a -e "$SabToCouchpotato" ]; then
+        # Call Couchpotatos postprocessing script
+        echo "[INFO] Post-Process: Running Couchpotato's postprocessing script ($SabToCouchpotato $NZBPP_DIRECTORY $NZBPP_NZBFILENAME)"
+        $PythonCmd $SabToCouchpotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	fi
+
+4)Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate fields as they apply to your installation.
 
 [Notes_On_Delay]
   delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotato 
@@ -34,7 +45,7 @@ sabnzbd, config, special, empty_postproc = On
  
 If you have added .py to your PATHEXT (in windows) or you have given sabToCouchPotato.py executable 
 permissions, or you are using the compiled executables you can manually call this process outside of 
-sabnzbd for testing your configuration or in case a postprocessing event failed.
+your nzbclient for testing your configuration or in case a postprocessing event failed.
 To do this, execute sabToCouchPotato.py 
 e.g. via ssl issue the following command: #./sabToCouchPotato.py
 when in the directory where sabToCouchPotato.py is located.
