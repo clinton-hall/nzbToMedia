@@ -61,14 +61,14 @@ The following must be configured in CouchPotatoServer
 	ii. "Delete Failed" should be un-ticked (Sabnzbd only)
 2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
 	i.  "From" must be set to the full path to your completed download movies
-		if you specify only "movies" here, the completed downlaods will be extracted to
-		%sabnzbd_completed_folder%/movies [0.7.5+ only]
+		> If you specify only "movies" here, the completed downloads will be extracted to
+		%sabnzbd_completed_folder%/movies
 	ii. "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
 	iii."Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
 	iv. "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
 	v.  "Next On_failed" should be un-ticked.
-		these last 3 settings are "advanced settings" so to change these you will need to select the option
-		"show advanced settings" on the top right of all settings pages. [0.7.5+ only]
+		> These last 3 settings are "advanced settings" so to change these you will need to select the option
+		"show advanced settings" on the top right of all settings pages.
 
 ### SABnzbd
 If you are using SABnzbd perform the following steps to configure postprocessing for "nzbToCouchPotato":
