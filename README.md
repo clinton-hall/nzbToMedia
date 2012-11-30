@@ -101,8 +101,7 @@ If you are using SABnzbd perform the following steps to configure postprocessing
 ### NZBGet
 If you are using NZBGet perform the following steps to configure postprocessing for "nzbToCouchPotato":
 
-1. Replace the config files with the ones from the download below according to the version you are using (0.8.0 or 9.0):
-   https://github.com/downloads/thorli/nzbToCouchPotato/nzbget-postprocessing-files.zip 
+1. Replace the config files with the ones from the included "nzbget-postprocessing-files" according to the version you are using (0.8.0 or 9.0):
 
    These files enable additional postprocessing settings for CouchPotato (and SickBeard as well) in the NZBGet webinterface. 
    If NZBGet is running either restart (0.8.0) or reload (9.0) to activate the changes after you have replaced the files. 
