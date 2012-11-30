@@ -29,7 +29,7 @@ def process(dirName, nzbName=None, status=0):
 
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMovie.cfg")
-    print "autoProcessMovie v 2.2"
+    print "autoProcessMovie v 3.0"
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
