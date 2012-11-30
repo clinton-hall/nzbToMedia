@@ -7,16 +7,13 @@ This script is based on sabToSickBeard (written by Nic Wolfe and supplied with S
 
 Introduction
 ------------
-Originally this was modifed from teh SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly
-scanning the downlaod directory. 
+Originally this was modifed from teh SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly scanning the downlaod directory. 
 Later, a few failed downloads prompted me to incorporate "failed download" handling.
-Failed downlaod handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (small NAS systems) this can be un-reliable.
+Failed downlaod handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (e.g. small NAS systems) this can be un-reliable.
 
-thorli's Synology DS211j was too weak to provide decent downloads rates with SABnzbd and CouchPotatoServer even by using sabToCouchPotato.
-The only alternative for many QNAP and Synology users is to switch to NZBGet which uses far less resources and helped to reach the full download speed. 
+thorli's Synology DS211j was too weak to provide decent downloads rates with SABnzbd and CouchPotatoServer even by using sabToCouchPotato; His only alternative (as with many many QNAP and Synology users) was to switch to NZBGet which uses far less resources and helps to reach the full download speed. 
 
-The renamer of CouchPotatoServer caused broken downloads by interfering with NZBGet while it was still unpacking the files. 
-Hence the solution was this version of sabToCouchPotato which has now been named "nzbToCouchPotato".
+The renamer of CouchPotatoServer caused broken downloads by interfering with NZBGet while it was still unpacking the files. Hence the solution was thorli's version of sabToCouchPotato which has now been named "nzbToCouchPotato".
 
 Installation
 ------------
@@ -54,21 +51,30 @@ Installation
    $ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
 ### CouchPotatoServer
-The following must be configured in CouchPotatoServer
+
+The following must be configured in CouchPotatoServer:
 
 1. Settings -> Downloaders -> Sabnzbd (or NZBGet)
-	i.  "Category" must be set to a category that is used by Sabnzbd/NZBGet (e.g. "movies", or "CouchPotato") 
+
+	i.   "Category" must be set to a category that is used by Sabnzbd/NZBGet (e.g. "movies", or "CouchPotato")
+
 	ii. "Delete Failed" should be un-ticked (Sabnzbd only)
+
 2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
+
 	i.  "From" must be set to the full path to your completed download movies
-		> If you specify only "movies" here, the completed downloads will be extracted to
-		%sabnzbd_completed_folder%/movies
+
+	> If you specify only "movies" here, the completed downloads will be extracted to %sabnzbd_completed_folder%/movies
+
 	ii. "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
+
 	iii."Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
+
 	iv. "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
+
 	v.  "Next On_failed" should be un-ticked.
-		> These last 3 settings are "advanced settings" so to change these you will need to select the option
-		"show advanced settings" on the top right of all settings pages.
+
+	> These last 3 settings are "advanced settings" so to change these you will need to select the option "show advanced settings" on the top right of all settings pages.
 
 ### SABnzbd
 If you are using SABnzbd perform the following steps to configure postprocessing for "nzbToCouchPotato":
