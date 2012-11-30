@@ -1,12 +1,13 @@
 #!/bin/sh 
 #
+# This file if part of nzbget
+#
 # Example postprocessing script for NZBGet
 #
 # Copyright (C) 2008 Peter Roubos <peterroubos@hotmail.com>
 # Copyright (C) 2008 Otmar Werner
-# Copyright (C) 2008-2009 Andrei Prygounkov <hugbug@users.sourceforge.net>
+# Copyright (C) 2008-2012 Andrey Prygunkov <hugbug@users.sourceforge.net>
 # Copyright (C) 2012 Antoine Bertin <diaoulael@gmail.com>
-# Copyright (C) 2012 Jürgen Seif <thor78@gmx.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,7 +21,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 #
 
@@ -63,7 +64,6 @@
 ####################### End of Usage instructions #######################
 
 
-
 # NZBGet passes following arguments to postprocess-programm as environment
 # variables:
 #  NZBPP_DIRECTORY    - path to destination dir for downloaded files;
@@ -95,7 +95,6 @@ POSTPROCESS_PARCHECK_ALL=92
 POSTPROCESS_SUCCESS=93
 POSTPROCESS_ERROR=94
 POSTPROCESS_NONE=95
-
 
 # Check if the script is called from nzbget
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
@@ -316,14 +315,51 @@ if [ "$RenameIMG" = "yes" ]; then
 	fi   
 fi
 
-if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
+############################
+### BEGIN CUSTOMIZATIONS ###
+############################
+
+# Move categories to /share/yourdirectory and remove download destination directory
+if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
+        echo "[INFO] Post-Process: Moving TV shows to $TV_DL_DIR"
+        cp -R "$NZBPP_DIRECTORY" "$TV_DL_DIR" >/dev/null 2>&1
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $TV_DL_DIR"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$TV_DL_DIR"
+        fi
+fi
+
+if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MOVIES_DL_DIR" 
+        cp -R "$NZBPP_DIRECTORY" "$MOVIES_DL_DIR" >/dev/null 2>&1 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $MOVIES_DL_DIR"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$MOVIES_DL_DIR"
+        fi
+fi
+                                                                                                                                                                                                                                               
+##########################
+### END CUSTOMIZATIONS ###
+##########################
+
+if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
 fi
 
 if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
-	# Call Couchpotato's postprocessing script
+	# Call CouchPotato's postprocessing script
 	echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
 	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
 fi

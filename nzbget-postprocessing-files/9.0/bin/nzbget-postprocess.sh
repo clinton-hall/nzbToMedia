@@ -7,7 +7,7 @@
 # Copyright (C) 2008 Peter Roubos <peterroubos@hotmail.com>
 # Copyright (C) 2008 Otmar Werner
 # Copyright (C) 2008-2012 Andrey Prygunkov <hugbug@users.sourceforge.net>
-# Copyright (C) 2012 Jürgen Seif <thor78@gmx.at>
+# Copyright (C) 2012 Antoine Bertin <diaoulael@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -34,13 +34,20 @@
 #        PostProcess=/home/user/nzbget/nzbget-postprocess.sh
 #
 # o  The script needs a configuration file. An example configuration file
-#    is provided in file "nzbget-postprocess.conf". Put the configuration file 
-#    into the directory where nzbget's configuration file (nzbget.conf) is located.
-#    Then edit the configuration file in any text editor to adjust the settings.
+#    is provided in file "postprocess-example.conf". Put the configuration file 
+#    into the directory where nzbget's configuration file (nzbget.conf) or where
+#    this script itself is located. Then edit the configuration file in any
+#    text editor to adjust the settings.
 #
-# o  You can also edit the script's configuration via web-interface.
+# o  You can also edit the script's configuration via web-interface (requires
+#    NZBGetWeb 1.4 or later). Set the options "PostProcessConfigFile" and 
+#    "PostProcessConfigTemplate" to point to "postprocess-example.conf"
+#    (including full path). The both options are under the section 
+#    "CONFIGURATION OF POSTPROCESSING-SCRIPT" in NZBGetWeb.
 #
-# o  There are few options, which can be ajdusted for each nzb-file individually.
+# o  There are few options, which can be ajdusted for each nzb-file 
+#    individually. To view/edit them in web-interface click on a spanner icon
+#    near the name of nzb-file.
 #
 # o  The script supports the feature called "delayed par-check".
 #    That means it can try to unpack downloaded files without par-checking
@@ -308,14 +315,51 @@ if [ "$RenameIMG" = "yes" ]; then
 	fi   
 fi
 
-if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
+############################
+### BEGIN CUSTOMIZATIONS ###
+############################
+
+# Move categories to /share/yourdirectory and remove download destination directory
+if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
+        echo "[INFO] Post-Process: Moving TV shows to $TV_DL_DIR"
+        cp -R "$NZBPP_DIRECTORY" "$TV_DL_DIR" >/dev/null 2>&1
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $TV_DL_DIR"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$TV_DL_DIR"
+        fi
+fi
+
+if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MOVIES_DL_DIR" 
+        cp -R "$NZBPP_DIRECTORY" "$MOVIES_DL_DIR" >/dev/null 2>&1 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $MOVIES_DL_DIR"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$MOVIES_DL_DIR"
+        fi
+fi
+                                                                                                                                                                                                                                               
+##########################
+### END CUSTOMIZATIONS ###
+##########################
+
+if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
 fi
 
 if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
-	# Call Couchpotato's postprocessing script
+	# Call CouchPotato's postprocessing script
 	echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
 	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
 fi
