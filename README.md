@@ -3,11 +3,11 @@ nzbToCouchPotato
 
 Provides an efficient way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") 
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/) and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
-This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli)"thorli").
+This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli").
 
 Introduction
 ------------
-Originally this was modifed from teh SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly scanning the downlaod directory. 
+Originally this was modifed from the SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly scanning the downlaod directory. 
 Later, a few failed downloads prompted me to incorporate "failed download" handling.
 Failed downlaod handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (e.g. small NAS systems) this can be un-reliable.
 
@@ -58,21 +58,21 @@ The following must be configured in CouchPotatoServer:
 
 	i.   "Category" must be set to a category that is used by Sabnzbd/NZBGet (e.g. "movies", or "CouchPotato")
 
-	ii. "Delete Failed" should be un-ticked (Sabnzbd only)
+	ii.  "Delete Failed" should be un-ticked (Sabnzbd only)
 
 2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
 
-	i.  "From" must be set to the full path to your completed download movies
+	i.   "From" must be set to the full path to your completed download movies
 
 	> If you specify only "movies" here, the completed downloads will be extracted to %sabnzbd_completed_folder%/movies
 
-	ii. "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
+	ii.  "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
 
-	iii."Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
+	iii. "Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
 
-	iv. "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
+	iv.  "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
 
-	v.  "Next On_failed" should be un-ticked.
+	v.   "Next On_failed" should be un-ticked.
 
 	> These last 3 settings are "advanced settings" so to change these you will need to select the option "show advanced settings" on the top right of all settings pages.
 
