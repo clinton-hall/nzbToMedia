@@ -3,15 +3,20 @@ nzbToCouchPotato
 
 Provides an efficient way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") 
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/) and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
-This script is based on [sabToCouchPotato] (https://github.com/clinton-hall/sabToCouchPotato "sabToCouchPotato") from Clinton Hall, but extends the original script with the support for NZBGet.
+This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli)"thorli").
 
 Introduction
 ------------
-My Synology DS211j was too weak to provide decent downloads rates with SABnzbd and CouchPotatoServer even by using sabToCouchPotato.
-The only alternative was to switch to NZBGet which uses far less resources and helped to reach the full download speed. 
-But i was still unsatisfied as i could not use sabToCouchPotato anymore. 
-Even worse the renamer of CouchPotatoServer caused broken downloads by interfering with NZBGet while it was still unpacking the files. 
-In needed a solution and out of this motivation i started working on a own version of sabToCouchPotato named "nzbToCouchPotato".
+Originally this was modifed from teh SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly
+scanning the downlaod directory. 
+Later, a few failed downloads prompted me to incorporate "failed download" handling.
+Failed downlaod handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (small NAS systems) this can be un-reliable.
+
+thorli's Synology DS211j was too weak to provide decent downloads rates with SABnzbd and CouchPotatoServer even by using sabToCouchPotato.
+The only alternative for many QNAP and Synology users is to switch to NZBGet which uses far less resources and helped to reach the full download speed. 
+
+The renamer of CouchPotatoServer caused broken downloads by interfering with NZBGet while it was still unpacking the files. 
+Hence the solution was this version of sabToCouchPotato which has now been named "nzbToCouchPotato".
 
 Installation
 ------------
@@ -48,17 +53,38 @@ Installation
    To do this, execute nzbToCouchPotato.py e.g. via ssl issue the following command: 
    $ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
+### CouchPotatoServer
+The following must be configured in CouchPotatoServer
+
+1. Settings -> Downloaders -> Sabnzbd (or NZBGet)
+	i.  "Category" must be set to a category that is used by Sabnzbd/NZBGet (e.g. "movies", or "CouchPotato") 
+	ii. "Delete Failed" should be un-ticked (Sabnzbd only)
+2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
+	i.  "From" must be set to the full path to your completed download movies
+		if you specify only "movies" here, the completed downlaods will be extracted to
+		%sabnzbd_completed_folder%/movies [0.7.5+ only]
+	ii. "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
+	iii."Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
+	iv. "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
+	v.  "Next On_failed" should be un-ticked.
+		these last 3 settings are "advanced settings" so to change these you will need to select the option
+		"show advanced settings" on the top right of all settings pages. [0.7.5+ only]
+
 ### SABnzbd
 If you are using SABnzbd perform the following steps to configure postprocessing for "nzbToCouchPotato":
 
 1. In SABnzbd go to "Config" -> "Folders", then configure in the section "User Folders"
    the option "Post-Processing Scripts Folder" with the path where you keep the post-processings scripts for SABnzbd.
    
-2. Then go to "Config" -> "Categories" 
-   and configure the category which you want to use for CouchPotato (eg. movies) 
+2. Go to "Config" -> "Categories" 
+   and configure the category which you want to use for CouchPotato (eg. "movies" as set in the CPS Downloaders settings) 
    then select "nzbToCouchPotato.py" as the script that shall be executed after the job was finished by SABnzbd.
+   "Folder/Path" should be set to the location where you want your mvies extracted to (the Renamer "From" directory as set up in CPS) 
+
+3. Go to "Config" -> "Switches" and un-tick the option "Post-Process Only Verified Jobs" 
+   in order to allow for snatching of the next best release from CouchPotatoServer when a downlaod fails.
    
-3. For better handling of failed downloads in version 0.7.5 of SABnzbd a new special parameter named "empty_postproc" was introduced,
+4. For better handling of failed downloads in version 0.7.5 of SABnzbd a new special parameter named "empty_postproc" was introduced,
    so at last go to "Config" -> "Special" in the web-interface and tick the option "empty_postproc".
    
    Description of this special parameter according to SABnzbd manual: 
