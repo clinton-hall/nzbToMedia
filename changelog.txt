@@ -1,5 +1,9 @@
 Change_LOG / History
 
+V3.1 02/12/2012
+
+added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
+
 V3.0 30/11/2012
 
 Changed name to nzbToCouchPotato as this now included NZBGet support.
