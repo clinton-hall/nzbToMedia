@@ -43,6 +43,7 @@ class AuthURLOpener(urllib.FancyURLopener):
 
 def processEpisode(dirName, nzbName=None, status=0):
 
+    status = int(status)
     if status > 0:
         print "the download failed. nothing to process"
         sys.exit()
