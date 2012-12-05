@@ -122,7 +122,7 @@ def process(dirName, nzbName=None, status=0):
                 break
 
         if n == 0:
-            print "cound not find a mvie in the database for release", nzbName1
+            print "cound not find a movie in the database for release", nzbName1
             print "please manually ignore this release and refresh the wanted movie"
             print "exiting postprocessing script"
             sys.exit(1)
