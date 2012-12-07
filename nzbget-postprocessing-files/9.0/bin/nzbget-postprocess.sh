@@ -304,31 +304,10 @@ fi
 # Clean up
 echo "[INFO] Post-Process: Cleaning up"
 chmod -R a+rw .
-rm *.nzb >/dev/null 2>&1
-rm *.sfv >/dev/null 2>&1
-rm *.1 >/dev/null 2>&1
+# Clean up list, space seperated from GUI
+rm $CLEANUPEXT >/dev/null 2>&1
+# Removed by default
 rm _brokenlog.txt >/dev/null 2>&1
-# Extra clean up items
-rm *.nfo >/dev/null 2>&1
-rm *.srr >/dev/null 2>&1
-rm *.srs >/dev/null 2>&1
-rm *.tbn >/dev/null 2>&1
-rm *.html >/dev/null 2>&1
-rm *.bat >/dev/null 2>&1
-rm *.htm >/dev/null 2>&1
-rm *.txt >/dev/null 2>&1
-rm *.png >/dev/null 2>&1
-rm *.exe >/dev/null 2>&1
-rm *.jpg >/dev/null 2>&1
-rm *.par2 >/dev/null 2>&1
-rm *.sample >/dev/null 2>&1
-rm *.sample.* >/dev/null 2>&1
-rm *.srs >/dev/null 2>&1
-rm *.url >/dev/null 2>&1
-rm *.idx >/dev/null 2>&1
-rm *.sub >/dev/null 2>&1
-rm *.info >/dev/null 2>&1
-rm *.md5 >/dev/null 2>&1
 if [ "$Unrared" -eq 1 ]; then
 	# Delete par2-file only if there were files for unpacking.
 	rm *.[pP][aA][rR]2 >/dev/null 2>&1
