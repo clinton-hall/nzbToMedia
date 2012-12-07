@@ -305,7 +305,7 @@ fi
 echo "[INFO] Post-Process: Cleaning up"
 chmod -R a+rw .
 # Clean up list, space seperated from GUI
-rm $CLEANUPEXT >/dev/null 2>&1
+rm $FileCleanUp >/dev/null 2>&1
 # Removed by default
 rm _brokenlog.txt >/dev/null 2>&1
 if [ "$Unrared" -eq 1 ]; then
