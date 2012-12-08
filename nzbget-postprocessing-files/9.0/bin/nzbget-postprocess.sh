@@ -165,11 +165,12 @@ if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" 
 	else
 		echo "[WARNING] Post-Process: Par-check failed, exiting"
 		# Send notifications to SickBeard or CouchPotato that Par-check failed
-		if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
-			# Call SickBeard's postprocessing script
-			echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
-		$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "1" >/dev/null 2>&1
-		fi
+		# Uncomment if SickBeard Branch is fixed
+		#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
+		#	# Call SickBeard's postprocessing script
+		#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
+		#$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "1" >/dev/null 2>&1
+		#fi
 		if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$nzbToCouchPotato" ]; then
 			# Call CouchPotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify Par-check failed"
@@ -238,11 +239,12 @@ if (ls *.rar >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
 			exit $POSTPROCESS_PARCHECK_ALL
 			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed
-			if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
-				# Call SickBeard's postprocessing script
-				echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
-				$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "1">/dev/null 2>&1
-			fi
+			# Uncomment if SickBeard Branch is fixed			
+			#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
+			#	# Call SickBeard's postprocessing script
+			#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
+			#	$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "1">/dev/null 2>&1
+			#fi
 			if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$nzbToCouchPotato" ]; then
 				# Call CouchPotato's postprocessing script
 				echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify unrar (second pass) failed"
