@@ -41,13 +41,7 @@ class AuthURLOpener(urllib.FancyURLopener):
         return urllib.FancyURLopener.open(self, url)
 
 
-def processEpisode(dirName, nzbName=None, status=0):
-
-    status = int(status)
-    if status > 0:
-        print "the download failed. nothing to process"
-        sys.exit()
-
+def processEpisode(dirName, nzbName=None, failed=False):
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessTV.cfg")
     print "Loading config from", configFilename
@@ -82,9 +76,11 @@ def processEpisode(dirName, nzbName=None, status=0):
     
     params['quiet'] = 1
 
-    params['dir'] = dirName
+    params['dirName'] = dirName
     if nzbName != None:
         params['nzbName'] = nzbName
+
+    params['failed'] = failed
         
     myOpener = AuthURLOpener(username, password)
     
