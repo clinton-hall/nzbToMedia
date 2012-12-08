@@ -343,30 +343,30 @@ fi
 
 # Move categories to /share/yourdirectory and remove download destination directory
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
-        echo "[INFO] Post-Process: Moving TV shows to $TV_DL_DIR"
-        cp -R "$NZBPP_DIRECTORY" "$TV_DL_DIR" >/dev/null 2>&1
+        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
+        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir" >/dev/null 2>&1
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $TV_DL_DIR"
+           echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
            exit $POSTPROCESS_ERROR
         else
            rm -fr *
            cd ..
            rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$TV_DL_DIR"
+           NZBPP_DIRECTORY="$TvDownloadDir"
         fi
 fi
 
 if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
-        echo "[INFO] Post-Process: Moving Movies to $MOVIES_DL_DIR" 
-        cp -R "$NZBPP_DIRECTORY" "$MOVIES_DL_DIR" >/dev/null 2>&1 
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
+        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" >/dev/null 2>&1 
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $MOVIES_DL_DIR"
+           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
            exit $POSTPROCESS_ERROR
         else
            rm -fr *
            cd ..
            rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$MOVIES_DL_DIR"
+           NZBPP_DIRECTORY="$MoviesDownloadDir"
         fi
 fi
                                                                                                                                                                                                                                                
