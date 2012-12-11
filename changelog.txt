@@ -1,5 +1,10 @@
 Change_LOG / History
 
+V3.2 11/12/2012
+
+Added failed handling from NZBGet. Thanks to schumi2004.
+Also added support for the "failed download" development branch of SickBeard from https://github.com/Tolstyak/Sick-Beard.git
+
 V3.1 02/12/2012
 
 added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
