@@ -165,7 +165,7 @@ if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" 
 	else
 		echo "[WARNING] Post-Process: Par-check failed, exiting"
 		# Send notifications to SickBeard or CouchPotato that Par-check failed
-		# Uncomment if SickBeard Branch is fixed
+		# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
 		#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
 		#	# Call SickBeard's postprocessing script
 		#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
@@ -239,7 +239,7 @@ if (ls *.rar >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
 			exit $POSTPROCESS_PARCHECK_ALL
 			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed
-			# Uncomment if SickBeard Branch is fixed			
+			# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git			
 			#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
 			#	# Call SickBeard's postprocessing script
 			#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
@@ -379,7 +379,10 @@ fi
 if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "0" >/dev/null 2>&1
+	# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
+	#$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "" "" "" "" "0" >/dev/null 2>&1
+	# If your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git delete line below
+	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
 fi
 
 if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
