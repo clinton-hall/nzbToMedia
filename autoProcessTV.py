@@ -44,10 +44,6 @@ class AuthURLOpener(urllib.FancyURLopener):
 def processEpisode(dirName, nzbName=None, status=0):
 
     status = int(status)
-    if status > 0:
-        print "the download failed. nothing to process"
-        sys.exit()
-
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessTV.cfg")
     print "Loading config from", configFilename
@@ -77,14 +73,30 @@ def processEpisode(dirName, nzbName=None, status=0):
         web_root = config.get("SickBeard", "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
+        
+    try:
+        failed_fork = int(config.get("SickBeard", "failed_fork"))
+    except (ConfigParser.NoOptionError, ValueError):
+        failed_fork = 0
     
     params = {}
     
     params['quiet'] = 1
 
-    params['dir'] = dirName
-    if nzbName != None:
-        params['nzbName'] = nzbName
+    #this is our default behaviour to work with the standard Master branch of SickBeard
+    if failed_fork == 0:
+        params['dir'] = dirName
+        if nzbName != None:
+            params['nzbName'] = nzbName
+    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
+    else:
+        params['dirName'] = dirName
+        if nzbName != None:
+            params['nzbName'] = nzbName
+        if status == 0:
+            params['failed'] = False
+        else:
+            params['failed'] = True
         
     myOpener = AuthURLOpener(username, password)
     
