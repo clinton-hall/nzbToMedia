@@ -342,7 +342,8 @@ fi
 ############################
 
 # Move categories to /share/yourdirectory and remove download destination directory
-if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
         cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir" >/dev/null 2>&1
         if [ "$?" -ne 0 ]; then
@@ -355,8 +356,8 @@ if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
            NZBPP_DIRECTORY="$TvDownloadDir"
         fi
 fi
-
-if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
         cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" >/dev/null 2>&1 
         if [ "$?" -ne 0 ]; then
