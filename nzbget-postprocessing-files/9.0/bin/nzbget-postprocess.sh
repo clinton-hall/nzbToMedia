@@ -242,7 +242,7 @@ if (ls *.rar >/dev/null 2>&1); then
 				# Call SickBeard's postprocessing script
 				echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
 				$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1
-			#fi
+			fi
 			if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
 				# Call CouchPotato's postprocessing script
 				echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify unrar (second pass) failed"
