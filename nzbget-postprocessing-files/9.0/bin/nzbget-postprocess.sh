@@ -165,12 +165,11 @@ if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" 
 	else
 		echo "[WARNING] Post-Process: Par-check failed, exiting"
 		# Send notifications to SickBeard or CouchPotato that Par-check failed
-		# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-		#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
-		#	# Call SickBeard's postprocessing script
-		#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
-		#$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1
-		#fi
+		if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$nzbToSickBeard" ]; then
+			# Call SickBeard's postprocessing script
+			echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
+			$PythonCmd $nzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1
+		fi
 		if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$nzbToCouchPotato" ]; then
 			# Call CouchPotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify Par-check failed"
@@ -238,12 +237,11 @@ if (ls *.rar >/dev/null 2>&1); then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
 			exit $POSTPROCESS_PARCHECK_ALL
-			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed
-			# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git			
-			#if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
-			#	# Call SickBeard's postprocessing script
-			#	echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
-			#	$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1
+			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed			
+			if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$nzbToSickBeard" ]; then
+				# Call SickBeard's postprocessing script
+				echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"
+				$PythonCmd $nzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1
 			#fi
 			if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$nzbToCouchPotato" ]; then
 				# Call CouchPotato's postprocessing script
@@ -376,19 +374,16 @@ fi
 ### END CUSTOMIZATIONS ###
 ##########################
 
-if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
+if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$nzbToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	# Uncomment below if your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-	#$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
-	# If your using development branch from fork https://github.com/Tolstyak/Sick-Beard.git delete line below
-	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $nzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
 fi
 
-if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
+if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$nzbToCouchPotato" ]; then
 	# Call CouchPotato's postprocessing script
 	echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
-	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
+	$PythonCmd $nzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
 fi
 
 # Check if destination directory was set in postprocessing parameters
