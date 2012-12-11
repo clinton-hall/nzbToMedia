@@ -83,11 +83,15 @@ def processEpisode(dirName, nzbName=None, status=0):
     
     params['quiet'] = 1
 
-    #this is our default behaviour to work with the standard Master branch of SickBeard
+    # this is our default behaviour to work with the standard Master branch of SickBeard
     if failed_fork == 0:
         params['dir'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
+        # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
+        if status != 0:
+            print "the download failed. nothing to process"
+            sys.exit()
     # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
     else:
         params['dirName'] = dirName
