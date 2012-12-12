@@ -39,14 +39,14 @@ if len(sys.argv) == 8:
         autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
 
 # NZBGet
-elif len(sys.argv) == 3:
+elif len(sys.argv) == 4:
 # NZBGet argv: 
 # 1  The final directory of the job (full path) 
 # 2  The original name of the NZB file 
-# From NZBGet only successful downloads are triggered so status is set to "0"
+# 3  The status of the download: 0 == successful
 	print "Script triggered from NZBGet, starting autoProcessTV..."
 	
-	autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], 0)
+	autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
 	print "Invalid number of arguments received from client." 

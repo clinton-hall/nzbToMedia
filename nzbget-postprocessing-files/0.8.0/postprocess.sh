@@ -164,6 +164,17 @@ if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" 
 		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting"
 	else
 		echo "[WARNING] Post-Process: Par-check failed, exiting"
+		# Send notifications to SickBeard or CouchPotato that Par-check failed	
+		if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then	
+			# Call SickBeard's postprocessing script	
+			echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
+			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1
+		fi	
+		if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then	
+			# Call CouchPotato's postprocessing script	
+			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify Par-check failed"	
+			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1	
+		fi
 	fi
 	exit $POSTPROCESS_ERROR
 fi 
@@ -226,6 +237,17 @@ if (ls *.rar >/dev/null 2>&1); then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
 			exit $POSTPROCESS_PARCHECK_ALL
+			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed      	
+			if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then	
+				# Call SickBeard's postprocessing script	
+				echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"	
+				$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1	
+			fi	
+			if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then	
+				# Call CouchPotato's postprocessing script	
+				echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify unrar (second pass) failed"	
+				$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1	
+			fi
 		fi
 		exit $POSTPROCESS_ERROR
 	fi
@@ -282,9 +304,9 @@ fi
 # Clean up
 echo "[INFO] Post-Process: Cleaning up"
 chmod -R a+rw .
-rm *.nzb >/dev/null 2>&1
-rm *.sfv >/dev/null 2>&1
-rm *.1 >/dev/null 2>&1
+# Clean up list, space seperated from GUI	
+rm $FileCleanUp >/dev/null 2>&1	
+# Removed by default
 rm _brokenlog.txt >/dev/null 2>&1
 if [ "$Unrared" -eq 1 ]; then
 	# Delete par2-file only if there were files for unpacking.
@@ -320,31 +342,32 @@ fi
 ############################
 
 # Move categories to /share/yourdirectory and remove download destination directory
-if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
-        echo "[INFO] Post-Process: Moving TV shows to $TV_DL_DIR"
-        cp -R "$NZBPP_DIRECTORY" "$TV_DL_DIR" >/dev/null 2>&1
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
+        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir" >/dev/null 2>&1
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $TV_DL_DIR"
+           echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
            exit $POSTPROCESS_ERROR
         else
            rm -fr *
            cd ..
            rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$TV_DL_DIR"
+           NZBPP_DIRECTORY="$TvDownloadDir"
         fi
 fi
-
-if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
-        echo "[INFO] Post-Process: Moving Movies to $MOVIES_DL_DIR" 
-        cp -R "$NZBPP_DIRECTORY" "$MOVIES_DL_DIR" >/dev/null 2>&1 
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
+        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" >/dev/null 2>&1 
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $MOVIES_DL_DIR"
+           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
            exit $POSTPROCESS_ERROR
         else
            rm -fr *
            cd ..
            rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$MOVIES_DL_DIR"
+           NZBPP_DIRECTORY="$MoviesDownloadDir"
         fi
 fi
                                                                                                                                                                                                                                                
@@ -355,13 +378,13 @@ fi
 if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
 fi
 
 if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
 	# Call CouchPotato's postprocessing script
 	echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
-	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
 fi
 
 # Check if destination directory was set in postprocessing parameters
