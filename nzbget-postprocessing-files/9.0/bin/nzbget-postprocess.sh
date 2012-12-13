@@ -373,7 +373,7 @@ fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
-        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir" >/dev/null 2>&1
+        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir"
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
            exit $POSTPROCESS_ERROR
@@ -388,7 +388,7 @@ fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
-        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" >/dev/null 2>&1 
+        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
            exit $POSTPROCESS_ERROR
