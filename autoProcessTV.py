@@ -60,6 +60,7 @@ def processEpisode(dirName, nzbName=None, status=0):
         print "Could not read configuration file: ", str(e)
         sys.exit(1)
     
+    watch_dir = ""
     host = config.get("SickBeard", "host")
     port = config.get("SickBeard", "port")
     username = config.get("SickBeard", "username")
@@ -73,11 +74,20 @@ def processEpisode(dirName, nzbName=None, status=0):
         web_root = config.get("SickBeard", "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
+    
+    try:
+        watch_dir = config.get("SickBeard", "watch_dir")
+    except ConfigParser.NoOptionError:
+        watch_dir = ""
         
     try:
         failed_fork = int(config.get("SickBeard", "failed_fork"))
     except (ConfigParser.NoOptionError, ValueError):
         failed_fork = 0
+    
+    #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
+    if watch_dir != "":
+        dirName = watch_dir
     
     params = {}
     
