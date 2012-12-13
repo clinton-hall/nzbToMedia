@@ -173,7 +173,7 @@ if [ ! -f "$ScriptConfigFile" ]; then
 fi
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting"
-	do_exit $POSTPROCESS_ERROR
+	exit $POSTPROCESS_ERROR
 fi
 
 # Readg configuration file
@@ -199,13 +199,13 @@ fi
 
 if [ "$BadConfig" -eq 1 ]; then
 	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration"
-	do_exit $POSTPROCESS_ERROR
+	exit $POSTPROCESS_ERROR
 fi 
 
 # Check if all collections in nzb-file were downloaded
 if [ ! "$NZBPP_NZBCOMPLETED" -eq 1 ]; then
 	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting"
-	do_exit $POSTPROCESS_SUCCESS
+	exit $POSTPROCESS_SUCCESS
 fi 
 
 # Check par status
