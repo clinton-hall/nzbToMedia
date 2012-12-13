@@ -1,13 +1,12 @@
 #!/bin/sh 
 #
-# This file if part of nzbget
-#
 # Example postprocessing script for NZBGet
 #
 # Copyright (C) 2008 Peter Roubos <peterroubos@hotmail.com>
 # Copyright (C) 2008 Otmar Werner
-# Copyright (C) 2008-2012 Andrey Prygunkov <hugbug@users.sourceforge.net>
+# Copyright (C) 2008-2009 Andrei Prygounkov <hugbug@users.sourceforge.net>
 # Copyright (C) 2012 Antoine Bertin <diaoulael@gmail.com>
+# Copyright (C) 2012 Jürgen Seif <thor78@gmx.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,7 +20,7 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 #
 
@@ -64,6 +63,7 @@
 ####################### End of Usage instructions #######################
 
 
+
 # NZBGet passes following arguments to postprocess-programm as environment
 # variables:
 #  NZBPP_DIRECTORY    - path to destination dir for downloaded files;
@@ -85,6 +85,8 @@
 #                           the same nzb-files failed;
 #  NZBPP_CATEGORY     - category assigned to nzb-file (can be empty string).
 
+# Toggle detailed output (0/1)
+DEBUG=1
 
 # Name of script's configuration file
 SCRIPT_CONFIG_FILE="postprocess.conf"
@@ -95,6 +97,37 @@ POSTPROCESS_PARCHECK_ALL=92
 POSTPROCESS_SUCCESS=93
 POSTPROCESS_ERROR=94
 POSTPROCESS_NONE=95
+
+# Postprocessing function for nzbToCouchPotato for handling failed downloads
+nzbToCouchPotato() {
+	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: Executing function 'nzbToCouchPotato' with argument $1" ; fi
+	PostProcessStatus=0	
+	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
+	if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
+		# Call Couchpotato's postprocessing script
+		echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
+		if [ "$DEBUG" ]; then
+			echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" 
+			echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" 
+			echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME"
+			echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus"
+		fi
+		#$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" >/dev/null 2>&1
+		$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus"
+	else
+		if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')"; fi
+		if [ "$NZBPP_CATEGORY" != "CouchPotatoCategory" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as category does not match ('$NZBPP_CATEGORY')"; fi
+	fi
+}
+
+# Pass on postprocess exit codes to external scripts for handling failed downloads
+do_exit() {
+	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
+	nzbStatus=0
+	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
+	nzbToCouchPotato $nzbStatus
+	exit $1
+}
 
 # Check if the script is called from nzbget
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
@@ -123,7 +156,7 @@ if [ ! -f "$ScriptConfigFile" ]; then
 fi
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting"
-	exit $POSTPROCESS_ERROR
+	do_exit $POSTPROCESS_ERROR
 fi
 
 # Readg configuration file
@@ -149,13 +182,13 @@ fi
 
 if [ "$BadConfig" -eq 1 ]; then
 	echo "[ERROR] Post-Process: Existing because of not compatible nzbget configuration"
-	exit $POSTPROCESS_ERROR
+	do_exit $POSTPROCESS_ERROR
 fi 
 
 # Check if all collections in nzb-file were downloaded
 if [ ! "$NZBPP_NZBCOMPLETED" -eq 1 ]; then
 	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting"
-	exit $POSTPROCESS_SUCCESS
+	do_exit $POSTPROCESS_SUCCESS
 fi 
 
 # Check par status
@@ -164,25 +197,15 @@ if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" 
 		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting"
 	else
 		echo "[WARNING] Post-Process: Par-check failed, exiting"
-		# Send notifications to SickBeard or CouchPotato that Par-check failed	
-		if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then	
-			# Call SickBeard's postprocessing script	
-			echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify Par-check failed"
-			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1
-		fi	
-		if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then	
-			# Call CouchPotato's postprocessing script	
-			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify Par-check failed"	
-			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1" >/dev/null 2>&1	
-		fi
 	fi
-	exit $POSTPROCESS_ERROR
+	#nzbToCouchPotato 
+	do_exit $POSTPROCESS_ERROR
 fi 
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
 	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist"
-	exit $POSTPROCESS_ERROR
+	do_exit $POSTPROCESS_ERROR
 fi
 
 cd "$NZBPP_DIRECTORY"
@@ -193,7 +216,7 @@ if [ ! "$NZBPP_PARSTATUS" -eq 2 ]; then
 	if [ -f "_brokenlog.txt" ]; then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair"
-			exit $POSTPROCESS_PARCHECK_ALL
+			do_exit $POSTPROCESS_PARCHECK_ALL
 		fi
 	fi
 fi
@@ -210,7 +233,7 @@ if (ls *.rar >/dev/null 2>&1); then
 	$UnrarCmd >/dev/null 2>&1
 	if [ "$?" -eq 127 ]; then
 		echo "[ERROR] Post-Process: Unrar not found. Set the path to unrar in script's configuration"
-		exit $POSTPROCESS_ERROR
+		do_exit $POSTPROCESS_ERROR
 	fi
 
 	# Make a temporary directory to store the unrarred files
@@ -236,20 +259,9 @@ if (ls *.rar >/dev/null 2>&1); then
 		# for delayed par-check/-repair at least one par-file must be already downloaded
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
-			exit $POSTPROCESS_PARCHECK_ALL
-			# Send notifications to SickBeard or CouchPotato that unrar (second pass) failed      	
-			if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then	
-				# Call SickBeard's postprocessing script	
-				echo "[INFO] Post-Process: Running SickBeard's postprocessing script to notify unrar (second pass) failed"	
-				$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1	
-			fi	
-			if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then	
-				# Call CouchPotato's postprocessing script	
-				echo "[INFO] Post-Process: Running CouchPotato's postprocessing script to notify unrar (second pass) failed"	
-				$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "1">/dev/null 2>&1	
-			fi
+			do_exit $POSTPROCESS_PARCHECK_ALL
 		fi
-		exit $POSTPROCESS_ERROR
+		do_exit $POSTPROCESS_ERROR
 	fi
 	Unrared=1
    
@@ -270,7 +282,7 @@ if (ls *.rar >/dev/null 2>&1); then
 
 		if [ "$?" -eq 3 ]; then
 			echo "[INFO] Post-Process: Unrar (second pass) failed"
-			exit $POSTPROCESS_ERROR
+			do_exit $POSTPROCESS_ERROR
 		fi
 
 		# Delete the Rar files
@@ -304,9 +316,9 @@ fi
 # Clean up
 echo "[INFO] Post-Process: Cleaning up"
 chmod -R a+rw .
-# Clean up list, space seperated from GUI	
-rm $FileCleanUp >/dev/null 2>&1	
-# Removed by default
+rm *.nzb >/dev/null 2>&1
+rm *.sfv >/dev/null 2>&1
+rm *.1 >/dev/null 2>&1
 rm _brokenlog.txt >/dev/null 2>&1
 if [ "$Unrared" -eq 1 ]; then
 	# Delete par2-file only if there were files for unpacking.
@@ -337,55 +349,14 @@ if [ "$RenameIMG" = "yes" ]; then
 	fi   
 fi
 
-############################
-### BEGIN CUSTOMIZATIONS ###
-############################
-
-# Move categories to /share/yourdirectory and remove download destination directory
-# Test for category and ensure the passed directory exists as a directory.
-if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
-        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir" >/dev/null 2>&1
-        if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
-           exit $POSTPROCESS_ERROR
-        else
-           rm -fr *
-           cd ..
-           rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$TvDownloadDir"
-        fi
-fi
-# Test for category and ensure the passed directory exists as a directory.
-if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
-        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" >/dev/null 2>&1 
-        if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
-           exit $POSTPROCESS_ERROR
-        else
-           rm -fr *
-           cd ..
-           rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$MoviesDownloadDir"
-        fi
-fi
-                                                                                                                                                                                                                                               
-##########################
-### END CUSTOMIZATIONS ###
-##########################
-
-if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$NzbToSickBeard" ]; then
+if [ "$SickBeard" = "yes" -a "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -e "$SabToSickBeard" ]; then
 	# Call SickBeard's postprocessing script
 	echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-	$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
+	#$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" >/dev/null 2>&1
+	$PythonCmd $SabToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME"
 fi
 
-if [ "$CouchPotato" = "yes" -a "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -e "$NzbToCouchPotato" ]; then
-	# Call CouchPotato's postprocessing script
-	echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
-	$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "0" >/dev/null 2>&1
-fi
+
 
 # Check if destination directory was set in postprocessing parameters
 # (for current nzb-file) via web-interface or via command line with 
@@ -398,4 +369,4 @@ if [ "$NZBPR_DestDir" != "" ]; then
 fi
 
 # All OK, requesting cleaning up of download queue
-exit $POSTPROCESS_SUCCESS
+do_exit $POSTPROCESS_SUCCESS
