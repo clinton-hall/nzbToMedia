@@ -116,7 +116,8 @@ nzbToMedia() {
 			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[INFO] Post-Process: $line" ; done
 		else
 			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')"; fi
-			if [ -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
+			if [ !-e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
+		fi
 	fi
 	if ["$NZBPP_CATEGORY" = "$SickBeardCategory"]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
@@ -131,7 +132,8 @@ nzbToMedia() {
 			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[INFO] Post-Process: $line" ; done
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')"; fi
-			if [ -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
+			if [ !-e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
+		fi
 	fi
 }
 
