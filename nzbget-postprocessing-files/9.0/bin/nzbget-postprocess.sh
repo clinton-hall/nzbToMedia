@@ -113,7 +113,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[DETAIL] Post-Process: $line" ; done
+			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[INFO] Post-Process: $line" ; done
 		else
 			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')"; fi
 			if [ -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
@@ -128,7 +128,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[DETAIL] Post-Process: $line" ; done
+			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do echo "[INFO] Post-Process: $line" ; done
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')"; fi
 			if [ -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
@@ -141,6 +141,16 @@ do_exit() {
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
 	nzbToMedia $nzbStatus
+	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
+		User=""
+		if [ -n "$Email_User" -a -n "$Email_Pass"]; then User="-xu $Email_User -xp $Email_Pass" ; fi
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server $User -u "nzb download succeded" -m "$NZBPP_NZBFILENAME downloaded succesfully" 
+	fi
+	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
+		User=""
+		if [ -n "$Email_User" -a -n "$Email_Pass"]; then User="-xu $Email_User -xp $Email_Pass" ; fi
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server $User -u "nzb download failed" -m "$NZBPP_NZBFILENAME download failed due to $1" 
+	fi
 	exit $1
 }
 
