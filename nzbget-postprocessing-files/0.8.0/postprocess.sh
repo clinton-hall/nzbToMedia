@@ -85,8 +85,6 @@
 #                           the same nzb-files failed;
 #  NZBPP_CATEGORY     - category assigned to nzb-file (can be empty string).
 
-# Toggle detailed output (0/1)
-DEBUG=1
 
 # Name of script's configuration file
 SCRIPT_CONFIG_FILE="postprocess.conf"
