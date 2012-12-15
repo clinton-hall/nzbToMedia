@@ -98,15 +98,15 @@ POSTPROCESS_NONE=95
 
 # Postprocessing function for nzbToCouchPotato for handling failed downloads
 nzbToMedia() {
-	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" ; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" ; fi
 	PostProcessStatus=0	
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
-	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			# Call Couchpotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
-			if [ "$DEBUG" ]; then
+			if [ "$Debug" = "yes" ]; then
 				echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" 
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" 
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME"
@@ -122,7 +122,7 @@ nzbToMedia() {
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
 			# Call SickBeard's postprocessing script
 			echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
-			if [ "$DEBUG" ]; then
+			if [ "$Debug" = "yes" ]; then
 				echo "[DETAIL] Post-Process: SickBeard-Script-Path=$NzbToSickBeard" 
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV1=$NZBPP_DIRECTORY" 
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME"
@@ -138,7 +138,7 @@ nzbToMedia() {
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
 do_exit() {
-	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
 	nzbToMedia $nzbStatus
