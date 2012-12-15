@@ -102,7 +102,7 @@ nzbToMedia() {
 	PostProcessStatus=0	
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
 	if [ "$DEBUG" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
-	if ["$NZBPP_CATEGORY" = "$CouchPotatoCategory"]; then
+	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			# Call Couchpotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
@@ -118,7 +118,7 @@ nzbToMedia() {
 			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
 		fi
 	fi
-	if ["$NZBPP_CATEGORY" = "$SickBeardCategory"]; then
+	if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
 			# Call SickBeard's postprocessing script
 			echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
