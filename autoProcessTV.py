@@ -99,11 +99,8 @@ def processEpisode(dirName, nzbName=None, failed=False):
         if nzbName != None:
             params['nzbName'] = nzbName
         params['failed'] = failed
-        if failed:
-            if status:
-                print "The download failed. Sending 'failed' process request to SickBeard's failed branch"
-            else:
-                print "The status indicates that downloading succeeded, but the parameter 'failed' is being passed as True"
+        if status:
+            print "The download failed. Sending 'failed' process request to SickBeard's failed branch"
         else:
             print "The download succeeded. Sending process request to SickBeard's failed branch"
                 
