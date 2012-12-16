@@ -41,9 +41,9 @@ class AuthURLOpener(urllib.FancyURLopener):
         return urllib.FancyURLopener.open(self, url)
 
 
-def processEpisode(dirName, nzbName=None, status=0):
+def processEpisode(dirName, nzbName=None, failed=False):
 
-    status = int(status)
+    status = int(failed)
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessTV.cfg")
     print "Loading config from", configFilename
@@ -93,25 +93,32 @@ def processEpisode(dirName, nzbName=None, status=0):
     
     params['quiet'] = 1
 
+    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
+    if failed_fork:
+        params['dirName'] = dirName
+        if nzbName != None:
+            params['nzbName'] = nzbName
+        params['failed'] = failed
+        if failed:
+            if status:
+                print "The download failed. Sending 'failed' process request to SickBeard's failed branch"
+            else:
+                print "The status indicates that downloading succeeded, but the parameter 'failed' is being passed as True"
+        else:
+            print "The download succeeded. Sending process request to SickBeard's failed branch"
+                
     # this is our default behaviour to work with the standard Master branch of SickBeard
-    if failed_fork == 0:
+    else:
         params['dir'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
         # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
-        if status != 0:
-            print "the download failed. nothing to process"
+        if status:
+            print "The download failed. Nothing to process"
             sys.exit()
-    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    else:
-        params['dirName'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        if status == 0:
-            params['failed'] = False
         else:
-            params['failed'] = True
-        
+            print "The download succeeded. Sending process request to SickBeard"
+
     myOpener = AuthURLOpener(username, password)
     
     if ssl:
