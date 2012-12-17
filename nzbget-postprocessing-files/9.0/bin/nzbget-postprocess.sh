@@ -149,7 +149,7 @@ do_exit() {
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
 		User=""
-		if [ -n "$Email_User" -a -n "$Email_Pass"]; then User="-xu $Email_User -xp $Email_Pass" ; fi
+		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download failed" -m "$NZBPP_NZBFILENAME download failed due to $1" 
 	fi
 	exit $1
