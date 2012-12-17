@@ -144,7 +144,7 @@ do_exit() {
 	nzbToMedia $nzbStatus
 	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
 		User=""
-		if [ -n "$Email_User" -a -n "$Email_Pass"]; then User="-xu $Email_User -xp $Email_Pass" ; fi
+		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download succeded" -m "$NZBPP_NZBFILENAME downloaded succesfully" 
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
