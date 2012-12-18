@@ -207,7 +207,7 @@ if [ "$NZBOP_PARREPAIR" = "no" ]; then
 fi
 
 if [ "$BadConfig" -eq 1 ]; then
-	echo "[ERROR] Post-Process: Existing because of not compatible nzbget configuration"
+	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration"
 	exit $POSTPROCESS_ERROR
 fi 
 
