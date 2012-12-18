@@ -96,7 +96,7 @@ POSTPROCESS_SUCCESS=93
 POSTPROCESS_ERROR=94
 POSTPROCESS_NONE=95
 
-# Postprocessing function for nzbToCouchPotato for handling failed downloads
+# Postprocessing function for nzbToCouchPotato and nzbToSickBeard
 nzbToMedia() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" ; fi
 	PostProcessStatus=0	
