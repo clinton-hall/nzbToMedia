@@ -104,6 +104,7 @@ nzbToMedia() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
+			script=$NzbToCouchPotato
 			# Call Couchpotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
 			if [ "$Debug" = "yes" ]; then
@@ -120,6 +121,7 @@ nzbToMedia() {
 	fi
 	if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
+			script=$NzbToSickBeard
 			# Call SickBeard's postprocessing script
 			echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
 			if [ "$Debug" = "yes" ]; then
@@ -141,16 +143,27 @@ do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
+	script=none
 	nzbToMedia $nzbStatus
+	Email_Subject="${Email_Subject/<name>/$NZBPP_NZBFILENAME}"
+	Email_Subject="${Email_Subject/<cat>/$NZBPP_CATEGORY}"
+	Email_Subject="${Email_Subject/<script>/$script}"
+	Email_Message="${Email_Message/<name>/$NZBPP_NZBFILENAME}"
+	Email_Message="${Email_Message/<cat>/$NZBPP_CATEGORY}"
+	Email_Message="${Email_Message/<script>/$script}"
 	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download succeded" -m "$NZBPP_NZBFILENAME downloaded succesfully" 
+		Email_Subject="${Email_Subject/<status>/completed}"
+		Email_Message="${Email_Message/<status>/completed}"
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Subject" -m "$Email_Message" 
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download failed" -m "$NZBPP_NZBFILENAME download failed due to $1" 
+		Email_Subject="${Email_Subject/<status>/failed}"
+		Email_Message="${Email_Message/<status>/failed}"
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Subject" -m "$Email_Message" 
 	fi
 	exit $1
 }
