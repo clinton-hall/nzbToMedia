@@ -1,9 +1,9 @@
-nzbToCouchPotato
+nzbToMedia
 ================
 
-Provides an efficient way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") 
+Provides an efficient way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") and [SickBeard](http://sickbeard.com/ "SickBeard")
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/) and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
-This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli").
+This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli") and further contributions by [thorli](https://github.com/schumi2004 "schumi2004") and [hugbug](https://sourceforge.net/apps/phpbb/nzbget/memberlist.php?mode=viewprofile&u=67 "hugbug")
 
 Introduction
 ------------
@@ -21,31 +21,51 @@ To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Def
 Installation
 ------------
 ### General
+
 1. Put all files in a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
    and change the permission accordingly so the nzb client can access to this files. 
 
-2. Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate 
+### nzbToSickBeard
+
+1. Rename the file autoProcessTV.cfg.sample to autoProcessTV.cfg and fill in the appropriate 
    fields as they apply to your installation.
 
-	[Notes_On_Delay]
-	Delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotato 
-	performs a test to ensure files/folder are not newer than 1 minute to prevent renaming of 
-	files that are still extracting. 
+	host: Set this to "localhost" if SickBeard and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
+	port: Set this to the port that SickBeard is running on.
+	username: Set this to the user name required to log on to the SickBeard web GUI. (optional)
+	password: Set this to the password required to log on to the SickBeard web GUI. (optional)
+	web_root: Set this to the web_root value specified in SickBeard for Apache Reverse Proxy. (optional)
+	ssl: Set this to "1" if you access SickBeard via ssl (https) otherwise leave this as "0" for http.
+	watch_dir: Set this only if SickBeard is on another PC to your download client and the directory structure is different.(optional)
+	failed_fork: Set this to "1" if you are using the failed fork branch. Otherwise set this to "0". (optional)
 
-	[Notes_On_Method_renamer]
-	Method "renamer" is the default which will cause CouchPotato to move and rename downloaded files
-	as specified in the CouchPotato renamer settings.
-	This will also add the movie to the manage list and initiate any configured notifications.
-	In this case your nzb client must extract the files to the "from" folder 
-	as specified in your CouchPotato renamer settings. Renamer must be enabled 
-	but automatic scan can be disabled by setting "Run Every" to "0".
+### nzbToCouchPotato
 
-	[Notes_On_Method_manage]
-	Method "manage" will make CouchPotato update the list of managed movies if manager 
-	is enabled but renamer is not enabled.
-	In this case your nzb client must extract the files directly 
-	to your final movies folder (as configured in CouchPotato manage settings) and Manage must 
-	be enabled.
+1. Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate 
+   fields as they apply to your installation.
+
+	host: Set this to "localhost" if CouchPotatoServer and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
+	port: Set this to the port that CouchPotatoServer is running on.
+	username: Set this to the user name required to log on to the CouchPotatoServer web GUI. (optional)
+	password: Set this to the password required to log on to the CouchPotatoServer web GUI. (optional)
+	web_root: Set this to the web_root value specified in CouchPotatoServer for Apache Reverse Proxy. (optional)
+	ssl: Set this to "1" if you access CouchPotatoServer via ssl (https) otherwise leave this as "0" for http.
+	Delay: Delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotatoServer 
+	       performs a test to ensure files/folder are not newer than 1 minute to prevent renaming of 
+	       files that are still extracting. 
+	apikey: Enter the api key used for CouchPotatoServer. Found in CouchPotatoServer->settings->general (addvanced setting)
+	Method:	Method "renamer" is the default which will cause CouchPotatoserver to move and rename downloaded files
+	        as specified in the CouchPotatoServer renamer settings.
+	        This will also add the movie to the manage list and initiate any configured notifications.
+	        In this case your nzb client must extract the files to the "from" folder 
+	        as specified in your CouchPotatoServer renamer settings. Renamer must be enabled 
+	        but automatic scan can be disabled by setting "Run Every" to "0".
+	        
+	        Method "manage" will make CouchPotatoServer update the list of managed movies if manager 
+	        is enabled but renamer is not enabled.
+	        In this case your nzb client must extract the files directly 
+	        to your final movies folder (as configured in CouchPotatoServer manage settings) and Manage must 
+	        be enabled.
 
 3. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable 
    permissions, or you are using the compiled executables you can manually call this process outside of 
@@ -53,33 +73,57 @@ Installation
    To do this, execute nzbToCouchPotato.py e.g. via ssl issue the following command: 
    $ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
+### SickBeard
+
+The following must be configured in SickBeard:
+
+1. Config -> Search Settings -> NZB Search
+	i.   NZB Method = Either SABnzbd or NZBget as appropriate
+	ii.  NZBget HOST:PORT - SABnzbd URL = the url/host and port for your download client.
+	iii. SABnzbd Username = The username required to log in to sabnzbd web GUI
+	iv.  NZBget Password - SABnzbd Passowrd =  The password required to log in to your download client's web GUI.
+	v.   SABnzbd API Key = The api key used by SABnzbd (Found in sabnzbd -> config -> general -> SABnzbd Web Server)
+	vi.  NZBGet Category - SABnzbd Category = A category that is used by your download client (e.g. "TV", or "SickBeard")
+
+2. Settings -> Post Processing -> Post Processing
+	i.   TV Download Dir = blank
+	ii.  Keep Original Files = user choice. (option)
+	iii. Move Associated Files = user choice. (option)
+	iv.  Rename Episodes = must be ticked.
+	v.   Scan and Process = must be unticked.
+
+3. Settings -> Post Processing -> Naming
+	The naming must be specified as per user choice. 
+	This naming will be applied to all shows processed via the postprocess script. 
+
+4. Settings -> Post Processing -> Metadata
+	The metadata wanted must be specified as per user choice. 
+	This metadata creationg will be applied to all shows processed via the postprocess script.
+
 ### CouchPotatoServer
 
 The following must be configured in CouchPotatoServer:
 
 1. Settings -> Downloaders -> Sabnzbd (or NZBGet)
 
-	i.   "Category" must be set to a category that is used by Sabnzbd/NZBGet (e.g. "movies", or "CouchPotato")
-
-	ii.  "Delete Failed" should be un-ticked (Sabnzbd only)
+	i.   Host = The url/host and port for your download client.
+	ii.  Api Key = The api key used by SABnzbd (Sabnzbd only: Found in sabnzbd -> config -> general -> SABnzbd Web Server)
+	iii. Password = The password required to log in to NZBget's web GUI. (NZBget only)
+	iv.  Category = A category that is used by your downlaod client (e.g. "movies", or "CouchPotato")
+	v.   Delete Failed = Should be unticked (Sabnzbd only)
 
 2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
 
-	i.   "From" must be set to the full path to your completed download movies
-
-	> If you specify only "movies" here, the completed downloads will be extracted to %sabnzbd_completed_folder%/movies
-
-	ii.  "To" must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
-
-	iii. "Run Every" should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
-
-	iv.  "Force Every" should be set to a high interval (e.g 24 hours) or disabled by setting "0"
-
-	v.   "Next On_failed" should be un-ticked.
-
+	i.   From = Must be set to the full path to your completed download movies (including any additional category paths)
+		e.g. %sabnzbd_download_complete/movies
+	ii.  To = Must be set to the folder where you want your movie library to be kept. this would also usually be added to manage.
+	iii. Run Every = Should be set to a high interval (e.g. 1440 = 24 hours) or disabled by setting "0"
+	iv.  Force Every = Should be set to a high interval (e.g 24 hours) or disabled by setting "0"
+	v.   Next On_failed = Should be unticked.
 	> These last 3 settings are "advanced settings" so to change these you will need to select the option "show advanced settings" on the top right of all settings pages.
 
 ### SABnzbd
+
 If you are using SABnzbd perform the following steps to configure postprocessing for "nzbToCouchPotato":
 
 1. In SABnzbd go to "Config" -> "Folders", then configure in the section "User Folders"
@@ -102,6 +146,7 @@ If you are using SABnzbd perform the following steps to configure postprocessing
    Note that the "Status" parameter for the script will be -1. [0.7.5+ only]
    
 ### NZBGet
+
 If you are using NZBGet perform the following steps to configure postprocessing for "nzbToCouchPotato":
 
 1. Replace the config files with the ones from the included "nzbget-postprocessing-files" according to the version you are using (0.8.0 or 9.0):
