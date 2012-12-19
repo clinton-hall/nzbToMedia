@@ -173,14 +173,14 @@ do_exit() {
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		Email_Subject="${Email_Subject/<status>/completed}"
 		Email_Message="${Email_Message/<status>/completed}"
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Subject" -m "$Email_Message" 
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		Email_Subject="${Email_Subject/<status>/failed}"
 		Email_Message="${Email_Message/<status>/failed}"
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Subject" -m "$Email_Message" 
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	exit $1
 }
