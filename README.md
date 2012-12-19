@@ -50,26 +50,16 @@ Installation
 	password: Set this to the password required to log on to the CouchPotatoServer web GUI. (optional)
 	web_root: Set this to the web_root value specified in CouchPotatoServer for Apache Reverse Proxy. (optional)
 	ssl: Set this to "1" if you access CouchPotatoServer via ssl (https) otherwise leave this as "0" for http.
-	Delay: Delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotatoServer 
-	       performs a test to ensure files/folder are not newer than 1 minute to prevent renaming of 
-	       files that are still extracting. 
+	Delay: Delay must be a minimum of 60 seconds for the renamer.scan to run successfully. CouchPotatoServer performs a test to ensure files/folder are not newer than 1 minute to prevent renaming of files that are still extracting. 
 	apikey: Enter the api key used for CouchPotatoServer. Found in CouchPotatoServer->settings->general (addvanced setting)
-	Method:	Method "renamer" is the default which will cause CouchPotatoserver to move and rename downloaded files
-	        as specified in the CouchPotatoServer renamer settings.
-	        This will also add the movie to the manage list and initiate any configured notifications.
-	        In this case your nzb client must extract the files to the "from" folder 
-	        as specified in your CouchPotatoServer renamer settings. Renamer must be enabled 
-	        but automatic scan can be disabled by setting "Run Every" to "0".
-	        
-	        Method "manage" will make CouchPotatoServer update the list of managed movies if manager 
-	        is enabled but renamer is not enabled.
-	        In this case your nzb client must extract the files directly 
-	        to your final movies folder (as configured in CouchPotatoServer manage settings) and Manage must 
-	        be enabled.
+	Method:	Method "renamer" is the default which will cause CouchPotatoserver to move and rename downloaded files as specified in the CouchPotatoServer renamer settings.
+		This will also add the movie to the manage list and initiate any configured notifications.
+		In this case your nzb client must extract the files to the "from" folder as specified in your CouchPotatoServer renamer settings. Renamer must be enabled but automatic scan can be disabled by setting "Run Every" to "0".
+		
+		Method "manage" will make CouchPotatoServer update the list of managed movies if manager is enabled but renamer is not enabled.
+		In this case your nzb client must extract the files directly to your final movies folder (as configured in CouchPotatoServer manage settings) and Manage must be enabled.
 
-3. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable 
-   permissions, or you are using the compiled executables you can manually call this process outside of 
-   your nzb client for testing your configuration or in case a postprocessing event failed.
+3. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed. 
    To do this, execute nzbToCouchPotato.py e.g. via ssl issue the following command: 
    $ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
