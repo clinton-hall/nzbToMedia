@@ -104,6 +104,7 @@ nzbToMedia() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
+			script=$NzbToCouchPotato
 			# Call Couchpotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script"
 			if [ "$Debug" = "yes" ]; then
@@ -120,6 +121,7 @@ nzbToMedia() {
 	fi
 	if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
+			script=$NzbToSickBeard
 			# Call SickBeard's postprocessing script
 			echo "[INFO] Post-Process: Running SickBeard's postprocessing script"
 			if [ "$Debug" = "yes" ]; then
@@ -134,6 +136,23 @@ nzbToMedia() {
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
 		fi
 	fi
+	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
+		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
+			script=$CustomScript
+			# Call Custom postprocessing script
+			echo "[INFO] Post-Process: Running the Custom postprocessing script"
+			if [ "$Debug" = "yes" ]; then
+				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" 
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" 
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME"
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus"
+			fi
+			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+		else
+			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')"; fi
+			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist"; fi
+		fi
+	fi
 }
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
@@ -141,16 +160,27 @@ do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
+	script=none
 	nzbToMedia $nzbStatus
+	Email_Subject="${Email_Subject/<name>/$NZBPP_NZBFILENAME}"
+	Email_Subject="${Email_Subject/<cat>/$NZBPP_CATEGORY}"
+	Email_Subject="${Email_Subject/<script>/$script}"
+	Email_Message="${Email_Message/<name>/$NZBPP_NZBFILENAME}"
+	Email_Message="${Email_Message/<cat>/$NZBPP_CATEGORY}"
+	Email_Message="${Email_Message/<script>/$script}"
 	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download succeded" -m "$NZBPP_NZBFILENAME downloaded succesfully" 
+		Email_Subject="${Email_Subject/<status>/completed}"
+		Email_Message="${Email_Message/<status>/completed}"
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "nzb download failed" -m "$NZBPP_NZBFILENAME download failed due to $1" 
+		Email_Subject="${Email_Subject/<status>/failed}"
+		Email_Message="${Email_Message/<status>/failed}"
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	exit $1
 }
@@ -380,7 +410,7 @@ fi
 ### BEGIN CUSTOMIZATIONS ###
 ############################
 
-# Move categories to /share/yourdirectory and remove download destination directory
+# Move categories to /share/your_directory and remove download destination directory
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
@@ -411,7 +441,22 @@ if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; th
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
-                                                                                                                                                                                                                                               
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
+        cp -R "$NZBPP_DIRECTORY" "$CustomDownloadDir" 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $CustomDownloadDir"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$CustomDownloadDir"
+	   cd "$NZBPP_DIRECTORY"
+        fi
+fi
+
 ##########################
 ### END CUSTOMIZATIONS ###
 ##########################
