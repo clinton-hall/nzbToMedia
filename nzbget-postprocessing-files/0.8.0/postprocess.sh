@@ -136,6 +136,23 @@ nzbToMedia() {
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
 		fi
 	fi
+	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
+		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
+			script=$CustomScript
+			# Call Custom postprocessing script
+			echo "[INFO] Post-Process: Running the Custom postprocessing script"
+			if [ "$Debug" = "yes" ]; then
+				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" 
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" 
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME"
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus"
+			fi
+			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+		else
+			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')"; fi
+			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist"; fi
+		fi
+	fi
 }
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
@@ -391,7 +408,7 @@ fi
 ### BEGIN CUSTOMIZATIONS ###
 ############################
 
-# Move categories to /share/yourdirectory and remove download destination directory
+# Move categories to /share/your_directory and remove download destination directory
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
@@ -419,6 +436,21 @@ if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; th
            cd ..
            rmdir "$NZBPP_DIRECTORY"
            NZBPP_DIRECTORY="$MoviesDownloadDir"
+	   cd "$NZBPP_DIRECTORY"
+        fi
+fi
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
+        cp -R "$NZBPP_DIRECTORY" "$CustomDownloadDir" 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $CustomDownloadDir"
+           exit $POSTPROCESS_ERROR
+        else
+           rm -fr *
+           cd ..
+           rmdir "$NZBPP_DIRECTORY"
+           NZBPP_DIRECTORY="$CustomDownloadDir"
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
