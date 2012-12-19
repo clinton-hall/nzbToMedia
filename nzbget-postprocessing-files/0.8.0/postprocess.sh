@@ -441,7 +441,7 @@ if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; th
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
+        echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" 
         cp -R "$NZBPP_DIRECTORY" "$CustomDownloadDir" 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $CustomDownloadDir"
