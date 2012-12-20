@@ -1,5 +1,13 @@
 Change_LOG / History
 
+V4.0 21/12/2012
+
+Changed name from nzbToCouchPotato to nzbToMedia; Now supports mltiple post-processing from two nzb download clients.
+Added email support for nzbget.
+Version printing now for each of the nzbTo* scripts.
+Added "custom" post-process support in nzbget.
+Added post-process script output logging in nzbget.
+
 V3.2 11/12/2012
 
 Added failed handling from NZBGet. Thanks to schumi2004.
@@ -7,11 +15,11 @@ Also added support for the "failed download" development branch of SickBeard fro
 
 V3.1 02/12/2012
 
-added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
+Added conversion to ensure the status passed to the autoProcessTV and autoProcessMovie is always handled as an integer.
 
 V3.0 30/11/2012
 
-Changed name to nzbToCouchPotato as this now included NZBGet support.
+Changed name from sabToCouchPotato to nzbToCouchPotato as this now included NZBGet support.
 Packaged the NZBGet postprocess files as well as modified version of nzbToSickBeard (from sabToSickBeard).
 
 
