@@ -25,7 +25,7 @@
 import sys
 import autoProcessTV
 
-print "nzbToSickBeard V3.2"
+print "nzbToSickBeard V4.0"
 
 # SABnzbd
 if len(sys.argv) == 8:
