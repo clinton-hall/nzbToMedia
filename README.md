@@ -279,7 +279,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 
 		Email_Pass=
 
-	ix.  Enter your email subject in quotes.
+	ix.  Enter your email subject, in single quotes.
 
 		Use <status> to add 'completed'/'failed'
 	
@@ -289,12 +289,12 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 	
 		Use <script> to name the external script used.
 		
-		Email_Subject="The Download of <name> has <status>"
+		Email_Subject='The Download of <name> has <status>'
 
-	x.   Enter your email message in quotes.
+	x.   Enter your email message, in single quotes.
 	
 		Use the same substitutes as described above.
 	
-		Use /n for new line.
+		Use \r\n for new line.
 		
-		Email_Message="The download of <name> has <status> /n This has been processed by the script <script> for category <cat>" 
+		Email_Message='The download of <name> has <status> \r\n This has been processed by the script <script> for category <cat>' 
