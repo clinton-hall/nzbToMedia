@@ -3,7 +3,7 @@
 import sys
 import autoProcessMovie 
 
-print "nzbToCouchPotato V3.2"
+print "nzbToCouchPotato V4.0"
 
 # SABnzbd
 if len(sys.argv) == 8:
