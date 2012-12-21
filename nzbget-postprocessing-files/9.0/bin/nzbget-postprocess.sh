@@ -316,7 +316,7 @@ if (ls *.rar >/dev/null 2>&1); then
 		# for delayed par-check/-repair at least one par-file must be already downloaded
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
-			do_exit $POSTPROCESS_PARCHECK_ALL
+			exit $POSTPROCESS_PARCHECK_ALL
 		fi
 		do_exit $POSTPROCESS_ERROR
 	fi
