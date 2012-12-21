@@ -273,7 +273,7 @@ if [ ! "$NZBPP_PARSTATUS" -eq 2 ]; then
 	if [ -f "_brokenlog.txt" ]; then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair"
-			do_exit $POSTPROCESS_PARCHECK_ALL
+			exit $POSTPROCESS_PARCHECK_ALL
 		fi
 	fi
 fi
