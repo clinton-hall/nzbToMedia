@@ -374,7 +374,7 @@ fi
 echo "[INFO] Post-Process: Cleaning up"
 chmod -R a+rw .
 # Clean up list, space seperated array from GUI
-for item in ${FileCleanUp[*]} ; do rm $item >/dev/null 2>&1 ; done
+for word in $FileCleanUp ; do rm $word >/dev/null 2>&1 ; done
 # Removed by default
 rm _brokenlog.txt >/dev/null 2>&1
 if [ "$Unrared" -eq 1 ]; then
