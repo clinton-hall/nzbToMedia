@@ -155,6 +155,19 @@ nzbToMedia() {
 	fi
 }
 
+replaceVarBy() {
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'replaceVarBy'. Going to replace '${2}' in '${1}' by '${3}'" ; fi
+
+	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
+	if [ -n "${BASH_VERSION}" ]; then
+		REPLACEDRESULT="${1/${2}/${3}}"
+	else
+		REPLACEDRESULT=$(echo "${1}" | sed "s/${2}/${3}/")
+	fi
+
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" ; fi
+}
+
 # Pass on postprocess exit codes to external scripts for handling failed downloads
 do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
@@ -162,24 +175,31 @@ do_exit() {
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
 	script=none
 	nzbToMedia $nzbStatus
-	Email_Subject="${Email_Subject/<name>/$NZBPP_NZBFILENAME}"
-	Email_Subject="${Email_Subject/<cat>/$NZBPP_CATEGORY}"
-	Email_Subject="${Email_Subject/<script>/$script}"
-	Email_Message="${Email_Message/<name>/$NZBPP_NZBFILENAME}"
-	Email_Message="${Email_Message/<cat>/$NZBPP_CATEGORY}"
-	Email_Message="${Email_Message/<script>/$script}"
+        echo "[DETAIL] after calling nzbToMedia"
+	replaceVarBy "${Email_Subject}" "<name>" "${NZBPP_NZBFILENAME}"
+	replaceVarBy "${REPLACEDRESULT}" "<cat>" "${NZBPP_CATEGORY}"
+	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
+	Email_Subject="${REPLACEDRESULT}"
+	replaceVarBy "${Email_Message}" "<name>" "${NZBPP_NZBFILENAME}"
+	replaceVarBy "${REPLACEDRESULT}" "<cat>" "${NZBPP_CATEGORY}"
+	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
+	Email_Message="${REPLACEDRESULT}"
 	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		Email_Subject="${Email_Subject/<status>/completed}"
-		Email_Message="${Email_Message/<status>/completed}"
+		replaceVarBy "${Email_Subject}" "<status>" "completed"
+		Email_Subject="${REPLACEDRESULT}"
+		replaceVarBy "${Email_Message}" "<status>" "completed"
+		Email_Message="${REPLACEDRESULT}"
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
-		Email_Subject="${Email_Subject/<status>/failed}"
-		Email_Message="${Email_Message/<status>/failed}"
+		replaceVarBy "${Email_Subject}" "<status>" "failed"
+		Email_Subject="${REPLACEDRESULT}"
+		replaceVarBy "${Email_Message}" "<status>" "failed"
+		Email_Message="${REPLACEDRESULT}"
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi
 	exit $1
