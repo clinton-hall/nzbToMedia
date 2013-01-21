@@ -86,7 +86,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
         failed_fork = 0
     
     #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
-    if nzbName = "Manual Run" and watch_dir == ""
+    if nzbName = "Manual Run" and watch_dir == "":
         print "ERROR: In order to run this script manually you must specify a watch_dir in autoProcessTV.cfg"
         sys.exit(-1)
     #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
