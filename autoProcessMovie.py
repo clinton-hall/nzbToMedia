@@ -64,6 +64,10 @@ def process(dirName, nzbName=None, status=0):
         protocol = "https://"
     else:
         protocol = "http://"
+    # don't delay when we are calling this script manually.    
+    if  nzbName == "Manual Run":  
+        delay = 0
+        
     if status == 0:
         if method == "manage":
             command = "manage.update" 
