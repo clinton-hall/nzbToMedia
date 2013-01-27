@@ -88,11 +88,12 @@ def process(dirName, nzbName=None, status=0):
             print "Unable to open URL: ", str(e)
             sys.exit(1)
     
-        result = urlObj.readlines()
-        for line in result:
-            print line
-    
-        print command, "started on CouchPotatoServer for", nzbName1
+        result = json.load(urlObj)
+        print "CouchPotatoServer returned", result
+        if result['success']:
+            print command, "started on CouchPotatoServer for", nzbName1
+        else:
+            print "Error", command, "has NOT started on CouchPotatoServer for", nzbName1
 
     else:
         print "download of", nzbName1, "has failed."
