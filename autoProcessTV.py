@@ -42,8 +42,6 @@ class AuthURLOpener(urllib.FancyURLopener):
 
 
 def processEpisode(dirName, nzbName=None, failed=False):
-
-    status = int(failed)
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessTV.cfg")
     print "Loading config from", configFilename
@@ -60,7 +58,6 @@ def processEpisode(dirName, nzbName=None, failed=False):
         print "Could not read configuration file: ", str(e)
         sys.exit(1)
     
-    watch_dir = ""
     host = config.get("SickBeard", "host")
     port = config.get("SickBeard", "port")
     username = config.get("SickBeard", "username")
@@ -75,47 +72,16 @@ def processEpisode(dirName, nzbName=None, failed=False):
     except ConfigParser.NoOptionError:
         web_root = ""
     
-    try:
-        watch_dir = config.get("SickBeard", "watch_dir")
-    except ConfigParser.NoOptionError:
-        watch_dir = ""
-        
-    try:
-        failed_fork = int(config.get("SickBeard", "failed_fork"))
-    except (ConfigParser.NoOptionError, ValueError):
-        failed_fork = 0
-    
-    #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
-    if watch_dir != "":
-        dirName = watch_dir
-    
     params = {}
     
     params['quiet'] = 1
 
-    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if failed_fork:
-        params['dirName'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        params['failed'] = failed
-        if status:
-            print "The download failed. Sending 'failed' process request to SickBeard's failed branch"
-        else:
-            print "The download succeeded. Sending process request to SickBeard's failed branch"
-                
-    # this is our default behaviour to work with the standard Master branch of SickBeard
-    else:
-        params['dir'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
-        if status:
-            print "The download failed. Nothing to process"
-            sys.exit()
-        else:
-            print "The download succeeded. Sending process request to SickBeard"
+    params['dirName'] = dirName
+    if nzbName != None:
+        params['nzbName'] = nzbName
 
+    params['failed'] = failed
+        
     myOpener = AuthURLOpener(username, password)
     
     if ssl:
