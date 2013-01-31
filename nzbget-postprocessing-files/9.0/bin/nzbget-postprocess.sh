@@ -160,9 +160,9 @@ replaceVarBy() {
 
 	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
 	if [ -n "${BASH_VERSION}" ]; then
-		REPLACEDRESULT="${1/${2}/${3}}"
+		REPLACEDRESULT="${1/${2}/${3##*/}}" # get last part after slash for paths
 	else
-		REPLACEDRESULT=$(echo "${1}" | sed "s/${2}/${3}/")
+		REPLACEDRESULT=$(echo "${1}" | sed "s/${2}/${3##*/}/") # get last part after slash for paths
 	fi
 
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" ; fi
