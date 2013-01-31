@@ -1,6 +1,7 @@
 import sys
 import urllib
 import os.path
+import shutil
 import ConfigParser
 import time
 import json 
@@ -45,6 +46,7 @@ def process(dirName, nzbName=None, status=0):
     apikey = config.get("CouchPotato", "apikey")
     delay = float(config.get("CouchPotato", "delay"))
     method = config.get("CouchPotato", "method")
+    delete_failed = int(config.get("CouchPotato", "delete_failed"))
 
     try:
         ssl = int(config.get("CouchPotato", "ssl"))
@@ -146,3 +148,6 @@ def process(dirName, nzbName=None, status=0):
             print line
     
         print "movie", movid, "set to try the next best release on CouchPotatoServer"
+        if delete_failed:
+            print "Deleting failed files and folder", dirName
+            shutil.rmtree('dirName')
