@@ -8,6 +8,7 @@ web_root =
 apikey = xxxxxxxx
 delay = 60
 method = renamer
+delete_failed = 0
 
 [Comments]
 host = (ip address for CouchPotato Server. Use "localhost" if SABnzbd and CPS on same system)
@@ -19,4 +20,4 @@ web_root = (set URL base if needed.)
 apikey = (apikey for CouchPotato Server... Required) 
 delay = (set delay in seconds before sending api call. Minimum 60)
 method = "renamer" or "manage". renamer is the default. Read the help file.
- 
+delete_failed = 0 (set to 1 if you want to delete the failed download files/folder)
