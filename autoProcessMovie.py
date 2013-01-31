@@ -150,4 +150,4 @@ def process(dirName, nzbName=None, status=0):
         print "movie", movid, "set to try the next best release on CouchPotatoServer"
         if delete_failed:
             print "Deleting failed files and folder", dirName
-            shutil.rmtree('dirName')
+            shutil.rmtree(dirName)
