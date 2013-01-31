@@ -162,7 +162,7 @@ replaceVarBy() {
 	if [ -n "${BASH_VERSION}" ]; then
 		REPLACEDRESULT="${1/${2}/${3##*/}}" # get last part after slash for paths
 	else
-		REPLACEDRESULT=$(echo "${1}" | sed "s/${2}/${3##*/}/") # get last part after slash for paths
+		REPLACEDRESULT=$(echo "${1}" | sed "s^${2}^${3}^g")
 	fi
 
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" ; fi
