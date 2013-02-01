@@ -88,7 +88,7 @@ elif useLink == 0 and packed == 1: ## unpack
 	
 	## Using Windows?
 	if os.name == 'nt':
-		cmd_7zip = [extractionTool, 'x']
+		cmd_7zip = [extractionTool, 'x -y']
 		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
 		EXTRACT_COMMANDS = dict.fromkeys(ext_zip, cmd_7zip)
 		print "INFO: We are using Windows"
