@@ -85,25 +85,45 @@ elif useLink == 0 and packed == 0: ## hardlink
 		
 elif useLink == 0 and packed == 1: ## unpack
 	## 7z x test.rar   ---- need to add "yes" to command
-	## Windows only for now, should be adapted to *nix 
-    cmd_7zip = [extractionTool, 'x']
-    ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2", ".tbz",".tar.lzma", ".tlz",".7z", ".xz"]
-    EXTRACT_COMMANDS = dict.fromkeys(ext_zip, cmd_7zip)
-	print('Found 7zip')
 	
-		files = [ f for f in listdir(Directory) if isfile(join(Directory,f)) ]
-        for f in files:
-            ext = os.path.splitext(f["path"])
-            if ext[1] in (".gz", ".bz2", ".lzma"):
-                ## Check if this is a tar
-                if os.path.splitext(ext[0]) == ".tar":
-                    cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
-            else:
-                if ext[1] in EXTRACT_COMMANDS:
-                    cmd = EXTRACT_COMMANDS[ext[1]]
-                else:
-                    print("ERROR: Unknown file type: %s", ext[1])
-                    continue
+	## Using Windows?
+	if os.name == 'nt':
+		cmd_7zip = [extractionTool, 'x']
+		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2", ".tbz",".tar.lzma", ".tlz",".7z", ".xz"]
+		EXTRACT_COMMANDS = dict.fromkeys(ext_zip, cmd_7zip)
+		print('Found 7zip')
+	
+			files = [ f for f in listdir(Directory) if isfile(join(Directory,f)) ]
+				for f in files:
+					ext = os.path.splitext(f["path"])
+					if ext[1] in (".gz", ".bz2", ".lzma"):
+					## Check if this is a tar
+						if os.path.splitext(ext[0]) == ".tar":
+							cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+					else:
+						if ext[1] in EXTRACT_COMMANDS:
+							cmd = EXTRACT_COMMANDS[ext[1]]
+					else:
+						print("ERROR: Unknown file type: %s", ext[1])
+						continue
+	## Using linux?
+	elif os.name == 'posix':
+		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
+		EXTRACT_COMMANDS = {
+		".rar": ["unrar", "x -o+ -y"],
+		".zip": ["unzip", ""],
+		".tar.gz": ["tar", "xzf"],
+		".tgz": ["tar", "xzf"],
+		".tar.bz2": ["tar", "xjf"],
+		".tbz": ["tar", "xjf"],
+		".tar.lzma": ["tar", "--lzma xf"],
+		".tlz": ["tar", "--lzma xf"],
+		".txz": ["tar", "--xz xf"],
+		".7z": ["7zr", "x"],
+		}
+	## Need to add check for which commands that can be utilized in Linux..
+	else:
+		print "Unknown OS, exiting"
 
 		fp = os.path.join(save_path, os.path.normpath(f["path"]))
 
