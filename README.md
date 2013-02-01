@@ -298,3 +298,24 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		Use \r\n for new line.
 		
 		Email_Message='The download of <name> has <status>. \r\n This has been processed by the script <script> for category <cat>' 
+
+### µTorrent
+
+If you are using µTorrent perform the following steps to configure postprocessing for "uTorrentToCouchPotato":
+
+1. Rename the uTorrentToMedia.cfg.sample to uTorrentToMedia.cfg and edit the parameters:
+
+	i.   .
+
+	ii.  .
+
+	iii. .
+
+
+2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
+ 
+	i.   Set full path to script, pass paramaters as "%D" "%N" "%L" and then output to a desired log.
+	
+		/usr/local/utorrent/nzbToMedia/uTorrentToMedia.py "%D" "%N" "%L" >> /usr/local/utorrent/log.txt.
+
+	ii.  
