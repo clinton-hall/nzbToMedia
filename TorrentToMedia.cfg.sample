@@ -7,7 +7,7 @@ category = tv
 destination = /abs/path/to/complete/tv
 
 [Torrent]
-copy = 1
+uselink = 1
 unpacker = 'C:\\Program Files\\7-Zip\\7z.exe'
 parcheck = /abs/path/to/par2
 
