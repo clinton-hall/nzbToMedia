@@ -70,7 +70,7 @@ else;
     print "INFO: Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
 
 test = re.compile('^(.*)\.((zip|rar|7z|gz|bz|tar|arj)|(r[0-9]{1,3})|([0-9]{1,3}))$', re.IGNORECASE|re.UNICODE);
-if test.match(destination):
+if test.match(Directory):
     print "INFO: Found compressed archives, extracting"
     packed = 1
 	
