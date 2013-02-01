@@ -1,0 +1,16 @@
+[CouchPotato]
+category = movies
+destination = /abs/path/to/complete/movies
+
+[SickBeard]
+category = tv
+destination = /abs/path/to/complete/tv
+
+[Torrent]
+uselink = 0
+extractiontool = 'C:\\Program Files\\7-Zip\\7z.exe'
+
+[Notes]
+copy = 0 will create hard links to your original download. 
+If moving to new hard-disk or network mount, use copy = 1
+copy = 0 is much faster and uses less disk space.
