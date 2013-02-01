@@ -7,9 +7,8 @@ category = tv
 destination = /abs/path/to/complete/tv
 
 [Torrent]
-uselink = 1
-unpacker = 'C:\\Program Files\\7-Zip\\7z.exe'
-parcheck = /abs/path/to/par2
+uselink = 0
+extractiontool = 'C:\\Program Files\\7-Zip\\7z.exe'
 
 [Notes]
 copy = 0 will create hard links to your original download. 
