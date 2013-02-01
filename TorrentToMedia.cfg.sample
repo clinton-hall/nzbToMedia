@@ -6,10 +6,9 @@ destination = /abs/path/to/complete/movies
 category = tv
 destination = /abs/path/to/complete/tv
 
-[Transmission]
+[Torrent]
 copy = 1
-unrar = /abs/path/to/unrar
-unzip = /abs/path/to/unzip
+unpacker = 'C:\\Program Files\\7-Zip\\7z.exe'
 parcheck = /abs/path/to/par2
 
 [Notes]
