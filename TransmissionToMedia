@@ -58,6 +58,9 @@ TV_Cat = config.get("SickBeard", "category")
 Movie_dest = config.get("CouchPotato", "destination")
 TV_dest = config.get("CouchPotato", "destination")
 Use_cp = int(config.get("Transmission", "copy"))
+unrar = config.get("Transmission", "unrar")
+unzip = config.get("Transmission", "unzip")
+parcheck = config.get("Transmission", "parcheck")
 
 if Category == Movie_Cat:
     destination = Movie_dest
@@ -93,13 +96,13 @@ if  glob.glob(test):
     #status = 1
 if ziped:
     #unzip here and reset status to 0 is successful
-
+    #unzip
 if par2:
     #parcheck here
-
+    #parcheck
 if rared:
     #unrar here and reset status to 0 if successful
-    
+    #unrar
 status = 0
 
 status = int(status)
