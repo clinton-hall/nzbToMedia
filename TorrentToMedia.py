@@ -131,7 +131,7 @@ elif useLink == 0 and packed == 1: ## unpack
 		dest = os.path.join(destination, Name)
 
 		## Create destionation folder
-        if not os.path.exists(dest):
+		if not os.path.exists(dest):
 			try:
 				os.makedirs(dest)
 					except Exception, e:
