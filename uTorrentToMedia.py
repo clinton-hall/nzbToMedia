@@ -40,15 +40,15 @@ import glob
 Directory = sys.argv[1]
 Name = sys.argv[2]
 Categoty = sys.argv[3]
-print "transmissionToMedia v 4.0"
+print "uTorrentToMedia v 4.0"
 
 config = ConfigParser.ConfigParser()
-configFilename = os.path.join(os.path.dirname(sys.argv[0]), "TransmissionToMedia.cfg")
+configFilename = os.path.join(os.path.dirname(sys.argv[0]), "uTorrentToMedia.cfg")
 
 print "Loading config from", configFilename
 
 if not os.path.isfile(configFilename):
-    print "ERROR: You need an autoProcessMovie.cfg file - did you rename and edit the .sample?"
+    print "ERROR: You need a uTorrentToMedia.cfg file - did you rename and edit the .sample?"
     sys.exit(-1)
 
 config.read(configFilename)
@@ -57,10 +57,10 @@ Movie_Cat = config.get("CouchPotato", "category")
 TV_Cat = config.get("SickBeard", "category")
 Movie_dest = config.get("CouchPotato", "destination")
 TV_dest = config.get("CouchPotato", "destination")
-Use_cp = int(config.get("Transmission", "copy"))
-unrar = config.get("Transmission", "unrar")
-unzip = config.get("Transmission", "unzip")
-parcheck = config.get("Transmission", "parcheck")
+Use_cp = int(config.get("uTorrent", "copy"))
+unrar = config.get("uTorrent", "unrar")
+unzip = config.get("uTorrent", "unzip")
+parcheck = config.get("uTorrent", "parcheck")
 
 if Category == Movie_Cat:
     destination = Movie_dest
