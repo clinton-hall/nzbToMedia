@@ -43,7 +43,7 @@ Categoty = sys.argv[3]
 print "transmissionToMedia v 4.0"
 
 config = ConfigParser.ConfigParser()
-configFilename = os.path.join(os.path.dirname(sys.argv[0]), "transmissionToMedia.cfg")
+configFilename = os.path.join(os.path.dirname(sys.argv[0]), "TransmissionToMedia.cfg")
 
 print "Loading config from", configFilename
 
