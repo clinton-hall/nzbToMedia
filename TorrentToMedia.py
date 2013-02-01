@@ -46,7 +46,7 @@ packed = 0
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "TorrentToMedia.cfg")
 
-print "transmissionToMedia v 4.1"
+print "torrentToMedia v 4.1"
 print "INFO: Loading config from", configFilename
 
 if not os.path.isfile(configFilename):
@@ -84,8 +84,6 @@ elif useLink == 0 and packed == 0: ## hardlink
 	shutil.copytree(src, dst, copy_function=os.link)
 		
 elif useLink == 0 and packed == 1: ## unpack
-	## 7z x test.rar   ---- need to add "yes" to command
-	
 	## Using Windows?
 	if os.name == 'nt':
 		cmd_7zip = [extractionTool, 'x -y']
@@ -127,7 +125,7 @@ elif useLink == 0 and packed == 1: ## unpack
 					else:
 						print("ERROR: Unknown file type: %s", ext[1])
 						continue
-	fp = os.path.join(save_path, os.path.normpath(f["path"]))
+	fp = os.path.join(destination, os.path.normpath(f["path"]))
 
 	## Destination path
 	dest = os.path.join(destination, Name)
