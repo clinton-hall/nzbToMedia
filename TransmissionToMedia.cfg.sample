@@ -1,0 +1,18 @@
+[CouchPotato]
+category = movies
+destination = /abs/path/to/complete/movies
+
+[SickBeard]
+category = tv
+destination = /abs/path/to/complete/tv
+
+[Transmission]
+copy = 1
+unrar = /abs/path/to/unrar
+unzip = /abs/path/to/unzip
+parcheck = /abs/path/to/par2
+
+[Notes]
+copy = 0 will create hard links to your original download. 
+If moving to new hard-disk or network mount, use copy = 1
+copy = 0 is much faster and uses less disk space.
