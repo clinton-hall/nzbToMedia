@@ -6,7 +6,7 @@ destination = /abs/path/to/complete/movies
 category = tv
 destination = /abs/path/to/complete/tv
 
-[Transmission]
+[uTorrent]
 copy = 1
 unrar = /abs/path/to/unrar
 unzip = /abs/path/to/unzip
