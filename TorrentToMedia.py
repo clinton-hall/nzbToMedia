@@ -35,10 +35,10 @@ from os.path import isfile, join
 ##Queued - 12
 ##Stopped - 13
 
-## We will pass in %D, %N, %L
-Directory = sys.argv[1]	## Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
-Name = sys.argv[2]		## Example output: My.Series.S01E01.720p.HDTV.x264-2HD
-Category = sys.argv[3]	## Example output: tvseries # this is the label in uTorrent
+## We will pass in %D, %N, %L from uTorrent
+Directory = sys.argv[1]	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
+Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
+Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
 status = 0
 packed = 0
@@ -47,7 +47,7 @@ config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "TorrentToMedia.cfg")
 
 print "transmissionToMedia v 4.1"
-print "Loading config from", configFilename
+print "INFO: Loading config from", configFilename
 
 if not os.path.isfile(configFilename):
     print "ERROR: You need an autoProcessMovie.cfg file - did you rename and edit the .sample?"
@@ -67,20 +67,20 @@ if Category == Movie_Cat:
 elif Category == TV_Cat:
     destination = TV_dest
 else;
-    print "Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
+    print "INFO: Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
 
 test = re.compile('^(.*)\.((zip|rar|7z|gz|bz|tar|arj)|(r[0-9]{1,3})|([0-9]{1,3}))$', re.IGNORECASE|re.UNICODE);
 if test.match(destination):
-    print "Found compressed archives, extracting"
+    print "INFO: Found compressed archives, extracting"
     packed = 1
 	
 ## TODO: Check that files actully is .mkv / .avi etc, and not packed files or anything else
 if useLink == 1 and packed == 0: ## symlinks
-	print "Copying all files from", Directory, "to", destination
+	print "INFO: Copying all files from", Directory, "to", destination
 	shutil.copytree(Directory, destination)
 	
 elif useLink == 0 and packed == 0: ## hardlink
-	print "Creating hard link from", Directory, "to", destination
+	print "INFO: Creating hard link from", Directory, "to", destination
 	shutil.copytree(src, dst, copy_function=os.link)
 		
 elif useLink == 0 and packed == 1: ## unpack
@@ -89,23 +89,10 @@ elif useLink == 0 and packed == 1: ## unpack
 	## Using Windows?
 	if os.name == 'nt':
 		cmd_7zip = [extractionTool, 'x']
-		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2", ".tbz",".tar.lzma", ".tlz",".7z", ".xz"]
+		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
 		EXTRACT_COMMANDS = dict.fromkeys(ext_zip, cmd_7zip)
-		print('Found 7zip')
-	
-			files = [ f for f in listdir(Directory) if isfile(join(Directory,f)) ]
-				for f in files:
-					ext = os.path.splitext(f["path"])
-					if ext[1] in (".gz", ".bz2", ".lzma"):
-					## Check if this is a tar
-						if os.path.splitext(ext[0]) == ".tar":
-							cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
-					else:
-						if ext[1] in EXTRACT_COMMANDS:
-							cmd = EXTRACT_COMMANDS[ext[1]]
-					else:
-						print("ERROR: Unknown file type: %s", ext[1])
-						continue
+		print "INFO: We are using Windows"
+		
 	## Using linux?
 	elif os.name == 'posix':
 		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
@@ -121,37 +108,52 @@ elif useLink == 0 and packed == 1: ## unpack
 		".txz": ["tar", "--xz xf"],
 		".7z": ["7zr", "x"],
 		}
-	## Need to add check for which commands that can be utilized in Linux..
+		print "INFO: We are using *nix"
+		
+	## Need to add a check for which commands that can be utilized in *nix systems..
 	else:
-		print "Unknown OS, exiting"
+		print "ERROR: Unknown OS, exiting"
 
-		fp = os.path.join(save_path, os.path.normpath(f["path"]))
+	files = [ f for f in listdir(Directory) if isfile(join(Directory,f)) ]
+		for f in files:
+			ext = os.path.splitext(f["path"])
+			if ext[1] in (".gz", ".bz2", ".lzma"):
+			## Check if this is a tar
+				if os.path.splitext(ext[0]) == ".tar":
+					cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+				else:
+					if ext[1] in EXTRACT_COMMANDS:
+						cmd = EXTRACT_COMMANDS[ext[1]]
+					else:
+						print("ERROR: Unknown file type: %s", ext[1])
+						continue
+	fp = os.path.join(save_path, os.path.normpath(f["path"]))
 
-		## Destination path
-		dest = os.path.join(destination, Name)
+	## Destination path
+	dest = os.path.join(destination, Name)
 
-		## Create destionation folder
-		if not os.path.exists(dest):
-			try:
-				os.makedirs(dest)
-					except Exception, e:
-					print("ERROR: Not possible to create destination folder: %s", e)
-                    return
+	## Create destionation folder
+       if not os.path.exists(dest):
+		try:
+			os.makedirs(dest)
+				except Exception, e:
+				print("ERROR: Not possible to create destination folder: %s", e)
+                   return
 
-		print("extracting to %s", dest)
-		def on_extract_success(result):
-			print("Extract was successful for %s")
+	print("INFO: Extracting to %s", dest)
+	def on_extract_success(result):
+		print("INFO: Extraction was successful for %s")
 
-		def on_extract_failed(result, torrent_id):
-			print("ERROR: Extract failed for %s")
-		print("hmm %s %s %s %s", cmd[0], cmd[1], fp, dest)
-
-		## Running..
-		d = getProcessValue(cmd[0], cmd[1].split() + [str(fp)], {}, str(dest))
-		d.addCallback(on_extract_success)
-		d.addErrback(on_extract_failed)
+	def on_extract_failed(result):
+		print("ERROR: Extraction failed for %s")
+	
+	## Running..	
+	print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, dest)
+	d = getProcessValue(cmd[0], cmd[1].split() + [str(fp)], {}, str(dest))
+	d.addCallback(on_extract_success)
+	d.addErrback(on_extract_failed)
 else:
-	print "Didn't find any compressed archives or media files to process, exiting"
+	print "INFO: Didn't find any compressed archives or media files to process, exiting"
 
 status = int(status)
 ## Now we pass off to CouchPotato or SickBeard.
