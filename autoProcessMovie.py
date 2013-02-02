@@ -29,11 +29,11 @@ def process(dirName, nzbName=None, status=0):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMovie.cfg")
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an autoProcessMovie.cfg file - did you rename and edit the .sample?"
+        print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
         sys.exit(-1)
     
     config.read(configFilename)
