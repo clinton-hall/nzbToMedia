@@ -27,7 +27,7 @@ Installation
 
 ### nzbToSickBeard
 
-1. Rename the file autoProcessTV.cfg.sample to autoProcessTV.cfg and fill in the appropriate 
+1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
    fields as they apply to your installation.
 
 	host: Set this to "localhost" if SickBeard and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
@@ -48,7 +48,7 @@ Installation
 
 ### nzbToCouchPotato
 
-1. Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate 
+1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
    fields as they apply to your installation.
 
 	host: Set this to "localhost" if CouchPotatoServer and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
@@ -305,12 +305,12 @@ If you are using µTorrent perform the following steps to configure postprocessi
 
 1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
 
-	i.   uselink = 1 to allow hard-linking of files
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
 		quicker and less harddisk used, if download and final location are on the same hard-disk
 		set uselink = 0 to use normal copy options. 
 		Windows systems and any movement across hard disks MUST use "0"
 
-	ii.  extractiontool (Windows Only)
+	ii.  [Torrent] extractiontool (Windows Only)
 		'C:\\Program Files\\7-Zip\\7z.exe' (you will need to install 7-zip)
 
 	iii. [CouchPotato] & [SickBeard]
