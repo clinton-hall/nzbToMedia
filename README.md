@@ -303,13 +303,20 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 
 If you are using µTorrent perform the following steps to configure postprocessing for "uTorrentToCouchPotato":
 
-1. Rename the uTorrentToMedia.cfg.sample to uTorrentToMedia.cfg and edit the parameters:
+1. Rename the uTorrentToMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
 
-	i.   .
+	i.   uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Windows systems and any movement across hard disks MUST use "0"
 
-	ii.  .
+	ii.  extractiontool (Windows Only)
+		'C:\\Program Files\\7-Zip\\7z.exe' (you will need to install 7-zip)
 
-	iii. .
+	iii. [CouchPotato] & [SickBeard]
+		Category = you must set the category that is passed from these applications
+		destination = you must set the absoluet path where you want movies extracted to.
+		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
 
 
 2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
