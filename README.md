@@ -18,17 +18,19 @@ The renamer of CouchPotatoServer caused broken downloads by interfering with NZB
 Failed download handling for SickBeard is available by using the development branch from fork [SickBeard-failed](https://github.com/Tolstyak/Sick-Beard.git "SickBeard-failed")
 To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Default is 0 and will work with standard version of SickBeard and just ignores failed downloads.
 
+Torrent support has been added with the assistance of [jkaberg](https://github.com/jkaberg "jkaberg").
+
 Installation
 ------------
 ### General
 
 1. Put all files in a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
-   and change the permission accordingly so the nzb client can access to this files. 
+   and change the permission accordingly so the nzb client can access these files. 
 
 ### nzbToSickBeard
 
 1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
-   fields as they apply to your installation.
+   fields in [SickBeard] as they apply to your installation.
 
 	host: Set this to "localhost" if SickBeard and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
 	
@@ -45,11 +47,15 @@ Installation
 	watch_dir: Set this only if SickBeard is on another PC to your download client and the directory structure is different.(optional)
 	
 	failed_fork: Set this to "1" if you are using the failed fork branch. Otherwise set this to "0". (optional)
+	
+2. If you have added .py to your PATHEXT (in windows) or you have given nzbToSickBeard.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
+	To do this, execute nzbToSickBeard.py e.g. double-click in Windows or via ssh/shell issue the following command: 
+   	$ ./nzbToSickBeard.py when in the directory where nzbToSickBeard.py is located.
 
 ### nzbToCouchPotato
 
 1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
-   fields as they apply to your installation.
+   fields in [CouchPotato] as they apply to your installation.
 
 	host: Set this to "localhost" if CouchPotatoServer and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
 	
@@ -73,9 +79,13 @@ Installation
 	
 	Method "manage" will make CouchPotatoServer update the list of managed movies if manager is enabled but renamer is not enabled.
 	In this case your nzb client must extract the files directly to your final movies folder (as configured in CouchPotatoServer manage settings) and Manage must be enabled.
+	
+	delete_failed: Set this to "1" if you want this script to delete all files and folders related to a download that has failed.
+	setting this to "0" will not delete any files.
+	note. this is not given as an option for SickBeard since the failed_fork in SickBeard supports this feature.
 
-3. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
-	To do this, execute nzbToCouchPotato.py e.g. via ssl issue the following command: 
+2. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
+	To do this, execute nzbToCouchPotato.py e.g. double-click in Windows or via ssh/shell issue the following command: 
    	$ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
 ### SickBeard
@@ -174,7 +184,7 @@ If you are using SABnzbd perform the following steps to configure postprocessing
    > Do post-processing and run the user script even if nothing has been downloaded. 
    This is useful in combination with tools like SickBeard, for which running the script on an empty or failed download is a trigger to try an alternative NZB. 
    Note that the "Status" parameter for the script will be -1. [0.7.5+ only]
-   
+
 ### NZBGet
 
 If you are using NZBGet perform the following steps to configure postprocessing for "nzbToCouchPotato":
@@ -301,7 +311,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 
 ### µTorrent
 
-If you are using µTorrent perform the following steps to configure postprocessing for "uTorrentToCouchPotato":
+If you are using µTorrent, perform the following steps to configure postprocessing for "TorrentToMedia":
 
 1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
 
@@ -317,12 +327,42 @@ If you are using µTorrent perform the following steps to configure postprocessi
 		Category = you must set the category that is passed from these applications
 		destination = you must set the absoluet path where you want movies extracted to.
 		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
+		
+	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
 2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
  
 	i.   Set full path to script, pass paramaters as "%D" "%N" "%L" and then output to a desired log.
 	
-		/usr/local/utorrent/nzbToMedia/uTorrentToMedia.py "%D" "%N" "%L" >> /usr/local/utorrent/log.txt.
+		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L" >> /usr/local/utorrent/log.txt.
+	
+### Transmission  ###TBA.
 
-	ii.  
+If you are using Transmission, perform the following steps to configure postprocessing for "TorrentToMedia":
+
+1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
+
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Windows systems and any movement across hard disks MUST use "0"
+
+	ii.  [Torrent] extractiontool (Windows Only)
+		'C:\\Program Files\\7-Zip\\7z.exe' (you will need to install 7-zip)
+
+	iii. [CouchPotato] & [SickBeard]
+		Category = you must set the category that is passed from these applications
+		destination = you must set the absoluet path where you want movies extracted to.
+		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
+		
+	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
+
+
+2. In Transmission go to 
+ 
+	i.   Set full path to script.
+	
+		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py.
+
+
