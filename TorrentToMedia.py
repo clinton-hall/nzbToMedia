@@ -8,7 +8,7 @@ from os.path import isfile, join
 
 
 print "TorrentToMedia v 4.1"
-if len(sys.argv) == 4
+if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
 	##
 	##%F - Name of downloaded file (for single file torrents)
@@ -73,7 +73,7 @@ if Category == Movie_Cat:
 	destination = Movie_dest
 elif Category == TV_Cat:
 	destination = TV_dest
-else;
+else:
 	print "INFO: Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
 	sys.exit(-1)
 
