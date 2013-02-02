@@ -7,7 +7,7 @@ from os import listdir
 from os.path import isfile, join
 
 
-print "TorrentToMedia v 4.1"
+print "TorrentToMedia V4.1"
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
 	##
