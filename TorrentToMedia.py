@@ -39,14 +39,30 @@ if len(sys.argv) == 4:
 	##Stopped - 13
 	
 	## We will pass in %D, %N, %L from uTorrent
+	print "script called from utorrent"
 	Directory = sys.argv[1]	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
 	Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
 	Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
-else:
+else len(sys.argv) == 7:
 	##test for Transmission here.
-	print "currently only supports uTorrent. Exiting"
+	#TR_APP_VERSION
+	#TR_TIME_LOCALTIME
+	#TR_TORRENT_DIR
+	#TR_TORRENT_HASH
+	#TR_TORRENT_ID
+	#TR_TORRENT_NAME
+	print "script called from Transmission"
+	Directory = sys.argv[3]
+	Name = sys.argv[6]
+	Category = os.path.basename(os.path.normpath(Directory)) #We assume the last directory is the category for now.
+
+else:
+	print "The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting
 	sys.exit(-1)
+
+if not Category:
+	Category = os.path.basename(os.path.normpath(Directory)) #Test for blackhole sub-directory.
 
 status = 0
 packed = 0
