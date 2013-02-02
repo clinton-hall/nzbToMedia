@@ -326,6 +326,7 @@ If you are using µTorrent, perform the following steps to configure postprocess
 
 	iii. [CouchPotato] & [SickBeard]
 		Category = you must set the category that is passed from these applications
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
 		destination = you must set the absoluet path where you want movies extracted to.
 		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
 		
@@ -354,15 +355,17 @@ If you are using Transmission, perform the following steps to configure postproc
 
 	iii. [CouchPotato] & [SickBeard]
 		Category = you must set the category that is passed from these applications
+		This is the last folder name in the directory path passed as directory for completed downloads.
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
 		destination = you must set the absoluet path where you want movies extracted to.
 		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
 		
 	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
-2. In Transmission go to 
+2. In Transmission go to Preferences->Transfers->Management
  
-	i.   Set full path to script.
+	i.   Select the script to run on download complete.
 	
 		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py.
 
