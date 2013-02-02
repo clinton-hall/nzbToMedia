@@ -51,6 +51,7 @@ Installation
 2. If you have added .py to your PATHEXT (in windows) or you have given nzbToSickBeard.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
 	To do this, execute nzbToSickBeard.py e.g. double-click in Windows or via ssh/shell issue the following command: 
    	$ ./nzbToSickBeard.py when in the directory where nzbToSickBeard.py is located.
+	note: you must have watch_dir set to use nzbToSickBeard for a manual scan.
 
 ### nzbToCouchPotato
 
