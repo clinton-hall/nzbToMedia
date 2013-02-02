@@ -7,6 +7,8 @@ Added manual run option for nzbToSickBeard.
 Changed nzbGet script to use move not copy and remove.
 Merged all .cfg scripts into one (autoProcessMedia.cfg).
 Made all scripts execitable (755) on github.
+Added category limits for email support in nzbget.
+Fixed issue with replacements (of paths) in email messages in nzbget.
 
 V4.0 21/12/2012
 
