@@ -6,7 +6,9 @@ import sys, os, ConfigParser
 from os import listdir
 from os.path import isfile, join
 
-
+old_stdout = sys.stdout #backup the default stdout
+log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"w+")
+sys.stdout = log_file #create a local log file, and direct all "print" to the log.
 print "TorrentToMedia V4.1"
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
@@ -188,6 +190,9 @@ if Category == Movie_Cat:
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
 	autoProcessTV.processEpisode(destination, Name, status)
+
+sys.stdout = old_stdout #reset our stdout
+log_file.close() #close the log
     
 def on_extract_success(result):
 	print("INFO: Extraction was successful for %s")
