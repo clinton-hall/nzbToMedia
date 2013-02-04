@@ -7,7 +7,7 @@ from os import listdir
 from os.path import isfile, join
 
 old_stdout = sys.stdout #backup the default stdout
-log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"w+")
+log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
 sys.stdout = log_file #create a local log file, and direct all "print" to the log.
 print "TorrentToMedia V4.1"
 if len(sys.argv) == 4:
