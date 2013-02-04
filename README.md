@@ -335,11 +335,13 @@ If you are using µTorrent, perform the following steps to configure postprocess
 
 2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
  
-	i.   Set full path to script, pass paramaters as "%D" "%N" "%L" and then output to a desired log.
+	i.   Set full path to script, pass paramaters as "%D" "%N" "%L".
 	
-		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L" >> /usr/local/utorrent/log.txt.
+		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L"
 	
-### Transmission  ###TBA.
+3. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+### Transmission
 
 If you are using Transmission, perform the following steps to configure postprocessing for "TorrentToMedia":
 
@@ -363,10 +365,18 @@ If you are using Transmission, perform the following steps to configure postproc
 	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
-2. In Transmission go to Preferences->Transfers->Management
+2. In Transmission add the TorrentToMedia.py script to run on downlaod complete.
  
-	i.   Select the script to run on download complete.
+	i.   On some systems go to Preferences->Transfers->Management
+		Select the script to run on download complete.
 	
-		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py.
+		/usr/local/transmission/nzbToMedia/TorrentToMedia.py
 
+	ii.   On other systems you will need to edit settings.json 
+		(usually /etc/transmission-daemon/settings.json). 
+		Edit while the daemon is not running.
+		
+    		"script-torrent-done-enabled": true, 
+    		"script-torrent-done-filename": "/usr/local/transmission/nzbToMedia/TorrentToMedia.py",
 
+3. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
