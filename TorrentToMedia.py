@@ -44,7 +44,11 @@ if len(sys.argv) == 4:
 	Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
 	Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
-else len(sys.argv) == 7:
+elif len(sys.argv) > 1: #Doesn't match Transmission (1) or uTorrent (4).
+	print "The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting"
+	sys.exit(-1)
+
+else:
 	##test for Transmission here.
 	#TR_APP_VERSION
 	#TR_TIME_LOCALTIME
@@ -52,15 +56,15 @@ else len(sys.argv) == 7:
 	#TR_TORRENT_HASH
 	#TR_TORRENT_ID
 	#TR_TORRENT_NAME
-	print "script called from Transmission"
-	Directory = sys.argv[3]
-	Name = sys.argv[6]
+	try:
+		Directory = os.getenv('TR_TORRENT_DIR')
+		Name = os.getenv('TR_TORRENT_NAME')
+		print "script called from Transmission"
+	except:
+		print "There was a problem loading variables from Transmission", "Exiting"
+		sys.exit(-1)
 	Category = os.path.basename(os.path.normpath(Directory)) #We assume the last directory is the category for now.
-
-else:
-	print "The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting
-	sys.exit(-1)
-
+	
 if not Category:
 	Category = os.path.basename(os.path.normpath(Directory)) #Test for blackhole sub-directory.
 
