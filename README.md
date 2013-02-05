@@ -106,8 +106,14 @@ The following must be configured in SickBeard:
 	v.   SABnzbd API Key = The api key used by SABnzbd (Found in sabnzbd -> config -> general -> SABnzbd Web Server)
 	
 	vi.  NZBGet Category - SABnzbd Category = A category that is used by your download client (e.g. "TV", or "SickBeard")
+	
+2. Config -> Search Settings -> Search Torrents
+	
+	i.   Torrent Black Hole = Enter your Torrent downlaoder's BlackHole Directory + tv sub directory
 
-2. Settings -> Post Processing -> Post Processing
+		/usr/local/blackhole/tv
+	
+3. Settings -> Post Processing -> Post Processing
 	
 	i.   TV Download Dir = blank
 	
@@ -119,13 +125,13 @@ The following must be configured in SickBeard:
 	
 	v.   Scan and Process = must be unticked.
 
-3. Settings -> Post Processing -> Naming
+4. Settings -> Post Processing -> Naming
 	
 	The naming must be specified as per user choice. 
 	
 	This naming will be applied to all shows processed via the postprocess script. 
 
-4. Settings -> Post Processing -> Metadata
+5. Settings -> Post Processing -> Metadata
 	
 	The metadata wanted must be specified as per user choice. 
 	
@@ -146,8 +152,41 @@ The following must be configured in CouchPotatoServer:
 	iv.  Category = A category that is used by your downlaod client (e.g. "movies", or "CouchPotato")
 	
 	v.   Delete Failed = Should be unticked (Sabnzbd only)
+	
+2. Settings -> Downloaders -> Transmission
 
-2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
+	i.   Host = The url/host and port for Transmission.
+	
+	ii.  username = The user name required to log in to Transmission
+	
+	iii. password = The password required to log in to Transmission
+	
+	iv.  Directory = The directory for completed/seeding files. NOT the renamer "from" directory.
+		
+		/usr/local/Download/movies
+	
+3. Settings -> Downloaders -> uTorrent
+
+	i.   Host = The url/host and port for uTorrent.
+	
+	ii.  username = The user name required to log in to uTorrent
+	
+	iii. password = The password required to log in to uTorrent
+	
+	iv.  label = label/category to be used by the postprocessing script.
+		
+		movies
+		
+4. Settings -> Downloaders -> BlackHole
+
+	i.   Directory = Enter your Torrent downlaoder's BlackHole Directory + movies sub directory
+
+		/usr/local/blackhole/movies
+	
+	ii.  use for = Torrents, Usenet, or Both. 
+		If using SABnzbd of NZBget for Usenet, and balckhole for torrents, select "torrents" only.
+
+5. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
 
 	i.   From = Must be set to the full path to your completed download movies (including any additional category paths)
 
@@ -339,7 +378,18 @@ If you are using µTorrent, perform the following steps to configure postprocess
 	
 		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L"
 	
-3. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+3. In uTorrent set the following directories.
+ 
+	i.   Download Directory = The directory where downloaded files stay while seeding.
+		This is NOT the "FROM" directory in CouchPotato renamer. 
+	
+		/usr/local/Download
+
+	ii.   Watch Direcetory = The balckhole directory used by CouchPotato and/or SickBeard
+				 
+    		/usr/local/blackhole
+
+4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
 
 ### Transmission
 
@@ -357,11 +407,14 @@ If you are using Transmission, perform the following steps to configure postproc
 
 	iii. [CouchPotato] & [SickBeard]
 		Category = you must set the category that is passed from these applications
-		This is the last folder name in the directory path passed as directory for completed downloads.
+		This is the last folder name in the directory path passed as "directory for completed downloads."
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
+		
 		destination = you must set the absoluet path where you want movies extracted to.
 		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
-		
+			/usr/local/extracted/movies
+			/usr/local/extracted/tv
+
 	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
@@ -379,4 +432,44 @@ If you are using Transmission, perform the following steps to configure postproc
     		"script-torrent-done-enabled": true, 
     		"script-torrent-done-filename": "/usr/local/transmission/nzbToMedia/TorrentToMedia.py",
 
-3. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+3. In Transmission set the following directories (settings.json, or interface).
+ 
+	i.   Download Directory = The directory where downloaded files stay while seeding.
+		This is NOT the "FROM" directory in CouchPotato renamer. 
+	
+		"download-dir": "/usr/local/Download",
+
+	ii.   Watch Direcetory = The balckhole directory used by CouchPotato and/or SickBeard
+				 
+    		"watch-dir": "/usr/local/blackhole',
+    		"watch-dir-enabled": true,
+
+4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+
+### FOLDER STRUCTURE: Important for black-hole and Torrent. 
+
+This is just an example to illustrate how this can be achieved.
+
+Watch Directory / Blackhole
+This is the root path where your downloader looks for nzbs/torrents.
+This will have 2 sub-directories, "tv" and "movies", which define the "categories".
+
+		/usr/local/blackhole
+			/usr/local/blackhole/tv
+			/usr/local/blackhole/movies
+
+Download Directory
+This is the root path where your downloads are put when finished (and where files will be seeded from for Torrents).
+This will have 2 sub-directories, "tv" and "movies", which define the "categories".
+
+		/usr/local/Download
+			/usr/local/Download/tv
+			/usr/local/Download/movies
+
+destination
+This is the directory specified for each category, where final files are moved to after extarction. 
+For CouchPotato this will be the renamer "from" directory.
+	
+		/usr/local/extracted/tv
+		/usr/local/extracted/movies
