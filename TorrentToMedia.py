@@ -3,8 +3,6 @@
 import autoProcessMovie
 import autoProcessTV
 import sys, os, ConfigParser
-from os import listdir
-from os.path import isfile, join
 
 old_stdout = sys.stdout #backup the default stdout
 log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
@@ -92,9 +90,9 @@ useLink = int(config.get("Torrent", "uselink"))
 extractionTool = config.get("Torrent", "extractiontool")
 
 if Category == Movie_Cat:
-	destination = Movie_dest
+	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
-	destination = TV_dest
+	destination = os.path.join(TV_dest, Name)
 else:
 	print "INFO: Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
 	sys.exit(-1)
@@ -148,9 +146,10 @@ elif packed == 1: ## unpack
 	else:
 		print "ERROR: Unknown OS, exiting"
 
-	files = [ f for f in listdir(Directory) if isfile(join(Directory,f)) ]
+	files = [ f for f in os.listdir(Directory) if os.path.isfile(os.path.join(Directory,f)) ]
 		for f in files:
-			ext = os.path.splitext(f["path"])
+			ext = os.path.splitext(f)
+			fp = os.path.join(Directory, os.path.normpath(f))
 			if ext[1] in (".gz", ".bz2", ".lzma"):
 			## Check if this is a tar
 				if os.path.splitext(ext[0])[1] == ".tar":
@@ -161,26 +160,21 @@ elif packed == 1: ## unpack
 				else:
 					print("ERROR: Unknown file type: %s", ext[1])
 					continue
-					
-			fp = os.path.join(destination, os.path.normpath(f["path"]))
 
-			## Destination path
-			dest = os.path.join(destination, Name)
-
-			## Create destionation folder
-			if not os.path.exists(dest):
+			## Create destination folder
+			if not os.path.exists(destination):
 			try:
-				os.makedirs(dest)
+				os.makedirs(destination)
 			except Exception, e:
 				print("ERROR: Not possible to create destination folder: %s", e)
 				return
 
-			print("INFO: Extracting to %s", dest)
+			print("INFO: Extracting to %s", destination)
 
 	
 			## Running..	
-			print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, dest)
-			d = getProcessValue(cmd[0], cmd[1].split() + [str(fp)], {}, str(dest))
+			print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
+			d = getProcessValue(cmd[0], cmd[1].split() + [str(fp)], {}, str(destination))
 			d.addCallback(on_extract_success)
 			d.addErrback(on_extract_failed)
 
