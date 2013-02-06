@@ -2,7 +2,7 @@
 
 import autoProcessMovie
 import autoProcessTV
-import sys, os, ConfigParser
+import sys, os, ConfigParser, shutil
 from subprocess import call
 
 old_stdout = sys.stdout #backup the default stdout
@@ -46,7 +46,7 @@ if len(sys.argv) == 4:
 	Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
 elif len(sys.argv) > 1: #Doesn't match Transmission (1) or uTorrent (4).
-	print "Error: The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting"
+	print ("Error: The number of arguments passed is %s. Unable to determin the arguments to use; Exiting" , len(sys.argv))
 	sys.exit(-1)
 
 else:
@@ -75,7 +75,7 @@ packed = 0
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 
-print "INFO: Loading config from", configFilename
+print ("INFO: Loading config from %s", configFilename)
 
 if not os.path.isfile(configFilename):
 	print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
@@ -95,7 +95,7 @@ if Category == Movie_Cat:
 elif Category == TV_Cat:
 	destination = os.path.join(TV_dest, Name)
 else:
-	print "INFO: Not assigned a label of either", Movie_Cat, "or", TV_Cat, ". Exiting"
+	print ("INFO: Not assigned a label of either %s or %s. Exiting", Movie_Cat, TV_Cat)
 	sys.exit(-1)
 
 test = re.compile('^(.*)\.((zip|rar|7z|gz|bz|tar|arj)|(r[0-9]{1,3})|([0-9]{1,3}))$', re.IGNORECASE|re.UNICODE);
@@ -111,11 +111,11 @@ else:
 	sys.exit(-1)
 
 if useLink == 0 and packed == 0: ## copy
-	print "INFO: Copying all files from", Directory, "to", destination
+	print ("INFO: Copying all files from %s to %s", Directory, destination)
 	shutil.copytree(Directory, destination)
 
 elif useLink == 1 and packed == 0: ## hardlink
-	print "INFO: Creating hard link from", Directory, "to", destination
+	print ("INFO: Creating hard link from %s to %s", Directory, destination)
 	shutil.copytree(Directory, destination, copy_function=os.link)
 	
 elif packed == 1: ## unpack
@@ -202,7 +202,17 @@ elif packed == 1: ## unpack
 				except:
 					print ("ERROR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
 			os.chdir(pwd) # Go back to our Original Working Directory
-				
+
+for dirpath, dirnames, filenames in os.walk(destination): #flatten out the directory to make postprocessing easier.
+	if dirpath == destination:
+		continue #no need to try and move files in the root destination directory.
+	for filename in filenames:
+		try:
+			shutil.move(os.path.join(dirpath, filename), destination))
+		except OSError:
+			print ("INFO: Could not flatten %s ", os.path.join(dirpath, filename))
+removeEmptyFolders(destination) #cleanup empty directories.
+
 status = int(status)
 ## Now we pass off to CouchPotato or SickBeard.
 if Category == Movie_Cat:  
@@ -212,3 +222,21 @@ elif Category == TV_Cat:
 
 sys.stdout = old_stdout #reset our stdout
 log_file.close() #close the log
+
+def removeEmptyFolders(path):
+	if not os.path.isdir(path):
+    		return
+
+	# remove empty subfolders
+	files = os.listdir(path)
+	if len(files):
+		for f in files:
+			fullpath = os.path.join(path, f)
+			if os.path.isdir(fullpath):
+				removeEmptyFolders(fullpath)
+
+	# if folder empty, delete it
+	files = os.listdir(path)
+	if len(files) == 0:
+		print ("INFO: Removing empty folder: %s", path)
+		os.rmdir(path)
