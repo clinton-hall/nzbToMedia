@@ -100,8 +100,8 @@ def process(dirName, nzbName=None, status=0):
     else:
         print "download of", nzbName1, "has failed."
         print "trying to re-cue the next highest ranked release"
-        a=nzbName1.find('.cp')+4
-        b=nzbName1.find('.nzb')-1
+        a=nzbName1.find('.cp(')+4
+        b=nzbName1[a:].find(')')+a
         imdbid=nzbName1[a:b]
         #print imdbid
 
