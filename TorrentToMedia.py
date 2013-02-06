@@ -8,7 +8,7 @@ from subprocess import call
 old_stdout = sys.stdout #backup the default stdout
 log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
 sys.stdout = log_file #create a local log file, and direct all "print" to the log.
-print "TorrentToMedia V4.1"
+print "INFO: TorrentToMedia V4.1"
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
 	##
@@ -40,13 +40,13 @@ if len(sys.argv) == 4:
 	##Stopped - 13
 	
 	## We will pass in %D, %N, %L from uTorrent
-	print "script called from utorrent"
+	print "INFO: Script called from utorrent"
 	Directory = sys.argv[1]	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
 	Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
 	Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
 elif len(sys.argv) > 1: #Doesn't match Transmission (1) or uTorrent (4).
-	print "The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting"
+	print "Error: The number of arguments passed is", len(sys.argv), "unable to determin the arguments to use, Exiting"
 	sys.exit(-1)
 
 else:
@@ -60,9 +60,9 @@ else:
 	try:
 		Directory = os.getenv('TR_TORRENT_DIR')
 		Name = os.getenv('TR_TORRENT_NAME')
-		print "script called from Transmission"
+		print "INFO: Script called from Transmission"
 	except:
-		print "There was a problem loading variables from Transmission", "Exiting"
+		print "Error: There was a problem loading variables from Transmission", "Exiting"
 		sys.exit(-1)
 	Category = os.path.basename(os.path.normpath(Directory)) #We assume the last directory is the category for now.
 	
