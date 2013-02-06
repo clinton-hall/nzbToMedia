@@ -175,7 +175,7 @@ elif packed == 1: ## unpack
 	
 			## Running..	
 			print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
-			pwd = os.getcwd # Get our Present Working Directory
+			pwd = os.getcwd() # Get our Present Working Directory
 			os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
 			if os.name == 'nt': #Windows needs quotes around directory structure
 				try:
