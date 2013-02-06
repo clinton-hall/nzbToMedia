@@ -25,7 +25,7 @@
 import sys
 import autoProcessTV
 
-print "nzbToSickBeard V4.0"
+print "nzbToSickBeard V4.1"
 
 # SABnzbd
 if len(sys.argv) == 8:
@@ -52,4 +52,5 @@ elif len(sys.argv) == 4:
 
 else:
 	print "Invalid number of arguments received from client." 
-        sys.exit()
+	print "Running autoProcessTV as a manual run..."
+	autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
