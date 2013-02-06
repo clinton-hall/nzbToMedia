@@ -3,6 +3,7 @@
 import autoProcessMovie
 import autoProcessTV
 import sys, os, ConfigParser
+from subprocess import call
 
 old_stdout = sys.stdout #backup the default stdout
 log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
@@ -122,7 +123,7 @@ elif packed == 1: ## unpack
 	if os.name == 'nt':
 		cmd_7zip = [extractionTool, 'x -y']
 		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
-		EXTRACT_COMMANDS = dict.fromkeys(ext_zip, cmd_7zip)
+		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
 		print "INFO: We are using Windows"
 		
 	## Using linux?
@@ -174,10 +175,34 @@ elif packed == 1: ## unpack
 	
 			## Running..	
 			print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
-			d = getProcessValue(cmd[0], cmd[1].split() + [str(fp)], {}, str(destination))
-			d.addCallback(on_extract_success)
-			d.addErrback(on_extract_failed)
-
+			pwd = os.getcwd # Get our Present Working Directory
+			os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
+			if os.name == 'nt': #Windows needs quotes around directory structure
+				try:
+					run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" #windows needs quotes around directories.
+					res = call(run)
+					if res == 0:
+						status = 0
+						print ("INFO: Extraction was successful for %s to %s", fp, destination)
+					else:
+						print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
+				except:
+					print ("ERROR: Extraction failed for %s. Could not call command %s %s", fp, run)
+			else:
+				try:
+					if cmd[1] == "": #if calling unzip, we dont want to pass the ""
+						res = call([cmd[0], fp])
+					else:
+						res = call([cmd[0], cmd[1], fp])
+					if res == 0:
+						status = 0
+						print ("INFO: Extraction was successful for %s to %s", fp, destination)
+					else:
+						print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
+				except:
+					print ("ERROR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
+			os.chdir(pwd) # Go back to our Original Working Directory
+				
 status = int(status)
 ## Now we pass off to CouchPotato or SickBeard.
 if Category == Movie_Cat:  
@@ -187,10 +212,3 @@ elif Category == TV_Cat:
 
 sys.stdout = old_stdout #reset our stdout
 log_file.close() #close the log
-    
-def on_extract_success(result):
-	print("INFO: Extraction was successful for %s")
-	status = 0
-
-def on_extract_failed(result):
-	print("ERROR: Extraction failed for %s")
