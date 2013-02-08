@@ -447,36 +447,36 @@ fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
-        mv "$NZBPP_DIRECTORY" "$TvDownloadDir"
+        mv $NZBPP_DIRECTORY $TvDownloadDir
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           NZBPP_DIRECTORY="$TvDownloadDir"
+           NZBPP_DIRECTORY=$TvDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
-        mv "$NZBPP_DIRECTORY" "$MoviesDownloadDir" 
+        mv $NZBPP_DIRECTORY $MoviesDownloadDir 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           NZBPP_DIRECTORY="$MoviesDownloadDir"
+           NZBPP_DIRECTORY=$MoviesDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" 
-        mv "$NZBPP_DIRECTORY" "$CustomDownloadDir" 
+        mv $NZBPP_DIRECTORY $CustomDownloadDir 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $CustomDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           NZBPP_DIRECTORY="$CustomDownloadDir"
+           NZBPP_DIRECTORY=$CustomDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
@@ -494,7 +494,7 @@ if [ "$NZBPR_DestDir" != "" ]; then
 	cd ..
 	rmdir $NZBPP_DIRECTORY
 	NZBPP_DIRECTORY=$NZBPR_DestDir
-	cd "$NZBPP_DIRECTORY"
+	cd $NZBPP_DIRECTORY
 fi
 
 # All OK, requesting cleaning up of download queue
