@@ -233,7 +233,7 @@ if [ "$BadConfig" -eq 1 ]; then
 fi 
 
 # Check par status
-if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" -eq 1 ]; then
+if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 ]; then
 	if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
 		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting"
 	else
