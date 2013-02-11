@@ -164,11 +164,11 @@ elif packed == 1: ## unpack
 
 		## Create destination folder
 		if not os.path.exists(destination):
-		try:
-			os.makedirs(destination)
-		except Exception, e:
-			print("ERROR: Not possible to create destination folder: %s", e)
-			return
+			try:
+				os.makedirs(destination)
+			except Exception, e:
+				print("ERROR: Not possible to create destination folder: %s", e)
+				return
 
 		print("INFO: Extracting to %s", destination)
 
@@ -208,7 +208,7 @@ for dirpath, dirnames, filenames in os.walk(destination): #flatten out the direc
 		continue #no need to try and move files in the root destination directory.
 	for filename in filenames:
 		try:
-			shutil.move(os.path.join(dirpath, filename), destination))
+			shutil.move(os.path.join(dirpath, filename), destination)
 		except OSError:
 			print ("INFO: Could not flatten %s ", os.path.join(dirpath, filename))
 removeEmptyFolders(destination) #cleanup empty directories.
