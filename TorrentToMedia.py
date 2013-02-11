@@ -84,7 +84,7 @@ if not os.path.isfile(configFilename):
 config.read(configFilename)
 
 TV_Cat = config.get("SickBeard", "category")
-TV_dest = config.get("CouchPotato", "destination")
+TV_dest = config.get("SickBeard", "destination")
 Movie_dest = config.get("CouchPotato", "destination")
 Movie_Cat = config.get("CouchPotato", "category")
 useLink = int(config.get("Torrent", "uselink"))
