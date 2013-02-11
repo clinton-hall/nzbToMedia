@@ -148,60 +148,60 @@ elif packed == 1: ## unpack
 		print "ERROR: Unknown OS, exiting"
 
 	files = [ f for f in os.listdir(Directory) if os.path.isfile(os.path.join(Directory,f)) ]
-		for f in files:
-			ext = os.path.splitext(f)
-			fp = os.path.join(Directory, os.path.normpath(f))
-			if ext[1] in (".gz", ".bz2", ".lzma"):
-			## Check if this is a tar
-				if os.path.splitext(ext[0])[1] == ".tar":
-					cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+	for f in files:
+		ext = os.path.splitext(f)
+		fp = os.path.join(Directory, os.path.normpath(f))
+		if ext[1] in (".gz", ".bz2", ".lzma"):
+		## Check if this is a tar
+			if os.path.splitext(ext[0])[1] == ".tar":
+				cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+		else:
+			if ext[1] in EXTRACT_COMMANDS:
+				cmd = EXTRACT_COMMANDS[ext[1]]
 			else:
-				if ext[1] in EXTRACT_COMMANDS:
-					cmd = EXTRACT_COMMANDS[ext[1]]
-				else:
-					print("ERROR: Unknown file type: %s", ext[1])
-					continue
+				print("ERROR: Unknown file type: %s", ext[1])
+				continue
 
-			## Create destination folder
-			if not os.path.exists(destination):
-			try:
-				os.makedirs(destination)
-			except Exception, e:
-				print("ERROR: Not possible to create destination folder: %s", e)
-				return
+		## Create destination folder
+		if not os.path.exists(destination):
+		try:
+			os.makedirs(destination)
+		except Exception, e:
+			print("ERROR: Not possible to create destination folder: %s", e)
+			return
 
-			print("INFO: Extracting to %s", destination)
+		print("INFO: Extracting to %s", destination)
 
 	
-			## Running..	
-			print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
-			pwd = os.getcwd() # Get our Present Working Directory
-			os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
-			if os.name == 'nt': #Windows needs quotes around directory structure
-				try:
-					run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" #windows needs quotes around directories.
-					res = call(run)
-					if res == 0:
-						status = 0
-						print ("INFO: Extraction was successful for %s to %s", fp, destination)
-					else:
-						print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
-				except:
-					print ("ERROR: Extraction failed for %s. Could not call command %s %s", fp, run)
-			else:
-				try:
-					if cmd[1] == "": #if calling unzip, we dont want to pass the ""
-						res = call([cmd[0], fp])
-					else:
-						res = call([cmd[0], cmd[1], fp])
-					if res == 0:
-						status = 0
-						print ("INFO: Extraction was successful for %s to %s", fp, destination)
-					else:
-						print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
-				except:
-					print ("ERROR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
-			os.chdir(pwd) # Go back to our Original Working Directory
+		## Running..	
+		print("INFO: Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
+		pwd = os.getcwd() # Get our Present Working Directory
+		os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
+		if os.name == 'nt': #Windows needs quotes around directory structure
+			try:
+				run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" #windows needs quotes around directories.
+				res = call(run)
+				if res == 0:
+					status = 0
+					print ("INFO: Extraction was successful for %s to %s", fp, destination)
+				else:
+					print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
+			except:
+				print ("ERROR: Extraction failed for %s. Could not call command %s %s", fp, run)
+		else:
+			try:
+				if cmd[1] == "": #if calling unzip, we dont want to pass the ""
+					res = call([cmd[0], fp])
+				else:
+					res = call([cmd[0], cmd[1], fp])
+				if res == 0:
+					status = 0
+					print ("INFO: Extraction was successful for %s to %s", fp, destination)
+				else:
+					print("ERROR: Extraction failed for %s. 7zip result was %s", fp, res)
+			except:
+				print ("ERROR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
+		os.chdir(pwd) # Go back to our Original Working Directory
 
 for dirpath, dirnames, filenames in os.walk(destination): #flatten out the directory to make postprocessing easier.
 	if dirpath == destination:
