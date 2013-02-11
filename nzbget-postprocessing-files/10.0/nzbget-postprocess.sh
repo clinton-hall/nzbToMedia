@@ -92,7 +92,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus"
 			fi
-			$NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
 			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')"; fi
 			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
@@ -109,7 +109,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus"
 			fi
-			$NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')"; fi
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
@@ -126,7 +126,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus"
 			fi
-			$CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
 			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')"; fi
 			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist"; fi
