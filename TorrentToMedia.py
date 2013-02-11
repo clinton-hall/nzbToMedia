@@ -2,7 +2,7 @@
 
 import autoProcessMovie
 import autoProcessTV
-import sys, os, ConfigParser, shutil
+import sys, os, ConfigParser, shutil, re
 from subprocess import call
 
 old_stdout = sys.stdout #backup the default stdout
@@ -168,7 +168,7 @@ elif packed == 1: ## unpack
 				os.makedirs(destination)
 			except Exception, e:
 				print("ERROR: Not possible to create destination folder: %s", e)
-				return
+				continue
 
 		print("INFO: Extracting to %s", destination)
 
