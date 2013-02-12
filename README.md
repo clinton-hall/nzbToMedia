@@ -237,7 +237,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 
 2. In NZBGet go to "POSTPROCESSING SCRIPT" -> "PATHS" and change as needed:
  
-	i.   Set the full path to python if it is not in your PATH. (v 9.0 only)
+	i.   Set the full path to python if it is not in your PATH. (option is required)
 		These scripts now have -x permissions and should be as such on your system. Python needs to be in your system path.	
 
 		PythonCmd=/usr/local/python/bin/python
@@ -260,7 +260,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		
 		MoviesDownloadDir=
 
-	vi.  Set the full path to any dependency required for your Custom Postprocess script if it is not in your PATH.(v 9.0 only)
+	vi.  Set the full path to any dependency required for your Custom Postprocess script if it is not in your PATH.(option is required)
 	
 		CustomCmd=/usr/local/python/bin/python
 
