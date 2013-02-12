@@ -128,7 +128,7 @@ elif set(ext).intersection(set(test2)):
 	print "INFO: Found media files, moving"
 else:
 	print "DEBUG: Found files with extensions %s." % (ext)
-	print "DEBUG: Looking for extensions %s or %s." % (test, tests2)
+	print "DEBUG: Looking for extensions %s or %s." % (test, test2)
 	print "INFO: Didn't find any compressed archives or media files to process, exiting"
 	sys.exit(-1)
 
