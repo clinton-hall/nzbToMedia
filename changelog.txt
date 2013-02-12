@@ -1,5 +1,9 @@
 Change_LOG / History
 
+V4.2 12/02/2013
+
+Fixes to TorrentToMedia
+
 V4.1 02/02/2013
 
 Added Torrent Support (µTorrent and Transmission).
