@@ -93,7 +93,7 @@ packed = 0
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 
-print "INFO: Loading config from ", configFilename
+print "INFO: Loading config from %s" % (configFilename)
 
 if not os.path.isfile(configFilename):
 	print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
