@@ -117,7 +117,7 @@ else:
 	sys.exit(-1)
 
 test = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
-test2 = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv']
+test2 = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg']
 f = [filenames for dirpath, dirnames, filenames in os.walk(Directory)]
 ext = [os.path.splitext(file)[1] for file in f[1]]
 if set(ext).intersection(set(test)):
