@@ -82,13 +82,16 @@ else:
 	except:
 		print "Error: There was a problem loading variables from Transmission", "Exiting"
 		sys.exit(-1)
-	Category = os.path.basename(os.path.normpath(Directory)) #We assume the last directory is the category for now.
+	Category = '' #We dont have a category, so assume the last directory is the category for now.
 	
-if not Category:
-	Category = os.path.basename(os.path.normpath(Directory)) #Test for blackhole sub-directory.
+print "DEBUG: Received Directory: %s" % (Directory)
+print "DEBUG: Received Torrent Name: %s" % (Name)
+print "DEBUG: Received Category: %s" % (Category)
 
 status = 0
 packed = 0
+root = 0
+video = 0
 
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -108,40 +111,89 @@ Movie_Cat = config.get("CouchPotato", "category")
 useLink = int(config.get("Torrent", "uselink"))
 extractionTool = config.get("Torrent", "extractiontool")
 
+if not Category:
+	DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-directory.
+	if DirBase[1] == Name:
+		print "INFO: Files appear to be in their own directory"
+		DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
+			if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+				print "INFO: Determined Category to be: %s" % (DirBase2[1])
+				Category = DirBase2[1]
+	
+	elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
+		print "INFO: The directory passed is the root directory for category %s" % (DirBase[1])
+		print "WARNING: You should change settings to download torrents to their own directory"
+		print "INFO: We will try and determine which files to process, individually"
+		Category = DirBase[1]
+		root = 1
+
 if Category == Movie_Cat:
 	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
 	destination = os.path.join(TV_dest, Name)
 else:
-	print "INFO: Not assigned a label of either %s or %s: Exiting" %(Movie_Cat, TV_Cat)
+	print "INFO: Category of %s does not match either %s or %s: Exiting" %(Category, Movie_Cat, TV_Cat)
 	sys.exit(-1)
 
 test = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
 test2 = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg']
+print "DEBUG: scanning files in directory: %s" % (Directory)
 f = [filenames for dirpath, dirnames, filenames in os.walk(Directory)]
-ext = [os.path.splitext(file)[1] for file in f[1]]
-if set(ext).intersection(set(test)):
-	print "INFO: Found compressed archives, extracting"
-	packed = 1
-## Check that files actully is .mkv / .avi etc, and not packed files or anything else
-elif set(ext).intersection(set(test2)):
-	print "INFO: Found media files, moving"
-else:
-	print "DEBUG: Found files with extensions %s." % (ext)
-	print "DEBUG: Looking for extensions %s or %s." % (test, test2)
-	print "INFO: Didn't find any compressed archives or media files to process, exiting"
-	sys.exit(-1)
+if root == 1:
+	print "DEBUG: Looking for %s in filenames" % (Name)
+	for file in f[1]:
+		if (Name in file) or (file in Name):
+			if os.path.splitext(file)[1] in test:
+				print "INFO: Found a packed file %s" % (file)
+				packed = 1
+				break
+			elif os.path.splitext(file)[1] in test2:
+				print "INFO: Found a video file %s" % (file)
+				video = 1
+				break
+			else:
+				continue
+else:				
+	ext = [os.path.splitext(file)[1] for file in f[1]]
+	if set(ext).intersection(set(test)):
+		print "INFO: Found compressed archives, extracting"
+		packed = 1
+	## Check that files actully is .mkv / .avi etc, and not packed files or anything else
+	elif set(ext).intersection(set(test2)):
+		print "INFO: Found media files, moving"
+		video = 1
+	else:
+		print "DEBUG: Found files with extensions %s." % (ext)
+		print "DEBUG: Looking for extensions %s or %s." % (test, test2)
+		print "INFO: Didn't find any compressed archives or media files to process, exiting"
+		sys.exit(-1)
 
-if useLink == 0 and packed == 0: ## copy
-	print "INFO: Copying all files from %s to %s." % (Directory, destination)
-	shutil.copytree(Directory, destination)
+if useLink == 0 and packed == 0 and video == 1: ## copy
+	if root == 0: #move all files in tier own directory 
+		print "INFO: Copying all files from %s to %s." % (Directory, destination)
+		shutil.copytree(Directory, destination)
+	else: #we only want to move files matching the torrent name when root directory is used.
+		print "INFO: Copying files that match the torrent name %s from %s to %s." % (Name, Directory, destination)
+		for dirpath, dirnames, filenames in os.walk(Directory):
+			for file in filenames:
+				if (Name in file) or (file in Name):
+					pass
+				else:
+					continue #ignore the other files
+				source = os.path.join(dirpath, file)
+				target = os.path.join(destination, file)
+				shutil.copy(source, target)
 
-elif useLink == 1 and packed == 0: ## hardlink
-	print "INFO: Creating hard link from %s to %s." % (Directory, destination)
+elif useLink == 1 and packed == 0 and video == 1: ## hardlink
+	print "INFO: Creating hard link for files from %s to %s." % (Directory, destination)
 	os.mkdir(destination)
 	for dirpath, dirnames, filenames in os.walk(Directory):
 		for file in filenames:
-
+			if root == 1: #we only want to move files matching the torrent name when root directory is used.
+				if (Name in file) or (file in Name):
+					pass
+				else:
+					continue #ignore the other files
 			source = os.path.join(dirpath, file)
 			target = os.path.join(destination, file)
 			
@@ -183,6 +235,11 @@ elif packed == 1: ## unpack
 
 	files = [ f for f in os.listdir(Directory) if os.path.isfile(os.path.join(Directory,f)) ]
 	for f in files:
+		if root == 1: #we only want to move files matching the torrent name when root directory is used.
+			if (Name in file) or (file in Name):
+				pass
+			else:
+				continue #ignore the other files		
 		ext = os.path.splitext(f)
 		fp = os.path.join(Directory, os.path.normpath(f))
 		if ext[1] in (".gz", ".bz2", ".lzma"):
