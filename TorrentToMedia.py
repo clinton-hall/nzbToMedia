@@ -146,7 +146,7 @@ elif useLink == 1 and packed == 0: ## hardlink
 			target = os.path.join(destination, file)
 			
 			if os.name == 'nt'
-				subprocess.call(['cmd', '/C', 'mklink', '/H', target, source], stdout=subprocess.PIPE)
+				subprocess.call(['cmd', '/C', 'mklink', '/H', source, target], stdout=subprocess.PIPE)
 			elif os.name == 'posix':
 				os.link(source, target)
 			else:
