@@ -1,5 +1,19 @@
 Change_LOG / History
 
+V4.2 12/02/2013
+
+Fixes to TorrentToMedia
+
+V4.1 02/02/2013
+
+Added Torrent Support (µTorrent and Transmission).
+Added manual run option for nzbToSickBeard.
+Changed nzbGet script to use move not copy and remove.
+Merged all .cfg scripts into one (autoProcessMedia.cfg).
+Made all scripts execitable (755) on github.
+Added category limits for email support in nzbget.
+Fixed issue with replacements (of paths) in email messages in nzbget.
+
 V4.0 21/12/2012
 
 Changed name from nzbToCouchPotato to nzbToMedia; Now supports mltiple post-processing from two nzb download clients.

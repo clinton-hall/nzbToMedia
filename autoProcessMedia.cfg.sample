@@ -1,0 +1,30 @@
+[CouchPotato]
+host = localhost
+port = 5050
+username = 
+password = 
+ssl = 0
+web_root =
+apikey = xxxxxxxx
+delay = 60
+method = renamer
+delete_failed = 0
+category = movies
+destination = /abs/path/to/complete/movies
+
+[SickBeard]
+host=localhost
+port=8081
+username=
+password=
+web_root=
+ssl=0
+watch_dir=
+failed_fork=0
+category = tv
+destination = /abs/path/to/complete/tv
+
+[Torrent]
+uselink = 0
+extractiontool = 'C:\\Program Files\\7-Zip\\7z.exe'
+

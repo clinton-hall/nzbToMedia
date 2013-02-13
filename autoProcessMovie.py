@@ -1,6 +1,7 @@
 import sys
 import urllib
 import os.path
+import shutil
 import ConfigParser
 import time
 import json 
@@ -29,11 +30,11 @@ def process(dirName, nzbName=None, status=0):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMovie.cfg")
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     print "Loading config from", configFilename
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an autoProcessMovie.cfg file - did you rename and edit the .sample?"
+        print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
         sys.exit(-1)
     
     config.read(configFilename)
@@ -45,6 +46,7 @@ def process(dirName, nzbName=None, status=0):
     apikey = config.get("CouchPotato", "apikey")
     delay = float(config.get("CouchPotato", "delay"))
     method = config.get("CouchPotato", "method")
+    delete_failed = int(config.get("CouchPotato", "delete_failed"))
 
     try:
         ssl = int(config.get("CouchPotato", "ssl"))
@@ -64,6 +66,10 @@ def process(dirName, nzbName=None, status=0):
         protocol = "https://"
     else:
         protocol = "http://"
+    # don't delay when we are calling this script manually.    
+    if  nzbName == "Manual Run":  
+        delay = 0
+        
     if status == 0:
         if method == "manage":
             command = "manage.update" 
@@ -84,17 +90,18 @@ def process(dirName, nzbName=None, status=0):
             print "Unable to open URL: ", str(e)
             sys.exit(1)
     
-        result = urlObj.readlines()
-        for line in result:
-            print line
-    
-        print command, "started on CouchPotatoServer for", nzbName1
+        result = json.load(urlObj)
+        print "CouchPotatoServer returned", result
+        if result['success']:
+            print command, "started on CouchPotatoServer for", nzbName1
+        else:
+            print "Error", command, "has NOT started on CouchPotatoServer for", nzbName1
 
     else:
         print "download of", nzbName1, "has failed."
         print "trying to re-cue the next highest ranked release"
-        a=nzbName1.find('.cp')+4
-        b=nzbName1.find('.nzb')-1
+        a=nzbName1.find('.cp(')+4
+        b=nzbName1[a:].find(')')+a
         imdbid=nzbName1[a:b]
         #print imdbid
 
@@ -141,3 +148,6 @@ def process(dirName, nzbName=None, status=0):
             print line
     
         print "movie", movid, "set to try the next best release on CouchPotatoServer"
+        if delete_failed:
+            print "Deleting failed files and folder", dirName
+            shutil.rmtree(dirName)

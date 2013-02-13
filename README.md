@@ -18,17 +18,19 @@ The renamer of CouchPotatoServer caused broken downloads by interfering with NZB
 Failed download handling for SickBeard is available by using the development branch from fork [SickBeard-failed](https://github.com/Tolstyak/Sick-Beard.git "SickBeard-failed")
 To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Default is 0 and will work with standard version of SickBeard and just ignores failed downloads.
 
+Torrent support has been added with the assistance of [jkaberg](https://github.com/jkaberg "jkaberg").
+
 Installation
 ------------
 ### General
 
 1. Put all files in a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
-   and change the permission accordingly so the nzb client can access to this files. 
+   and change the permission accordingly so the nzb client can access these files. 
 
 ### nzbToSickBeard
 
-1. Rename the file autoProcessTV.cfg.sample to autoProcessTV.cfg and fill in the appropriate 
-   fields as they apply to your installation.
+1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
+   fields in [SickBeard] as they apply to your installation.
 
 	host: Set this to "localhost" if SickBeard and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
 	
@@ -45,11 +47,16 @@ Installation
 	watch_dir: Set this only if SickBeard is on another PC to your download client and the directory structure is different.(optional)
 	
 	failed_fork: Set this to "1" if you are using the failed fork branch. Otherwise set this to "0". (optional)
+	
+2. If you have added .py to your PATHEXT (in windows) or you have given nzbToSickBeard.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
+	To do this, execute nzbToSickBeard.py e.g. double-click in Windows or via ssh/shell issue the following command: 
+   	$ ./nzbToSickBeard.py when in the directory where nzbToSickBeard.py is located.
+	note: you must have watch_dir set to use nzbToSickBeard for a manual scan.
 
 ### nzbToCouchPotato
 
-1. Rename the file autoProcessMovie.cfg.sample to autoProcessMovie.cfg and fill in the appropriate 
-   fields as they apply to your installation.
+1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
+   fields in [CouchPotato] as they apply to your installation.
 
 	host: Set this to "localhost" if CouchPotatoServer and your download client are on the same system. otherwise enter the ipaddress of the system SickBeard is insatlled on.
 	
@@ -73,9 +80,13 @@ Installation
 	
 	Method "manage" will make CouchPotatoServer update the list of managed movies if manager is enabled but renamer is not enabled.
 	In this case your nzb client must extract the files directly to your final movies folder (as configured in CouchPotatoServer manage settings) and Manage must be enabled.
+	
+	delete_failed: Set this to "1" if you want this script to delete all files and folders related to a download that has failed.
+	setting this to "0" will not delete any files.
+	note. this is not given as an option for SickBeard since the failed_fork in SickBeard supports this feature.
 
-3. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
-	To do this, execute nzbToCouchPotato.py e.g. via ssl issue the following command: 
+2. If you have added .py to your PATHEXT (in windows) or you have given nzbToCouchPotato.py executable permissions, or you are using the compiled executables you can manually call this process outside of your nzb client for testing your configuration or in case a postprocessing event failed.  
+	To do this, execute nzbToCouchPotato.py e.g. double-click in Windows or via ssh/shell issue the following command: 
    	$ ./nzbToCouchPotato.py when in the directory where nzbToCouchPotato.py is located.
 
 ### SickBeard
@@ -95,8 +106,14 @@ The following must be configured in SickBeard:
 	v.   SABnzbd API Key = The api key used by SABnzbd (Found in sabnzbd -> config -> general -> SABnzbd Web Server)
 	
 	vi.  NZBGet Category - SABnzbd Category = A category that is used by your download client (e.g. "TV", or "SickBeard")
+	
+2. Config -> Search Settings -> Search Torrents
+	
+	i.   Torrent Black Hole = Enter your Torrent downlaoder's BlackHole Directory + tv sub directory
 
-2. Settings -> Post Processing -> Post Processing
+		/usr/local/blackhole/tv
+	
+3. Settings -> Post Processing -> Post Processing
 	
 	i.   TV Download Dir = blank
 	
@@ -108,13 +125,13 @@ The following must be configured in SickBeard:
 	
 	v.   Scan and Process = must be unticked.
 
-3. Settings -> Post Processing -> Naming
+4. Settings -> Post Processing -> Naming
 	
 	The naming must be specified as per user choice. 
 	
 	This naming will be applied to all shows processed via the postprocess script. 
 
-4. Settings -> Post Processing -> Metadata
+5. Settings -> Post Processing -> Metadata
 	
 	The metadata wanted must be specified as per user choice. 
 	
@@ -135,8 +152,41 @@ The following must be configured in CouchPotatoServer:
 	iv.  Category = A category that is used by your downlaod client (e.g. "movies", or "CouchPotato")
 	
 	v.   Delete Failed = Should be unticked (Sabnzbd only)
+	
+2. Settings -> Downloaders -> Transmission
 
-2. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
+	i.   Host = The url/host and port for Transmission.
+	
+	ii.  username = The user name required to log in to Transmission
+	
+	iii. password = The password required to log in to Transmission
+	
+	iv.  Directory = The directory for completed/seeding files. NOT the renamer "from" directory.
+		
+		/usr/local/Download/movies
+	
+3. Settings -> Downloaders -> uTorrent
+
+	i.   Host = The url/host and port for uTorrent.
+	
+	ii.  username = The user name required to log in to uTorrent
+	
+	iii. password = The password required to log in to uTorrent
+	
+	iv.  label = label/category to be used by the postprocessing script.
+		
+		movies
+		
+4. Settings -> Downloaders -> BlackHole
+
+	i.   Directory = Enter your Torrent downlaoder's BlackHole Directory + movies sub directory
+
+		/usr/local/blackhole/movies
+	
+	ii.  use for = Torrents, Usenet, or Both. 
+		If using SABnzbd of NZBget for Usenet, and balckhole for torrents, select "torrents" only.
+
+5. Settings -> Renamer -> "Rename downloaded movies" should be checked and the settings below applied:
 
 	i.   From = Must be set to the full path to your completed download movies (including any additional category paths)
 
@@ -174,7 +224,7 @@ If you are using SABnzbd perform the following steps to configure postprocessing
    > Do post-processing and run the user script even if nothing has been downloaded. 
    This is useful in combination with tools like SickBeard, for which running the script on an empty or failed download is a trigger to try an alternative NZB. 
    Note that the "Status" parameter for the script will be -1. [0.7.5+ only]
-   
+
 ### NZBGet
 
 If you are using NZBGet perform the following steps to configure postprocessing for "nzbToCouchPotato":
@@ -298,3 +348,128 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		Use \r\n for new line.
 		
 		Email_Message='The download of <name> has <status>. \r\n This has been processed by the script <script> for category <cat>' 
+
+### µTorrent
+
+If you are using µTorrent, perform the following steps to configure postprocessing for "TorrentToMedia":
+
+1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
+
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Windows systems and any movement across hard disks MUST use "0"
+
+	ii.  [Torrent] extractiontool (Windows Only)
+		'C:\\Program Files\\7-Zip\\7z.exe' (you will need to install 7-zip)
+
+	iii. [CouchPotato] & [SickBeard]
+		Category = you must set the category that is passed from these applications
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
+		destination = you must set the absoluet path where you want movies extracted to.
+		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
+		
+	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
+
+
+2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
+ 
+	i.   Set full path to script, pass paramaters as "%D" "%N" "%L".
+	
+		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L"
+	
+3. In uTorrent set the following directories.
+ 
+	i.   Download Directory = The directory where downloaded files stay while seeding.
+		This is NOT the "FROM" directory in CouchPotato renamer. 
+	
+		/usr/local/Download
+
+	ii.   Watch Direcetory = The balckhole directory used by CouchPotato and/or SickBeard
+				 
+    		/usr/local/blackhole
+
+4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+### Transmission
+
+If you are using Transmission, perform the following steps to configure postprocessing for "TorrentToMedia":
+
+1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
+
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Windows systems and any movement across hard disks MUST use "0"
+
+	ii.  [Torrent] extractiontool (Windows Only)
+		'C:\\Program Files\\7-Zip\\7z.exe' (you will need to install 7-zip)
+
+	iii. [CouchPotato] & [SickBeard]
+		Category = you must set the category that is passed from these applications
+		This is the last folder name in the directory path passed as "directory for completed downloads."
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
+		
+		destination = you must set the absoluet path where you want movies extracted to.
+		this destination, for CouchPotato, must match the CouchPotato Renamers, "from" directory.
+			/usr/local/extracted/movies
+			/usr/local/extracted/tv
+
+	iv.  Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
+
+
+2. In Transmission add the TorrentToMedia.py script to run on downlaod complete.
+ 
+	i.   On some systems go to Preferences->Transfers->Management
+		Select the script to run on download complete.
+	
+		/usr/local/transmission/nzbToMedia/TorrentToMedia.py
+
+	ii.   On other systems you will need to edit settings.json 
+		(usually /etc/transmission-daemon/settings.json). 
+		Edit while the daemon is not running.
+		
+    		"script-torrent-done-enabled": true, 
+    		"script-torrent-done-filename": "/usr/local/transmission/nzbToMedia/TorrentToMedia.py",
+
+3. In Transmission set the following directories (settings.json, or interface).
+ 
+	i.   Download Directory = The directory where downloaded files stay while seeding.
+		This is NOT the "FROM" directory in CouchPotato renamer. 
+	
+		"download-dir": "/usr/local/Download",
+
+	ii.   Watch Direcetory = The balckhole directory used by CouchPotato and/or SickBeard
+				 
+    		"watch-dir": "/usr/local/blackhole',
+    		"watch-dir-enabled": true,
+
+4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+
+### FOLDER STRUCTURE: Important for black-hole and Torrent. 
+
+This is just an example to illustrate how this can be achieved.
+
+Watch Directory / Blackhole
+This is the root path where your downloader looks for nzbs/torrents.
+This will have 2 sub-directories, "tv" and "movies", which define the "categories".
+
+		/usr/local/blackhole
+			/usr/local/blackhole/tv
+			/usr/local/blackhole/movies
+
+Download Directory
+This is the root path where your downloads are put when finished (and where files will be seeded from for Torrents).
+This will have 2 sub-directories, "tv" and "movies", which define the "categories".
+
+		/usr/local/Download
+			/usr/local/Download/tv
+			/usr/local/Download/movies
+
+destination
+This is the directory specified for each category, where final files are moved to after extarction. 
+For CouchPotato this will be the renamer "from" directory.
+	
+		/usr/local/extracted/tv
+		/usr/local/extracted/movies

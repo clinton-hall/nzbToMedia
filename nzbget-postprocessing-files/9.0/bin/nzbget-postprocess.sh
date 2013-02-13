@@ -160,7 +160,7 @@ replaceVarBy() {
 
 	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
 	if [ -n "${BASH_VERSION}" ]; then
-		REPLACEDRESULT="${1/${2}/${3##*/}}" # get last part after slash for paths
+		REPLACEDRESULT="${1/${2}/${3}}"
 	else
 		REPLACEDRESULT=$(echo "${1}" | sed "s^${2}^${3}^g")
 	fi
@@ -184,7 +184,8 @@ do_exit() {
 	replaceVarBy "${REPLACEDRESULT}" "<cat>" "${NZBPP_CATEGORY}"
 	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
 	Email_Message="${REPLACEDRESULT}"
-	if [ "$Email_successful" = "yes" -a "$nzbStatus" = 0 ]; then
+	for item in $Email_successful; do
+	if [ "${NZBPP_CATEGORY}" = "$item" -a "$nzbStatus" = 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		replaceVarBy "${Email_Subject}" "<status>" "completed"
@@ -192,8 +193,9 @@ do_exit() {
 		replaceVarBy "${Email_Message}" "<status>" "completed"
 		Email_Message="${REPLACEDRESULT}"
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
-	fi
-	if [ "$Email_failed" = "yes" -a "$nzbStatus" != 0 ]; then
+	fi; done
+	for item in $Email_failed; do
+	if [ "${NZBPP_CATEGORY}" = "$item" -a "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		replaceVarBy "${Email_Subject}" "<status>" "failed"
@@ -201,7 +203,7 @@ do_exit() {
 		replaceVarBy "${Email_Message}" "<status>" "failed"
 		Email_Message="${REPLACEDRESULT}"
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
-	fi
+	fi; done
 	exit $1
 }
 
@@ -445,45 +447,36 @@ fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir"
-        cp -R "$NZBPP_DIRECTORY" "$TvDownloadDir"
+        mv $NZBPP_DIRECTORY $TvDownloadDir
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $TvDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           rm -fr *
-           cd ..
-           rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$TvDownloadDir"
+           NZBPP_DIRECTORY=$TvDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" 
-        cp -R "$NZBPP_DIRECTORY" "$MoviesDownloadDir" 
+        mv $NZBPP_DIRECTORY $MoviesDownloadDir 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           rm -fr *
-           cd ..
-           rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$MoviesDownloadDir"
+           NZBPP_DIRECTORY=$MoviesDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
         echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" 
-        cp -R "$NZBPP_DIRECTORY" "$CustomDownloadDir" 
+        mv $NZBPP_DIRECTORY $CustomDownloadDir 
         if [ "$?" -ne 0 ]; then
            echo "[ERROR] Post-Process: Moving to $CustomDownloadDir"
            exit $POSTPROCESS_ERROR
         else
-           rm -fr *
-           cd ..
-           rmdir "$NZBPP_DIRECTORY"
-           NZBPP_DIRECTORY="$CustomDownloadDir"
+           NZBPP_DIRECTORY=$CustomDownloadDir
 	   cd "$NZBPP_DIRECTORY"
         fi
 fi
@@ -501,7 +494,7 @@ if [ "$NZBPR_DestDir" != "" ]; then
 	cd ..
 	rmdir $NZBPP_DIRECTORY
 	NZBPP_DIRECTORY=$NZBPR_DestDir
-	cd "$NZBPP_DIRECTORY"
+	cd $NZBPP_DIRECTORY
 fi
 
 # All OK, requesting cleaning up of download queue
