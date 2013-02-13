@@ -141,7 +141,16 @@ elif useLink == 1 and packed == 0: ## hardlink
 	os.mkdir(destination)
 	for dirpath, dirnames, filenames in os.walk(Directory):
 		for file in filenames:
-			os.link(os.path.join(dirpath, file), os.path.join(destination, file))
+
+			source = os.path.join(dirpath, file)
+			target = os.path.join(destination, file)
+			
+			if os.name == 'nt'
+				subprocess.call(['cmd', '/C', 'mklink', '/H', target, source], stdout=subprocess.PIPE)
+			elif os.name == 'posix':
+				os.link(source, target)
+			else:
+				print "ERROR: Hardlink failed, cannot determine OS."
 	
 elif packed == 1: ## unpack
 	## Using Windows?
