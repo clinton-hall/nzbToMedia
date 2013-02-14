@@ -14,7 +14,7 @@
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with Sick Beard.  If not, see <http://www.gnu.org/licenses/>.
 #
@@ -25,7 +25,9 @@
 import sys
 import autoProcessTV
 
-print "nzbToSickBeard V4.1"
+from nzbToMediaEnv import *
+
+print "nzbToSickBeard %s" % VERSION
 
 # SABnzbd
 if len(sys.argv) == 8:
@@ -42,15 +44,15 @@ if len(sys.argv) == 8:
 
 # NZBGet
 elif len(sys.argv) == 4:
-# NZBGet argv: 
-# 1  The final directory of the job (full path) 
-# 2  The original name of the NZB file 
+# NZBGet argv:
+# 1  The final directory of the job (full path)
+# 2  The original name of the NZB file
 # 3  The status of the download: 0 == successful
 	print "Script triggered from NZBGet, starting autoProcessTV..."
-	
+
 	autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
-	print "Invalid number of arguments received from client." 
+	print "Invalid number of arguments received from client."
 	print "Running autoProcessTV as a manual run..."
 	autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)

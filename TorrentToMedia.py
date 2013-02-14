@@ -5,6 +5,8 @@ import autoProcessTV
 import sys, os, ConfigParser, shutil
 from subprocess import call
 
+from nzbToMediaEnv import *
+
 def removeEmptyFolders(path):
 	if not os.path.isdir(path):
 		return
@@ -26,7 +28,7 @@ def removeEmptyFolders(path):
 old_stdout = sys.stdout #backup the default stdout
 log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
 sys.stdout = log_file #create a local log file, and direct all "print" to the log.
-print "INFO: TorrentToMedia V4.2"
+print "INFO: TorrentToMedia %s" % VERSION
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
 	##
