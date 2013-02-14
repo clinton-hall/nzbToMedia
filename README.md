@@ -380,12 +380,15 @@ If you are using µTorrent, perform the following steps to configure postprocess
 	
 3. In uTorrent set the following directories.
  
-	i.   Download Directory = The directory where downloaded files stay while seeding.
+	i.   Preferences, directories, "Move Completed Downlaods to" = Enabled 
+		"Apprend Torrents Label" = Enabled
+		Set the directory = The directory where downloaded files stay while seeding.
 		This is NOT the "FROM" directory in CouchPotato renamer. 
 	
-		/usr/local/Download
+		/usr/local/Download/
 
-	ii.   Watch Direcetory = The balckhole directory used by CouchPotato and/or SickBeard
+	ii.   Preferences, directories, "Automatically load .torrents from"
+		= The balckhole directory used by CouchPotato and/or SickBeard
 				 
     		/usr/local/blackhole
 
