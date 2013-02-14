@@ -111,22 +111,24 @@ Movie_Cat = config.get("CouchPotato", "category")
 useLink = int(config.get("Torrent", "uselink"))
 extractionTool = config.get("Torrent", "extractiontool")
 
-if not Category:
-	DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-directory.
-	if DirBase[1] == Name:
-		print "INFO: Files appear to be in their own directory"
-		DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
-			if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-directory.
+if DirBase[1] == Name:
+	print "INFO: Files appear to be in their own directory"
+	DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
+		if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+			if not Category:
 				print "INFO: Determined Category to be: %s" % (DirBase2[1])
 				Category = DirBase2[1]
 	
-	elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
-		print "INFO: The directory passed is the root directory for category %s" % (DirBase[1])
-		print "WARNING: You should change settings to download torrents to their own directory"
-		print "INFO: We will try and determine which files to process, individually"
+elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
+	print "INFO: The directory passed is the root directory for category %s" % (DirBase[1])
+	print "WARNING: You should change settings to download torrents to their own directory"
+	print "INFO: We will try and determine which files to process, individually"
+	root = 1
+	if not Category:
+		print "INFO: Determined Category to be: %s" % (DirBase2[1])
 		Category = DirBase[1]
-		root = 1
-
+		
 if Category == Movie_Cat:
 	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
