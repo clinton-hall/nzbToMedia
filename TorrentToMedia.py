@@ -121,10 +121,14 @@ if DirBase[1] == Name:
 				Category = DirBase2[1]
 	
 elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
-	print "INFO: The directory passed is the root directory for category %s" % (DirBase[1])
-	print "WARNING: You should change settings to download torrents to their own directory"
-	print "INFO: We will try and determine which files to process, individually"
-	root = 1
+	if os.path.isdir(os.path.join(Directory, Name)):
+		print "INFO: Found torrent directory %s in category directory %s" % (os.path.join(Directory, Name), Directory)
+		Directory = os.path.join(Directory, Name)
+	else:
+		print "INFO: The directory passed is the root directory for category %s" % (DirBase[1])
+		print "WARNING: You should change settings to download torrents to their own directory"
+		print "INFO: We will try and determine which files to process, individually"
+		root = 1
 	if not Category:
 		print "INFO: Determined Category to be: %s" % (DirBase2[1])
 		Category = DirBase[1]
