@@ -1,9 +1,11 @@
 #!/usr/bin/env python
 
 import sys
-import autoProcessMovie 
+import autoProcessMovie
 
-print "nzbToCouchPotato V4.1"
+from nzbToMediaEnv import *
+
+print "nzbToCouchPotato %s" % VERSION
 
 # SABnzbd
 if len(sys.argv) == 8:
@@ -20,15 +22,15 @@ if len(sys.argv) == 8:
 
 # NZBGet
 elif len(sys.argv) == 4:
-# NZBGet argv: 
-# 1  The final directory of the job (full path) 
-# 2  The original name of the NZB file 
+# NZBGet argv:
+# 1  The final directory of the job (full path)
+# 2  The original name of the NZB file
 # 3  The status of the download: 0 == successful
 	print "Script triggered from NZBGet, starting autoProcessMovie..."
-	
+
 	autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
-	print "Invalid number of arguments received from client." 
+	print "Invalid number of arguments received from client."
 	print "Running autoProcessMovie as a manual run..."
 	autoProcessMovie.process('Manual Run', 'Manual Run', 0)
