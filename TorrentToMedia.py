@@ -129,6 +129,12 @@ elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 		print "INFO: Determined Category to be: %s" % (DirBase2[1])
 		Category = DirBase[1]
 		
+else: # no category found in directory. For Utorrent we can do a recursive scan.
+	print "INFO: The directory passed does not appear to include a category or the torrent name"
+	print "WARNING: You should change settings to download torrents to their own directory"
+	print "INFO: We will try and determine which files to process, individually"
+	root = 1
+		
 if Category == Movie_Cat:
 	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
