@@ -3,7 +3,7 @@
 import autoProcessMovie
 import autoProcessTV
 import sys, os, ConfigParser, shutil
-from subprocess import call
+import linktastic
 
 from nzbToMediaEnv import *
 
@@ -58,7 +58,7 @@ if len(sys.argv) == 4:
 	##Finished - 11
 	##Queued - 12
 	##Stopped - 13
-	
+
 	## We will pass in %D, %N, %L from uTorrent
 	print "INFO: Script called from utorrent"
 	Directory = sys.argv[1]	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
@@ -85,7 +85,7 @@ else:
 		print "Error: There was a problem loading variables from Transmission", "Exiting"
 		sys.exit(-1)
 	Category = '' #We dont have a category, so assume the last directory is the category for now.
-	
+
 print "DEBUG: Received Directory: %s" % (Directory)
 print "DEBUG: Received Torrent Name: %s" % (Name)
 print "DEBUG: Received Category: %s" % (Category)
@@ -121,7 +121,7 @@ if DirBase[1] == Name:
 			if not Category:
 				print "INFO: Determined Category to be: %s" % (DirBase2[1])
 				Category = DirBase2[1]
-	
+
 elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 	if os.path.isdir(os.path.join(Directory, Name)):
 		print "INFO: Found torrent directory %s in category directory %s" % (os.path.join(Directory, Name), Directory)
@@ -134,13 +134,13 @@ elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 	if not Category:
 		print "INFO: Determined Category to be: %s" % (DirBase2[1])
 		Category = DirBase[1]
-		
+
 else: # no category found in directory. For Utorrent we can do a recursive scan.
 	print "INFO: The directory passed does not appear to include a category or the torrent name"
 	print "WARNING: You should change settings to download torrents to their own directory"
 	print "INFO: We will try and determine which files to process, individually"
 	root = 1
-		
+
 if Category == Movie_Cat:
 	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
@@ -167,7 +167,7 @@ if root == 1:
 				break
 			else:
 				continue
-else:				
+else:
 	ext = [os.path.splitext(file)[1] for file in f[1]]
 	if set(ext).intersection(set(test)):
 		print "INFO: Found compressed archives, extracting"
@@ -183,7 +183,7 @@ else:
 		sys.exit(-1)
 
 if useLink == 0 and packed == 0 and video == 1: ## copy
-	if root == 0: #move all files in tier own directory 
+	if root == 0: #move all files in tier own directory
 		print "INFO: Copying all files from %s to %s." % (Directory, destination)
 		shutil.copytree(Directory, destination)
 	else: #we only want to move files matching the torrent name when root directory is used.
@@ -210,14 +210,9 @@ elif useLink == 1 and packed == 0 and video == 1: ## hardlink
 					continue #ignore the other files
 			source = os.path.join(dirpath, file)
 			target = os.path.join(destination, file)
-			
-			if os.name == 'nt'
-				subprocess.call(['cmd', '/C', 'mklink', '/H', source, target], stdout=subprocess.PIPE)
-			elif os.name == 'posix':
-				os.link(source, target)
-			else:
-				print "ERROR: Hardlink failed, cannot determine OS."
-	
+
+			linktastic.link(source, target)
+
 elif packed == 1: ## unpack
 	## Using Windows?
 	if os.name == 'nt':
@@ -225,7 +220,7 @@ elif packed == 1: ## unpack
 		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
 		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
 		print "INFO: We are using Windows"
-		
+
 	## Using linux?
 	elif os.name == 'posix':
 		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
@@ -242,7 +237,7 @@ elif packed == 1: ## unpack
 		".7z": ["7zr", "x"],
 		}
 		print "INFO: We are using *nix"
-		
+
 	## Need to add a check for which commands that can be utilized in *nix systems..
 	else:
 		print "ERROR: Unknown OS, exiting"
@@ -253,7 +248,7 @@ elif packed == 1: ## unpack
 			if (Name in file) or (file in Name):
 				pass
 			else:
-				continue #ignore the other files		
+				continue #ignore the other files
 		ext = os.path.splitext(f)
 		fp = os.path.join(Directory, os.path.normpath(f))
 		if ext[1] in (".gz", ".bz2", ".lzma"):
@@ -276,8 +271,8 @@ elif packed == 1: ## unpack
 				continue
 
 		print"INFO: Extracting to %s" % (destination)
-	
-		## Running..	
+
+		## Running..
 		print "INFO: Extracting %s %s %s %s" % (cmd[0], cmd[1], fp, destination)
 		pwd = os.getcwd() # Get our Present Working Directory
 		os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
@@ -304,7 +299,7 @@ elif packed == 1: ## unpack
 				else:
 					print "ERROR: Extraction failed for %s. 7zip result was %s" % (fp, res)
 			except:
-				print "ERROR: Extraction failed for %s. Could not call command %s %s %s %s" % (fp, cmd[0], cmd[1], fp)	
+				print "ERROR: Extraction failed for %s. Could not call command %s %s %s %s" % (fp, cmd[0], cmd[1], fp)
 		os.chdir(pwd) # Go back to our Original Working Directory
 
 for dirpath, dirnames, filenames in os.walk(destination): #flatten out the directory to make postprocessing easier.
@@ -319,7 +314,7 @@ removeEmptyFolders(destination) #cleanup empty directories.
 
 status = int(status)
 ## Now we pass off to CouchPotato or SickBeard.
-if Category == Movie_Cat:  
+if Category == Movie_Cat:
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
 	autoProcessTV.processEpisode(destination, Name, status)
