@@ -81,6 +81,7 @@ nzbToMedia() {
 	PostProcessStatus=0	
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" ; fi
+	find "$NZBPP_DIRECTORY" -type f -size -200000k -iname \*sample\* -exec rm {} \; >/dev/null 2>&1
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			script=$NzbToCouchPotato
@@ -186,11 +187,15 @@ do_exit() {
 	exit $1
 }
 
-# Check if the script is called from nzbget
+# Check if the script is called from nzbget 10.0 or later
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
-	echo "*** NZBGet post-process script ***"
-	echo "This script is supposed to be called from nzbget (0.7.0 or later)."
-	exit $POSTPROCESS_ERROR
+        echo "*** NZBGet post-processing script ***"
+        echo "This script is supposed to be called from nzbget (10.0 or later)."
+        exit $POSTPROCESS_ERROR
+fi
+if [ "$NZBOP_UNPACK" = "" ]; then
+        echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable."
+        exit $POSTPROCESS_ERROR
 fi 
 
 # Check if postprocessing was disabled in postprocessing parameters 
