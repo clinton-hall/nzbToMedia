@@ -10,7 +10,7 @@ from nzbToMediaEnv import VERSION
 
 Logger = logging.getLogger()
 logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
-logging.config.fileConfig(os.path.join(os.path.dirname(sys.argv[0]), "nzbToMediaEnv.py"))
+logging.config.fileConfig(os.path.join(os.path.dirname(sys.argv[0]), "logger.conf"))
 fileHandler = logging.FileHandler(logFile, encoding='utf-8', delay=True)
 fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
 fileHandler.level = logging.DEBUG
@@ -128,10 +128,10 @@ DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-dir
 if DirBase[1] == Name:
 	Logger.info("Files appear to be in their own directory")
 	DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
-		if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
-			if not Category:
-				Logger.info("Determined Category to be: %s", DirBase2[1])
-				Category = DirBase2[1]
+	if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+		if not Category:
+			Logger.info("Determined Category to be: %s", DirBase2[1])
+			Category = DirBase2[1]
 	
 elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 	if os.path.isdir(os.path.join(Directory, Name)):
@@ -222,7 +222,7 @@ elif useLink == 1 and packed == 0 and video == 1: ## hardlink
 			source = os.path.join(dirpath, file)
 			target = os.path.join(destination, file)
 			
-			if os.name == 'nt'
+			if os.name == 'nt':
 				subprocess.call(['cmd', '/C', 'mklink', '/H', source, target], stdout=subprocess.PIPE)
 			elif os.name == 'posix':
 				os.link(source, target)
