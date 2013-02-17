@@ -1,11 +1,15 @@
 #!/usr/bin/env python
 
+#System imports
+import ConfigParser
+import sys
+import os
+import shutil
+
+# Custom imports
+import linktastic.linktastic as linktastic
 import autoProcessMovie
 import autoProcessTV
-import sys, os, ConfigParser, shutil
-import logging, logging.config
-import linktastic
-
 from nzbToMediaEnv import *
 
 Logger = logging.getLogger()
