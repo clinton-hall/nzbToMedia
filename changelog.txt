@@ -2,6 +2,7 @@ Change_LOG / History
 
 V4.3 17/02/2013
 
+Added Logger in TorrentToMedia.py
 Added nzbget V10.0 script.
 Delete sample files in nzbget postprocessing
 Single Version for all files.
