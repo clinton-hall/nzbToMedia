@@ -28,7 +28,7 @@ import os
 
 # Private function to create link on nt-based systems
 def _link_windows(src, dest):
-  try:
+	try:
 		subprocess.check_output(
 			['cmd', '/C', 'mklink', '/H', dest, src],
 			stderr=subprocess.STDOUT)
