@@ -6,7 +6,7 @@ import sys, os, ConfigParser, shutil
 import logging, logging.config
 from subprocess import call
 
-from nzbToMediaEnv import VERSION
+from nzbToMediaEnv import *
 
 Logger = logging.getLogger()
 logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
