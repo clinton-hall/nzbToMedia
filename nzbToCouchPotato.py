@@ -3,7 +3,7 @@
 import sys
 import autoProcessMovie
 
-from nzbToMediaEnv import *
+from nzbToMediaEnv import VERSION
 
 print "nzbToCouchPotato %s" % VERSION
 
