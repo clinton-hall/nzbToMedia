@@ -4,7 +4,7 @@ import autoProcessMovie
 import autoProcessTV
 import sys, os, ConfigParser, shutil
 import logging, logging.config
-from subprocess import call
+import linktastic
 
 from nzbToMediaEnv import *
 
@@ -222,12 +222,7 @@ elif useLink == 1 and packed == 0 and video == 1: ## hardlink
 			source = os.path.join(dirpath, file)
 			target = os.path.join(destination, file)
 			
-			if os.name == 'nt':
-				subprocess.call(['cmd', '/C', 'mklink', '/H', source, target], stdout=subprocess.PIPE)
-			elif os.name == 'posix':
-				os.link(source, target)
-			else:
-				Logger.info("Hardlink failed, cannot determine OS.")
+			linktastic.link(source, target)
 	
 elif packed == 1: ## unpack
 	## Using Windows?
