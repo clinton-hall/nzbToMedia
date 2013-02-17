@@ -25,7 +25,7 @@
 import sys
 import autoProcessTV
 
-from nzbToMediaEnv import *
+from nzbToMediaEnv import VERSION
 
 print "nzbToSickBeard %s" % VERSION
 
