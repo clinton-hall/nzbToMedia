@@ -5,4 +5,4 @@ linktastic:
   type: git
   branch: master
   squashed: true
-  revision: cbce106163cadb488ace5d5cc9c44c8742a48a0f
+  revision: 3cd5d6c2c4d663f4c973c80206f50c90843c6c63
