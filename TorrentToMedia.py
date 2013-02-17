@@ -1,11 +1,17 @@
 #!/usr/bin/env python
 
+#System imports
+import ConfigParser
+import sys
+import os
+import shutil
+
+# Custom imports
+import linktastic.linktastic as linktastic
 import autoProcessMovie
 import autoProcessTV
-import sys, os, ConfigParser, shutil
-import linktastic
-
 from nzbToMediaEnv import *
+
 
 def removeEmptyFolders(path):
 	if not os.path.isdir(path):
@@ -25,9 +31,10 @@ def removeEmptyFolders(path):
 		print "INFO: Removing empty folder: %s" % (path)
 		os.rmdir(path)
 
-old_stdout = sys.stdout #backup the default stdout
-log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
-sys.stdout = log_file #create a local log file, and direct all "print" to the log.
+
+old_stdout = sys.stdout  # backup the default stdout
+log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"), "a+")
+sys.stdout = log_file  # create a local log file, and direct all "print" to the log.
 print "INFO: TorrentToMedia %s" % VERSION
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
@@ -84,7 +91,7 @@ else:
 	except:
 		print "Error: There was a problem loading variables from Transmission", "Exiting"
 		sys.exit(-1)
-	Category = '' #We dont have a category, so assume the last directory is the category for now.
+	Category = ''  # We dont have a category, so assume the last directory is the category for now.
 
 print "DEBUG: Received Directory: %s" % (Directory)
 print "DEBUG: Received Torrent Name: %s" % (Name)
@@ -113,14 +120,14 @@ Movie_Cat = config.get("CouchPotato", "category")
 useLink = int(config.get("Torrent", "uselink"))
 extractionTool = config.get("Torrent", "extractiontool")
 
-DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-directory.
+DirBase = os.path.split(os.path.normpath(Directory))  # Test for blackhole sub-directory.
 if DirBase[1] == Name:
 	print "INFO: Files appear to be in their own directory"
 	DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
-		if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
-			if not Category:
-				print "INFO: Determined Category to be: %s" % (DirBase2[1])
-				Category = DirBase2[1]
+	if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+		if not Category:
+			print "INFO: Determined Category to be: %s" % (DirBase2[1])
+			Category = DirBase2[1]
 
 elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 	if os.path.isdir(os.path.join(Directory, Name)):
@@ -135,7 +142,7 @@ elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 		print "INFO: Determined Category to be: %s" % (DirBase2[1])
 		Category = DirBase[1]
 
-else: # no category found in directory. For Utorrent we can do a recursive scan.
+else:  # no category found in directory. For Utorrent we can do a recursive scan.
 	print "INFO: The directory passed does not appear to include a category or the torrent name"
 	print "WARNING: You should change settings to download torrents to their own directory"
 	print "INFO: We will try and determine which files to process, individually"
@@ -146,7 +153,7 @@ if Category == Movie_Cat:
 elif Category == TV_Cat:
 	destination = os.path.join(TV_dest, Name)
 else:
-	print "INFO: Category of %s does not match either %s or %s: Exiting" %(Category, Movie_Cat, TV_Cat)
+	print "INFO: Category of %s does not match either %s or %s: Exiting" % (Category, Movie_Cat, TV_Cat)
 	sys.exit(-1)
 
 test = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
