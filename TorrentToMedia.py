@@ -128,12 +128,12 @@ DirBase = os.path.split(os.path.normpath(Directory)) #Test for blackhole sub-dir
 if DirBase[1] == Name:
 	Logger.info("Files appear to be in their own directory")
 	DirBase2 = os.path.split(os.path.normpath(DirBase[0]))
-	if DirBase2[1] == Movie_Cat or DirBase == TV_Cat:
+	if DirBase2[1] == Movie_Cat or DirBase2[1] == TV_Cat:
 		if not Category:
 			Logger.info("Determined Category to be: %s", DirBase2[1])
 			Category = DirBase2[1]
 	
-elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
+elif DirBase[1] == Movie_Cat or DirBase[1] == TV_Cat:
 	if os.path.isdir(os.path.join(Directory, Name)):
 		Logger.info("Found torrent directory %s in category directory %s", os.path.join(Directory, Name), Directory)
 		Directory = os.path.join(Directory, Name)
@@ -143,7 +143,7 @@ elif DirBase[1] == Movie_Cat or DirBase == TV_Cat:
 		Logger.info("We will try and determine which files to process, individually")
 		root = 1
 	if not Category:
-		Logger.info("Determined Category to be: %s", DirBase2[1])
+		Logger.info("Determined Category to be: %s", DirBase[1])
 		Category = DirBase[1]
 		
 else: # no category found in directory. For Utorrent we can do a recursive scan.
