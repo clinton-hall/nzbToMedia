@@ -364,8 +364,13 @@ if status == 0:
 else:
 	Logger.info("calling autoProcess script for failed download")
 ## Now we pass off to CouchPotato or SickBeard.
-# still need to figure out how to log this output.
+## log this output.
+old_stdout = sys.stdout  ## Still crude, but we wat to capture this for now.
+log_file = open(logFile,"a+")
+sys.stdout = log_file
 if Category == Movie_Cat:  
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
 	autoProcessTV.processEpisode(destination, Name, status)
+sys.stdout = old_stdout
+log_file.close()
