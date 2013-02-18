@@ -1,18 +1,23 @@
 [CouchPotato]
+category = movie
+outputDirectory = /abs/path/to/complete/movies
+apikey =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
 host = localhost
 port = 5050
 username = 
 password = 
 ssl = 0
 web_root =
-apikey = xxxxxxxx
 delay = 60
 method = renamer
 delete_failed = 0
-category = movies
-outputDirectory = /abs/path/to/complete/movies
+
 
 [SickBeard]
+category = tv
+outputDirectory = /abs/path/to/complete/tv
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
 host=localhost
 port=8081
 username=
@@ -21,10 +26,11 @@ web_root=
 ssl=0
 watch_dir=
 failed_fork=0
-category = tv
-outputDirectory = /abs/path/to/complete/tv
 
 [Torrent]
-uselink = 0
-extractiontool = C:\Program Files\7-Zip\7z.exe
-
+uselink = 1
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+compressedExtentions = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+mediaExtentions = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+metaExtentions = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
+extractionTool = C:\Program Files\7-Zip\7z.exe

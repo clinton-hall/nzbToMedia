@@ -221,7 +221,8 @@ else:
 		## We will pass in %D, %N from uTorrent, or %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
 		inputDirectory = os.path.normpath(sys.argv[1])
 		inputName = sys.argv[2]
-		
+		Logger.debug("Received Directory: %s | Name: %s", inputDirectory, inputName)
+
 		# Sick-Beard
 		tvCategory = config.get("SickBeard", "category")
 		tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))
@@ -231,17 +232,16 @@ else:
 		# Torrent specific
 		useLink = int(config.get("Torrent", "uselink"))
 		extractionTool = os.path.normpath(config.get("Torrent", "extractiontool"))
+		compressedContainer = config.get("Torrent", "compressedExtentions")
+		mediaContainer = config.get("Torrent", "mediaExtentions")
+		metaContainer = config.get("Torrent", "metaExtentions")
+
+		status = int(1) # we start as "failed" until we verify movie file in destination
+		root = int(0)
+		video = int(0)
+		video2 = int(0)
 		inputCategory = '' # We dont have a category yet
 
-		status = 1 # we start as "failed" until we verify movie file in destination
-		root = 0
-		video = 0
-		video2 = 0
-		compressedContainer = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
-		mediaContainer = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
-		metaFile = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
-		
-		Logger.debug("Received Directory: %s | Name: %s", inputDirectory, inputName)
 		inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root) # confirm the catgeogy by parsing directory structure.
 		if inputCategory == movieCategory:
 			outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
@@ -274,7 +274,7 @@ else:
 						state = copy_link(source, target, useLink, outputDestination)
 						if state == False:
 							Logger.info("Failed to link file %s.", file)
-				elif fileExtention in metaFile:
+				elif fileExtention in metaContainer:
 					source = filePath
 					target = os.path.join(outputDestination, file)
 					Logger.info("Found metadata file %s.", file)
