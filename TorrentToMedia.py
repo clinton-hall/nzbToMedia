@@ -42,14 +42,14 @@ def which(program): # Test if command exists
 def category_search(inputDirectory, inputCategory, root):
 	categorySearch = os.path.split(os.path.normpath(inputDirectory)) # Test for blackhole sub-directory
 	if categorySearch[1] == inputName:
-		Logger.info("CATEGORY SEARCH: Files appear to be in their own directory")
+		Logger.info("SEARCH: Files appear to be in their own directory")
 		categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
 		if categorySearch2[1] == movieCategory or categorySearch2[1] == tvCategory:
 			if not inputCategory:
-				Logger.info("CATEGORY SEARCH: Determined Category to be: %s", categorySearch2[1])
+				Logger.info("SEARCH: Determined Category to be: %s", categorySearch2[1])
 				inputCategory = categorySearch2[1]
 		elif not inputCategory:
-			Logger.error("CATEGORY SEARCH: Could not identify category from the directory structure. please check downlaoder settings")
+			Logger.error("SEARCH: Could not identify category from the directory structure. please check downlaoder settings")
 			sys.exit(-1)
 		else:
 			pass
