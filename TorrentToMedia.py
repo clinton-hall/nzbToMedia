@@ -5,6 +5,8 @@ import ConfigParser
 import sys
 import os
 import shutil
+import logging
+import logging.config
 from subprocess import call
 
 # Custom imports
@@ -315,7 +317,7 @@ for dirpath, dirnames, filenames in os.walk(Directory):
 			else:
 				continue #This file does not match the Torrent name. Skip it
 		file_path = os.path.join(dirpath, file)
-		file_ext = os.path.splitext(file)
+		file_ext = os.path.splitext(file)[1]
 		if file_ext in video_files: #if the file is a video file.
 			if is_sample(file_path, Name):
 				Logger.info("file %s is a sample file. Ignoring", file_path)
@@ -353,7 +355,7 @@ for dirpath, dirnames, filenames in os.walk(destination):
 		file_ext = os.path.splitext(file)
 		if file_ext in video_files: #if the file is a video file.
 			video2 = video2 + 1
-if video2 >= Video:	#check that all video files were moved.		
+if video2 >= video:	#check that all video files were moved.		
 	status = 0
 
 status = int(status)
@@ -362,10 +364,7 @@ if status == 0:
 else:
 	Logger.info("calling autoProcess script for failed download")
 ## Now we pass off to CouchPotato or SickBeard.
-old_stdout = sys.stdout #backup the default stdout
-sys.stdout = Logger.info #Capture the print from the autoProcess scripts.
 if Category == Movie_Cat:  
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
 	autoProcessTV.processEpisode(destination, Name, status)
-sys.stdout = old_stdout #reset our stdout
