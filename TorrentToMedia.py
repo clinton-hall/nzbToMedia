@@ -304,7 +304,7 @@ else:
 	sys.exit(-1)
 
 packed_files = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
-video_files = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg']
+video_files = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', 'iso']
 meta_files = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
 Logger.debug("scanning files in directory: %s", Directory)
 
@@ -355,7 +355,7 @@ for dirpath, dirnames, filenames in os.walk(destination):
 		file_ext = os.path.splitext(file)[1]
 		if file_ext in video_files: #if the file is a video file.
 			video2 = video2 + 1
-if video2 >= video:	#check that all video files were moved.		
+if video2 >= video and video2 > 0:	#check that all video files were moved.		
 	status = 0
 
 status = int(status)
