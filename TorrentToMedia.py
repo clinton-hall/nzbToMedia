@@ -249,11 +249,16 @@ else:
 	Logger.info("MAIN: Loading config from %s", configFilename)
 	config.read(configFilename)
 
-	if len(sys.argv) == 3:
-		# We will pass in %D, %N from uTorrent, or %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission (Transmission needs additional script, see TorrentToMedia.sh and TorrentToMedia.bat
+	if len(sys.argv) == 3 or os.getenv('TR_TORRENT_DIR') != '':
+		# We will pass in %D, %N from uTorrent, or %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
 		# In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
-		inputDirectory = os.path.normpath(sys.argv[1])
-		inputName = sys.argv[2]
+		if os.getenv('TR_TORRENT_DIR') != '':
+			inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
+			inputName = os.getenv('TR_TORRENT_NAME')
+		else:
+			inputDirectory = os.path.normpath(sys.argv[1])
+			inputName = sys.argv[2]
+		inputCategory = '' # We dont have a category yet
 		Logger.debug("MAIN: Received Directory: %s | Name: %s", inputDirectory, inputName)
 
 		# Sick-Beard
@@ -273,7 +278,6 @@ else:
 		root = int(0)
 		video = int(0)
 		video2 = int(0)
-		inputCategory = '' # We dont have a category yet
 
 		inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root) # Confirm the catgeogy by parsing directory structure
 		if inputCategory == movieCategory:
