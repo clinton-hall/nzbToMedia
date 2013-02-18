@@ -82,7 +82,7 @@ def is_sample(file_path, Name):
 	# 200 MB in bytes
 	SIZE_CUTOFF = 200 * 1024 * 1024
 	# ignore 'sample' in files unless 'sample' in Torrent Name
-	if ('sample' in file_path.lower()) and (not 'sample' in Name) and (os.path.getsize(file_path) < SIZE_CUTOFF)):
+	if ('sample' in file_path.lower()) and (not 'sample' in Name) and (os.path.getsize(file_path) < SIZE_CUTOFF):
 		return True
 	else:
 		return False
@@ -152,7 +152,7 @@ def unpack(dirpath, file, destination):
 			cmd = EXTRACT_COMMANDS[ext[1]]
 		else:
 			Logger.debug("Unknown file type: %s", ext[1])
-			continue
+			return False
 
 	## Create destination folder
 	if not os.path.exists(destination):
@@ -317,7 +317,7 @@ for dirpath, dirnames, filenames in os.walk(Directory):
 		file_path = os.path.join(dirpath, file)
 		file_ext = os.path.splitext(file)
 		if file_ext in video_files: #if the file is a video file.
-			if is_sample(file_path, Name)
+			if is_sample(file_path, Name):
 				Logger.info("file %s is a sample file. Ignoring", file_path)
 				continue #ignore samples
 			video = video + 1
