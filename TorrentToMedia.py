@@ -98,7 +98,7 @@ def copy_link(source, target, useLink, outputDestination):
 def unpack(dirpath, file, outputDestination):
 	# Using Windows
 	if os.name == 'nt':
-	Logger.info("We are using Windows")
+		Logger.info("We are using Windows")
 		if not os.path.exists(extractionTool):
 			Logger.error("Cant find 7-zip, Exiting")
 			sys.exit(-1)
@@ -110,7 +110,7 @@ def unpack(dirpath, file, outputDestination):
 
 	# Using Linux
 	elif os.name == 'posix':
-	Logger.info("We are using *nix")
+		Logger.info("We are using *nix")
 		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"] # Need to add a check for which commands that can be utilized in *nix systems
 		EXTRACT_COMMANDS = {
 		".rar": ["unrar", "x -o+ -y"],
@@ -309,7 +309,7 @@ else:
 			status = 0
 			
 		if status == 0:
-			Logger.info("Successful download")
+			Logger.info("Successful run")
 			# Now we pass off to CouchPotato or Sick-Beard
 			# Still need to figure out how to log this output
 			if inputCategory == movieCategory:  
@@ -319,7 +319,7 @@ else:
 				Logger.info("Calling postprocessing script for Sick-Beard")
 				autoProcessTV.processEpisode(outputDestination, inputName, status)
 		else:
-			Logger.info("Postprocessing failed")
+			Logger.info("Something failed! :(")
 	else:
 		Logger.error("There was a problem loading variables: Exiting")
 		sys.exit(-1)
