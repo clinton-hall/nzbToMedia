@@ -23,27 +23,6 @@ fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(messa
 fileHandler.level = logging.DEBUG
 Logger.addHandler(fileHandler)
 
-Logger.info("TorrentToMedia %s", VERSION)
-
-config = ConfigParser.ConfigParser()
-configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-
-Logger.info("Loading config from %s", configFilename)
-
-if not os.path.isfile(configFilename):
-	Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-	sys.exit(-1)
-else:
-	config.read(configFilename)
-	# Sick-Beard
-	tvCategory = config.get("SickBeard", "category")
-	tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))
-	# CouchPotato
-	movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
-	movieCategory = config.get("CouchPotato", "category")
-	useLink = int(config.get("Torrent", "uselink"))
-	extractionTool = os.path.normpath(config.get("Torrent", "extractiontool"))
-
 def category_search(inputDirectory, inputCategory, root):
 	categorySearch = os.path.split(os.path.normpath(inputDirectory)) #Test for blackhole sub-directory.
 	if categorySearch[1] == inputName:
@@ -81,11 +60,11 @@ def category_search(inputDirectory, inputCategory, root):
 		root = 1
 	return inputDirectory, inputCategory, root 
 
-def is_sample(file_path, inputName):
+def is_sample(filePath, inputName):
 	# 200 MB in bytes
 	SIZE_CUTOFF = 200 * 1024 * 1024
 	# ignore 'sample' in files unless 'sample' in Torrent Name
-	if ('sample' in file_path.lower()) and (not 'sample' in inputName) and (os.path.getsize(file_path) < SIZE_CUTOFF):
+	if ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF):
 		return True
 	else:
 		return False
@@ -117,16 +96,16 @@ def copy_link(source, target, useLink, outputDestination):
 	return True
 
 def unpack(dirpath, file, outputDestination):
-	## Using Windows?
+	## Using Windows
 	if os.name == 'nt':
-		cmd_7zip = [extractionTool, 'x -y']
+		cmd_7zip = [extractionTool, 'x -y'] ## We need to add a check if 7zip is actully present, or exit
 		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
 		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
 		Logger.info("We are using Windows")
-		
-	## Using linux?
+
+	## Using linux
 	elif os.name == 'posix':
-		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
+		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"] ## Need to add a check for which commands that can be utilized in *nix systems
 		EXTRACT_COMMANDS = {
 		".rar": ["unrar", "x -o+ -y"],
 		".zip": ["unzip", ""],
@@ -140,10 +119,8 @@ def unpack(dirpath, file, outputDestination):
 		".7z": ["7zr", "x"],
 		}
 		Logger.info("We are using *nix")
-		
-	## Need to add a check for which commands that can be utilized in *nix systems..
 	else:
-		Logger.error("Unknown OS, exiting")
+		Logger.error("Cant determine host OS while extracting, Exiting")
 
 	ext = os.path.splitext(file)
 	fp = os.path.join(dirpath, file)
@@ -169,11 +146,11 @@ def unpack(dirpath, file, outputDestination):
 
 	Logger.info("Extracting %s to %s", fp, outputDestination)
 
-	## Running..	
+	## Running extraction process
 	Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, outputDestination)
-	pwd = os.getcwd() # Get our Present Working Directory
-	os.chdir(outputDestination) #not all unpack commands accept full paths, so just extract into this directory.
-	if os.name == 'nt': #Windows needs quotes around directory structure
+	pwd = os.getcwd() # Get our present working directory
+	os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory.
+	if os.name == 'nt': # Windows needs quotes around directory structure
 		try:
 			run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" #windows needs quotes around directories.
 			res = call(run)
@@ -229,96 +206,115 @@ def removeEmptyFolders(path):
 		Logger.debug("Removing empty folder: %s", path)
 		os.rmdir(path)
 
-if len(sys.argv) == 3:
-	## We will pass in %D, %N from uTorrent, or %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
-	inputDirectory = os.path.normpath(sys.argv[1])
-	inputName = sys.argv[2]
-	inputCategory = ''	# We dont have a category, so assume the last directory is the category for now.
-else:
-	Logger.error("There was a problem loading variables: Exiting")
+Logger.info("TorrentToMedia %s", VERSION)
+config = ConfigParser.ConfigParser()
+configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+
+if not os.path.isfile(configFilename):
+	Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
 	sys.exit(-1)
-
-Logger.debug("Received Directory: %s | Name: %s", inputDirectory, inputName)
-
-status = 1 # we start as "failed" until we verify movie file in destination
-root = 0
-video = 0
-video2 = 0
-
-inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root) # confirm the catgeogy by parsing directory structure.
-
-if inputCategory == movieCategory:
-	outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
-elif inputCategory == tvCategory:
-	outputDestination = os.path.normpath(os.path.join(tvDestination, inputName))
 else:
-	Logger.info("Category of %s does not match either %s or %s: Exiting", inputCategory, movieCategory, tvCategory)
-	sys.exit(-1)
+	Logger.info("Loading config from %s", configFilename)
+	config.read(configFilename)
 
-packed_files = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
-video_files = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
-meta_files = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
+	if len(sys.argv) == 3:
+		## We will pass in %D, %N from uTorrent, or %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
+		inputDirectory = os.path.normpath(sys.argv[1])
+		inputName = sys.argv[2]
+		
+		# Sick-Beard
+		tvCategory = config.get("SickBeard", "category")
+		tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))
+		# CouchPotatoServer
+		movieCategory = config.get("CouchPotato", "category")
+		movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
+		# Torrent specific
+		useLink = int(config.get("Torrent", "uselink"))
+		extractionTool = os.path.normpath(config.get("Torrent", "extractiontool"))
+		inputCategory = '' # We dont have a category yet
 
-Logger.debug("Scanning files in directory: %s", inputDirectory)
-
-for dirpath, dirnames, filenames in os.walk(inputDirectory):
-	for file in filenames:
-		if root == 1:
-			Logger.debug("Looking for %s in filename", inputName)
-			if (inputName in file) or (file in inputName):
-				pass #This file does match the Torrent name
-			else:
-				continue #This file does not match the Torrent name. Skip it
-		file_path = os.path.join(dirpath, file)
-		file_ext = os.path.splitext(file)[1]
-		if file_ext in video_files: #if the file is a video file.
-			if is_sample(file_path, inputName):
-				Logger.info("file %s is a sample file. Ignoring", file_path)
-				continue #ignore samples
-			video = video + 1
-			source = file_path
-			target = os.path.join(outputDestination, file)
-			Logger.info("Found video file %s.", file)
-			state = copy_link(source, target, useLink, outputDestination)
-			if state == False:
-				Logger.info("Failed to link file %s.", file)
-		elif file_ext in meta_files:
-			source = file_path
-			target = os.path.join(outputDestination, file)
-			Logger.info("Found metadata file %s.", file)
-			state = copy_link(source, target, useLink, outputDestination)
-			if state == False:
-				Logger.info("Failed to link file %s.", file)
-		elif file_ext in packed_files:
-			Logger.info("Found packed file %s.", file)
-			source = file_path
-			target = os.path.join(outputDestination, file)
-			state = unpack(dirpath, file, outputDestination)
-			if state == False:
-				Logger.info("Failed to unpack file %s.", file)
+		status = 1 # we start as "failed" until we verify movie file in destination
+		root = 0
+		video = 0
+		video2 = 0
+		compressedContainer = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+		mediaContainer = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+		metaFile = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
+		
+		Logger.debug("Received Directory: %s | Name: %s", inputDirectory, inputName)
+		inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root) # confirm the catgeogy by parsing directory structure.
+		if inputCategory == movieCategory:
+			outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
+		elif inputCategory == tvCategory:
+			outputDestination = os.path.normpath(os.path.join(tvDestination, inputName))
 		else:
-			Logger.info("Unknown file type %s for file %s. Ignoring", file_ext, file_path)
-			continue
-flatten(outputDestination)
+			Logger.info("Category of %s does not match either %s or %s: Exiting", inputCategory, movieCategory, tvCategory)
+			sys.exit(-1)
 
-#now check if movie files exist in destination:
-for dirpath, dirnames, filenames in os.walk(outputDestination):
-	for file in filenames:
-		file_path = os.path.join(dirpath, file)
-		file_ext = os.path.splitext(file)[1]
-		if file_ext in video_files: #if the file is a video file.
-			video2 = video2 + 1
-if video2 >= video and video2 > 0:	#check that all video files were moved.
-	status = 0
+		Logger.debug("Scanning files in directory: %s", inputDirectory)
+		for dirpath, dirnames, filenames in os.walk(inputDirectory):
+			for file in filenames:
+				if root == 1:
+					Logger.debug("Looking for %s in filename", inputName)
+					if (inputName in file) or (file in inputName):
+						pass #This file does match the Torrent name
+					else:
+						continue #This file does not match the Torrent name, skip it
+				filePath = os.path.join(dirpath, file)
+				fileExtention = os.path.splitext(file)[1]
+				if fileExtention in mediaContainer: #if the file is a video file.
+					if is_sample(filePath, inputName): # Ignore samples
+						Logger.info("File %s is a sample file. Ignoring", filePath)
+						continue 
+					else:
+						video = video + 1
+						source = filePath
+						target = os.path.join(outputDestination, file)
+						Logger.info("Found video file %s.", file)
+						state = copy_link(source, target, useLink, outputDestination)
+						if state == False:
+							Logger.info("Failed to link file %s.", file)
+				elif fileExtention in metaFile:
+					source = filePath
+					target = os.path.join(outputDestination, file)
+					Logger.info("Found metadata file %s.", file)
+					state = copy_link(source, target, useLink, outputDestination)
+					if state == False:
+						Logger.info("Failed to link file %s.", file)
+				elif fileExtention in compressedContainer:
+					Logger.info("Found compressed archive %s.", file)
+					source = filePath
+					target = os.path.join(outputDestination, file)
+					state = unpack(dirpath, file, outputDestination)
+					if state == False:
+						Logger.info("Failed to unpack file %s.", file)
+				else:
+					Logger.info("Unknown file type %s for file %s. Ignoring", fileExtention, filePath)
+					continue
+		flatten(outputDestination)
 
-status = int(status)
-if status == 0:
-	Logger.info("calling autoProcess script for successful download")
-else:
-	Logger.info("calling autoProcess script for failed download")
-## Now we pass off to CouchPotato or SickBeard.
-# still need to figure out how to log this output.
-if inputCategory == movieCategory:  
-	autoProcessMovie.process(outputDestination, inputName, status)
-elif inputCategory == tvCategory:
-	autoProcessTV.processEpisode(outputDestination, inputName, status)
+		#now check if movie files exist in destination:
+		for dirpath, dirnames, filenames in os.walk(outputDestination):
+			for file in filenames:
+				filePath = os.path.join(dirpath, file)
+				fileExtention = os.path.splitext(file)[1]
+				if fileExtention in mediaContainer: #if the file is a video file.
+					video2 = video2 + 1
+		if video2 >= video and video2 > 0:	#check that all video files were moved.
+			status = 0
+			
+		if status == 0:
+			Logger.info("Successful download")
+			## Now we pass off to CouchPotato or SickBeard.
+			# still need to figure out how to log this output.
+			if inputCategory == movieCategory:  
+				Logger.info("Calling postprocessing script for CouchPotatoServer")
+				autoProcessMovie.process(outputDestination, inputName, status)
+			elif inputCategory == tvCategory:
+				Logger.info("Calling postprocessing script for Sick-Beard")
+				autoProcessTV.processEpisode(outputDestination, inputName, status)
+		else:
+			Logger.info("Postprocessing failed")
+	else:
+		Logger.error("There was a problem loading variables: Exiting")
+		sys.exit(-1)
