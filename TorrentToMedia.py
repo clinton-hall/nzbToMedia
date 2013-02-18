@@ -304,7 +304,7 @@ else:
 	sys.exit(-1)
 
 packed_files = ['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
-video_files = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', 'iso']
+video_files = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
 meta_files = ['.nfo', '.sub', '.srt', '.jpg', '.gif']
 Logger.debug("scanning files in directory: %s", Directory)
 
