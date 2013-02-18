@@ -23,6 +23,22 @@ fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(messa
 fileHandler.level = logging.DEBUG
 Logger.addHandler(fileHandler)
 
+
+def which(program): # Test if command exists
+	def is_exe(fpath):
+		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
+	fpath, fname = os.path.split(program)
+	if fpath:
+		if is_exe(program):
+			return program
+	else:
+		for path in os.environ["PATH"].split(os.pathsep):
+			path = path.strip('"')
+			exe_file = os.path.join(path, program)
+			if is_exe(exe_file):
+				return exe_file
+	return None
+
 def category_search(inputDirectory, inputCategory, root):
 	categorySearch = os.path.split(os.path.normpath(inputDirectory)) # Test for blackhole sub-directory
 	if categorySearch[1] == inputName:
@@ -124,6 +140,12 @@ def unpack(dirpath, file, outputDestination):
 		".txz": ["tar", "--xz xf"],
 		".7z": ["7zr", "x"],
 		}
+		for cmd in required_cmds:
+			if not which(cmd):
+				for k,v in EXTRACT_COMMANDS.items():
+					if cmd in v[0]:
+						Logger.debug("Extraction command %s not found, disabling support for %s", cmd, k)
+						del EXTRACT_COMMANDS[k]
 	else:
 		Logger.error("Cant determine host OS while extracting, Exiting")
 
