@@ -230,8 +230,8 @@ else:
 		movieCategory = config.get("CouchPotato", "category")
 		movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
 		# Torrent specific
-		useLink = int(config.get("Torrent", "uselink"))
-		extractionTool = os.path.normpath(config.get("Torrent", "extractiontool"))
+		useLink = int(config.get("Torrent", "useLink"))
+		extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
 		compressedContainer = config.get("Torrent", "compressedExtentions")
 		mediaContainer = config.get("Torrent", "mediaExtentions")
 		metaContainer = config.get("Torrent", "metaExtentions")
