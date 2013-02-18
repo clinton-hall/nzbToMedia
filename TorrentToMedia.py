@@ -5,6 +5,7 @@ import ConfigParser
 import sys
 import os
 import shutil
+from subprocess import call
 
 # Custom imports
 import linktastic.linktastic as linktastic
@@ -81,7 +82,7 @@ def is_sample(file_path, Name):
 	# 200 MB in bytes
 	SIZE_CUTOFF = 200 * 1024 * 1024
 	# ignore 'sample' in files unless 'sample' in Torrent Name
-	if ('sample' in file_path.lower()) and (not'sample' in Name) and (os.path.getsize(file_path) < SIZE_CUTOFF)):
+	if ('sample' in file_path.lower()) and (not 'sample' in Name) and (os.path.getsize(file_path) < SIZE_CUTOFF)):
 		return True
 	else:
 		return False
@@ -90,20 +91,24 @@ def copy_link(source, target, useLink, destination):
 	## Create destination folder
 	if not os.path.exists(destination):
 		try:
+			Logger.debug("Creating destination folder: %s", destination)
 			os.makedirs(destination)
 		except Exception, e:
 			Logger.error("Not possible to create destination folder: %s", e)
 			return False
 	if useLink:
 		try:
+			Logger.debug("Linking %s to %s", source, target)
 			linktastic.link(source, target)
 		except:
 			if os.path.isfile(target):
 				Logger.info("something went wrong in linktastic.link, but the destination file was created")
 			else:
 				Logger.info("something went wrong in linktastic.link. trying to create a copy")
+				Logger.debug("Copying %s to %s", source, target)
 				shutil.copy(source, target)
 	else:
+		Logger.debug("Copying %s to %s", source, target)
 		shutil.copy(source, target)
 	return True
 
@@ -152,15 +157,16 @@ def unpack(dirpath, file, destination):
 	## Create destination folder
 	if not os.path.exists(destination):
 		try:
+			Logger.debug("Creating destination folder: %s", destination)
 			os.makedirs(destination)
 		except Exception, e:
 			Logger.error("Not possible to create destination folder: %s", e)
 			return False
 
-	Logger.info("Extracting to %s", destination)
+	Logger.info("Extracting %s to %s", fp, destination)
 
 	## Running..	
-	Logger.info("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
+	Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
 	pwd = os.getcwd() # Get our Present Working Directory
 	os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
 	if os.name == 'nt': #Windows needs quotes around directory structure
@@ -189,6 +195,7 @@ def unpack(dirpath, file, destination):
 	return True
 
 def flatten(destination):
+	Logger.info("Flattening directory: %s", destination)
 	for dirpath, dirnames, filenames in os.walk(destination): #flatten out the directory to make postprocessing easier.
 		if dirpath == destination:
 			continue #no need to try and move files in the root destination directory.
@@ -200,6 +207,7 @@ def flatten(destination):
 	removeEmptyFolders(destination) #cleanup empty directories.
 
 def removeEmptyFolders(path):
+	Logger.info("Removing empty folders in: %s", path)
 	if not os.path.isdir(path):
 		return
 
@@ -214,7 +222,7 @@ def removeEmptyFolders(path):
 	# if folder empty, delete it
 	files = os.listdir(path)
 	if len(files) == 0:
-		Logger.info("Removing empty folder: %s", path)
+		Logger.debug("Removing empty folder: %s", path)
 		os.rmdir(path)
 
 if len(sys.argv) == 4:
@@ -303,9 +311,9 @@ for dirpath, dirnames, filenames in os.walk(Directory):
 		if root == 1:
 			Logger.debug("Looking for %s in filename", Name)
 			if (Name in file) or (file in Name):
-				pass
+				pass #This file does match the Torrent name
 			else:
-				continue
+				continue #This file does not match the Torrent name. Skip it
 		file_path = os.path.join(dirpath, file)
 		file_ext = os.path.splitext(file)
 		if file_ext in video_files: #if the file is a video file.
