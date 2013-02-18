@@ -352,9 +352,10 @@ flatten(destination)
 for dirpath, dirnames, filenames in os.walk(destination):
 	for file in filenames:
 		file_path = os.path.join(dirpath, file)
-		file_ext = os.path.splitext(file)
+		file_ext = os.path.splitext(file)[1]
 		if file_ext in video_files: #if the file is a video file.
 			video2 = video2 + 1
+			status = 0
 if video2 >= video:	#check that all video files were moved.		
 	status = 0
 
