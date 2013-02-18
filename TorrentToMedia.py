@@ -355,7 +355,6 @@ for dirpath, dirnames, filenames in os.walk(destination):
 		file_ext = os.path.splitext(file)[1]
 		if file_ext in video_files: #if the file is a video file.
 			video2 = video2 + 1
-			status = 0
 if video2 >= video:	#check that all video files were moved.		
 	status = 0
 
@@ -365,6 +364,7 @@ if status == 0:
 else:
 	Logger.info("calling autoProcess script for failed download")
 ## Now we pass off to CouchPotato or SickBeard.
+# still need to figure out how to log this output.
 if Category == Movie_Cat:  
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
