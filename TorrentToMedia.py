@@ -354,7 +354,11 @@ for dirpath, dirnames, filenames in os.walk(destination):
 		file_path = os.path.join(dirpath, file)
 		file_ext = os.path.splitext(file)[1]
 		if file_ext in video_files: #if the file is a video file.
-			video2 = video2 + 1
+			if is_sample(file_path, Name):
+				Logger.info("file %s is a sample file. Removing", file_path)
+				os.unlink(file_path) #remove samples
+			else:
+                                video2 = video2 + 1
 if video2 >= video and video2 > 0:	#check that all video files were moved.		
 	status = 0
 
