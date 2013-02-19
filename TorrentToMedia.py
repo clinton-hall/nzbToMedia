@@ -312,8 +312,9 @@ for dirpath, dirnames, filenames in os.walk(Directory):
 	for file in filenames:
 		if root == 1:
 			Logger.debug("Looking for %s in filename", Name)
-			if (Name in file) or (file in Name):
+			if (Name in file) or (os.path.splitext(file)[0] in Name):
 				pass #This file does match the Torrent name
+				logger.debug("Found file %s that matches Torrent Name %s", file, Name)
 			else:
 				continue #This file does not match the Torrent name. Skip it
 		file_path = os.path.join(dirpath, file)
