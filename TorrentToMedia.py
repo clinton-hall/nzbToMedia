@@ -11,8 +11,6 @@ from subprocess import call
 
 # Custom imports
 import linktastic.linktastic as linktastic
-import UnRAR2
-from UnRAR2.rar_exceptions import *
 import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
@@ -24,14 +22,6 @@ fileHandler = logging.FileHandler(logFile, encoding='utf-8', delay=True)
 fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
 fileHandler.level = logging.DEBUG
 Logger.addHandler(fileHandler)
-
-
-def cleanup(outputDestination):
-	for path, dirs, files in os.walk(outputDestination):
-		for fn in files:
-			os.remove(os.path.join(path, fn))
-		for dir in dirs:
-			os.removedirs(os.path.join(path, dir))
 
 def category_search(inputDirectory, inputCategory, root):
 	categorySearch = os.path.split(os.path.normpath(inputDirectory)) # Test for blackhole sub-directory
@@ -83,7 +73,7 @@ def copy_link(source, target, useLink, outputDestination):
 	# Create destination folder
 	if not os.path.exists(outputDestination):
 		try:
-			Logger.debug("COPYLINK: Creating destination folder: %s", outputDestination)
+			Logger.info("COPYLINK: Creating destination folder: %s", outputDestination)
 			os.makedirs(outputDestination)
 		except Exception, e:
 			Logger.error("COPYLINK: Not possible to create destination folder: %s", e)
@@ -91,7 +81,7 @@ def copy_link(source, target, useLink, outputDestination):
 
 	if useLink:
 		try:
-			Logger.debug("COPYLINK: Linking %s to %s", source, target)
+			Logger.info("COPYLINK: Linking %s to %s", source, target)
 			linktastic.link(source, target)
 		except:
 			if os.path.isfile(target):
@@ -105,30 +95,80 @@ def copy_link(source, target, useLink, outputDestination):
 		shutil.copy(source, target)
 	return True
 
-def unpack(dirpath, file, outputDestination):
-# Create destination folder
-	if not os.path.exists(outputDestination):
+def unpack(dirpath, file, destination):
+	# Using Windows
+	if os.name == 'nt':
+		Logger.info("EXTRACTOR: We are using Windows")
+		cmd_7zip = [extractionTool, 'x -y']
+		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
+		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
+
+	# Using linux
+	elif os.name == 'posix':
+		Logger.info("EXTRACTOR: We are using *nix")
+		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
+		EXTRACT_COMMANDS = {".rar": ["unrar", "x -o+ -y"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
+
+	# Need to add a check for which commands that can be utilized in *nix systems..
+	else:
+		Logger.error("EXTRACTOR: Unknown OS, exiting")
+
+	ext = os.path.splitext(file)
+	fp = os.path.join(dirpath, file)
+	if ext[1] in (".gz", ".bz2", ".lzma"):
+	# Check if this is a tar
+		if os.path.splitext(ext[0])[1] == ".tar":
+			cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+	else:
+		if ext[1] in EXTRACT_COMMANDS:
+			cmd = EXTRACT_COMMANDS[ext[1]]
+		else:
+			Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
+			return False
+
+	# Create destination folder
+	if not os.path.exists(destination):
 		try:
-			Logger.debug("EXTRACTOR: Creating destination folder: %s", outputDestination)
-			os.makedirs(outputDestination)
+			Logger.debug("EXTRACTOR: Creating destination folder: %s", destination)
+			os.makedirs(destination)
 		except Exception, e:
 			Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
 			return False
-	path = os.path.join(dirpath, file)
-	try:
-		archive = UnRAR2.RarFile(path)
-		for rarinfo in archive.infoiter():
-			name = rarinfo.filename
-			archive.extract(name, outputDestination)
-			Logger.error("EXTRACTOR: Files extracted from %s to %s", path, outputDestination)
-	except Exception, e:
-		Logger.error("EXTRACTOR: Extraction process failed: %s", e)
-		sys.exit(-1)
+
+	Logger.info("Extracting %s to %s", fp, destination)
+
+	# Running
+	Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
+	pwd = os.getcwd() # Get our Present Working Directory
+	os.chdir(destination) # Not all unpack commands accept full paths, so just extract into this directory
+	if os.name == 'nt': # Windows needs quotes around directory structure
+		try:
+			run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" # Windows needs quotes around directories
+			res = call(run)
+			if res == 0:
+				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
+			else:
+				Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
+		except:
+			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s", fp, run)
+	else:
+		try:
+			if cmd[1] == "": # If calling unzip, we dont want to pass the ""
+				res = call([cmd[0], fp])
+			else:
+				res = call([cmd[0], cmd[1], fp])
+			if res == 0:
+				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
+			else:
+				Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
+		except:
+			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
+	os.chdir(pwd) # Go back to our Original Working Directory
 	return True
 
 def flatten(outputDestination):
 	Logger.info("FLATTEN: Flattening directory: %s", outputDestination)
-	for dirpath, dirnames, filenames in os.walk(outputDestination): #flatten out the directory to make postprocessing easier
+	for dirpath, dirnames, filenames in os.walk(outputDestination): # Flatten out the directory to make postprocessing easier
 		if dirpath == outputDestination:
 			continue # No need to try and move files in the root destination directory
 		for filename in filenames:
@@ -220,7 +260,7 @@ else:
 					Logger.debug("MAIN: Looking for %s in filename", inputName)
 					if (inputName in file) or (os.path.splitext(file)[0] in inputName):
 						pass # This file does match the Torrent name
-						logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
+						Logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
 					else:
 						continue # This file does not match the Torrent name, skip it
 				filePath = os.path.join(dirpath, file)
@@ -233,7 +273,7 @@ else:
 						video = video + 1
 						source = filePath
 						target = os.path.join(outputDestination, file)
-						Logger.info("MAIN: Found video file %s in %", fileExtention, filePath)
+						Logger.info("MAIN: Found video file %s in %s", fileExtention, filePath)
 						state = copy_link(source, target, useLink, outputDestination)
 						if state == False:
 							Logger.info("MAIN: Failed to link file %s", file)
@@ -262,9 +302,9 @@ else:
 				filePath = os.path.join(dirpath, file)
 				fileExtention = os.path.splitext(file)[1]
 				if fileExtention in mediaContainer: # If the file is a video file
-					if is_sample(file_path, Name):
-						Logger.info("file %s is a sample file. Removing", file_path)
-						os.unlink(file_path) #remove samples
+					if is_sample(filePath, inputName):
+						Logger.info("file %s is a sample file. Removing", filePath)
+						os.unlink(filePath) #remove samples
 					else:
 						video2 = video2 + 1
 		if video2 >= video and video2 > 0: # Check that all video files were moved
@@ -273,8 +313,8 @@ else:
 		if status == 0:
 			Logger.info("MAIN: Successful run")
 			# Now we pass off to CouchPotato or Sick-Beard
-			## log this output.
-			old_stdout = sys.stdout  ## Still crude, but we wat to capture this for now.
+			# Log this output
+			old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
 			log_file = open(logFile,"a+")
 			sys.stdout = log_file
 			if inputCategory == movieCategory:  
