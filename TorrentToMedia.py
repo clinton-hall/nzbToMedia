@@ -11,6 +11,8 @@ from subprocess import call
 
 # Custom imports
 import linktastic.linktastic as linktastic
+import UnRAR2
+from UnRAR2.rar_exceptions import *
 import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
@@ -24,20 +26,12 @@ fileHandler.level = logging.DEBUG
 Logger.addHandler(fileHandler)
 
 
-def which(program): # Test if command exists
-	def is_exe(fpath):
-		return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-	fpath, fname = os.path.split(program)
-	if fpath:
-		if is_exe(program):
-			return program
-	else:
-		for path in os.environ["PATH"].split(os.pathsep):
-			path = path.strip('"')
-			exe_file = os.path.join(path, program)
-			if is_exe(exe_file):
-				return exe_file
-	return None
+def cleanup(outputDestination):
+	for path, dirs, files in os.walk(outputDestination):
+		for fn in files:
+			os.remove(os.path.join(path, fn))
+		for dir in dirs:
+			os.removedirs(os.path.join(path, dir))
 
 def category_search(inputDirectory, inputCategory, root):
 	categorySearch = os.path.split(os.path.normpath(inputDirectory)) # Test for blackhole sub-directory
@@ -112,57 +106,7 @@ def copy_link(source, target, useLink, outputDestination):
 	return True
 
 def unpack(dirpath, file, outputDestination):
-	# Using Windows
-	if os.name == 'nt':
-		Logger.info("EXTRACTOR: We are using Windows")
-		if not os.path.exists(extractionTool):
-			Logger.error("Cant find 7-zip, Exiting")
-			sys.exit(-1)
-		else:
-			Logger.debug("EXTRACTOR: 7-zip found")
-			cmd_7zip = [extractionTool, 'x -y'] # We need to add a check if 7zip is actully present, or exit
-			ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
-			EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
-
-	# Using Linux
-	elif os.name == 'posix':
-		Logger.info("EXTRACTOR: We are using *nix")
-		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"] # Need to add a check for which commands that can be utilized in *nix systems
-		EXTRACT_COMMANDS = {
-		".rar": ["unrar", "x -o+ -y"],
-		".zip": ["unzip", ""],
-		".tar.gz": ["tar", "xzf"],
-		".tgz": ["tar", "xzf"],
-		".tar.bz2": ["tar", "xjf"],
-		".tbz": ["tar", "xjf"],
-		".tar.lzma": ["tar", "--lzma xf"],
-		".tlz": ["tar", "--lzma xf"],
-		".txz": ["tar", "--xz xf"],
-		".7z": ["7zr", "x"],
-		}
-		for cmd in required_cmds:
-			if not which(cmd):
-				for k,v in EXTRACT_COMMANDS.items():
-					if cmd in v[0]:
-						Logger.debug("EXTRACTOR: Command %s not found, disabling support for %s", cmd, k)
-						del EXTRACT_COMMANDS[k]
-	else:
-		Logger.error("EXTRACTOR: Cant determine host OS while extracting, Exiting")
-
-	ext = os.path.splitext(file)
-	fp = os.path.join(dirpath, file)
-	if ext[1] in (".gz", ".bz2", ".lzma"):
-	# Check if this is a tar
-		if os.path.splitext(ext[0])[1] == ".tar":
-			cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
-	else:
-		if ext[1] in EXTRACT_COMMANDS:
-			cmd = EXTRACT_COMMANDS[ext[1]]
-		else:
-			Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
-			return False
-
-	# Create destination folder
+# Create destination folder
 	if not os.path.exists(outputDestination):
 		try:
 			Logger.debug("EXTRACTOR: Creating destination folder: %s", outputDestination)
@@ -170,35 +114,16 @@ def unpack(dirpath, file, outputDestination):
 		except Exception, e:
 			Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
 			return False
-
-	Logger.info("EXTRACTOR: Extracting %s to %s", fp, outputDestination)
-	# Running extraction process
-	Logger.debug("EXTRACTOR: Extracting %s %s %s %s", cmd[0], cmd[1], fp, outputDestination)
-	pwd = os.getcwd() # Get our present working directory
-	os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
-	if os.name == 'nt': # Windows needs quotes around directory structure
-		try:
-			run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" # Windows needs quotes around directories
-			res = call(run)
-			if res == 0:
-				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, outputDestination)
-			else:
-				Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-		except:
-			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", fp, run)
-	else:
-		try:
-			if cmd[1] == "": # If calling unzip, we dont want to pass the ""
-				res = call([cmd[0], fp])
-			else:
-				res = call([cmd[0], cmd[1], fp])
-			if res == 0:
-				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, outputDestination)
-			else:
-				Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-		except:
-			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
-	os.chdir(pwd) # Go back to our Original Working Directory
+	path = os.path.join(dirpath, file)
+	try:
+		archive = UnRAR2.RarFile(path)
+		for rarinfo in archive.infoiter():
+			name = rarinfo.filename
+			archive.extract(name, outputDestination)
+			Logger.error("EXTRACTOR: Files extracted from %s to %s", path, outputDestination)
+	except Exception, e:
+		Logger.error("EXTRACTOR: Extraction process failed: %s", e)
+		sys.exit(-1)
 	return True
 
 def flatten(outputDestination):
@@ -293,8 +218,9 @@ else:
 			for file in filenames:
 				if root == 1:
 					Logger.debug("MAIN: Looking for %s in filename", inputName)
-					if (inputName in file) or (file in inputName):
+					if (inputName in file) or (os.path.splitext(file)[0] in inputName):
 						pass # This file does match the Torrent name
+						logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
 					else:
 						continue # This file does not match the Torrent name, skip it
 				filePath = os.path.join(dirpath, file)
@@ -336,20 +262,29 @@ else:
 				filePath = os.path.join(dirpath, file)
 				fileExtention = os.path.splitext(file)[1]
 				if fileExtention in mediaContainer: # If the file is a video file
-					video2 = video2 + 1
+					if is_sample(file_path, Name):
+						Logger.info("file %s is a sample file. Removing", file_path)
+						os.unlink(file_path) #remove samples
+					else:
+						video2 = video2 + 1
 		if video2 >= video and video2 > 0: # Check that all video files were moved
 			status = 0
 			
 		if status == 0:
 			Logger.info("MAIN: Successful run")
 			# Now we pass off to CouchPotato or Sick-Beard
-			# Still need to figure out how to log this output
+			## log this output.
+			old_stdout = sys.stdout  ## Still crude, but we wat to capture this for now.
+			log_file = open(logFile,"a+")
+			sys.stdout = log_file
 			if inputCategory == movieCategory:  
 				Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")
 				autoProcessMovie.process(outputDestination, inputName, status)
 			elif inputCategory == tvCategory:
 				Logger.info("MAIN: Calling postprocessing script for Sick-Beard")
 				autoProcessTV.processEpisode(outputDestination, inputName, status)
+			sys.stdout = old_stdout
+			log_file.close()
 		else:
 			Logger.info("MAIN: Something failed! :(")
 	else:
