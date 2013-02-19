@@ -263,6 +263,12 @@ if len(sys.argv) == 4:
 	Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
 	Category = sys.argv[3]	## %L -- Example output: tvseries ## This is the label in uTorrent
 
+elif len(sys.argv) == 3: # assume uTorrent but no label exists.
+	Logger.info("Script called from utorrent, without a Label.")
+	Directory = os.path.normpath(sys.argv[1])	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
+	Name = sys.argv[2]		## %N -- Example output: My.Series.S01E01.720p.HDTV.x264-2HD
+	Category = '' #We dont have a category, so assume the last directory is the category for now.
+
 elif len(sys.argv) > 1: #Doesn't match Transmission (1) or uTorrent (4).
 	Logger.error("The number of arguments passed is %s. Unable to determin the arguments to use; Exiting", len(sys.argv))
 	sys.exit(-1)
