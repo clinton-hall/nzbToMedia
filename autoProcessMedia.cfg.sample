@@ -1,8 +1,8 @@
 [CouchPotato]
 host = localhost
 port = 5050
-username = 
-password = 
+username =
+password =
 ssl = 0
 web_root =
 apikey = xxxxxxxx
@@ -28,3 +28,27 @@ destination = /abs/path/to/complete/tv
 uselink = 0
 extractiontool = 'C:\\Program Files\\7-Zip\\7z.exe'
 
+# Logging configuration
+[loggers]
+keys = root
+
+[handlers]
+keys = console
+
+[formatters]
+keys = generic
+
+[logger_root]
+level = NOTSET
+handlers = console
+qualname =
+
+[handler_console]
+class = StreamHandler
+args = (sys.stdout,)
+level = INFO
+formatter = generic
+
+[formatter_generic]
+format = %(asctime)s|%(levelname)-7.7s %(message)s
+datefmt = %H:%M:%S
