@@ -372,9 +372,9 @@ If you are using µTorrent, perform the following steps to configure postprocess
 		set uselink = 0 to use normal copy options. 
 		Any movement across hard disks / network MUST use "0"
 
-	ii.  [Torrent] extractiontool (Windows Only)
+	ii.  [Torrent] extractiontool (Windows Only...you will need to install [7-zip](http://www.7-zip.org/ "7-zip"))
 		
-		C:\Program Files\7-Zip\7z.exe' (you will need to install 7-zip)
+		C:\Program Files\7-Zip\7z.exe' 
 		
 	iii. [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
@@ -433,9 +433,9 @@ If you are using Transmission, perform the following steps to configure postproc
 		set uselink = 0 to use normal copy options. 
 		Any movement across hard disks / network MUST use "0"
 
-	ii.  [Torrent] extractiontool (Windows Only)
+	ii.  [Torrent] extractiontool (Windows Only...you will need to install [7-zip](http://www.7-zip.org/ "7-zip"))
 		
-		C:\Program Files\7-Zip\7z.exe' (you will need to install 7-zip)
+		C:\Program Files\7-Zip\7z.exe' 
 		
 	iii. [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
