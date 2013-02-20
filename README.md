@@ -22,6 +22,17 @@ Torrent support has been added with the assistance of [jkaberg](https://github.c
 
 Installation
 ------------
+
+### Windows
+
+Download the the compiled versions of this code here [nzbToMedia - win.zip](https://dl.dropbox.com/u/68130597/nzbToMedia%20-%20win.zip "nzbToMedia - win.zip")
+
+For nzbget downlaod the Full package with nzbget support (including shell script environment) from here [nzbToMedia - win - nzbget support.zip](https://dl.dropbox.com/u/68130597/nzbToMedia%20-%20win%20-%20nzbget%20support.zip "nzbToMedia - win - nzbget support.zip")
+
+Copy all files from *\nzbToMedia\nzbget-postprocessing-files\Shell\ to a location in your system path, 
+or add the location of these files to the system path.
+e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\Sheel" to system path.
+
 ### General
 
 1. Put all files in a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
