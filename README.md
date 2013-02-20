@@ -237,8 +237,9 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 
 2. In NZBGet go to "POSTPROCESSING SCRIPT" -> "PATHS" and change as needed:
  
-	i.   Set the full path to python if it is not in your PATH.
-	
+	i.   Set the full path to python if it is not in your PATH. (option is required)
+		These scripts now have -x permissions and should be as such on your system. Python needs to be in your system path.	
+
 		PythonCmd=/usr/local/python/bin/python
 
 	ii.  Set the full path to sabToSickBeard.py for SickBeard's postprocessing.
@@ -246,6 +247,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		NzbToSickBeard=/usr/local/nzbget/var/nzbToSickBeard.py
 
 	iii. Set the full path where completed movies should be placed before SickBeard's Renamer is called (option)
+		(v 9.0 only). For n 10.0 set this in the appropriate category settings in the Categories Section.
 		
 		TvDownloadDir=
 
@@ -254,10 +256,11 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		NzbToCouchPotato=/usr/local/nzbget/var/nzbToCouchPotato.py
 
 	v.   Set the full path where completed movies should be placed before CouchPotato's Renamer is called (option)
+		(v 9.0 only). For n 10.0 set this in the appropriate category settings in the Categories Section.
 		
 		MoviesDownloadDir=
 
-	vi.  Set the full path to any dependency required for your Custom Postprocess script if it is not in your PATH.
+	vi.  Set the full path to any dependency required for your Custom Postprocess script if it is not in your PATH.(option is required)
 	
 		CustomCmd=/usr/local/python/bin/python
 
@@ -266,6 +269,7 @@ If you are using NZBGet perform the following steps to configure postprocessing 
 		CustomScript=
 
 	viii.Set the full path where completed downloads should be placed before the Custom postprocess is called (option)
+		(v 9.0 only). For n 10.0 set this in the appropriate category settings in the Categories Section.
 		
 		CustomDownloadDir=
 	
