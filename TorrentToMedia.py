@@ -2,9 +2,10 @@
 
 #System imports
 import ConfigParser
+import logging
+import shutil
 import sys
 import os
-import shutil
 
 # Custom imports
 import linktastic.linktastic as linktastic
