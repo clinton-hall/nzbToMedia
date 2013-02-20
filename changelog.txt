@@ -1,5 +1,12 @@
 Change_LOG / History
 
+V5.0 20/02/2013
+
+Fixed Extarction and Hard-Linking support in TorrentToMedia
+Added new config options for movie file extensions, metadata extensions, compressed file extensions.
+Added braid to sync linktastic.
+All changes affect Torrent handling. Should not impact NZB handling.
+
 V4.3 17/02/2013
 
 Added Logger in TorrentToMedia.py
