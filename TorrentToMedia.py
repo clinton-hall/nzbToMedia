@@ -333,6 +333,7 @@ else:
 # Now we pass off to CouchPotato or Sick-Beard
 # Log this output
 old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
+logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
 log_file = open(logFile,"a+")
 sys.stdout = log_file
 if inputCategory == movieCategory:  
