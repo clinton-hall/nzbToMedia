@@ -11,14 +11,12 @@ import linktastic.linktastic as linktastic
 import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
-Logger = logging.getLogger()
-logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
-logging.config.fileConfig(os.path.join(os.path.dirname(sys.argv[0]), "logger.conf"))
-fileHandler = logging.FileHandler(logFile, encoding='utf-8', delay=True)
-fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
-fileHandler.level = logging.DEBUG
-Logger.addHandler(fileHandler)
+
+nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+Logger = logging.getLogger(__name__)
+
 
 def removeEmptyFolders(path):
 	if not os.path.isdir(path):
@@ -39,11 +37,12 @@ def removeEmptyFolders(path):
 		os.rmdir(path)
 
 
-
 #old_stdout = sys.stdout #backup the default stdout
 #log_file = open(os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log"),"a+")
 #sys.stdout = log_file #create a local log file, and direct all "print" to the log.
 Logger.info("TorrentToMedia %s", VERSION)
+
+
 if len(sys.argv) == 4:
 	##You can use the following parameters (UTORRENT):
 	##
@@ -73,7 +72,7 @@ if len(sys.argv) == 4:
 	##Finished - 11
 	##Queued - 12
 	##Stopped - 13
-	
+
 	## We will pass in %D, %N, %L from uTorrent
 	Logger.info("Script called from utorrent")
 	Directory = sys.argv[1]	## %D -- Example output: F:\path\to\dir\My.Series.S01E01.720p.HDTV.x264-2HD
@@ -100,7 +99,7 @@ else:
 		Logger.error("There was a problem loading variables from Transmission: Exiting")
 		sys.exit(-1)
 	Category = '' #We dont have a category, so assume the last directory is the category for now.
-	
+
 Logger.debug("Received Directory: %s", Directory)
 Logger.debug("Received Torrent Name: %s", Name)
 Logger.debug("Received Category: %s", Category)
@@ -136,7 +135,7 @@ if DirBase[1] == Name:
 		if not Category:
 			Logger.info("Determined Category to be: %s", DirBase2[1])
 			Category = DirBase2[1]
-	
+
 elif DirBase[1] == Movie_Cat or DirBase[1] == TV_Cat:
 	if os.path.isdir(os.path.join(Directory, Name)):
 		Logger.info("Found torrent directory %s in category directory %s", os.path.join(Directory, Name), Directory)
@@ -149,13 +148,13 @@ elif DirBase[1] == Movie_Cat or DirBase[1] == TV_Cat:
 	if not Category:
 		Logger.info("Determined Category to be: %s", DirBase[1])
 		Category = DirBase[1]
-		
+
 else: # no category found in directory. For Utorrent we can do a recursive scan.
 	Logger.info("The directory passed does not appear to include a category or the torrent name")
 	Logger.warn("You should change settings to download torrents to their own directory")
 	Logger.info("We will try and determine which files to process, individually")
 	root = 1
-		
+
 if Category == Movie_Cat:
 	destination = os.path.join(Movie_dest, Name)
 elif Category == TV_Cat:
@@ -182,7 +181,7 @@ if root == 1:
 				break
 			else:
 				continue
-else:				
+else:
 	ext = [os.path.splitext(file)[1] for file in f[1]]
 	if set(ext).intersection(set(test)):
 		Logger.info("Found compressed archives, extracting")
@@ -198,7 +197,7 @@ else:
 		sys.exit(-1)
 
 if useLink == 0 and packed == 0 and video == 1: ## copy
-	if root == 0: #move all files in tier own directory 
+	if root == 0: #move all files in tier own directory
 		Logger.info("Copying all files from %s to %s.", Directory, destination)
 		shutil.copytree(Directory, destination)
 	else: #we only want to move files matching the torrent name when root directory is used.
@@ -225,9 +224,9 @@ elif useLink == 1 and packed == 0 and video == 1: ## hardlink
 					continue #ignore the other files
 			source = os.path.join(dirpath, file)
 			target = os.path.join(destination, file)
-			
+
 			linktastic.link(source, target)
-	
+
 elif packed == 1: ## unpack
 	## Using Windows?
 	if os.name == 'nt':
@@ -235,7 +234,7 @@ elif packed == 1: ## unpack
 		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
 		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
 		Logger.info("We are using Windows")
-		
+
 	## Using linux?
 	elif os.name == 'posix':
 		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
@@ -252,7 +251,7 @@ elif packed == 1: ## unpack
 		".7z": ["7zr", "x"],
 		}
 		Logger.info("We are using *nix")
-		
+
 	## Need to add a check for which commands that can be utilized in *nix systems..
 	else:
 		Logger.error("Unknown OS, exiting")
@@ -263,7 +262,7 @@ elif packed == 1: ## unpack
 			if (Name in file) or (file in Name):
 				pass
 			else:
-				continue #ignore the other files		
+				continue #ignore the other files
 		ext = os.path.splitext(f)
 		fp = os.path.join(Directory, os.path.normpath(f))
 		if ext[1] in (".gz", ".bz2", ".lzma"):
@@ -286,8 +285,8 @@ elif packed == 1: ## unpack
 				continue
 
 		Logger.info("Extracting to %s", destination)
-	
-		## Running..	
+
+		## Running..
 		Logger.info("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
 		pwd = os.getcwd() # Get our Present Working Directory
 		os.chdir(destination) #not all unpack commands accept full paths, so just extract into this directory.
@@ -314,7 +313,7 @@ elif packed == 1: ## unpack
 				else:
 					Logger.error("Extraction failed for %s. 7zip result was %s", fp, res)
 			except:
-				Logger.error("Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
+				Logger.error("Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)
 		os.chdir(pwd) # Go back to our Original Working Directory
 
 for dirpath, dirnames, filenames in os.walk(destination): #flatten out the directory to make postprocessing easier.
@@ -335,7 +334,7 @@ else:
 ## Now we pass off to CouchPotato or SickBeard.
 old_stdout = sys.stdout #backup the default stdout
 sys.stdout = Logger.info #Capture the print from the autoProcess scripts.
-if Category == Movie_Cat:  
+if Category == Movie_Cat:
 	autoProcessMovie.process(destination, Name, status)
 elif Category == TV_Cat:
 	autoProcessTV.processEpisode(destination, Name, status)
