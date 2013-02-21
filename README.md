@@ -455,7 +455,7 @@ If you are using Transmission, perform the following steps to configure postproc
 		
 	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
 		
-		['music', 'music_videos', 'pictures', 'software']
+		music,music_videos,pictures,software
 		
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
@@ -531,7 +531,7 @@ If you are using Deluge, perform the following steps to configure postprocessing
 		
 	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
 		
-		['music', 'music_videos', 'pictures', 'software']
+		music,music_videos,pictures,software
 	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
@@ -587,7 +587,7 @@ Perform the following steps to configure postprocessing for "TorrentToMedia":
 		
 	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
 		
-		['music', 'music_videos', 'pictures', 'software']
+		music,music_videos,pictures,software
 	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
