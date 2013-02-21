@@ -55,7 +55,7 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                         else: #this is a problem! if we don't have Torrent name and are in the root category dir, we can't proceed.
                                 Logger.error("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s. Exiting.", categorySearch[1])
                                 sys.exit(-1) # Oh yeah.... WE ARE DONE!
-                else if categorySearch2[1] == inputName and inputName: #we have identified a unique directory.
+                elif categorySearch2[1] == inputName and inputName: #we have identified a unique directory.
                         Logger.info("SEARCH: Files appear to be in their own directory")
                         if inputCategory: #we are ok to proceed.
                                 break # we are done
@@ -63,7 +63,7 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 Logger.debug("SEARCH: Continuing scan to determin category.")
                                 continue # keep going
                 else:
-                        if x = 9: # This is the last pass in the loop and we didn't find anything.
+                        if x == 9: # This is the last pass in the loop and we didn't find anything.
                                 notfound = 1
                                 break # we are done
                         else:
@@ -237,7 +237,7 @@ config.read(configFilename)
 
 if len(sys.argv) == 2: #for other clients we assume we must at least get the directory.
         # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
-        inputDirectory = os.path.normpath(sys.argv[1)
+        inputDirectory = os.path.normpath(sys.argv[1])
         inputName = '' # We dont have a name yet
         inputCategory = '' # We dont have a category yet
 
