@@ -36,9 +36,9 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 Logger.error("SEARCH: Could not identify category in the directory structure. Please check downloader settings. Exiting")
                                 sys.exit(-1) 
                 if categorySearch2[1] in categories:
-                        Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch[1])
+                        Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch2[1])
                         if not inputCategory:
-                                Logger.info("SEARCH: Determined Category to be: %s", categorySearch[1])
+                                Logger.info("SEARCH: Determined Category to be: %s", categorySearch2[1])
                                 inputCategory = categorySearch2[1]
                         if inputName and categorySearch[0] != os.path.normpath(inputDirectory): # if we are not in the root directory and we have inputName we can continue.
                                 Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
