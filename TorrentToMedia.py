@@ -15,184 +15,212 @@ import autoProcessTV
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 
-nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))	
+nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))      
 Logger = logging.getLogger(__name__)
 
-def category_search(inputDirectory, inputCategory, root):
-	categorySearch = os.path.split(os.path.normpath(inputDirectory)) # Test for blackhole sub-directory
-	if categorySearch[1] == inputName:
-		Logger.info("SEARCH: Files appear to be in their own directory")
-		categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
-		if categorySearch2[1] == movieCategory or categorySearch2[1] == tvCategory:
-			if not inputCategory:
-				Logger.info("SEARCH: Determined Category to be: %s", categorySearch2[1])
-				inputCategory = categorySearch2[1]
-		elif not inputCategory:
-			Logger.error("SEARCH: Could not identify category from the directory structure. please check downlaoder settings")
-			sys.exit(-1)
-		else:
-			pass
-		
-	elif categorySearch[1] == movieCategory or categorySearch[1] == tvCategory:
-		if os.path.isdir(os.path.join(inputDirectory, inputName)):
-			Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(inputDirectory, inputName), inputDirectory)
-			inputDirectory = os.path.join(inputDirectory, inputName)
-		else:
-			Logger.info("SEARCH: The directory passed is the root directory for category %s", categorySearch[1])
-			Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
-			Logger.info("SEARCH: We will try and determine which files to process, individually")
-			root = 1
-		if not inputCategory:
-			Logger.info("SEARCH: Determined Category to be: %s", categorySearch[1])
-			inputCategory = categorySearch[1]
-	elif not inputCategory:
-		Logger.error("SEARCH: Could not identify category from the directory structure. please check downlaoder settings")
-		sys.exit(-1)
-	else:
-		Logger.info("SEARCH: The directory passed does not appear to include a category or the torrent name")
-		Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible and include Label/Category directories")
-		Logger.info("SEARCH: We will try and determine which files to process, individually")
-		root = 1
-	return inputDirectory, inputCategory, root 
+def category_search(inputDirectory, inputCategory, root, inputName, categories):
+        categorySearch = [os.path.normpath(inputDirectory),""] #initializie
+        notfound = 0
+        for x in range(10): # loop up through 10 directories looking for category.
+                try:
+                        categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
+                except: # this might happen when we can't go higher.
+                        if inputCategory and inputName: # if these exists, we are ok to proceed, but assume we are in a root/common directory.
+                                Logger.info("SEARCH: Could not find a category in the directory structure")
+                                Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+                                Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                                Logger.info("SEARCH: We will try and determine which files to process, individually")
+                                root = 1
+                                break #we are done
+                        else:
+                                Logger.error("SEARCH: Could not identify category in the directory structure. Please check downloader settings. Exiting")
+                                sys.exit(-1) 
+                if categorySearch2[1] in categories:
+                        Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch[1])
+                        if not inputCategory:
+                                Logger.info("SEARCH: Determined Category to be: %s", categorySearch[1])
+                                inputCategory = categorySearch2[1]
+                        if inputName and categorySearch[0] != os.path.normpath(inputDirectory): # if we are not in the root directory and we have inputName we can continue.
+                                Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
+                                break # we are done
+                        elif categorySearch[1] and not inputName: #assume the the next directory deep is the torrent name.
+                                Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0],categorySearch[1]), categorySearch[0])
+                                inputName = categorySearch[1]
+                                break # we are done
+                        elif os.path.isdir(os.path.join(categorySearch[0], inputName)) and inputName: # testing for torrent name in first sub directory
+                                Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], inputName), categorySearch[0])
+                                if categorySearch[0] == os.path.normpath(inputDirectory): #only true on first pass, x =0
+                                        inputDirectory = os.path.join(categorySearch[0], inputName) #we only want to search this next dir up.
+                                        break #we are done
+                        else: #this is a problem! if we don't have Torrent name and are in the root category dir, we can't proceed.
+                                Logger.error("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s. Exiting.", categorySearch[1])
+                                sys.exit(-1) # Oh yeah.... WE ARE DONE!
+                else if categorySearch2[1] == inputName and inputName: #we have identified a unique directory.
+                        Logger.info("SEARCH: Files appear to be in their own directory")
+                        if inputCategory: #we are ok to proceed.
+                                break # we are done
+                        else:
+                                Logger.debug("SEARCH: Continuing scan to determin category.")
+                                continue # keep going
+                else:
+                        if x = 9: # This is the last pass in the loop and we didn't find anything.
+                                notfound = 1
+                                break # we are done
+                        else:
+                                continue # keep going
+        
+        if notfound == 1:
+                if inputCategory and inputName: # if these exists, we are ok to proceed, but assume we are in a root/common directory.
+                        Logger.info("SEARCH: Could not find a category in the directory structure")
+                        Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+                        Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                        Logger.info("SEARCH: We will try and determine which files to process, individually")
+                        root = 1
+        
+        if (not inputCategory) or (not inputName): #we didn't find these after 10 loops. This is a problem.
+                        Logger.error("SEARCH: Could not identify category and torrent name from the directory structure. Please check downloader settings. Exiting")
+                        sys.exit(-1)  # Oh yeah.... WE ARE DONE!
+
+        return inputDirectory, inputCategory, root 
 
 def is_sample(filePath, inputName):
-	# 200 MB in bytes
-	SIZE_CUTOFF = 200 * 1024 * 1024
-	# Ignore 'sample' in files unless 'sample' in Torrent Name
-	if ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF):
-		return True
-	else:
-		return False
+        # 200 MB in bytes
+        SIZE_CUTOFF = 200 * 1024 * 1024
+        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        if ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF):
+                return True
+        else:
+                return False
 
 def copy_link(source, target, useLink, outputDestination):
-	# Create destination folder
-	if not os.path.exists(outputDestination):
-		try:
-			Logger.info("COPYLINK: Creating destination folder: %s", outputDestination)
-			os.makedirs(outputDestination)
-		except Exception, e:
-			Logger.error("COPYLINK: Not possible to create destination folder: %s", e)
-			return False
+        # Create destination folder
+        if not os.path.exists(outputDestination):
+                try:
+                        Logger.info("COPYLINK: Creating destination folder: %s", outputDestination)
+                        os.makedirs(outputDestination)
+                except Exception, e:
+                        Logger.error("COPYLINK: Not possible to create destination folder: %s", e)
+                        return False
 
-	if useLink:
-		try:
-			Logger.info("COPYLINK: Linking %s to %s", source, target)
-			linktastic.link(source, target)
-		except:
-			if os.path.isfile(target):
-				Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
-			else:
-				Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
-				Logger.debug("COPYLINK: Copying %s to %s", source, target)
-				shutil.copy(source, target)
-	else:
-		Logger.debug("Copying %s to %s", source, target)
-		shutil.copy(source, target)
-	return True
+        if useLink:
+                try:
+                        Logger.info("COPYLINK: Linking %s to %s", source, target)
+                        linktastic.link(source, target)
+                except:
+                        if os.path.isfile(target):
+                                Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+                        else:
+                                Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
+                                Logger.debug("COPYLINK: Copying %s to %s", source, target)
+                                shutil.copy(source, target)
+        else:
+                Logger.debug("Copying %s to %s", source, target)
+                shutil.copy(source, target)
+        return True
 
 def unpack(dirpath, file, destination):
-	# Using Windows
-	if os.name == 'nt':
-		Logger.info("EXTRACTOR: We are using Windows")
-		cmd_7zip = [extractionTool, 'x -y']
-		ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
-		EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
+        # Using Windows
+        if os.name == 'nt':
+                Logger.info("EXTRACTOR: We are using Windows")
+                cmd_7zip = [extractionTool, 'x -y']
+                ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
+                EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
 
-	# Using linux
-	elif os.name == 'posix':
-		Logger.info("EXTRACTOR: We are using *nix")
-		required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
-		EXTRACT_COMMANDS = {".rar": ["unrar", "x -o+ -y"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
+        # Using linux
+        elif os.name == 'posix':
+                Logger.info("EXTRACTOR: We are using *nix")
+                required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
+                EXTRACT_COMMANDS = {".rar": ["unrar", "x -o+ -y"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
 
-	# Need to add a check for which commands that can be utilized in *nix systems..
-	else:
-		Logger.error("EXTRACTOR: Unknown OS, exiting")
+        # Need to add a check for which commands that can be utilized in *nix systems..
+        else:
+                Logger.error("EXTRACTOR: Unknown OS, exiting")
 
-	ext = os.path.splitext(file)
-	fp = os.path.join(dirpath, file)
-	if ext[1] in (".gz", ".bz2", ".lzma"):
-	# Check if this is a tar
-		if os.path.splitext(ext[0])[1] == ".tar":
-			cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
-	else:
-		if ext[1] in EXTRACT_COMMANDS:
-			cmd = EXTRACT_COMMANDS[ext[1]]
-		else:
-			Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
-			return False
+        ext = os.path.splitext(file)
+        fp = os.path.join(dirpath, file)
+        if ext[1] in (".gz", ".bz2", ".lzma"):
+        # Check if this is a tar
+                if os.path.splitext(ext[0])[1] == ".tar":
+                        cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+        else:
+                if ext[1] in EXTRACT_COMMANDS:
+                        cmd = EXTRACT_COMMANDS[ext[1]]
+                else:
+                        Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
+                        return False
 
-	# Create destination folder
-	if not os.path.exists(destination):
-		try:
-			Logger.debug("EXTRACTOR: Creating destination folder: %s", destination)
-			os.makedirs(destination)
-		except Exception, e:
-			Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
-			return False
+        # Create destination folder
+        if not os.path.exists(destination):
+                try:
+                        Logger.debug("EXTRACTOR: Creating destination folder: %s", destination)
+                        os.makedirs(destination)
+                except Exception, e:
+                        Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
+                        return False
 
-	Logger.info("Extracting %s to %s", fp, destination)
+        Logger.info("Extracting %s to %s", fp, destination)
 
-	# Running
-	Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
-	pwd = os.getcwd() # Get our Present Working Directory
-	os.chdir(destination) # Not all unpack commands accept full paths, so just extract into this directory
-	if os.name == 'nt': # Windows needs quotes around directory structure
-		try:
-			run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" # Windows needs quotes around directories
-			res = call(run)
-			if res == 0:
-				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
-			else:
-				Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-		except:
-			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s", fp, run)
-	else:
-		try:
-			if cmd[1] == "": # If calling unzip, we dont want to pass the ""
-				res = call([cmd[0], fp])
-			else:
-				res = call([cmd[0], cmd[1], fp])
-			if res == 0:
-				Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
-			else:
-				Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-		except:
-			Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp)	
-	os.chdir(pwd) # Go back to our Original Working Directory
-	return True
+        # Running
+        Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
+        pwd = os.getcwd() # Get our Present Working Directory
+        os.chdir(destination) # Not all unpack commands accept full paths, so just extract into this directory
+        if os.name == 'nt': # Windows needs quotes around directory structure
+                try:
+                        run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" # Windows needs quotes around directories
+                        res = call(run)
+                        if res == 0:
+                                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
+                        else:
+                                Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
+                except:
+                        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s", fp, run)
+        else:
+                try:
+                        if cmd[1] == "": # If calling unzip, we dont want to pass the ""
+                                res = call([cmd[0], fp])
+                        else:
+                                res = call([cmd[0], cmd[1], fp])
+                        if res == 0:
+                                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
+                        else:
+                                Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
+                except:
+                        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp) 
+        os.chdir(pwd) # Go back to our Original Working Directory
+        return True
 
 def flatten(outputDestination):
-	Logger.info("FLATTEN: Flattening directory: %s", outputDestination)
-	for dirpath, dirnames, filenames in os.walk(outputDestination): # Flatten out the directory to make postprocessing easier
-		if dirpath == outputDestination:
-			continue # No need to try and move files in the root destination directory
-		for filename in filenames:
-			source = os.path.join(dirpath, filename)
-			target = os.path.join(outputDestination, filename)
-			try:
+        Logger.info("FLATTEN: Flattening directory: %s", outputDestination)
+        for dirpath, dirnames, filenames in os.walk(outputDestination): # Flatten out the directory to make postprocessing easier
+                if dirpath == outputDestination:
+                        continue # No need to try and move files in the root destination directory
+                for filename in filenames:
+                        source = os.path.join(dirpath, filename)
+                        target = os.path.join(outputDestination, filename)
+                        try:
                                 shutil.move(source, target)
-			except OSError:
-				Logger.info("FLATTEN: Could not flatten %s", source)
-	removeEmptyFolders(outputDestination) # Cleanup empty directories
+                        except OSError:
+                                Logger.info("FLATTEN: Could not flatten %s", source)
+        removeEmptyFolders(outputDestination) # Cleanup empty directories
 
 def removeEmptyFolders(path):
-	Logger.info("REMOVER: Removing empty folders in: %s", path)
-	if not os.path.isdir(path):
-		return
+        Logger.info("REMOVER: Removing empty folders in: %s", path)
+        if not os.path.isdir(path):
+                return
 
-	# Remove empty subfolders
-	files = os.listdir(path)
-	if len(files):
-		for f in files:
-			fullpath = os.path.join(path, f)
-			if os.path.isdir(fullpath):
-				removeEmptyFolders(fullpath)
+        # Remove empty subfolders
+        files = os.listdir(path)
+        if len(files):
+                for f in files:
+                        fullpath = os.path.join(path, f)
+                        if os.path.isdir(fullpath):
+                                removeEmptyFolders(fullpath)
 
-	# If folder empty, delete it
-	files = os.listdir(path)
-	if len(files) == 0:
-		Logger.debug("REMOVER: Removing empty folder: %s", path)
-		os.rmdir(path)
+        # If folder empty, delete it
+        files = os.listdir(path)
+        if len(files) == 0:
+                Logger.debug("REMOVER: Removing empty folder: %s", path)
+                os.rmdir(path)
 
 Logger.info("TorrentToMedia %s", VERSION)
 config = ConfigParser.ConfigParser()
@@ -201,26 +229,41 @@ configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cf
 
 ### TORRENT TO MEDIA ###
 if not os.path.isfile(configFilename):
-	Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-	sys.exit(-1)
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+        sys.exit(-1)
 
 Logger.info("MAIN: Loading config from %s", configFilename)
 config.read(configFilename)
 
-if len(sys.argv) > 2:
-        # We will pass in %D, %N, and %L (if it exists), from uTorrent
+if len(sys.argv) == 2: #for other clients we assume we must at least get the directory.
+        # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
+        inputDirectory = os.path.normpath(sys.argv[1)
+        inputName = '' # We dont have a name yet
+        inputCategory = '' # We dont have a category yet
+
+elif len(sys.argv) > 3 and sys.argv[1] == 'utorrent': #distinguish utorrent from others like deluge.
+        # We will pass in 'utorrent' '%D', '%N', and '%L' (if it exists), from uTorrent
         # In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
-        inputDirectory = os.path.normpath(sys.argv[1])
+        inputDirectory = os.path.normpath(sys.argv[2])
+        inputName = sys.argv[3]
+        try: #assume we have a label.
+                inputCategory = sys.argv[4] # We dont have a category yet
+        except:
+                inputCategory = '' # We dont have a category yet
+
+elif len(sys.argv) == 4:
+        # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
+        inputDirectory = os.path.normpath(sys.argv[3])
         inputName = sys.argv[2]
         inputCategory = '' # We dont have a category yet
-        if len (sys.argv) > 3: #assume we have a label.
-                inputCategory = sys.argv[3] # We dont have a category yet
+
 elif os.getenv('TR_TORRENT_DIR'):
         # We will pass in %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
         # In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
         inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
         inputName = os.getenv('TR_TORRENT_NAME')
         inputCategory = '' # We dont have a category yet
+
 else:
         Logger.error("MAIN: There was a problem loading variables: Exiting")
         sys.exit(-1)
@@ -241,6 +284,9 @@ extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
 compressedContainer = config.get("Torrent", "compressedExtentions")
 mediaContainer = config.get("Torrent", "mediaExtentions")
 metaContainer = config.get("Torrent", "metaExtentions")
+categories = config.get("Torrent", "categories")
+categories = categories.append(movieCategory)
+categories = categories.append(tvCategory) #now have a list of all categories in use.
 
 status = int(1) # We start as "failed" until we verify movie file in destination
 root = int(0)
@@ -249,13 +295,14 @@ video2 = int(0)
 failed_link = int(0)
 failed_extract = int(0)
 
-inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root) # Confirm the catgeogy by parsing directory structure
+inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root, inputName, categories) # Confirm the category by parsing directory structure
 if inputCategory == movieCategory:
         outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
 elif inputCategory == tvCategory:
         outputDestination = os.path.normpath(os.path.join(tvDestination, inputName))
 else:
         Logger.error("MAIN: Category of %s does not match either %s or %s: Exiting", inputCategory, movieCategory, tvCategory)
+        Logger.debug("MAIN: Future versions of this script might do something for Category: %s. Keep updating ;)", inputCategory)
         sys.exit(-1)
 
 Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
