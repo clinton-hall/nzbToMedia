@@ -19,7 +19,7 @@ The renamer of CouchPotatoServer caused broken downloads by interfering with NZB
 Failed download handling for SickBeard is available by using the development branch from fork [SickBeard-failed](https://github.com/Tolstyak/Sick-Beard.git "SickBeard-failed")
 To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Default is 0 and will work with standard version of SickBeard and just ignores failed downloads.
 
-Torrent support has been added with the assistance of [jkaberg](https://github.com/jkaberg "jkaberg").
+Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmissions, Deluge and possibly more.
 
 Installation
 ------------
