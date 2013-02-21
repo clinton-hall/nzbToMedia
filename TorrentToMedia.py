@@ -61,12 +61,14 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 break # we are done
                         else:
                                 Logger.debug("SEARCH: Continuing scan to determin category.")
+                                categorySearch=categorySearch2 #ready for next loop
                                 continue # keep going
                 else:
                         if x == 9: # This is the last pass in the loop and we didn't find anything.
                                 notfound = 1
                                 break # we are done
                         else:
+                                categorySearch=categorySearch2 #ready for next loop
                                 continue # keep going
         
         if notfound == 1:
