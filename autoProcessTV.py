@@ -110,7 +110,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
                 
     # this is our default behaviour to work with the standard Master branch of SickBeard
     else:
-        params['dir'] = dirName
+        params['dirName'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
         # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
