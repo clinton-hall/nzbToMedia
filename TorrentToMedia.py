@@ -52,6 +52,13 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 if categorySearch[0] == os.path.normpath(inputDirectory): #only true on first pass, x =0
                                         inputDirectory = os.path.join(categorySearch[0], inputName) #we only want to search this next dir up.
                                         break #we are done
+                        elif inputName: # if these exists, we are ok to proceed, but we are in a root/common directory.
+                                Logger.info("SEARCH: Could not find a unique torrent folder in the directory structure")
+                                Logger.info("SEARCH: The directory passed is the root directory for category %s", categorySearch2[1])
+                                Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                                Logger.info("SEARCH: We will try and determine which files to process, individually")
+                                root = 1
+                                break #we are done
                         else: #this is a problem! if we don't have Torrent name and are in the root category dir, we can't proceed.
                                 Logger.error("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s. Exiting.", categorySearch[1])
                                 sys.exit(-1) # Oh yeah.... WE ARE DONE!
