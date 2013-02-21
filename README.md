@@ -388,35 +388,39 @@ If you are using µTorrent, perform the following steps to configure postprocess
 		
 		C:\Program Files\7-Zip\7z.exe' 
 		
-	iii. [Torrent] compressedExtentions: all extensions you want to be identified and extracted
+	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
+		
+		['music', 'music_videos', 'pictures', 'software']
+	
+	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
 		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
  	
-	iv.  [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
+	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
 		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
 	
-	v.   [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
+	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
 		['.nfo', '.sub', '.srt', '.jpg', '.gif']
 
-	vi.  [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
+	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
 		
 		e.g. tv or movies
 		
-	vii. [CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
+	viii.[CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
 		this destination, for CouchPotato, must match the CouchPotato Renamer's, "from" directory.
 		
-	iv.  [CouchPotato] & [SickBeard]: 
+	ix.  [CouchPotato] & [SickBeard]: 
 		Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
 2. In µTorrent go to preferences > Advanced > Run Program > Run this program when torrent finishes:
  
-	i.   Set full path to script, pass paramaters as "%D" "%N" "%L".
+	i.   Set full path to script, pass paramaters as "utorrent" "%D" "%N" "%L".
 	
-		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "%D" "%N" "%L"
+		/usr/local/utorrent/nzbToMedia/TorrentToMedia.py "utorrent" "%D" "%N" "%L"
 	
 3. In uTorrent set the following directories.
  
@@ -447,33 +451,37 @@ If you are using Transmission, perform the following steps to configure postproc
 
 	ii.  [Torrent] extractiontool (Windows Only...you will need to install [7-zip](http://www.7-zip.org/ "7-zip"))
 		
-		C:\Program Files\7-Zip\7z.exe' 
+		C:\Program Files\7-Zip\7z.exe'
 		
-	iii. [Torrent] compressedExtentions: all extensions you want to be identified and extracted
+	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
+		
+		['music', 'music_videos', 'pictures', 'software']
+		
+	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
 		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
  	
-	iv.  [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
+	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
 		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
 	
-	v.   [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
+	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
 		['.nfo', '.sub', '.srt', '.jpg', '.gif']
 
-	vi.  [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
+	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		This is the last folder name in the directory path passed as "directory for completed downloads."
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
 		
 		e.g. tv or movies
 		
-	vii. [CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
+	viii.[CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
 		this destination, for CouchPotato, must match the CouchPotato Renamer's, "from" directory.
 			
 		/usr/local/extracted/movies
 		/usr/local/extracted/tv
 		
-	iv.  [CouchPotato] & [SickBeard]: 
+	ix.  [CouchPotato] & [SickBeard]: 
 		Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
 
 
@@ -502,6 +510,117 @@ If you are using Transmission, perform the following steps to configure postproc
 				 
     		"watch-dir": "/usr/local/blackhole',
     		"watch-dir-enabled": true,
+
+4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+
+### Deluge
+
+If you are using Deluge, perform the following steps to configure postprocessing for "TorrentToMedia":
+
+1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
+
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Any movement across hard disks / network MUST use "0"
+
+	ii.  [Torrent] extractiontool (Windows Only...you will need to install [7-zip](http://www.7-zip.org/ "7-zip"))
+		
+		C:\Program Files\7-Zip\7z.exe' 
+		
+	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
+		
+		['music', 'music_videos', 'pictures', 'software']
+	
+	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
+		
+		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+ 	
+	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
+		
+		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+	
+	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
+		
+		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+
+	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
+		
+		e.g. tv or movies
+		
+	viii.[CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
+		this destination, for CouchPotato, must match the CouchPotato Renamer's, "from" directory.
+		
+	ix.  [CouchPotato] & [SickBeard]: 
+		Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
+
+
+2. In Deluge, enable the plugin in the Plugins menu in Preferences. 
+	For the webUI; reopen the Preferences menu for the Execute plugin to be available.
+	Note: After enabling this plugin Deluge may require restarted for it to work properly.
+	The events Torrent Complete should be selected and the full path to the script entered 
+
+		/usr/local/deluge/nzbToMedia/TorrentToMedia.py
+	
+3. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
+
+
+### Other Torrent client - BlackHole
+
+If you are using another client this may work as long as you can configure the output parameters for postprocessing.
+At minimum we must be able to pass through the torrent downlaod directory.
+If you ahve another torrent client and can provide a list of output vriables, please post this under issues and I will try to add your client.
+Perform the following steps to configure postprocessing for "TorrentToMedia":
+
+1. Rename the autoProcessMedia.cfg.sample to autoProcessMedia.cfg and edit the parameters:
+
+	i.   [Torrent} uselink = 1 to allow hard-linking of files
+		quicker and less harddisk used, if download and final location are on the same hard-disk
+		set uselink = 0 to use normal copy options. 
+		Any movement across hard disks / network MUST use "0"
+
+	ii.  [Torrent] extractiontool (Windows Only...you will need to install [7-zip](http://www.7-zip.org/ "7-zip"))
+		
+		C:\Program Files\7-Zip\7z.exe' 
+		
+	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
+		
+		['music', 'music_videos', 'pictures', 'software']
+	
+	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
+		
+		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+ 	
+	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
+		
+		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+	
+	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
+		
+		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+
+	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
+		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
+		
+		e.g. tv or movies
+		
+	viii.[CouchPotato] & [SickBeard] outputDirectory: you must set the absoluet path to extract videos to.
+		this destination, for CouchPotato, must match the CouchPotato Renamer's, "from" directory.
+		
+	ix.  [CouchPotato] & [SickBeard]: 
+		Configure the remaining settings as describes in nzbToCouchPotato and nzbToSickBeard above.
+
+
+2. In your download client, enable the postprocess script and add any output parameters if configurable.
+	note: configurable outputs should be set as uTorrent ("utorrent" "directory" "name" "label")
+	or deluge ("id" "name" "directory")... "id" can be anything as it is not used.
+
+		/usr/local/nzbToMedia/TorrentToMedia.py
+	
+3. See the details in the FOLDER STRUCTURE section below to assist with configuration. 
+	Please share your results and configurations here or on the couchpota.to forums.
 
 4. Output from TorrentToMedia will be logged where the scripts reside, in a file called "postprocess.log"
 
