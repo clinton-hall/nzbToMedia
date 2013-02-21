@@ -285,8 +285,9 @@ compressedContainer = config.get("Torrent", "compressedExtentions")
 mediaContainer = config.get("Torrent", "mediaExtentions")
 metaContainer = config.get("Torrent", "metaExtentions")
 categories = config.get("Torrent", "categories")
-categories = categories.append(movieCategory)
-categories = categories.append(tvCategory) #now have a list of all categories in use.
+categories = categories.split(',') #convert to list.
+categories.append(movieCategory)
+categories.append(tvCategory) #now have a list of all categories in use.
 
 status = int(1) # We start as "failed" until we verify movie file in destination
 root = int(0)
