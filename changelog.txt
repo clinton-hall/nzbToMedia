@@ -1,5 +1,11 @@
 Change_LOG / History
 
+V5.1 21/02/2013
+Improved category search to loop through directory structure.
+Added support for deluge and potentially other Torrent clients.
+uTorrent now must pass "utorrent" before "%D" "%N" "%L"
+All changes affect Torrent handling. Should not impact NZB handling.
+
 V5.0 20/02/2013
 
 Fixed Extarction and Hard-Linking support in TorrentToMedia
