@@ -22,7 +22,7 @@ To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Def
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmissions, Deluge and possibly more.
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
 	
-	"unrar", "unzip", "tar", "unxz", "unlzma", "7zr"
+	"unrar", "unzip", "tar", "7zr"
 
 
 Installation
