@@ -6,6 +6,7 @@ import sys
 import os
 import shutil
 import logging
+import datetime
 from subprocess import call
 
 # Custom imports
@@ -18,7 +19,7 @@ from nzbToMediaUtil import *
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))      
 Logger = logging.getLogger(__name__)
 
-def category_search(inputDirectory, inputCategory, root, inputName, categories):
+def category_search(inputDirectory, inputName, inputCategory, root, categories):
         categorySearch = [os.path.normpath(inputDirectory),""] #initializie
         notfound = 0
         for x in range(10): # loop up through 10 directories looking for category.
@@ -26,14 +27,21 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                         categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
                 except: # this might happen when we can't go higher.
                         if inputCategory and inputName: # if these exists, we are ok to proceed, but assume we are in a root/common directory.
-                                Logger.info("SEARCH: Could not find a category in the directory structure")
+                                Logger.info("SEARCH: Could not find a Torrent Name or category in the directory structure")
                                 Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
                                 Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
                                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                                 root = 1
                                 break #we are done
+                        elif inputCategory: # if this exists, we are ok to proceed, but assume we are in a root/common directory and we have to check file dates.
+                                Logger.info("SEARCH: Could not find a Torrent Name or Category in the directory structure")
+                                Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+                                Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                                Logger.info("SEARCH: We will try and determine which files to process, individually")
+                                root = 2
+                                break #we are done
                         else:
-                                Logger.error("SEARCH: Could not identify category in the directory structure. Please check downloader settings. Exiting")
+                                Logger.error("SEARCH: Could not identify Category of Torrent Name in the directory structure. Please check downloader settings. Exiting")
                                 sys.exit(-1) 
                 if categorySearch2[1] in categories:
                         Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch2[1])
@@ -41,10 +49,17 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 Logger.info("SEARCH: Determined Category to be: %s", categorySearch2[1])
                                 inputCategory = categorySearch2[1]
                         if inputName and categorySearch[0] != os.path.normpath(inputDirectory): # if we are not in the root directory and we have inputName we can continue.
+                                if ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName): # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
+                                        Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
+                                        inputName = categorySearch[1]
                                 Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
                                 break # we are done
                         elif categorySearch[1] and not inputName: #assume the the next directory deep is the torrent name.
                                 Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0],categorySearch[1]), categorySearch[0])
+                                inputName = categorySearch[1]
+                                break # we are done
+                        elif ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName): # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
+                                Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
                                 inputName = categorySearch[1]
                                 break # we are done
                         elif os.path.isdir(os.path.join(categorySearch[0], inputName)) and inputName: # testing for torrent name in first sub directory
@@ -60,8 +75,11 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                                 root = 1
                                 break #we are done
                         else: #this is a problem! if we don't have Torrent name and are in the root category dir, we can't proceed.
-                                Logger.error("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s. Exiting.", categorySearch[1])
-                                sys.exit(-1) # Oh yeah.... WE ARE DONE!
+                                Logger.warn("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s.", categorySearch[1])
+                                Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                                Logger.info("SEARCH: We will try and determine which files to process, individually")
+                                root = 2
+                                break
                 elif categorySearch2[1] == inputName and inputName: #we have identified a unique directory.
                         Logger.info("SEARCH: Files appear to be in their own directory")
                         if inputCategory: #we are ok to proceed.
@@ -85,12 +103,17 @@ def category_search(inputDirectory, inputCategory, root, inputName, categories):
                         Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
                         Logger.info("SEARCH: We will try and determine which files to process, individually")
                         root = 1
-        
-        if (not inputCategory) or (not inputName): #we didn't find these after 10 loops. This is a problem.
+                elif inputCategory: # if this exists, we are ok to proceed, but assume we are in a root/common directory and we have to check file dates.
+                        Logger.info("SEARCH: Could not find a Torrent Name or Category in the directory structure")
+                        Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+                        Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                        Logger.info("SEARCH: We will try and determine which files to process, individually")
+                        root = 2
+        if not inputCategory: #we didn't find this after 10 loops. This is a problem.
                         Logger.error("SEARCH: Could not identify category and torrent name from the directory structure. Please check downloader settings. Exiting")
                         sys.exit(-1)  # Oh yeah.... WE ARE DONE!
 
-        return inputDirectory, inputCategory, root 
+        return inputDirectory, inputName, inputCategory, root 
 
 def is_sample(filePath, inputName):
         # 200 MB in bytes
@@ -290,11 +313,10 @@ movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory")
 # Torrent specific
 useLink = int(config.get("Torrent", "useLink"))
 extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
-compressedContainer = config.get("Torrent", "compressedExtentions")
-mediaContainer = config.get("Torrent", "mediaExtentions")
-metaContainer = config.get("Torrent", "metaExtentions")
-categories = config.get("Torrent", "categories")
-categories = categories.split(',') #convert to list.
+compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')
+mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')
+metaContainer = (config.get("Torrent", "metaExtentions")).split(',')
+categories = (config.get("Torrent", "categories")).split(',')
 categories.append(movieCategory)
 categories.append(tvCategory) #now have a list of all categories in use.
 
@@ -305,7 +327,7 @@ video2 = int(0)
 failed_link = int(0)
 failed_extract = int(0)
 
-inputDirectory, inputCategory, root = category_search(inputDirectory, inputCategory, root, inputName, categories) # Confirm the category by parsing directory structure
+inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories) # Confirm the category by parsing directory structure
 if inputCategory == movieCategory:
         outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
 elif inputCategory == tvCategory:
@@ -316,15 +338,30 @@ else:
         sys.exit(-1)
 
 Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
+numloop = 0
+now = datetime.datetime.now()
 for dirpath, dirnames, filenames in os.walk(inputDirectory):
         for file in filenames:
                 if root == 1:
-                        Logger.debug("MAIN: Looking for %s in filename", inputName)
+                        if numloop == 0: # only log this once.
+                                Logger.debug("MAIN: Looking for %s in filename", inputName)
+                                numloop = numloop + 1
                         if (inputName in file) or (os.path.splitext(file)[0] in inputName):
                                 pass # This file does match the Torrent name
                                 Logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
                         else:
                                 continue # This file does not match the Torrent name, skip it
+                if root == 2:
+                        if numloop == 0: # only log this once.
+                                Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
+                                numloop = numloop + 1
+                        mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
+                        ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
+                        if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
+                                pass # This file does match the date time criteria
+                                Logger.debug("Found file %s with date modifed/created less than 5 minutes ago.", file)
+                        else:
+                                continue # This file has not been recently moved or created, skip it
                 filePath = os.path.join(dirpath, file)
                 fileExtention = os.path.splitext(file)[1]
                 if fileExtention in mediaContainer: # If the file is a video file
