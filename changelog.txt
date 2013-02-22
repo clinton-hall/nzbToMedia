@@ -1,9 +1,11 @@
 Change_LOG / History
 
-V5.1 21/02/2013
+V5.1 22/02/2013
 Improved category search to loop through directory structure.
 Added support for deluge and potentially other Torrent clients.
 uTorrent now must pass "utorrent" before "%D" "%N" "%L"
+added test for date modified (less than 5 mins ago) if root directory and no torrent name.
+".cp(ttxxxxxx)" tag preserved in directory name for CPS renaming.
 All changes affect Torrent handling. Should not impact NZB handling.
 
 V5.0 20/02/2013
@@ -11,6 +13,7 @@ V5.0 20/02/2013
 Fixed Extarction and Hard-Linking support in TorrentToMedia
 Added new config options for movie file extensions, metadata extensions, compressed file extensions.
 Added braid to sync linktastic.
+Windows Builds now run without console displaying.
 All changes affect Torrent handling. Should not impact NZB handling.
 
 V4.3 17/02/2013
