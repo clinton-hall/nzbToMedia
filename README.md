@@ -23,6 +23,7 @@ Torrent support has been added with the assistance of jkaberg and berkona. Curre
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
 	
 	"unrar", "unzip", "tar", "7zr"
+	note: "7zr" is available from the p7zip package. Available on optware.
 
 
 Installation
