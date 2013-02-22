@@ -20,6 +20,10 @@ Failed download handling for SickBeard is available by using the development bra
 To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Default is 0 and will work with standard version of SickBeard and just ignores failed downloads.
 
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmissions, Deluge and possibly more.
+To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
+	
+	"unrar", "unzip", "tar", "unxz", "unlzma", "7zr"
+
 
 Installation
 ------------
@@ -32,7 +36,7 @@ For nzbget downlaod the Full package with nzbget support (including shell script
 
 Copy all files from *\nzbToMedia\nzbget-postprocessing-files\Shell\ to a location in your system path, 
 or add the location of these files to the system path.
-e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\Sheel" to system path.
+e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\Shell" to system path.
 
 ### General
 
