@@ -390,19 +390,19 @@ If you are using µTorrent, perform the following steps to configure postprocess
 		
 	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
 		
-		['music', 'music_videos', 'pictures', 'software']
+		music,music_videos,pictures,software
 	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
-		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+		.zip,.rar,.7z,.gz,.bz,.tar,.arj
  	
 	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
-		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+		.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 	
 	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
-		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+		.nfo,.sub,.srt,.jpg,.gif
 
 	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
@@ -456,18 +456,18 @@ If you are using Transmission, perform the following steps to configure postproc
 	iii. [Torrent] categories: all categories/labels/sub-directories used by your downloader.
 		
 		music,music_videos,pictures,software
-		
+	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
-		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+		.zip,.rar,.7z,.gz,.bz,.tar,.arj
  	
 	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
-		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+		.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 	
 	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
-		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+		.nfo,.sub,.srt,.jpg,.gif
 
 	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		This is the last folder name in the directory path passed as "directory for completed downloads."
@@ -535,15 +535,15 @@ If you are using Deluge, perform the following steps to configure postprocessing
 	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
-		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+		.zip,.rar,.7z,.gz,.bz,.tar,.arj
  	
 	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
-		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+		.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 	
 	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
-		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+		.nfo,.sub,.srt,.jpg,.gif
 
 	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
@@ -591,15 +591,15 @@ Perform the following steps to configure postprocessing for "TorrentToMedia":
 	
 	iv.  [Torrent] compressedExtentions: all extensions you want to be identified and extracted
 		
-		['.zip', '.rar', '.7z', '.gz', '.bz', '.tar', '.arj']
+		.zip,.rar,.7z,.gz,.bz,.tar,.arj
  	
 	v.   [Torrent] mediaExtentions: all extensions you want to be identified as videos and processed.
 		
-		['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.vob', '.iso']
+		.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 	
 	vi.  [Torrent] metaExtentions: all other extensions you want to be processed. other extensions will be ignored.
 		
-		['.nfo', '.sub', '.srt', '.jpg', '.gif']
+		.nfo,.sub,.srt,.jpg,.gif
 
 	vii. [CouchPotato] & [SickBeard] category: you must set the category that is passed from these applications
 		If using "blackhole-subdirectory", this is the last folder name used in the blackhole.
