@@ -161,8 +161,7 @@ def unpack(dirpath, file, destination):
         # Using linux
         elif os.name == 'posix':
                 Logger.info("EXTRACTOR: We are using *nix")
-                required_cmds=["unrar", "unzip", "tar", "unxz", "unlzma", "7zr"]
-                EXTRACT_COMMANDS = {".rar": ["unrar", "x -o+ -y"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
+                EXTRACT_COMMANDS = {".rar": ["unrar", "e"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
 
         # Need to add a check for which commands that can be utilized in *nix systems..
         else:
