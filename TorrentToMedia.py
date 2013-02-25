@@ -8,7 +8,6 @@ import shutil
 import logging
 import datetime
 import time
-import urllib2
 from subprocess import call
 
 
