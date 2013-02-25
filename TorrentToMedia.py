@@ -7,7 +7,10 @@ import os
 import shutil
 import logging
 import datetime
+import time
+import urllib2
 from subprocess import call
+
 
 # Custom imports
 import linktastic.linktastic as linktastic
@@ -15,6 +18,7 @@ import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
+from utorrent.client import UTorrentClient
 
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))      
 Logger = logging.getLogger(__name__)
@@ -272,7 +276,7 @@ if len(sys.argv) == 2: #for other clients we assume we must at least get the dir
         inputName = '' # We dont have a name yet
         inputCategory = '' # We dont have a category yet
 
-elif len(sys.argv) > 3 and sys.argv[1] == 'utorrent': #distinguish utorrent from others like deluge.
+elif len(sys.argv) > 4 and sys.argv[1] == 'utorrent': #distinguish utorrent from others like deluge.
         # We will pass in 'utorrent' '%D', '%N', and '%L' (if it exists), from uTorrent
         # In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
         inputDirectory = os.path.normpath(sys.argv[2])
@@ -281,6 +285,7 @@ elif len(sys.argv) > 3 and sys.argv[1] == 'utorrent': #distinguish utorrent from
                 inputCategory = sys.argv[4] # We dont have a category yet
         except:
                 inputCategory = '' # We dont have a category yet
+        inputHash = sys.argv[5]
 
 elif len(sys.argv) == 4:
         # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
@@ -312,6 +317,9 @@ movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory")
 # Torrent specific
 useLink = int(config.get("Torrent", "useLink"))
 extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
+uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")
+uTorrentUSR = config.get("Torrent", "uTorrentUSR")
+uTorrentPWD = config.get("Torrent", "uTorrentPWD")
 compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')
 mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')
 metaContainer = (config.get("Torrent", "metaExtentions")).split(',')
@@ -429,11 +437,26 @@ old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
 logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
 log_file = open(logFile,"a+")
 sys.stdout = log_file
-if inputCategory == movieCategory:  
+
+# Hardlink solution with uTorrent
+if inputHash and useLink:  
+    Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to pause download")
+    utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+    utorrentClass.stop(inputHash)
+    time.sleep(10)
+
+if inputCategory == movieCategory:
         Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")
         autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
         Logger.info("MAIN: Calling postprocessing script for Sick-Beard")
         autoProcessTV.processEpisode(outputDestination, inputName, status)
+
+# Hardlink solution with uTorrent
+if inputHash and useLink:
+    Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to resume download")
+    utorrentClass.start(inputHash)
+    time.sleep(10)
+            
 sys.stdout = old_stdout
 log_file.close()
