@@ -28,6 +28,9 @@ watch_dir=
 failed_fork=0
 
 [Torrent]
+# Set to whatever torrent client you use.
+# Supported values: utorrent, transmission, deluge, other
+clientAgent = other
 useLink = 0
 extractionTool = C:\Program Files\7-Zip\7z.exe
 categories = music,music_videos,pictures,software
