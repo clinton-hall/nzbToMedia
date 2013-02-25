@@ -429,7 +429,6 @@ elif failed_extract == 1 and failed_link == 0: #failed to extract files only.
 else:
         Logger.info("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
-       
 # Now we pass off to CouchPotato or Sick-Beard
 # Log this output
 old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
@@ -442,7 +441,7 @@ if inputHash and useLink:
     Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to pause download")
     utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
     utorrentClass.stop(inputHash)
-    time.sleep(10)
+    time.sleep(5)
 
 if inputCategory == movieCategory:
         Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")
@@ -455,7 +454,5 @@ elif inputCategory == tvCategory:
 if inputHash and useLink:
     Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to resume download")
     utorrentClass.start(inputHash)
-    time.sleep(10)
-            
 sys.stdout = old_stdout
 log_file.close()
