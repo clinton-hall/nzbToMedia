@@ -269,37 +269,11 @@ if not os.path.isfile(configFilename):
 Logger.info("MAIN: Loading config from %s", configFilename)
 config.read(configFilename)
 
-if len(sys.argv) == 2: #for other clients we assume we must at least get the directory.
-        # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
-        inputDirectory = os.path.normpath(sys.argv[1])
-        inputName = '' # We dont have a name yet
-        inputCategory = '' # We dont have a category yet
+clientAgent = config.get("Torrent", "clientAgent")
 
-elif len(sys.argv) > 4 and sys.argv[1] == 'utorrent': #distinguish utorrent from others like deluge.
-        # We will pass in 'utorrent' '%D', '%N', and '%L' (if it exists), from uTorrent
-        # In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
-        inputDirectory = os.path.normpath(sys.argv[2])
-        inputName = sys.argv[3]
-        try: #assume we have a label.
-                inputCategory = sys.argv[4] # We dont have a category yet
-        except:
-                inputCategory = '' # We dont have a category yet
-        inputHash = sys.argv[5]
-
-elif len(sys.argv) == 4:
-        # We will assume this to be the passin from deluge. torrent id, torrent name, torrent save path.
-        inputDirectory = os.path.normpath(sys.argv[3])
-        inputName = sys.argv[2]
-        inputCategory = '' # We dont have a category yet
-
-elif os.getenv('TR_TORRENT_DIR'):
-        # We will pass in %TR_TORRENT_DIR% %TR_TORRENT_NAME% from Transmission
-        # In short pass "/path/to/downloaded/torrent/ name" to TorrentToMedia.py, eg  >>>> TorrentToMedia.py /Downloaded/MovieName.2013.BluRay.1080p.x264-10bit.DTS MovieName.2013.BluRay.1080p.x264-10bit.DTS <<<<
-        inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
-        inputName = os.getenv('TR_TORRENT_NAME')
-        inputCategory = '' # We dont have a category yet
-
-else:
+try:
+        parse_args(clientAgent)
+except:
         Logger.error("MAIN: There was a problem loading variables: Exiting")
         sys.exit(-1)
 
