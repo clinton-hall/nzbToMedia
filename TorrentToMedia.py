@@ -22,6 +22,11 @@ from utorrent.client import UTorrentClient
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
+
+def category_search_recurs(inputDirectory, inputName, root, categories):
+  pass
+
+
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
   categorySearch = [os.path.normpath(inputDirectory),""] #initializie
   notfound = 0
@@ -272,7 +277,7 @@ config.read(configFilename)
 clientAgent = config.get("Torrent", "clientAgent")
 
 try:
-  parse_args(clientAgent)
+  inputDirectory, inputName, inputCategory = parse_args(clientAgent)
 except:
   Logger.error("MAIN: There was a problem loading variables: Exiting")
   sys.exit(-1)
