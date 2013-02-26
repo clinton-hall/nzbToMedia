@@ -13,6 +13,7 @@ from subprocess import call
 
 # Custom imports
 import linktastic.linktastic as linktastic
+import extractor.extractor as extractor
 import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
@@ -28,15 +29,15 @@ def category_search_recurs(inputDirectory, inputName, root, categories):
 
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
-  categorySearch = [os.path.normpath(inputDirectory),""] #initializie
-  notfound = 0
-  for x in range(10): # loop up through 10 directories looking for category.
-    try:
-      categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
-    except: # this might happen when we can't go higher.
-      if inputCategory and inputName: # if these exists, we are ok to proceed, but assume we are in a root/common directory.
-        Logger.info("SEARCH: Could not find a Torrent Name or category in the directory structure")
-          Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+    categorySearch = [os.path.normpath(inputDirectory),""] #initializie
+    notfound = 0
+    for x in range(10): # loop up through 10 directories looking for category.
+        try:
+            categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
+        except: # this might happen when we can't go higher.
+            if inputCategory and inputName: # if these exists, we are ok to proceed, but assume we are in a root/common directory.
+                Logger.info("SEARCH: Could not find a Torrent Name or category in the directory structure")
+                Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
                 Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                 root = 1
@@ -156,76 +157,6 @@ def copy_link(source, target, useLink, outputDestination):
         shutil.copy(source, target)
     return True
 
-def unpack(dirpath, file, destination):
-    # Using Windows
-    if os.name == 'nt':
-        Logger.info("EXTRACTOR: We are using Windows")
-        cmd_7zip = [extractionTool, 'x -y']
-        ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
-        EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
-
-    # Using linux
-    elif os.name == 'posix':
-        Logger.info("EXTRACTOR: We are using *nix")
-        EXTRACT_COMMANDS = {".rar": ["unrar", "e"], ".zip": ["unzip", ""], ".tar.gz": ["tar", "xzf"], ".tgz": ["tar", "xzf"], ".tar.bz2": ["tar", "xjf"], ".tbz": ["tar", "xjf"], ".tar.lzma": ["tar", "--lzma xf"], ".tlz": ["tar", "--lzma xf"], ".txz": ["tar", "--xz xf"], ".7z": ["7zr", "x"],}
-
-    # Need to add a check for which commands that can be utilized in *nix systems..
-    else:
-        Logger.error("EXTRACTOR: Unknown OS, exiting")
-
-    ext = os.path.splitext(file)
-    fp = os.path.join(dirpath, file)
-    if ext[1] in (".gz", ".bz2", ".lzma"):
-    # Check if this is a tar
-        if os.path.splitext(ext[0])[1] == ".tar":
-            cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
-    else:
-        if ext[1] in EXTRACT_COMMANDS:
-            cmd = EXTRACT_COMMANDS[ext[1]]
-        else:
-            Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
-            return False
-
-    # Create destination folder
-    if not os.path.exists(destination):
-        try:
-            Logger.debug("EXTRACTOR: Creating destination folder: %s", destination)
-            os.makedirs(destination)
-        except Exception, e:
-            Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
-            return False
-
-    Logger.info("Extracting %s to %s", fp, destination)
-
-    # Running
-    Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], fp, destination)
-    pwd = os.getcwd() # Get our Present Working Directory
-    os.chdir(destination) # Not all unpack commands accept full paths, so just extract into this directory
-    if os.name == 'nt': # Windows needs quotes around directory structure
-        try:
-            run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + fp + "\"" # Windows needs quotes around directories
-            res = call(run)
-            if res == 0:
-                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
-            else:
-                Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-        except:
-            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s", fp, run)
-    else:
-        try:
-            if cmd[1] == "": # If calling unzip, we dont want to pass the ""
-                res = call([cmd[0], fp])
-            else:
-                res = call([cmd[0], cmd[1], fp])
-            if res == 0:
-                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", fp, destination)
-            else:
-                Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", fp, res)
-        except:
-            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", fp, cmd[0], cmd[1], fp) 
-    os.chdir(pwd) # Go back to our Original Working Directory
-    return True
-
 def flatten(outputDestination):
     Logger.info("FLATTEN: Flattening directory: %s", outputDestination)
     for dirpath, dirnames, filenames in os.walk(outputDestination): # Flatten out the directory to make postprocessing easier
@@ -292,7 +223,6 @@ movieCategory = config.get("CouchPotato", "category")
 movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
 # Torrent specific
 useLink = int(config.get("Torrent", "useLink"))
-extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
 uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")
 uTorrentUSR = config.get("Torrent", "uTorrentUSR")
 uTorrentPWD = config.get("Torrent", "uTorrentPWD")
@@ -372,9 +302,10 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
             source = filePath
             target = os.path.join(outputDestination, file)
-            state = unpack(dirpath, file, outputDestination)
-            if state == False:
-                Logger.info("MAIN: Failed to unpack file %s", file)
+            try:
+                extractor.extract(dirpath, file, outputDestination)
+            except:
+                Logger.warn("Extraction failed")
                 failed_extract = 1
         else:
             Logger.info("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
