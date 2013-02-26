@@ -4,9 +4,9 @@ import logging
 
 Logger = logging.getLogger(__name__)
 
+# which() breaks when running in Transmission (has to do with os.environ["PATH"])
 def which(program):
     # Author Credit: Jay @ http://stackoverflow.com/a/377028
-    import os
     def is_exe(fpath):
         return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
 
@@ -62,7 +62,7 @@ def extract(dirpath, file, outputDestination):
                         log.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
                         del EXTRACT_COMMANDS[k]
         if not EXTRACT_COMMANDS:
-            raise Exception("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
+            Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
     ext = os.path.splitext(file)
     filePath = os.path.join(dirpath, file)
