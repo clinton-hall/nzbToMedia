@@ -69,7 +69,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 break  # we are done
             elif os.path.isdir(os.path.join(categorySearch[0], inputName)) and inputName:  # testing for torrent name in first sub directory
                 Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], inputName), categorySearch[0])
-                if categorySearch[0] == os.path.normpath(inputDirectory):  #only true on first pass, x =0
+                if categorySearch[0] == os.path.normpath(inputDirectory):  # only true on first pass, x =0
                     inputDirectory = os.path.join(categorySearch[0], inputName)  # we only want to search this next dir up.
                 break  # we are done
             elif inputName:  # if these exists, we are ok to proceed, but we are in a root/common directory.
@@ -123,12 +123,10 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
 def is_sample(filePath, inputName):
     # 200 MB in bytes
+    # Maybe let the users change this?
     SIZE_CUTOFF = 200 * 1024 * 1024
     # Ignore 'sample' in files unless 'sample' in Torrent Name
-    if ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF):
-        return True
-    else:
-        return False
+    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
 def copy_link(source, target, useLink, outputDestination):
@@ -392,6 +390,7 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
                 Logger.info("file %s is a sample file. Removing", filePath)
                 os.unlink(filePath)  # remove samples
             else:
+                videofile = filePath
                 video2 = video2 + 1
 if video2 >= video and video2 > 0:  # Check that all video files were moved
     status = 0
@@ -407,12 +406,6 @@ elif failed_extract == 1 and failed_link == 0:  # failed to extract files only.
 else:
     Logger.info("MAIN: Something failed! Please check logs. Exiting")
     sys.exit(-1)
-# Now we pass off to CouchPotato or Sick-Beard
-# Log this output
-old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
-logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
-log_file = open(logFile, "a+")
-sys.stdout = log_file
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
@@ -420,17 +413,32 @@ if inputHash and useLink:
     utorrentClass.stop(inputHash)
     time.sleep(5)  # Give uTorrent some time to catch up with the change
 
+# Log this output
+old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
+logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
+log_file = open(logFile, "a+")
+sys.stdout = log_file
+
+# Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")
+    Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")  # can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-    Logger.info("MAIN: Calling postprocessing script for Sick-Beard")
+    Logger.info("MAIN: Calling postprocessing script for Sick-Beard")  # can we use logger while logfile open?
     autoProcessTV.processEpisode(outputDestination, inputName, status)
+
+sys.stdout = old_stdout
+log_file.close()
+
+now = datetime.datetime.now()  # set time for timeout
+while os.path.exists(videofile):  # while this file is still here, CPS hasn't finished renaming
+    if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
+        Logger.info("MAIN: The file %s has not been moved after 3 minutes.")
+        break
+else:  # CPS (and SickBeard) have finished. We can now resume seeding.
+    Logger.info("MAIN: The file %s has been moved. Postprocessing appears to have succeeded." % videofile)
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
     Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to resume download")
     utorrentClass.start(inputHash)
-
-sys.stdout = old_stdout
-log_file.close()
