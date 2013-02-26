@@ -18,14 +18,17 @@ def parse_other(args):
 
 def parse_utorrent(args):
     # uTorrent usage: call TorrentToMedia.py "%D" "%N" "%L" "%I"
-    inputDirectory = os.path.normpath(sys.argv[2])
-    inputName = sys.argv[3]
+    inputDirectory = os.path.normpath(sys.argv[1])
+    inputName = sys.argv[2]
     try:
-        inputCategory = sys.argv[4]
+        inputCategory = sys.argv[3]
     except:
         inputCategory = ''
-    inputHash = sys.argv[5]
-    if inputHash and useLink:
+    try:
+        inputHash = sys.argv[4]
+    except:
+        inputHash = ''
+    if inputHash:
         utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
 
 def parse_deluge(args):
