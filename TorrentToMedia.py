@@ -22,6 +22,11 @@ from utorrent.client import UTorrentClient
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
+
+def category_search_recurs(inputDirectory, inputName, root, categories):
+  pass
+
+
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
   categorySearch = [os.path.normpath(inputDirectory),""] #initializie
   notfound = 0
@@ -272,7 +277,7 @@ config.read(configFilename)
 clientAgent = config.get("Torrent", "clientAgent")
 
 try:
-  parse_args(clientAgent)
+  inputDirectory, inputName, inputCategory = parse_args(clientAgent)
 except:
   Logger.error("MAIN: There was a problem loading variables: Exiting")
   sys.exit(-1)
@@ -388,6 +393,7 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
                 Logger.info("file %s is a sample file. Removing", filePath)
                 os.unlink(filePath) #remove samples
             else:
+                videofile = filePath
                 video2 = video2 + 1
 if video2 >= video and video2 > 0: # Check that all video files were moved
     status = 0
@@ -403,12 +409,6 @@ elif failed_extract == 1 and failed_link == 0: #failed to extract files only.
 else:
     Logger.info("MAIN: Something failed! Please check logs. Exiting")
     sys.exit(-1)
-# Now we pass off to CouchPotato or Sick-Beard
-# Log this output
-old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
-logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
-log_file = open(logFile,"a+")
-sys.stdout = log_file
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:  
@@ -416,16 +416,32 @@ if inputHash and useLink:
     utorrentClass.stop(inputHash)
     time.sleep(5) # Give uTorrent some time to catch up with the change
 
+# Log this output
+old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
+logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
+log_file = open(logFile,"a+")
+sys.stdout = log_file
+
+# Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")
+    Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer") ###can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-  Logger.info("MAIN: Calling postprocessing script for Sick-Beard")
-  autoProcessTV.processEpisode(outputDestination, inputName, status)
+    Logger.info("MAIN: Calling postprocessing script for Sick-Beard") ###can we use logger while logfile open?
+    autoProcessTV.processEpisode(outputDestination, inputName, status)
+
+sys.stdout = old_stdout
+log_file.close()
+
+now = datetime.datetime.now() #set time for timeout
+while os.path.exists(videofile): #while this file is still here, CPS hasn't finished renaming
+    if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3): #note; minimum 1 minute delay in autoProcessMovie
+        Logger.info("MAIN: The file %s has not been moved after 3 minutes.")
+        break
+else: #CPS (and SickBeard) have finished. We can now resume seeding.
+    Logger.info("MAIN: The file %s has been moved. Postprocessing appears to have succeeded." %videofile)
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
     Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to resume download")
     utorrentClass.start(inputHash)
-sys.stdout = old_stdout
-log_file.close()
