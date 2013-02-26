@@ -4,7 +4,18 @@ import logging
 
 Logger = logging.getLogger(__name__)
 
-# which() breaks when running in Transmission (has to do with os.environ["PATH"])
+# which() and os_platform() breaks when running in Transmission (has to do with os.environ)
+
+def os_platform():
+    # Author Credit: Matthew Scouten @ http://stackoverflow.com/a/7260315
+    true_platform = os.environ['PROCESSOR_ARCHITECTURE']
+    try:
+            true_platform = os.environ["PROCESSOR_ARCHITEW6432"]
+    except KeyError:
+            pass
+            #true_platform not assigned to if this does not exist
+    return true_platform
+
 def which(program):
     # Author Credit: Jay @ http://stackoverflow.com/a/377028
     def is_exe(fpath):
@@ -25,11 +36,15 @@ def which(program):
 def extract(dirpath, file, outputDestination):
     # Using Windows
     if os.name == 'nt':
-        binLocation = 'extractor/bin/7z.exe' # Only 32bit for now
-        sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), binLocation))
+        if os_platform() == 'AMD64':
+            platform = 'x64'
+        else:
+            platform = 'x86'
+
+        sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             Logger.error("EXTRACTOR: Couldnt find 7-zip, Exiting")
-            sys.exit(-1) 
+            sys.exit(-1)
         else:
             cmd_7zip = [sevenzipLocation, 'x -y']
             ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]

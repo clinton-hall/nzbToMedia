@@ -304,9 +304,10 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
             source = filePath
             target = os.path.join(outputDestination, file)
-            state = extractor.extract(dirpath, file, outputDestination)
-            if state == False:
-                Logger.info("MAIN: Failed to unpack file %s", file)
+            try:
+                extractor.extract(dirpath, file, outputDestination)
+            except:
+                Logger.warn("Extraction failed")
                 failed_extract = 1
         else:
             Logger.info("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
