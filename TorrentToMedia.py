@@ -125,12 +125,10 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
 def is_sample(filePath, inputName):
     # 200 MB in bytes
+    # Maybe let the users change this?     
     SIZE_CUTOFF = 200 * 1024 * 1024
     # Ignore 'sample' in files unless 'sample' in Torrent Name
-    if ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF):
-        return True
-    else:
-        return False
+    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 def copy_link(source, target, useLink, outputDestination):
     # Create destination folder
