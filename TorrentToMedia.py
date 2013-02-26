@@ -427,8 +427,8 @@ if inputCategory == movieCategory:
     Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer") ###can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-  Logger.info("MAIN: Calling postprocessing script for Sick-Beard") ###can we use logger while logfile open?
-  autoProcessTV.processEpisode(outputDestination, inputName, status)
+    Logger.info("MAIN: Calling postprocessing script for Sick-Beard") ###can we use logger while logfile open?
+    autoProcessTV.processEpisode(outputDestination, inputName, status)
 
 sys.stdout = old_stdout
 log_file.close()
