@@ -435,6 +435,7 @@ while os.path.exists(videofile):  # while this file is still here, CPS hasn't fi
     if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
         Logger.info("MAIN: The file %s has not been moved after 3 minutes.")
         break
+    time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
 else:  # CPS (and SickBeard) have finished. We can now resume seeding.
     Logger.info("MAIN: The file %s has been moved. Postprocessing appears to have succeeded." % videofile)
 
