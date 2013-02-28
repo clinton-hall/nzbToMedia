@@ -3,7 +3,6 @@ import logging.config
 import os.path
 import sys
 
-from utorrent.client import UTorrentClient
 
 def nzbtomedia_configure_logging(dirname):
   logFile = os.path.join(dirname, "postprocess.log")
@@ -15,26 +14,23 @@ def nzbtomedia_configure_logging(dirname):
 
 
 def parse_other(args):
-    return os.path.normpath(sys.argv[1]), '', ''
+    return os.path.normpath(sys.argv[1]), '', '', ''
 
 
 def parse_utorrent(args):
     # uTorrent usage: call TorrentToMedia.py "%D" "%N" "%L" "%I"
-    inputDirectory = os.path.normpath(sys.argv[1])
-    inputName = sys.argv[2]
+    inputDirectory = os.path.normpath(args[1])
+    inputName = args[2]
     try:
-        inputCategory = sys.argv[3]
+        inputCategory = args[3]
     except:
         inputCategory = ''
     try:
-        inputHash = sys.argv[4]
+        inputHash = args[4]
     except:
         inputHash = ''
         
-    if inputHash:
-        utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-
-    return inputDirectory, inputName, inputCategory
+    return inputDirectory, inputName, inputCategory, inputHash
 
 
 def parse_deluge(args):
@@ -42,7 +38,8 @@ def parse_deluge(args):
     inputDirectory = os.path.normpath(sys.argv[3])
     inputName = sys.argv[2]
     inputCategory = '' # We dont have a category yet
-    return inputDirectory, inputName, inputCategory
+    inputHash = ''
+    return inputDirectory, inputName, inputCategory, inputHash
 
 
 def parse_transmission(args):
@@ -50,7 +47,8 @@ def parse_transmission(args):
     inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
     inputName = os.getenv('TR_TORRENT_NAME')
     inputCategory = '' # We dont have a category yet
-    return inputDirectory, inputName, inputCategory
+    inputHash = ''
+    return inputDirectory, inputName, inputCategory, inputHash
 
 
 __ARG_PARSERS__ = {
