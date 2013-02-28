@@ -19,8 +19,13 @@
 
 import sys
 import urllib
-import os.path
+import os
 import ConfigParser
+import logging
+
+from nzbToMediaEnv import *
+
+Logger = logging.getLogger()
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):
@@ -40,16 +45,32 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
+def custom_groups(group, dirName):
+    mediaContainer = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.iso']
+    if group == "QoQ": # for my NL friends :) we want to reverse the file names for the video files.
+        for dirpath, dirnames, filenames in os.walk(dirName):
+            for file in filenames:
+                filePath = os.path.join(dirpath, file)
+                fileExtention = os.path.splitext(file)[1]
+                if fileExtention in mediaContainer:  # If the file is a video file
+                    Logger.debug("Reversing the file name for a QoQ release %s", file)
+                    newname = os.path.splitext(file)[0][::-1]
+                    newfile = newname + fileExtention
+                    newfilePath = os.path.join(dirpath, newfile)
+                    os.rename(filePath, newfilePath)
+                    Logger.debug("New file name is %s", newfile)
+    else: # we can add more customizations here.
+        pass
 
 def processEpisode(dirName, nzbName=None, failed=False):
 
     status = int(failed)
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    print "Loading config from", configFilename
+    Logger.info("Loading config from %s", configFilename)
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         sys.exit(-1)
     
     try:
@@ -57,7 +78,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
         config.readfp(fp)
         fp.close()
     except IOError, e:
-        print "Could not read configuration file: ", str(e)
+        Logger.error("Could not read configuration file: %s", str(e))
         sys.exit(1)
     
     watch_dir = ""
@@ -84,10 +105,18 @@ def processEpisode(dirName, nzbName=None, failed=False):
         failed_fork = int(config.get("SickBeard", "failed_fork"))
     except (ConfigParser.NoOptionError, ValueError):
         failed_fork = 0
+
+    # check for custom groups
+    customgroups = ['QoQ']  # we can add more to this list
+    for index in range(len(customgroups)):
+        if customgroups[index].lower() in nzbName.lower(): # match the group in the nzbname
+            custom_groups(customgroups[index], dirName) # files have been renamned
+            break
+
     
     #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
     if nzbName == "Manual Run" and watch_dir == "":
-        print "ERROR: In order to run this script manually you must specify a watch_dir in autoProcessTV.cfg"
+        Logger.error("In order to run this script manually you must specify a watch_dir in autoProcessTV.cfg")
         sys.exit(-1)
     #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
     if watch_dir != "":
@@ -104,9 +133,9 @@ def processEpisode(dirName, nzbName=None, failed=False):
             params['nzbName'] = nzbName
         params['failed'] = failed
         if status:
-            print "The download failed. Sending 'failed' process request to SickBeard's failed branch"
+            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
         else:
-            print "The download succeeded. Sending process request to SickBeard's failed branch"
+            Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
                 
     # this is our default behaviour to work with the standard Master branch of SickBeard
     else:
@@ -115,10 +144,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
             params['nzbName'] = nzbName
         # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
         if status:
-            print "The download failed. Nothing to process"
+            Logger.info("The download failed. Nothing to process")
             sys.exit()
         else:
-            print "The download succeeded. Sending process request to SickBeard"
+            Logger.info("The download succeeded. Sending process request to SickBeard")
 
     myOpener = AuthURLOpener(username, password)
     
@@ -129,15 +158,14 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(params)
     
-    print "Opening URL:", url
+    Logger.debug("Opening URL: %s", url)
     
     try:
         urlObj = myOpener.openit(url)
     except IOError, e:
-        print "Unable to open URL: ", str(e)
+        Logger.error("Unable to open URL: %s", str(e))
         sys.exit(1)
     
     result = urlObj.readlines()
     for line in result:
-        print line
-        
+        Logger.info("%s", line)
