@@ -10,7 +10,6 @@ import datetime
 import time
 from subprocess import call
 
-
 # Custom imports
 import linktastic.linktastic as linktastic
 import autoProcessMovie
@@ -21,7 +20,6 @@ from utorrent.client import UTorrentClient
 
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
-
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     categorySearch = [os.path.normpath(inputDirectory), ""]  # initializie
@@ -413,12 +411,6 @@ if inputHash and useLink:
     utorrentClass.stop(inputHash)
     time.sleep(5)  # Give uTorrent some time to catch up with the change
 
-# Log this output
-old_stdout = sys.stdout  # Still crude, but we wat to capture this for now
-logFile = os.path.join(os.path.dirname(sys.argv[0]), "postprocess.log")
-log_file = open(logFile, "a+")
-sys.stdout = log_file
-
 # Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
     Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")  # can we use logger while logfile open?
@@ -426,9 +418,6 @@ if inputCategory == movieCategory:
 elif inputCategory == tvCategory:
     Logger.info("MAIN: Calling postprocessing script for Sick-Beard")  # can we use logger while logfile open?
     autoProcessTV.processEpisode(outputDestination, inputName, status)
-
-sys.stdout = old_stdout
-log_file.close()
 
 now = datetime.datetime.now()  # set time for timeout
 while os.path.exists(videofile):  # while this file is still here, CPS hasn't finished renaming
