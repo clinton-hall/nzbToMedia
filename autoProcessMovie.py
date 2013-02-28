@@ -31,7 +31,7 @@ class AuthURLOpener(urllib.FancyURLopener):
 
 def custom_groups(group, dirName):
     mediaContainer = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.iso']
-    if group == "QoQ": # for my NL friends :) we want to reverse the file names for the video files.
+    if group == "[=-< Q o Q >-=]": # for my NL friends :) we want to reverse the file names for the video files.
         for dirpath, dirnames, filenames in os.walk(dirName):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -91,7 +91,7 @@ def process(dirName, nzbName=None, status=0):
         delay = 0
 
     # check for custom groups
-    customgroups = ['QoQ']  # we can add more to this list
+    customgroups = ['[=-< Q o Q >-=]']  # we can add more to this list
     for index in range(len(customgroups)):
         if customgroups[index].lower() in nzbName.lower(): # match the group in the nzbname
             custom_groups(customgroups[index], dirName) # files have been renamned
