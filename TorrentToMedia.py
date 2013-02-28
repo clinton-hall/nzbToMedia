@@ -10,8 +10,10 @@ import datetime
 import time
 from subprocess import call
 
+
 # Custom imports
 import linktastic.linktastic as linktastic
+import extractor.extractor as extractor
 import autoProcessMovie
 import autoProcessTV
 from nzbToMediaEnv import *
@@ -20,6 +22,7 @@ from utorrent.client import UTorrentClient
 
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
+
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     categorySearch = [os.path.normpath(inputDirectory), ""]  # initializie
@@ -154,7 +157,7 @@ def copy_link(source, target, useLink, outputDestination):
     return True
 
 
-def unpack(dirpath, file, destination):
+def unpack(dirpath, file, destination):  ###Need to remove this when extractor is confirmed
     # Using Windows
     if os.name == 'nt':
         Logger.info("EXTRACTOR: We are using Windows")
@@ -262,7 +265,6 @@ Logger.info("TorrentToMedia %s", VERSION)
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 
-
 ### TORRENT TO MEDIA ###
 if not os.path.isfile(configFilename):
     Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
@@ -274,7 +276,7 @@ config.read(configFilename)
 clientAgent = config.get("Torrent", "clientAgent")
 
 try:
-    inputDirectory, inputName, inputCategory = parse_args(clientAgent)
+    inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
 except:
     Logger.error("MAIN: There was a problem loading variables: Exiting")
     sys.exit(-1)
@@ -301,6 +303,10 @@ metaContainer = (config.get("Torrent", "metaExtentions")).split(',')
 categories = (config.get("Torrent", "categories")).split(',')
 categories.append(movieCategory)
 categories.append(tvCategory)  # now have a list of all categories in use.
+
+# setup uTorrentClass 
+if inputHash:
+    utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
 
 status = int(1)  # We start as "failed" until we verify movie file in destination
 root = int(0)
@@ -369,10 +375,10 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
             source = filePath
             target = os.path.join(outputDestination, file)
-            state = unpack(dirpath, file, outputDestination)
-            if state == False:
-                Logger.info("MAIN: Failed to unpack file %s", file)
-                failed_extract = 1
+            try:
+                extractor.extract(dirpath, file, outputDestination)
+            except:
+                Logger.warn("Extraction failed for %s", file)
         else:
             Logger.info("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
             continue
