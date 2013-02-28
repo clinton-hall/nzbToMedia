@@ -23,11 +23,16 @@
 
 
 import sys
+import logging
+
 import autoProcessTV
-
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
-print "nzbToSickBeard %s" % VERSION
+nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+Logger = logging.getLogger(__name__)
+
+Logger.info("nzbToSickBeard %s", VERSION)
 
 # SABnzbd
 if len(sys.argv) == 8:
@@ -39,8 +44,8 @@ if len(sys.argv) == 8:
 # 5 User-defined category
 # 6 Group that the NZB was posted in e.g. alt.binaries.x
 # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-        print "Script triggered from SABnzbd, starting autoProcessTV..."
-        autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
+    Logger.info("Script triggered from SABnzbd, starting autoProcessTV...")
+    autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
 
 # NZBGet
 elif len(sys.argv) == 4:
@@ -48,11 +53,10 @@ elif len(sys.argv) == 4:
 # 1  The final directory of the job (full path)
 # 2  The original name of the NZB file
 # 3  The status of the download: 0 == successful
-	print "Script triggered from NZBGet, starting autoProcessTV..."
-
-	autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
+    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
+    autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
-	print "Invalid number of arguments received from client."
-	print "Running autoProcessTV as a manual run..."
-	autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
+    Logger.debug("Invalid number of arguments received from client.")
+    Logger.info("Running autoProcessTV as a manual run...")
+    autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
