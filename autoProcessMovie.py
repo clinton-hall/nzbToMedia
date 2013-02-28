@@ -1,11 +1,15 @@
 import sys
 import urllib
-import os.path
+import os
 import shutil
 import ConfigParser
 import time
 import json 
-from pprint import pprint 
+import logging
+
+from nzbToMediaEnv import *
+
+Logger = logging.getLogger()
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):
@@ -25,16 +29,32 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
+def custom_groups(group, dirName):
+    mediaContainer = ['.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv', '.mp4', '.mpg', '.mpeg', '.iso']
+    if group == "QoQ": # for my NL friends :) we want to reverse the file names for the video files.
+        for dirpath, dirnames, filenames in os.walk(dirName):
+            for file in filenames:
+                filePath = os.path.join(dirpath, file)
+                fileExtention = os.path.splitext(file)[1]
+                if fileExtention in mediaContainer:  # If the file is a video file
+                    Logger.debug("Reversing the file name for a QoQ release %s", file)
+                    newname = os.path.splitext(file)[0][::-1]
+                    newfile = newname + fileExtention
+                    newfilePath = os.path.join(dirpath, newfile)
+                    os.rename(filePath, newfilePath)
+                    Logger.debug("New file name is %s", newfile)
+    else: # we can add more customizations here.
+        pass
 
 def process(dirName, nzbName=None, status=0):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    print "Loading config from", configFilename
+    Logger.info("Loading config from %s", configFilename)
     
     if not os.path.isfile(configFilename):
-        print "ERROR: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?"
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         sys.exit(-1)
     
     config.read(configFilename)
@@ -69,6 +89,13 @@ def process(dirName, nzbName=None, status=0):
     # don't delay when we are calling this script manually.    
     if  nzbName == "Manual Run":  
         delay = 0
+
+    # check for custom groups
+    customgroups = ['QoQ']  # we can add more to this list
+    for index in range(len(customgroups)):
+        if customgroups[index].lower() in nzbName.lower(): # match the group in the nzbname
+            custom_groups(customgroups[index], dirName) # files have been renamned
+            break
         
     if status == 0:
         if method == "manage":
@@ -78,41 +105,40 @@ def process(dirName, nzbName=None, status=0):
 
         url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + command
 
-        print "waiting for", str(delay), "seconds to allow CPS to process newly extracted files"
+        Logger.info("waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
 
         time.sleep(delay)
 
-        print "Opening URL:", url
+        Logger.debug("Opening URL: %s", url)
     
         try:
             urlObj = myOpener.openit(url)
         except IOError, e:
-            print "Unable to open URL: ", str(e)
+            Logger.error("Unable to open URL: %s", str(e))
             sys.exit(1)
     
         result = json.load(urlObj)
-        print "CouchPotatoServer returned", result
+        Logger.info("CouchPotatoServer returned %s", result)
         if result['success']:
-            print command, "started on CouchPotatoServer for", nzbName1
+            Logger.info("%s started on CouchPotatoServer for %s", command, nzbName1)
         else:
-            print "Error", command, "has NOT started on CouchPotatoServer for", nzbName1
+            Logger.error("%s has NOT started on CouchPotatoServer for %s", command, nzbName1)
 
     else:
-        print "download of", nzbName1, "has failed."
-        print "trying to re-cue the next highest ranked release"
+        Logger.info("download of %s has failed.", nzbName1)
+        Logger.info("trying to re-cue the next highest ranked release")
         a=nzbName1.find('.cp(')+4
         b=nzbName1[a:].find(')')+a
         imdbid=nzbName1[a:b]
-        #print imdbid
 
         url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/movie.list"
         
-        print "Opening URL:", url
+        Logger.debug("Opening URL: %s", url)
     
         try:
             urlObj = myOpener.openit(url)
         except IOError, e:
-            print "Unable to open URL: ", str(e)
+            Logger.error("Unable to open URL: %s", str(e))
             sys.exit(1)
 
         n=0
@@ -123,31 +149,31 @@ def process(dirName, nzbName=None, status=0):
         for index in range(len(movieid)):
             if identifier[index] == imdbid:
                 movid = str(movieid[index])
-                print "found movie id", movid, "in database for release", nzbName1
+                Logger.info("found movie id %s in database for release %s", movid, nzbName1)
                 n = n + 1
                 break
 
         if n == 0:
-            print "cound not find a movie in the database for release", nzbName1
-            print "please manually ignore this release and refresh the wanted movie"
-            print "exiting postprocessing script"
+            Logger.warning("cound not find a movie in the database for release %s", nzbName1)
+            Logger.warning("please manually ignore this release and refresh the wanted movie")
+            Logger.error("exiting postprocessing script")
             sys.exit(1)
         
         url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/searcher.try_next/?id=" + movid
         
-        print "Opening URL:", url
+        Logger.debug("Opening URL: %s", url)
     
         try:
             urlObj = myOpener.openit(url)
         except IOError, e:
-            print "Unable to open URL: ", str(e)
+            Logger.error("Unable to open URL: %s", str(e))
             sys.exit(1)
         
         result = urlObj.readlines()
         for line in result:
-            print line
+            Logger.info("%s", line)
     
-        print "movie", movid, "set to try the next best release on CouchPotatoServer"
+        Logger.info("movie %s set to try the next best release on CouchPotatoServer", movid)
         if delete_failed:
-            print "Deleting failed files and folder", dirName
+            Logger.info("Deleting failed files and folder %s", dirName)
             shutil.rmtree(dirName)
