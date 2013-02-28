@@ -1,8 +1,9 @@
 import os
 import sys
 import logging
+from subprocess import call
 
-Logger = logging.getLogger(__name__)
+Logger = logging.getLogger()
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
 
@@ -40,8 +41,10 @@ def extract(dirpath, file, outputDestination):
             platform = 'x64'
         else:
             platform = 'x86'
-
-        sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
+        if not os.path.dirname(sys.argv[0]):
+            sevenzipLocation = os.path.normpath(os.path.join(os.getcwd(), 'extractor/bin/' + platform + '/7z.exe'))
+        else:
+            sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             Logger.error("EXTRACTOR: Couldnt find 7-zip, Exiting")
             sys.exit(-1)
@@ -113,7 +116,7 @@ def extract(dirpath, file, outputDestination):
             else:
                 Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
         except:
-            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s", filePath, run)
+            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, run)
     else:
         try:
             if cmd[1] == "": # If calling unzip, we dont want to pass the ""
