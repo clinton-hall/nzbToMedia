@@ -293,7 +293,7 @@ movieCategory = config.get("CouchPotato", "category")
 movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
 # Torrent specific
 useLink = int(config.get("Torrent", "useLink"))
-extractionTool = os.path.normpath(config.get("Torrent", "extractionTool"))
+extractionTool = os.path.normpath(config.get("Torrent", "extractionTool")) ### this can be removed when extractor verified.
 uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")
 uTorrentUSR = config.get("Torrent", "uTorrentUSR")
 uTorrentPWD = config.get("Torrent", "uTorrentPWD")
