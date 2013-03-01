@@ -63,13 +63,13 @@ def extract(dirpath, file, outputDestination):
         # ".bz2": ["bzip2", "-d --keep"],
 
         EXTRACT_COMMANDS = {
-            ".rar": ["unrar", "x -y"],
+            ".rar": ["unrar", "x", "-o+", "-y"],
             ".tar": ["tar", "-xf"],
-            ".zip": ["unzip", ""],
+            ".zip": ["unzip"],
             ".tar.gz": ["tar", "-xzf"], ".tgz": ["tar", "-xzf"],
             ".tar.bz2": ["tar", "-xjf"], ".tbz": ["tar", "-xjf"],
-            ".tar.lzma": ["tar", "--lzma -xf"], ".tlz": ["tar", "--lzma -xf"],
-            ".tar.xz": ["tar", "--xz -xf"], ".txz": ["tar", "--xz -xf"],
+            ".tar.lzma": ["tar", "--lzma", "-xf"], ".tlz": ["tar", "--lzma", "-xf"],
+            ".tar.xz": ["tar", "--xz", "-xf"], ".txz": ["tar", "--xz", "-xf"],
             ".7z": ["7zr", "x"],
             }
         # Test command exists and if not, remove
@@ -119,10 +119,14 @@ def extract(dirpath, file, outputDestination):
             Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, run)
     else:
         try:
-            if cmd[1] == "": # If calling unzip, we dont want to pass the ""
+            if len(cmd) == 1: # If calling unzip
                 res = call([cmd[0], filePath])
-            else:
+            elif len(cmd) == 2: # command + 1 arg
                 res = call([cmd[0], cmd[1], filePath])
+            elif len(cmd) == 3: # command + 2 args
+                res = call([cmd[0], cmd[1], cmd[2], filePath])
+            else: # If calling unrar, command + 3 args
+                res = call([cmd[0], cmd[1], cmd[2], cmd[3], filePath])
             if res == 0:
                 Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
             else:
