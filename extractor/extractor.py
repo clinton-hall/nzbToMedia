@@ -118,9 +118,8 @@ def extract(dirpath, file, outputDestination):
             Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, run)
     else:
         try:
-            x = len(cmd)
-            cmd[x] = filePath # add filePath to final cmd arg
-            res = call(cmd) # 
+            cmd.append(filePath) # add filePath to final cmd arg.
+            res = call(cmd) # should extract files fine.
             if res == 0:
                 Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
             else:
