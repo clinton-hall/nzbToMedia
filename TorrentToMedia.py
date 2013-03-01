@@ -122,7 +122,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     return inputDirectory, inputName, inputCategory, root
 
 
-def is_sample(filePath, inputName):
+def is_sample(filePath, inputName, minSampleSize):
     # 200 MB in bytes
     SIZE_CUTOFF = minSampleSize * 1024 * 1024
     # Ignore 'sample' in files unless 'sample' in Torrent Name
@@ -135,8 +135,8 @@ def create_destination(outputDestination):
             Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
             os.makedirs(outputDestination)
         except Exception, e:
-            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s", e)
-            return False
+            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
+            sys.exit(-1)
 
 
 def copy_link(source, target, useLink, outputDestination):
@@ -279,7 +279,7 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
         filePath = os.path.join(dirpath, file)
         fileExtention = os.path.splitext(file)[1]
         if fileExtention in mediaContainer:  # If the file is a video file
-            if is_sample(filePath, inputName):  # Ignore samples
+            if is_sample(filePath, inputName, minSampleSize):  # Ignore samples
                 Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                 continue
             else:
