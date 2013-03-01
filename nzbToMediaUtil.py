@@ -27,6 +27,18 @@ def create_destination(outputDestination):
         sys.exit(-1)
 
 
+def iterate_media_files(dirname):
+    mediaContainer = [ '.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv',
+        '.mp4', '.mpg', '.mpeg', '.iso' ]
+
+    for dirpath, dirnames, filesnames in os.walk(dirname):
+        for filename in filesnames:
+            fileExtention = os.path.splitext(filename)[0]
+            if not (fileExtention in mediaContainer):
+                continue
+            yield dirpath, os.path.join(dirpath, filename)
+
+
 def parse_other(args):
     return os.path.normpath(sys.argv[1]), '', '', ''
 
