@@ -3,8 +3,6 @@ import sys
 import logging
 from subprocess import call
 
-from TorrentToMedia import create_destination
-
 
 Logger = logging.getLogger()
 
@@ -101,9 +99,6 @@ def extract(dirpath, file, outputDestination):
         else:
             Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
             return False
-
-    # Create outputDestination folder
-    create_destination(outputDestination)
     
     Logger.info("Extracting %s to %s", filePath, outputDestination)
     Logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
