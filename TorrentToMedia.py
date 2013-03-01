@@ -308,7 +308,7 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
         filePath = os.path.join(dirpath, file)
         fileExtention = os.path.splitext(file)[1]
         if fileExtention in mediaContainer:  # If the file is a video file
-            if is_sample(filePath, inputName):
+            if is_sample(filePath, inputName, minSampleSize):
                 Logger.debug("Removing sample file: %s", filePath)
                 os.unlink(filePath)  # remove samples
             else:
