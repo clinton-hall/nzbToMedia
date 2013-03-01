@@ -119,14 +119,9 @@ def extract(dirpath, file, outputDestination):
             Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, run)
     else:
         try:
-            if len(cmd) == 1: # If calling unzip
-                res = call([cmd[0], filePath])
-            elif len(cmd) == 2: # command + 1 arg
-                res = call([cmd[0], cmd[1], filePath])
-            elif len(cmd) == 3: # command + 2 args
-                res = call([cmd[0], cmd[1], cmd[2], filePath])
-            else: # If calling unrar, command + 3 args
-                res = call([cmd[0], cmd[1], cmd[2], cmd[3], filePath])
+            x = len(cmd)
+            cmd[x] = filePath # add filePath to final cmd arg
+            res = call(cmd) # 
             if res == 0:
                 Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
             else:
