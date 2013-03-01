@@ -129,16 +129,6 @@ def is_sample(filePath, inputName, minSampleSize):
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
-def create_destination(outputDestination):
-    if not os.path.exists(outputDestination):
-        try:
-            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
-            os.makedirs(outputDestination)
-        except Exception, e:
-            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
-            sys.exit(-1)
-
-
 def copy_link(source, target, useLink, outputDestination):
     create_destination(outputDestination)
     if useLink:
@@ -303,7 +293,6 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
             source = filePath
             target = os.path.join(outputDestination, file)
-            create_destination(outputDestination)
             try:
                 extractor.extract(dirpath, file, outputDestination)
             except:
