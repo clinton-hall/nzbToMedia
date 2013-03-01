@@ -1,6 +1,6 @@
 import logging
 import logging.config
-import os.path
+import os
 import sys
 
 
@@ -11,6 +11,16 @@ def nzbtomedia_configure_logging(dirname):
     fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
     fileHandler.level = logging.DEBUG
     logging.getLogger().addHandler(fileHandler)
+
+
+def create_destination(outputDestination):
+    if not os.path.exists(outputDestination):
+        try:
+            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
+            os.makedirs(outputDestination)
+        except Exception, e:
+            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
+            sys.exit(-1)
 
 
 def create_destination(outputDestination):
