@@ -5,12 +5,22 @@ import sys
 
 
 def nzbtomedia_configure_logging(dirname):
-  logFile = os.path.join(dirname, "postprocess.log")
-  logging.config.fileConfig(os.path.join(dirname, "autoProcessMedia.cfg"))
-  fileHandler = logging.FileHandler(logFile, encoding='utf-8', delay=True)
-  fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
-  fileHandler.level = logging.DEBUG
-  logging.getLogger().addHandler(fileHandler)
+    logFile = os.path.join(dirname, "postprocess.log")
+    logging.config.fileConfig(os.path.join(dirname, "autoProcessMedia.cfg"))
+    fileHandler = logging.FileHandler(logFile, encoding='utf-8', delay=True)
+    fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
+    fileHandler.level = logging.DEBUG
+    logging.getLogger().addHandler(fileHandler)
+
+
+def create_destination(outputDestination):
+    if not os.path.exists(outputDestination):
+        try:
+            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
+            os.makedirs(outputDestination)
+        except Exception, e:
+            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
+            sys.exit(-1)
 
 
 def parse_other(args):
@@ -29,7 +39,7 @@ def parse_utorrent(args):
         inputHash = args[4]
     except:
         inputHash = ''
-        
+
     return inputDirectory, inputName, inputCategory, inputHash
 
 

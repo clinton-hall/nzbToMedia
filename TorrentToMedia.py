@@ -129,16 +129,6 @@ def is_sample(filePath, inputName, minSampleSize):
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
-def create_destination(outputDestination):
-    if not os.path.exists(outputDestination):
-        try:
-            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
-            os.makedirs(outputDestination)
-        except Exception, e:
-            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
-            sys.exit(-1)
-
-
 def copy_link(source, target, useLink, outputDestination):
     create_destination(outputDestination)
     if useLink:
@@ -332,7 +322,7 @@ if status == 0: #### Maybe we should move this to a more appropriate place?
     Logger.info("MAIN: Successful run")
     Logger.debug("MAIN: Calling autoProcess script for successful download.")
 elif failed_extract == 1 and failed_link == 0:  # failed to extract files only.
-    Logger.info("MAIN: Failed to extract a compressed archive") 
+    Logger.info("MAIN: Failed to extract a compressed archive")
     Logger.debug("MAIN: Assume this to be password protected file.")
     Logger.debug("MAIN: Calling autoProcess script for failed download.")
 else:

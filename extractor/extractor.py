@@ -2,6 +2,7 @@ import os
 import sys
 import logging
 from subprocess import call
+from nzbToMediaUtil import create_destination
 
 
 Logger = logging.getLogger()
@@ -99,7 +100,10 @@ def extract(dirpath, file, outputDestination):
         else:
             Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
             return False
-    
+
+    # Create outputDestination folder
+    create_destination(outputDestination)
+
     Logger.info("Extracting %s to %s", filePath, outputDestination)
     Logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
@@ -112,6 +116,6 @@ def extract(dirpath, file, outputDestination):
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
     except:
-        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd) 
+        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory
     return True
