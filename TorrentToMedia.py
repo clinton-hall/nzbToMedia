@@ -125,7 +125,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 def is_sample(filePath, inputName):
     # 200 MB in bytes
     # Maybe let the users change this?
-    SIZE_CUTOFF = 200 * 1024 * 1024
+    SIZE_CUTOFF = minSampleSize * 1024 * 1024
     # Ignore 'sample' in files unless 'sample' in Torrent Name
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
@@ -168,7 +168,7 @@ def flatten(outputDestination):
             try:
                 shutil.move(source, target)
             except OSError:
-                Logger.info("FLATTEN: Could not flatten %s", source)
+                Logger.error("FLATTEN: Could not flatten %s", source)
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
 
@@ -191,7 +191,7 @@ def removeEmptyFolders(path):
         Logger.debug("REMOVER: Removing empty folder: %s", path)
         os.rmdir(path)
 
-
+Logger.info("==========================") # Seperate old from new log
 Logger.info("TorrentToMedia %s", VERSION)
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -223,7 +223,8 @@ tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))
 movieCategory = config.get("CouchPotato", "category")
 movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))
 # Torrent specific
-useLink = int(config.get("Torrent", "useLink"))
+useLink = config.get("Torrent", "useLink")
+minSampleSize = int(config.get("Torrent", "minSampleSize"))
 uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")
 uTorrentUSR = config.get("Torrent", "uTorrentUSR")
 uTorrentPWD = config.get("Torrent", "uTorrentPWD")
@@ -233,10 +234,6 @@ metaContainer = (config.get("Torrent", "metaExtentions")).split(',')
 categories = (config.get("Torrent", "categories")).split(',')
 categories.append(movieCategory)
 categories.append(tvCategory)  # now have a list of all categories in use.
-
-# setup uTorrentClass 
-if inputHash:
-    utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
 
 status = int(1)  # We start as "failed" until we verify movie file in destination
 root = int(0)
@@ -282,7 +279,7 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
         fileExtention = os.path.splitext(file)[1]
         if fileExtention in mediaContainer:  # If the file is a video file
             if is_sample(filePath, inputName):  # Ignore samples
-                Logger.info("MAIN: Ignoring %s  sample file. Ignoring", filePath)
+                Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                 continue
             else:
                 video = video + 1
@@ -291,7 +288,7 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
                 Logger.info("MAIN: Found video file %s in %s", fileExtention, filePath)
                 state = copy_link(source, target, useLink, outputDestination)
                 if state == False:
-                    Logger.info("MAIN: Failed to link file %s", file)
+                    Logger.error("MAIN: Failed to link file %s", file)
                     failed_link = 1
         elif fileExtention in metaContainer:
             source = filePath
@@ -299,7 +296,7 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found metadata file %s for file %s", fileExtention, filePath)
             state = copy_link(source, target, useLink, outputDestination)
             if state == False:
-                Logger.info("MAIN: Failed to link file %s", file)
+                Logger.error("MAIN: Failed to link file %s", file)
                 failed_link = 1
         elif fileExtention in compressedContainer:
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
@@ -310,7 +307,7 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             except:
                 Logger.warn("Extraction failed for %s", file)
         else:
-            Logger.info("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
+            Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
             continue
 flatten(outputDestination)
 
@@ -321,7 +318,7 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
         fileExtention = os.path.splitext(file)[1]
         if fileExtention in mediaContainer:  # If the file is a video file
             if is_sample(filePath, inputName):
-                Logger.info("file %s is a sample file. Removing", filePath)
+                Logger.debug("Removing sample file: %s", filePath)
                 os.unlink(filePath)  # remove samples
             else:
                 videofile = filePath
@@ -329,42 +326,47 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
 if video2 >= video and video2 > 0:  # Check that all video files were moved
     status = 0
 
-status = int(status)  # just to be safe.
-if status == 0:
+if status == 0: #### Maybe we should move this to a more appropriate place?
     Logger.info("MAIN: Successful run")
     Logger.debug("MAIN: Calling autoProcess script for successful download.")
 elif failed_extract == 1 and failed_link == 0:  # failed to extract files only.
-    Logger.info("MAIN: Failed to extract a packed file.")
+    Logger.info("MAIN: Failed to extract a compressed archive") 
     Logger.debug("MAIN: Assume this to be password protected file.")
     Logger.debug("MAIN: Calling autoProcess script for failed download.")
 else:
-    Logger.info("MAIN: Something failed! Please check logs. Exiting")
+    Logger.error("MAIN: Something failed! Please check logs. Exiting")
     sys.exit(-1)
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
-    Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to pause download")
+    try:
+        Logger.debug("Connecting to uTorrent: %s", uTorrentWEBui)
+        utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+    except:
+        Logger.error("Failed to connect to uTorrent")
+    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
     utorrentClass.stop(inputHash)
     time.sleep(5)  # Give uTorrent some time to catch up with the change
 
 # Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling postprocessing script for CouchPotatoServer")  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-    Logger.info("MAIN: Calling postprocessing script for Sick-Beard")  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
     autoProcessTV.processEpisode(outputDestination, inputName, status)
 
+# Check if the file still exists in the post-process directory
 now = datetime.datetime.now()  # set time for timeout
 while os.path.exists(videofile):  # while this file is still here, CPS hasn't finished renaming
     if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
-        Logger.info("MAIN: The file %s has not been moved after 3 minutes.")
+        Logger.info("MAIN: The file %s has not been moved after 3 minutes.", videofile)
         break
     time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
 else:  # CPS (and SickBeard) have finished. We can now resume seeding.
-    Logger.info("MAIN: The file %s has been moved. Postprocessing appears to have succeeded." % videofile)
+    Logger.info("MAIN: Post-process appears to have succeeded for: %s", videofile)
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
-    Logger.debug("MAIN: We are using hardlinks with uTorrent, calling uTorrent to resume download")
+    Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
     utorrentClass.start(inputHash)

@@ -73,12 +73,16 @@ def extract(dirpath, file, outputDestination):
             ".7z": ["7zr", "x"],
             }
         # Test command exists and if not, remove
-        for cmd in required_cmds:
-            if call(['which', cmd]): #note, returns 0 if exists, or 1 if doesn't exist.
-                for k, v in EXTRACT_COMMANDS.items():
-                    if cmd in v[0]:
-                        Logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
-                        del EXTRACT_COMMANDS[k]
+        if not os.getenv('TR_TORRENT_DIR'):
+            for cmd in required_cmds:
+                if call(['which', cmd]): #note, returns 0 if exists, or 1 if doesn't exist.
+                    for k, v in EXTRACT_COMMANDS.items():
+                        if cmd in v[0]:
+                            Logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
+                            del EXTRACT_COMMANDS[k]
+        else:
+            Logger.warn("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
+
         if not EXTRACT_COMMANDS:
             Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 

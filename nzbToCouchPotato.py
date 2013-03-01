@@ -36,6 +36,6 @@ elif len(sys.argv) == 4:
 	autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
-	Logger.debug("Invalid number of arguments received from client.")
+	Logger.warn("Invalid number of arguments received from client.")
 	Logger.info("Running autoProcessMovie as a manual run...")
 	autoProcessMovie.process('Manual Run', 'Manual Run', 0)
