@@ -129,7 +129,7 @@ def is_sample(filePath, inputName):
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
-def create_destination(outputDestination)
+def create_destination(outputDestination):
     if not os.path.exists(outputDestination):
         try:
             Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
