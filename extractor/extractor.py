@@ -63,7 +63,7 @@ def extract(dirpath, file, outputDestination):
         # ".bz2": ["bzip2", "-d --keep"],
 
         EXTRACT_COMMANDS = {
-            ".rar": ["unrar", "x -o+ -y"],
+            ".rar": ["unrar", "x"],
             ".tar": ["tar", "-xf"],
             ".zip": ["unzip", ""],
             ".tar.gz": ["tar", "-xzf"], ".tgz": ["tar", "-xzf"],
@@ -74,10 +74,10 @@ def extract(dirpath, file, outputDestination):
             }
         # Test command exists and if not, remove
         for cmd in required_cmds:
-            if not which(cmd):
-                for k,v in EXTRACT_COMMANDS.items():
+            if call(['which', cmd]): #note, returns 0 if exists, or 1 if doesn't exist.
+                for k, v in EXTRACT_COMMANDS.items():
                     if cmd in v[0]:
-                        log.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
+                        Logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
                         del EXTRACT_COMMANDS[k]
         if not EXTRACT_COMMANDS:
             Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
