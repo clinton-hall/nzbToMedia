@@ -32,7 +32,6 @@ failed_fork=0
 # Supported values: utorrent, transmission, deluge, other
 clientAgent = other
 useLink = 0
-extractionTool = C:\Program Files\7-Zip\7z.exe
 categories = music,music_videos,pictures,software
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
