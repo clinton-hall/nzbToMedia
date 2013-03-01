@@ -293,7 +293,6 @@ for dirpath, dirnames, filenames in os.walk(inputDirectory):
             Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
             source = filePath
             target = os.path.join(outputDestination, file)
-            create_destination(outputDestination)
             try:
                 extractor.extract(dirpath, file, outputDestination)
             except:
