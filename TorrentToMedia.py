@@ -124,22 +124,23 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
 def is_sample(filePath, inputName):
     # 200 MB in bytes
-    # Maybe let the users change this?
     SIZE_CUTOFF = minSampleSize * 1024 * 1024
     # Ignore 'sample' in files unless 'sample' in Torrent Name
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
-def copy_link(source, target, useLink, outputDestination):
-    # Create destination folder
+def create_destination(outputDestination)
     if not os.path.exists(outputDestination):
         try:
-            Logger.info("COPYLINK: Creating destination folder: %s", outputDestination)
+            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
             os.makedirs(outputDestination)
         except Exception, e:
-            Logger.error("COPYLINK: Not possible to create destination folder: %s", e)
+            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s", e)
             return False
 
+
+def copy_link(source, target, useLink, outputDestination):
+    create_destination(outputDestination)
     if useLink:
         try:
             Logger.info("COPYLINK: Linking %s to %s", source, target)
@@ -340,20 +341,20 @@ else:
 # Hardlink solution with uTorrent
 if inputHash and useLink:
     try:
-        Logger.debug("Connecting to uTorrent: %s", uTorrentWEBui)
+        Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
         utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
     except:
-        Logger.error("Failed to connect to uTorrent")
-    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
+        Logger.error("MAIN: Failed to connect to uTorrent")
+    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", videofile)
     utorrentClass.stop(inputHash)
     time.sleep(5)  # Give uTorrent some time to catch up with the change
 
 # Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", videofile)  # can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", videofile)  # can we use logger while logfile open?
     autoProcessTV.processEpisode(outputDestination, inputName, status)
 
 # Check if the file still exists in the post-process directory

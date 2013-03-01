@@ -100,13 +100,8 @@ def extract(dirpath, file, outputDestination):
             return False
 
     # Create outputDestination folder
-    if not os.path.exists(outputDestination):
-        try:
-            Logger.debug("EXTRACTOR: Creating destination folder: %s", outputDestination)
-            os.makedirs(outputDestination)
-        except Exception, e:
-            Logger.error("EXTRACTOR: Not possible to create destination folder: %s", e)
-            return False
+    create_destination(outputDestination)
+    
     Logger.info("Extracting %s to %s", filePath, outputDestination)
     Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
