@@ -4,6 +4,9 @@ import os
 import sys
 
 
+Logger = logging.getLogger(__name__)
+
+
 def nzbtomedia_configure_logging(dirname):
     logFile = os.path.join(dirname, "postprocess.log")
     logging.config.fileConfig(os.path.join(dirname, "autoProcessMedia.cfg"))
@@ -14,23 +17,14 @@ def nzbtomedia_configure_logging(dirname):
 
 
 def create_destination(outputDestination):
-    if not os.path.exists(outputDestination):
-        try:
-            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
-            os.makedirs(outputDestination)
-        except Exception, e:
-            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
-            sys.exit(-1)
-
-
-def create_destination(outputDestination):
-    if not os.path.exists(outputDestination):
-        try:
-            Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
-            os.makedirs(outputDestination)
-        except Exception, e:
-            Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
-            sys.exit(-1)
+    if os.path.exists(outputDestination):
+        return
+    try:
+        Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
+        os.makedirs(outputDestination)
+    except Exception, e:
+        Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
+        sys.exit(-1)
 
 
 def parse_other(args):
@@ -57,7 +51,7 @@ def parse_deluge(args):
     # Deluge usage: call TorrentToMedia.py TORRENT_ID TORRENT_NAME TORRENT_DIR
     inputDirectory = os.path.normpath(sys.argv[3])
     inputName = sys.argv[2]
-    inputCategory = '' # We dont have a category yet
+    inputCategory = ''  # We dont have a category yet
     inputHash = ''
     return inputDirectory, inputName, inputCategory, inputHash
 
@@ -66,7 +60,7 @@ def parse_transmission(args):
     # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
     inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
     inputName = os.getenv('TR_TORRENT_NAME')
-    inputCategory = '' # We dont have a category yet
+    inputCategory = ''  # We dont have a category yet
     inputHash = ''
     return inputDirectory, inputName, inputCategory, inputHash
 
