@@ -63,7 +63,7 @@ def extract(dirpath, file, outputDestination):
         # ".bz2": ["bzip2", "-d --keep"],
 
         EXTRACT_COMMANDS = {
-            ".rar": ["unrar", "x"],
+            ".rar": ["unrar", "x -y"],
             ".tar": ["tar", "-xf"],
             ".zip": ["unzip", ""],
             ".tar.gz": ["tar", "-xzf"], ".tgz": ["tar", "-xzf"],
