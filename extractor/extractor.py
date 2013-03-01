@@ -3,6 +3,9 @@ import sys
 import logging
 from subprocess import call
 
+from TorrentToMedia import create_destination
+
+
 Logger = logging.getLogger()
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
