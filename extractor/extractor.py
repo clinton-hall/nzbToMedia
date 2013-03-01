@@ -52,7 +52,7 @@ def extract(dirpath, file, outputDestination):
             Logger.error("EXTRACTOR: Couldnt find 7-zip, Exiting")
             sys.exit(-1)
         else:
-            cmd_7zip = [sevenzipLocation, 'x -y']
+            cmd_7zip = [sevenzipLocation, "x", "-y"]
             ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
             EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
@@ -109,25 +109,14 @@ def extract(dirpath, file, outputDestination):
     Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
-    if os.name == 'nt': # Windows needs quotes around directory structure
-        try:
-            run = "\"" + cmd[0] + "\" " + cmd[1] + " \"" + filePath + "\"" # Windows needs quotes around directories
-            res = call(run)
-            if res == 0:
-                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
-            else:
-                Logger.info("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
-        except:
-            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, run)
-    else:
-        try:
-            cmd.append(filePath) # add filePath to final cmd arg.
-            res = call(cmd) # should extract files fine.
-            if res == 0:
-                Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
-            else:
-                Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
-        except:
-            Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", filePath, cmd[0], cmd[1], filePath) 
+    try: # now works same for nt and *nix
+        cmd.append(filePath) # add filePath to final cmd arg.
+        res = call(cmd) # should extract files fine.
+        if res == 0:
+            Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
+        else:
+            Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
+    except:
+        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", filePath, cmd[0], cmd[1], filePath) 
     os.chdir(pwd) # Go back to our Original Working Directory
     return True
