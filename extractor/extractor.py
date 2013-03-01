@@ -49,7 +49,7 @@ def extract(dirpath, file, outputDestination):
         else:
             sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
-            Logger.error("EXTRACTOR: Couldnt find 7-zip, Exiting")
+            Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             sys.exit(-1)
         else:
             cmd_7zip = [sevenzipLocation, "x", "-y"]
@@ -106,7 +106,7 @@ def extract(dirpath, file, outputDestination):
     create_destination(outputDestination)
     
     Logger.info("Extracting %s to %s", filePath, outputDestination)
-    Logger.debug("Extracting %s %s %s %s", cmd[0], cmd[1], filePath, outputDestination)
+    Logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
@@ -117,6 +117,6 @@ def extract(dirpath, file, outputDestination):
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
     except:
-        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s %s %s %s", filePath, cmd[0], cmd[1], filePath) 
+        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd) 
     os.chdir(pwd) # Go back to our Original Working Directory
     return True
