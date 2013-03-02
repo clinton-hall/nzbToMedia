@@ -1,6 +1,22 @@
 Change_LOG / History
 
+VX.X XX/03/2013
+
+Impacts Torrents
+Bundled 7zip binaries and created extraction functions.
+Now pauses uTorrent seeding before calling renamer in SickBeard/CouchPotatoServer
+uTorrent Resumes seeding after files (hardlinks) have been renamed
+
+Impacts NZB 
+Added local file logging.
+
+Impacts All
+Added scene exception handling. Currently for "QoQ"
+Improved code layout. 
+
+
 V5.1 22/02/2013
+
 Improved category search to loop through directory structure.
 Added support for deluge and potentially other Torrent clients.
 uTorrent now must pass "utorrent" before "%D" "%N" "%L"
