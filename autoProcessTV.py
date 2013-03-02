@@ -91,7 +91,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
     except (ConfigParser.NoOptionError, ValueError):
         failed_fork = 0
 
-    process_all_exceptions(nzbName.lower(), dirname)
+    process_all_exceptions(nzbName.lower(), dirName)
 
 
     #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
