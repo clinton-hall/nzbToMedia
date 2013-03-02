@@ -34,6 +34,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
         if category == inputCategory:
             outputDestination = os.path.normpath(os.path.join(outputDestination, category, inputName))
             Logger.info("MAIN: Output directory set to: %s", outputDestination)
+            pass
         else:
             Logger.error("MAIN: Could not match input category with defined categories, Exiting")
             sys.exit(-1)
@@ -78,8 +79,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                     except Exception as e:
                         Logger.error("MAIN: Failed to link file: %s", file)
                         Logger.debug e
-                        linkFailed = True
-
             elif fileExtention in metaContainer:
                 Logger.info("MAIN: Found metadata file %s for file %s", fileExtention, filePath)
                 try:
@@ -87,8 +86,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                 except Exception as e:
                     Logger.error("MAIN: Failed to link file: %s", file)
                     Logger.debug e
-                    linkFailed = True
-
             elif fileExtention in compressedContainer:
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
                 try:
@@ -96,8 +93,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                 except Exception as e:
                     Logger.warn("MAIN: Extraction failed for: %s", file)
                     Logger.debug e
-                    extractFailed = True
-
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
                 continue
@@ -113,7 +108,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                     Logger.debug("MAIN: Removing sample file: %s", filePath)
                     os.unlink(filePath)  # remove samples
                 else:
-                    videofile = filePath
                     video2 = video2 + 1
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
