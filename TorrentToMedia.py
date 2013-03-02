@@ -29,14 +29,14 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
-    if inputCategory == movieCategory:
-        outputDestination = os.path.normpath(os.path.join(movieDestination, inputName))
-    elif inputCategory == tvCategory:
-        outputDestination = os.path.normpath(os.path.join(tvDestination, inputName))
-    else:
-        Logger.error("MAIN: Category of %s does not match either %s or %s: Exiting", inputCategory, movieCategory, tvCategory)
-        Logger.debug("MAIN: Future versions of this script might do something for Category: %s. Keep updating ;)", inputCategory)
-        sys.exit(-1)
+
+    for category in categories:
+        if category == inputCategory:
+            outputDestination = os.path.normpath(os.path.join(outputDestination, category, inputName))
+            Logger.info("MAIN: Output directory set to: %s", outputDestination)
+        else:
+            Logger.error("MAIN: Could not match input category with defined categories, Exiting")
+            sys.exit(-1)
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)      
 
@@ -76,7 +76,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                     try:
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
                     except Exception as e:
-                        Logger.error("MAIN: Failed to link file %s", file)
+                        Logger.error("MAIN: Failed to link file: %s", file)
                         Logger.debug e
                         linkFailed = True
 
@@ -85,7 +85,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
                 except Exception as e:
-                    Logger.error("MAIN: Failed to link file %s", file)
+                    Logger.error("MAIN: Failed to link file: %s", file)
                     Logger.debug e
                     linkFailed = True
 
@@ -94,7 +94,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
                 try:
                     extractor.extract(filePath, outputDestination)
                 except Exception as e:
-                    Logger.warn("Extraction failed for: %s", file)
+                    Logger.warn("MAIN: Extraction failed for: %s", file)
                     Logger.debug e
                     extractFailed = True
 
@@ -110,7 +110,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
             fileExtention = os.path.splitext(file)[1]
             if fileExtention in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):
-                    Logger.debug("Removing sample file: %s", filePath)
+                    Logger.debug("MAIN: Removing sample file: %s", filePath)
                     os.unlink(filePath)  # remove samples
                 else:
                     videofile = filePath
@@ -121,10 +121,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
     if status == 0: #### Maybe we should move this to a more appropriate place?
         Logger.info("MAIN: Successful run")
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
-    elif extractFailed and linkFailed == False:  # failed to extract files only.
-        Logger.info("MAIN: Failed to extract a compressed archive")
-        Logger.debug("MAIN: Assume this to be password protected file.")
-        Logger.debug("MAIN: Calling autoProcess script for failed download.")
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
