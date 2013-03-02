@@ -75,7 +75,7 @@ def process(dirName, nzbName=None, status=0):
     if nzbName == "Manual Run":
         delay = 0
 
-    process_all_exceptions(nzbName.lower(), dirname)
+    process_all_exceptions(nzbName.lower(), dirName)
 
     if status == 0:
         if method == "manage":
