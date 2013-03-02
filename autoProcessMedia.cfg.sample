@@ -1,6 +1,4 @@
 [CouchPotato]
-category = movie
-outputDirectory = /abs/path/to/complete/movies
 apikey =
 host = localhost
 port = 5050
@@ -15,8 +13,6 @@ delete_failed = 0
 
 
 [SickBeard]
-category = tv
-outputDirectory = /abs/path/to/complete/tv
 host=localhost
 port=8081
 username=
@@ -35,8 +31,10 @@ clientAgent = other
 useLink = false
 ###### minSampleSize - Minimum required size to consider a file not an sample file (in MB, eg 200mb)
 minSampleSize = 200
+###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
+outputDirectory = /abs/path/to/complete/
 ###### **insert descriptive comment for categories here** :-)
-categories = music,music_videos,pictures,software
+categories = movie,tv,music,music_videos,pictures,software
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username

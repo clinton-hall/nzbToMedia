@@ -184,25 +184,19 @@ if __name__ == "__main__":
     config.read(configFilename)
                                                                                         # EXAMPLE VALUES:
     clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
-    # SICK-BEARD
-    tvCategory = config.get("SickBeard", "category")                                    # tv
-    tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))        # C:\downloaded\tv | /path/to/downloaded/tv
-    # COUCHPOTATOSERVER
-    movieCategory = config.get("CouchPotato", "category")                               # movie
-    movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))   # C:\downloaded\movies | /path/to/downloaded/movies
-    # TORRENTS
     useLink = config.get("Torrent", "useLink")                                          # true | false
     minSampleSize = int(config.get("Torrent", "minSampleSize"))                         # 200 (in MB)
+    outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
+    categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
+
     uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
+
     compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')    # .zip,.rar,.7z
     mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')              # .mkv,.avi,.divx
     metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
-    categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
-    categories.append(movieCategory)
-    categories.append(tvCategory)  # now have a list of all categories in use.
-    
+
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
     except Exception as e:
