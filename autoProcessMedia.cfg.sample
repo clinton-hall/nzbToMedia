@@ -1,4 +1,6 @@
 [CouchPotato]
+#### cpsCategory - category that gets called for post-processing with CPS
+cpsCategory = movie
 apikey =
 host = localhost
 port = 5050
@@ -13,6 +15,8 @@ delete_failed = 0
 
 
 [SickBeard]
+#### sbCategory - category that gets called for post-processing with CPS
+sbCategory = tv
 host=localhost
 port=8081
 username=
@@ -23,9 +27,9 @@ ssl=0
 watch_dir=
 failed_fork=0
 
+
 [Torrent]
-###### Set to whatever torrent client you use.
-###### Supported values: utorrent, transmission, deluge, other
+###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
 ###### useLink - Set to true or false depending on if you want to use hardlinks
 useLink = false
@@ -34,7 +38,7 @@ minSampleSize = 200
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/
 ###### **insert descriptive comment for categories here** :-)
-categories = movie,tv,music,music_videos,pictures,software
+categories = music,music_videos,pictures,software
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username

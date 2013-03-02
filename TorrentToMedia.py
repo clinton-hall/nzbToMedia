@@ -139,10 +139,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash)
     ##### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
 
     # Now we pass off to CouchPotato or Sick-Beard
-    if inputCategory == movieCategory:
+    if inputCategory == cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
         autoProcessMovie.process(outputDestination, inputName, status)
-    elif inputCategory == tvCategory:
+    elif inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
         autoProcessTV.processEpisode(outputDestination, inputName, status)
 
@@ -196,6 +196,10 @@ if __name__ == "__main__":
     compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')    # .zip,.rar,.7z
     mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')              # .mkv,.avi,.divx
     metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
+    
+    cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
+    sbCategory = config.get("SickBeard", "tvCategory")                                  # tv
+    categories.append(cpsCategory, sbCategory)
 
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
