@@ -132,22 +132,22 @@ def is_sample(filePath, inputName, minSampleSize):
     return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
 
 
-def copy_link(source, target, useLink, outputDestination):
+def copy_link(filePath, targetDirectory, useLink, outputDestination):
     create_destination(outputDestination)
     if useLink:
         try:
-            Logger.info("COPYLINK: Linking %s to %s", source, target)
-            linktastic.link(source, target)
+            Logger.info("COPYLINK: Linking %s to %s", filePath, targetDirectory)
+            linktastic.link(filePath, targetDirectory)
         except:
-            if os.path.isfile(target):
+            if os.path.isfile(targetDirectory):
                 Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
             else:
                 Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
-                Logger.debug("COPYLINK: Copying %s to %s", source, target)
-                shutil.copy(source, target)
+                Logger.debug("COPYLINK: Copying %s to %s", filePath, targetDirectory)
+                shutil.copy(filePath, targetDirectory)
     else:
-        Logger.debug("Copying %s to %s", source, target)
-        shutil.copy(source, target)
+        Logger.debug("Copying %s to %s", filePath, targetDirectory)
+        shutil.copy(filePath, targetDirectory)
     return True
 
 
