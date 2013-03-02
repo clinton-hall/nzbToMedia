@@ -1,6 +1,6 @@
 Change_LOG / History
 
-VX.X XX/03/2013
+V6.0 03/03/2013
 
 Impacts Torrents
 Bundled 7zip binaries and created extraction functions.
