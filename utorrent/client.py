@@ -76,6 +76,24 @@ class UTorrentClient(object):
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
+        
+    def remove(self, *hashes):
+        params = [('action', 'remove'),]
+        for hash in hashes:
+            params.append(('hash', hash))
+        return self._action(params)
+    
+    def removedata(self, *hashes):
+        params = [('action', 'removedata'),]
+        for hash in hashes:
+            params.append(('hash', hash))
+        return self._action(params)
+        
+    def recheck(self, *hashes):
+        params = [('action', 'recheck'),]
+        for hash in hashes:
+            params.append(('hash', hash))
+        return self._action(params)
  
     def getfiles(self, hash):
         params = [('action', 'getfiles'), ('hash', hash)]
