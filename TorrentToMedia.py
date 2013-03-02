@@ -312,7 +312,6 @@ for dirpath, dirnames, filenames in os.walk(outputDestination):
                 Logger.debug("Removing sample file: %s", filePath)
                 os.unlink(filePath)  # remove samples
             else:
-                videofile = filePath
                 video2 = video2 + 1
 if video2 >= video and video2 > 0:  # Check that all video files were moved
     status = 0
@@ -349,9 +348,9 @@ elif inputCategory == tvCategory:
 
 # Check if the file still exists in the post-process directory
 now = datetime.datetime.now()  # set time for timeout
-while os.path.exists(videofile):  # while this file is still here, CPS hasn't finished renaming
+while os.path.exists(outputDestination):  # while this directory is still here, CPS hasn't finished renaming
     if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
-        Logger.info("MAIN: The file %s has not been moved after 3 minutes.", videofile)
+        Logger.info("MAIN: The directory %s has not been moved after 3 minutes.", outputDestination)
         break
     time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
 else:  # CPS (and SickBeard) have finished. We can now resume seeding.
