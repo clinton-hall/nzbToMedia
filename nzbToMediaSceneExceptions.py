@@ -6,7 +6,7 @@ import logging
 from nzbToMediaUtil import iterate_media_files
 
 
-Logger = logging.getLogger(__name__)
+Logger = logging.getLogger()
 
 
 def process_all_exceptions(name, dirname):
