@@ -334,16 +334,16 @@ if inputHash and useLink:
         utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
     except:
         Logger.error("MAIN: Failed to connect to uTorrent")
-    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", videofile)
+    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
     utorrentClass.stop(inputHash)
     time.sleep(5)  # Give uTorrent some time to catch up with the change
 
 # Now we pass off to CouchPotato or Sick-Beard
 if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", videofile)  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
     autoProcessMovie.process(outputDestination, inputName, status)
 elif inputCategory == tvCategory:
-    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", videofile)  # can we use logger while logfile open?
+    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
     autoProcessTV.processEpisode(outputDestination, inputName, status)
 
 # Check if the file still exists in the post-process directory
@@ -354,7 +354,7 @@ while os.path.exists(outputDestination):  # while this directory is still here, 
         break
     time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
 else:  # CPS (and SickBeard) have finished. We can now resume seeding.
-    Logger.info("MAIN: Post-process appears to have succeeded for: %s", videofile)
+    Logger.info("MAIN: Post-process appears to have succeeded for: %s", inputName)
 
 # Hardlink solution with uTorrent
 if inputHash and useLink:
