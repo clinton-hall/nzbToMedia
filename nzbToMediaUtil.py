@@ -3,6 +3,7 @@ import logging.config
 import os
 import sys
 
+import linktastic.linktastic as linktastic
 
 Logger = logging.getLogger(__name__)
 

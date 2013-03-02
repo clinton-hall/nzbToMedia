@@ -19,52 +19,7 @@ from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
 
-# Logging
-nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
-Logger = logging.getLogger(__name__)
-
-def main()
-
-    Logger.info("==========================") # Seperate old from new log
-    Logger.info("TorrentToMedia %s", VERSION)
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-
-    if not os.path.isfile(configFilename):
-        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-        sys.exit(-1)
-
-    Logger.info("MAIN: Loading config from %s", configFilename)
-    config.read(configFilename)
-
-                                                                                        # EXAMPLE VALUES:
-    clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
-    # Sick-Beard
-    tvCategory = config.get("SickBeard", "category")                                    # tv
-    tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))        # C:\downloaded\tv | /path/to/downloaded/tv
-    # CouchPotatoServer
-    movieCategory = config.get("CouchPotato", "category")                               # movie
-    movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))   # C:\downloaded\movies | /path/to/downloaded/movies
-    # Torrent specific
-    useLink = config.get("Torrent", "useLink")                                          # true | false
-    minSampleSize = int(config.get("Torrent", "minSampleSize"))                         # 200
-    uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
-    uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
-    uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
-    compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')    # .zip,.rar,.7z
-    mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')              # .mkv,.avi,.divx
-    metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
-    categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
-    categories.append(movieCategory)
-    categories.append(tvCategory)  # now have a list of all categories in use.
-
-    try:
-        inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
-    except:
-        Logger.error("MAIN: There was a problem loading variables: Exiting")
-        sys.exit(-1)
-
-    Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+def main(inputDirectory, inputName, inputCategory, inputHash)
 
     status = int(1)  # We start as "failed" until we verify movie file in destination
     root = int(0)
@@ -72,6 +27,8 @@ def main()
     video2 = int(0)
     failed_link = int(0)
     failed_extract = int(0)
+
+    Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
     if inputCategory == movieCategory:
@@ -204,4 +161,48 @@ def main()
         utorrentClass.start(inputHash)
 
 if __name__ == "__main__":
-    main()
+
+    # Logging
+    nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+    Logger = logging.getLogger(__name__)
+
+    Logger.info("====================") # Seperate old from new log
+    Logger.info("TorrentToMedia %s", VERSION)
+    config = ConfigParser.ConfigParser()
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+
+    if not os.path.isfile(configFilename):
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+        sys.exit(-1)
+
+    # CONFIG FILE
+    Logger.info("MAIN: Loading config from %s", configFilename)
+    config.read(configFilename)
+                                                                                        # EXAMPLE VALUES:
+    clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
+    # SICK-BEARD
+    tvCategory = config.get("SickBeard", "category")                                    # tv
+    tvDestination = os.path.normpath(config.get("SickBeard", "outputDirectory"))        # C:\downloaded\tv | /path/to/downloaded/tv
+    # COUCHPOTATOSERVER
+    movieCategory = config.get("CouchPotato", "category")                               # movie
+    movieDestination = os.path.normpath(config.get("CouchPotato", "outputDirectory"))   # C:\downloaded\movies | /path/to/downloaded/movies
+    # TORRENTS
+    useLink = config.get("Torrent", "useLink")                                          # true | false
+    minSampleSize = int(config.get("Torrent", "minSampleSize"))                         # 200 (in MB)
+    uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
+    uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
+    uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
+    compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')    # .zip,.rar,.7z
+    mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')              # .mkv,.avi,.divx
+    metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
+    categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
+    categories.append(movieCategory)
+    categories.append(tvCategory)  # now have a list of all categories in use.
+    
+    try:
+        inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
+    except Exception as e:
+        Logger.error("MAIN: There was a problem loading variables: %s", e)
+        sys.exit(-1)
+
+    main(inputDirectory, inputName, inputCategory, inputHash)
