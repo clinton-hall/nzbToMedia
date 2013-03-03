@@ -10,6 +10,7 @@ from nzbToMediaUtil import *
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
+Logger.info("====================") # Seperate old from new log
 Logger.info("nzbToCouchPotato %s", VERSION)
 
 # SABnzbd
