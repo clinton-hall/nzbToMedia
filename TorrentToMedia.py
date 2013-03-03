@@ -19,7 +19,7 @@ from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
 
-def main(inputDirectory, inputName, inputCategory, inputHash)
+def main(inputDirectory, inputName, inputCategory, inputHash):
 
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
