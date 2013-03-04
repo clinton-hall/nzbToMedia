@@ -31,11 +31,11 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
-def get_imdb(nzbName1, dirName):
+def get_imdb(nzbName, dirName):
     
-    a=nzbName1.find('.cp(')+4 #search for .cptt( in nzbName
-    b=nzbName1[a:].find(')')+a
-    imdbid=nzbName1[a:b]
+    a=nzbName.find('.cp(')+4 #search for .cptt( in nzbName
+    b=nzbName[a:].find(')')+a
+    imdbid=nzbName[a:b]
     
     if imdbid:
         Logger.info("Found movie id %s in name", imdbid) 
@@ -51,8 +51,7 @@ def get_imdb(nzbName1, dirName):
     else:
         Logger.warning("Could not find an imdb id in directory or name")
         Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
-        imdbid = ""
-        return imdbid
+        return ""
 
 def get_movie_info(myOpener, baseURL, imdbid):
     
@@ -69,7 +68,6 @@ def get_movie_info(myOpener, baseURL, imdbid):
         return ""
 
     movie_id = ""
-    movie_status = ""
     result = json.load(urlObj)
     movieid = [item["id"] for item in result["movies"]]
     library = [item["library"]["identifier"] for item in result["movies"]]
@@ -98,7 +96,8 @@ def get_status(myOpener, baseURL, movie_id):
         movie_status = result["movie"]["status"]["identifier"]
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
         return movie_status
-    except:
+    except e: # index out of range/doesn't exist?
+        Logger.error("Could not find a status for this movie due to: %s", str(e))
         return ""
 
 def process(dirName, nzbName=None, status=0):
@@ -135,9 +134,9 @@ def process(dirName, nzbName=None, status=0):
 
     myOpener = AuthURLOpener(username, password)
 
-    nzbName1 = str(nzbName)
+    nzbName = str(nzbName) # make sure it is a string
     
-    imdbid = get_imdb(nzbName1, dirName)
+    imdbid = get_imdb(nzbName, dirName)
 
     if ssl:
         protocol = "https://"
@@ -178,17 +177,17 @@ def process(dirName, nzbName=None, status=0):
         result = json.load(urlObj)
         Logger.info("CouchPotatoServer returned %s", result)
         if result['success']:
-            Logger.info("%s started on CouchPotatoServer for %s", command, nzbName1)
+            Logger.info("%s started on CouchPotatoServer for %s", command, nzbName)
         else:
-            Logger.error("%s has NOT started on CouchPotatoServer for %s. Exiting", command, nzbName1)
+            Logger.error("%s has NOT started on CouchPotatoServer for %s. Exiting", command, nzbName)
             return 1 # failure
 
     else:
-        Logger.info("Download of %s has failed.", nzbName1)
+        Logger.info("Download of %s has failed.", nzbName)
         Logger.info("Trying to re-cue the next highest ranked release")
         
         if not movie_id:
-            Logger.warning("Cound not find a movie in the database for release %s", nzbName1)
+            Logger.warning("Cound not find a movie in the database for release %s", nzbName)
             Logger.warning("Please manually ignore this release and refresh the wanted movie")
             Logger.error("Exiting autoProcessMovie script")
             return 1 # failure
