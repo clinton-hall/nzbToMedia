@@ -32,12 +32,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 
     for category in categories:
         if category == inputCategory:
-            outputDestination = os.path.normpath(os.path.join(outputDestination, category, inputName))
+            outputDestination = os.path.normpath(os.path.join(outputDirectory, category, inputName))
             Logger.info("MAIN: Output directory set to: %s", outputDestination)
-            pass
+            break
         else:
-            Logger.error("MAIN: Could not match input category with defined categories, Exiting")
-            sys.exit(-1)
+            continue
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)      
 
