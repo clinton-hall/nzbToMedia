@@ -76,7 +76,7 @@ def get_movie_info(myOpener, baseURL, imdbid):
     for index in range(len(movieid)):
         if library[index] == imdbid:
             movie_id = str(movieid[index])
-            Logger.info("found movie id %s in CPS database for movie %s", movie_id, imdbid)
+            Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
             break
     return movie_id
 
@@ -96,6 +96,7 @@ def get_status(myOpener, baseURL, movie_id):
     result = json.load(urlObj)
     try:
         movie_status = result["movie"]["status"]["identifier"]
+        Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
         return movie_status
     except:
         return ""
@@ -149,11 +150,8 @@ def process(dirName, nzbName=None, status=0):
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
     movie_id = get_movie_info(myOpener, baseURL, imdbid) # get the CPS database movie id this movie.
-    if not movie_id:
-        initial_status = ""
-    else:
-        initial_status = get_status(myOpener, baseURL, movie_id)
-        Logger.debug("This movie is marked as status %s in CouchPotatoServer", initial_status)
+    
+    initial_status = get_status(myOpener, baseURL, movie_id)
     
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -165,7 +163,7 @@ def process(dirName, nzbName=None, status=0):
 
         url = baseURL + command
 
-        Logger.info("waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
+        Logger.info("Waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
 
         time.sleep(delay)
 
@@ -186,13 +184,13 @@ def process(dirName, nzbName=None, status=0):
             return 1 # failure
 
     else:
-        Logger.info("download of %s has failed.", nzbName1)
-        Logger.info("trying to re-cue the next highest ranked release")
+        Logger.info("Download of %s has failed.", nzbName1)
+        Logger.info("Trying to re-cue the next highest ranked release")
         
         if not movie_id:
-            Logger.warning("cound not find a movie in the database for release %s", nzbName1)
-            Logger.warning("please manually ignore this release and refresh the wanted movie")
-            Logger.error("exiting postprocessing script")
+            Logger.warning("Cound not find a movie in the database for release %s", nzbName1)
+            Logger.warning("Please manually ignore this release and refresh the wanted movie")
+            Logger.error("Exiting autoProcessMovie script")
             return 1 # failure
 
         url = baseURL + "searcher.try_next/?id=" + movie_id
@@ -209,10 +207,13 @@ def process(dirName, nzbName=None, status=0):
         for line in result:
             Logger.info("%s", line)
 
-        Logger.info("movie %s set to try the next best release on CouchPotatoServer", movie_id)
+        Logger.info("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
         if delete_failed:
             Logger.info("Deleting failed files and folder %s", dirName)
-            shutil.rmtree(dirName)
+            try:
+                shutil.rmtree(dirName)
+            except e:
+                Logger.error("Unable to delete folder %s due to: %s", dirName, str(e))
         return 0 # success
     
     if nzbName == "Manual Run":
