@@ -3,6 +3,7 @@ import urllib
 import os
 import shutil
 import ConfigParser
+import datetime
 import time
 import json
 import logging
@@ -48,15 +49,15 @@ def get_imdb(nzbName1, dirName):
         Logger.info("Found movie id %s in directory", imdbid) 
         return imdbid
     else:
-        Logger.warning("Could not find movie id in directory or name", imdbid)
+        Logger.warning("Could not find an imdb id in directory or name")
         Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
         imdbid = ""
         return imdbid
 
-def get_movie_info(baseURL, imdbid):
+def get_movie_info(myOpener, baseURL, imdbid):
     
     if not imdbid:
-        return 0, "", ""
+        return ""
     url = baseURL + "movie.list"
 
     Logger.debug("Opening URL: %s", url)
@@ -65,7 +66,7 @@ def get_movie_info(baseURL, imdbid):
         urlObj = myOpener.openit(url)
     except IOError, e:
         Logger.error("Unable to open URL: %s", str(e))
-        return 0, "", ""
+        return ""
 
     movie_id = ""
     movie_status = ""
@@ -79,11 +80,11 @@ def get_movie_info(baseURL, imdbid):
             break
     return movie_id
 
-def get_status(movie_id):
+def get_status(myOpener, baseURL, movie_id):
     
     if not movie_id:
         return ""
-    url = baseURL + "movie.get/?id=" + movie_id
+    url = baseURL + "movie.get/?id=" + str(movie_id)
 
     Logger.debug("Opening URL: %s", url)
 
@@ -147,11 +148,11 @@ def process(dirName, nzbName=None, status=0):
 
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
-    movie_id = get_movie_info(baseURL, imdbid) # get the CPS database movie id this movie.
+    movie_id = get_movie_info(myOpener, baseURL, imdbid) # get the CPS database movie id this movie.
     if not movie_id:
-        initial status = ""
+        initial_status = ""
     else:
-        initial_status = get_status(movie_id)
+        initial_status = get_status(myOpener, baseURL, movie_id)
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", initial_status)
     
     process_all_exceptions(nzbName.lower(), dirName)
@@ -208,7 +209,7 @@ def process(dirName, nzbName=None, status=0):
         for line in result:
             Logger.info("%s", line)
 
-        Logger.info("movie %s set to try the next best release on CouchPotatoServer", movid)
+        Logger.info("movie %s set to try the next best release on CouchPotatoServer", movie_id)
         if delete_failed:
             Logger.info("Deleting failed files and folder %s", dirName)
             shutil.rmtree(dirName)
@@ -219,8 +220,8 @@ def process(dirName, nzbName=None, status=0):
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     start = datetime.datetime.now()  # set time for timeout
-    while (datetime.datetime.now() - start) > datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
-        movie_status = get_status(movie_id) # get the current status fo this movie.
+    while (datetime.datetime.now() - start) < datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
+        movie_status = get_status(myOpener, baseURL, movie_id) # get the current status fo this movie.
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success
