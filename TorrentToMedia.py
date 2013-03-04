@@ -78,21 +78,21 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
                     except Exception as e:
                         Logger.error("MAIN: Failed to link file: %s", file)
-                        Logger.debug e
+                        Logger.debug(e)
             elif fileExtention in metaContainer:
                 Logger.info("MAIN: Found metadata file %s for file %s", fileExtention, filePath)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
                 except Exception as e:
                     Logger.error("MAIN: Failed to link file: %s", file)
-                    Logger.debug e
+                    Logger.debug(e)
             elif fileExtention in compressedContainer:
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
                 try:
                     extractor.extract(filePath, outputDestination)
                 except Exception as e:
                     Logger.warn("MAIN: Extraction failed for: %s", file)
-                    Logger.debug e
+                    Logger.debug(e)
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
                 continue
@@ -185,8 +185,9 @@ if __name__ == "__main__":
     metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
-    sbCategory = config.get("SickBeard", "tvCategory")                                  # tv
-    categories.append(cpsCategory, sbCategory)
+    sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
+    categories.append(cpsCategory)
+    categories.append(sbCategory)
 
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
