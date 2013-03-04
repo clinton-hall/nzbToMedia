@@ -134,24 +134,17 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 
     # Now we pass off to CouchPotato or Sick-Beard
     if inputCategory == cpsCategory:
-        Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
-        autoProcessMovie.process(outputDestination, inputName, status)
+        Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
+        result = autoProcessMovie.process(outputDestination, inputName, status)
     elif inputCategory == sbCategory:
-        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
-        autoProcessTV.processEpisode(outputDestination, inputName, status)
+        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+        result = autoProcessTV.processEpisode(outputDestination, inputName, status)
 
-    # Check if the file still exists in the post-process directory
-    now = datetime.datetime.now()  # set time for timeout
-    while os.path.exists(outputDestination):  # while this directory is still here, CPS hasn't finished renaming
-        if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
-            Logger.info("MAIN: The directory %s has not been moved after 3 minutes.", outputDestination)
-            break
-        time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
-    else:  # CPS (and SickBeard) have finished. We can now resume seeding.
-        Logger.info("MAIN: Post-process appears to have succeeded for: %s", inputName)
+    if result == 1:
+        Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     #### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if inputHash and useLink and clientAgent == 'utorrent':
+    if inputHash and useLink and clientAgent == 'utorrent' and status == 0: # only resume seeding for successfully extracted files?
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
     #### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
