@@ -48,12 +48,15 @@ def get_imdb(nzbName1, dirName):
         Logger.info("Found movie id %s in directory", imdbid) 
         return imdbid
     else:
-        Logger.info("Could not find movie id in directory or name", imdbid)
+        Logger.warning("Could not find movie id in directory or name", imdbid)
+        Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
         imdbid = ""
         return imdbid
 
 def get_movie_info(baseURL, imdbid):
     
+    if not imdbid:
+        return 0, "", ""
     url = baseURL + "movie.list"
 
     Logger.debug("Opening URL: %s", url)
@@ -64,25 +67,23 @@ def get_movie_info(baseURL, imdbid):
         Logger.error("Unable to open URL: %s", str(e))
         return 0, "", ""
 
-    n=0
     movie_id = ""
     movie_status = ""
     result = json.load(urlObj)
     movieid = [item["id"] for item in result["movies"]]
-    statusid = [item["status_id"] for item in result["movies"]]
     library = [item["library"]["identifier"] for item in result["movies"]]
     for index in range(len(movieid)):
         if library[index] == imdbid:
             movie_id = str(movieid[index])
-            movie_status = int(statusid[index])
             Logger.info("found movie id %s in CPS database for movie %s", movie_id, imdbid)
-            n = n + 1
             break
-    return n, movie_id, movie_status
+    return movie_id
 
-def get_status_list(baseURL):
+def get_status(movie_id):
     
-    url = baseURL + "status.list"
+    if not movie_id:
+        return ""
+    url = baseURL + "movie.get/?id=" + movie_id
 
     Logger.debug("Opening URL: %s", url)
 
@@ -90,13 +91,13 @@ def get_status_list(baseURL):
         urlObj = myOpener.openit(url)
     except IOError, e:
         Logger.error("Unable to open URL: %s", str(e))
-        return [], []
-
+        return ""
     result = json.load(urlObj)
-    status = [item["identifier"] for item in result["list"]]
-    status_id = [item["id"] for item in result["list"]]
-    
-    return status, status_id
+    try:
+        movie_status = result["movie"]["status"]["identifier"]
+        return movie_status
+    except:
+        return ""
 
 def process(dirName, nzbName=None, status=0):
 
@@ -146,18 +147,12 @@ def process(dirName, nzbName=None, status=0):
 
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
-    status, status_id = get_status_list(baseURL)
-    if not status:
-        return 1 # failure
-    
-    n, movie_id, movie_status = get_movie_info(baseURL, imdbid) # get the initial status fo this movie.
+    movie_id = get_movie_info(baseURL, imdbid) # get the CPS database movie id this movie.
     if not movie_id:
         initial status = ""
-    for index in range(len(status):
-        if movie_status == status_id[index]
-            initial_status = movie_status
-            Logger.debug("This movie is marked as status %s in CouchPotatoServer", status[index])
-            break
+    else:
+        initial_status = get_status(movie_id)
+        Logger.debug("This movie is marked as status %s in CouchPotatoServer", initial_status)
     
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -193,7 +188,7 @@ def process(dirName, nzbName=None, status=0):
         Logger.info("download of %s has failed.", nzbName1)
         Logger.info("trying to re-cue the next highest ranked release")
         
-        if n == 0:
+        if not movie_id:
             Logger.warning("cound not find a movie in the database for release %s", nzbName1)
             Logger.warning("please manually ignore this release and refresh the wanted movie")
             Logger.error("exiting postprocessing script")
@@ -219,15 +214,15 @@ def process(dirName, nzbName=None, status=0):
             shutil.rmtree(dirName)
         return 0 # success
     
+    if nzbName == "Manual Run":
+        return 0 # success
+
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     start = datetime.datetime.now()  # set time for timeout
     while (datetime.datetime.now() - start) > datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
-        n, movie_id, movie_status = get_movie_info(baseURL, imdbid) # get the current status fo this movie.
-        if movie_status != initial_status:  # Something has changed
-            for index in range(len(status):
-                if movie_status == status_id[index]
-                Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", status[index])
-                break # leave the for loop
+        movie_status = get_status(movie_id) # get the current status fo this movie.
+        if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
+            Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success
         time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
     else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
