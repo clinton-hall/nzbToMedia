@@ -30,6 +30,73 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
+def get_imdb(nzbName1, dirName):
+    
+    a=nzbName1.find('.cp(')+4 #search for .cptt( in nzbName
+    b=nzbName1[a:].find(')')+a
+    imdbid=nzbName1[a:b]
+    
+    if imdbid:
+        Logger.info("Found movie id %s in name", imdbid) 
+        return imdbid
+    
+    a=dirName.find('.cp(')+4 #search for .cptt( in dirname
+    b=dirName[a:].find(')')+a
+    imdbid=dirName[a:b]
+    
+    if imdbid:
+        Logger.info("Found movie id %s in directory", imdbid) 
+        return imdbid
+    else:
+        Logger.info("Could not find movie id in directory or name", imdbid)
+        imdbid = ""
+        return imdbid
+
+def get_movie_info(baseURL, imdbid):
+    
+    url = baseURL + "movie.list"
+
+    Logger.debug("Opening URL: %s", url)
+
+    try:
+        urlObj = myOpener.openit(url)
+    except IOError, e:
+        Logger.error("Unable to open URL: %s", str(e))
+        return 0, "", ""
+
+    n=0
+    movie_id = ""
+    movie_status = ""
+    result = json.load(urlObj)
+    movieid = [item["id"] for item in result["movies"]]
+    statusid = [item["status_id"] for item in result["movies"]]
+    library = [item["library"]["identifier"] for item in result["movies"]]
+    for index in range(len(movieid)):
+        if library[index] == imdbid:
+            movie_id = str(movieid[index])
+            movie_status = int(statusid[index])
+            Logger.info("found movie id %s in CPS database for movie %s", movie_id, imdbid)
+            n = n + 1
+            break
+    return n, movie_id, movie_status
+
+def get_status_list(baseURL):
+    
+    url = baseURL + "status.list"
+
+    Logger.debug("Opening URL: %s", url)
+
+    try:
+        urlObj = myOpener.openit(url)
+    except IOError, e:
+        Logger.error("Unable to open URL: %s", str(e))
+        return [], []
+
+    result = json.load(urlObj)
+    status = [item["identifier"] for item in result["list"]]
+    status_id = [item["id"] for item in result["list"]]
+    
+    return status, status_id
 
 def process(dirName, nzbName=None, status=0):
 
@@ -40,7 +107,7 @@ def process(dirName, nzbName=None, status=0):
 
     if not os.path.isfile(configFilename):
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-        sys.exit(-1)
+        return 1 # failure
 
     config.read(configFilename)
 
@@ -66,6 +133,8 @@ def process(dirName, nzbName=None, status=0):
     myOpener = AuthURLOpener(username, password)
 
     nzbName1 = str(nzbName)
+    
+    imdbid = get_imdb(nzbName1, dirName)
 
     if ssl:
         protocol = "https://"
@@ -75,6 +144,21 @@ def process(dirName, nzbName=None, status=0):
     if nzbName == "Manual Run":
         delay = 0
 
+    baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
+    
+    status, status_id = get_status_list(baseURL)
+    if not status:
+        return 1 # failure
+    
+    n, movie_id, movie_status = get_movie_info(baseURL, imdbid) # get the initial status fo this movie.
+    if not movie_id:
+        initial status = ""
+    for index in range(len(status):
+        if movie_status == status_id[index]
+            initial_status = movie_status
+            Logger.debug("This movie is marked as status %s in CouchPotatoServer", status[index])
+            break
+    
     process_all_exceptions(nzbName.lower(), dirName)
 
     if status == 0:
@@ -83,7 +167,7 @@ def process(dirName, nzbName=None, status=0):
         else:
             command = "renamer.scan"
 
-        url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/" + command
+        url = baseURL + command
 
         Logger.info("waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
 
@@ -95,51 +179,27 @@ def process(dirName, nzbName=None, status=0):
             urlObj = myOpener.openit(url)
         except IOError, e:
             Logger.error("Unable to open URL: %s", str(e))
-            sys.exit(1)
+            return 1 # failure
 
         result = json.load(urlObj)
         Logger.info("CouchPotatoServer returned %s", result)
         if result['success']:
             Logger.info("%s started on CouchPotatoServer for %s", command, nzbName1)
         else:
-            Logger.error("%s has NOT started on CouchPotatoServer for %s", command, nzbName1)
+            Logger.error("%s has NOT started on CouchPotatoServer for %s. Exiting", command, nzbName1)
+            return 1 # failure
 
     else:
         Logger.info("download of %s has failed.", nzbName1)
         Logger.info("trying to re-cue the next highest ranked release")
-        a=nzbName1.find('.cp(')+4
-        b=nzbName1[a:].find(')')+a
-        imdbid=nzbName1[a:b]
-
-        url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/movie.list"
-
-        Logger.debug("Opening URL: %s", url)
-
-        try:
-            urlObj = myOpener.openit(url)
-        except IOError, e:
-            Logger.error("Unable to open URL: %s", str(e))
-            sys.exit(1)
-
-        n=0
-        result = json.load(urlObj)
-        movieid = [item["id"] for item in result["movies"]]
-        library = [item["library"] for item in result["movies"]]
-        identifier = [item["identifier"] for item in library]
-        for index in range(len(movieid)):
-            if identifier[index] == imdbid:
-                movid = str(movieid[index])
-                Logger.info("found movie id %s in database for release %s", movid, nzbName1)
-                n = n + 1
-                break
-
+        
         if n == 0:
             Logger.warning("cound not find a movie in the database for release %s", nzbName1)
             Logger.warning("please manually ignore this release and refresh the wanted movie")
             Logger.error("exiting postprocessing script")
-            sys.exit(1)
+            return 1 # failure
 
-        url = protocol + host + ":" + port + web_root + "/api/" + apikey + "/searcher.try_next/?id=" + movid
+        url = baseURL + "searcher.try_next/?id=" + movie_id
 
         Logger.debug("Opening URL: %s", url)
 
@@ -147,7 +207,7 @@ def process(dirName, nzbName=None, status=0):
             urlObj = myOpener.openit(url)
         except IOError, e:
             Logger.error("Unable to open URL: %s", str(e))
-            sys.exit(1)
+            return 1 # failure
 
         result = urlObj.readlines()
         for line in result:
@@ -157,3 +217,19 @@ def process(dirName, nzbName=None, status=0):
         if delete_failed:
             Logger.info("Deleting failed files and folder %s", dirName)
             shutil.rmtree(dirName)
+        return 0 # success
+    
+    # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
+    start = datetime.datetime.now()  # set time for timeout
+    while (datetime.datetime.now() - start) > datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
+        n, movie_id, movie_status = get_movie_info(baseURL, imdbid) # get the current status fo this movie.
+        if movie_status != initial_status:  # Something has changed
+            for index in range(len(status):
+                if movie_status == status_id[index]
+                Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", status[index])
+                break # leave the for loop
+            return 0 # success
+        time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
+    else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        Logger.warning("The movie does not appear to have changed status after 2 minutes. Please check CouchPotato Logs")
+    return 1 # failure
