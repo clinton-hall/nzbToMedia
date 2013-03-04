@@ -5,7 +5,7 @@ import sys
 
 import linktastic.linktastic as linktastic
 
-Logger = logging.getLogger(__name__)
+Logger = logging.getLogger()
 
 
 def nzbtomedia_configure_logging(dirname):
