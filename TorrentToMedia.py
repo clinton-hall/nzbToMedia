@@ -45,7 +45,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         for file in filenames:
 
             filePath = os.path.join(dirpath, file)
-            fileExtention = os.path.splitext(file)[1]
+            fileExtension = os.path.splitext(file)[1]
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
@@ -66,34 +66,41 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if fileExtention in mediaContainer:  # If the file is a video file
+            if fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
                     video = video + 1
-                    Logger.info("MAIN: Found video file %s in %s", fileExtention, filePath)
+                    Logger.info("MAIN: Found video file %s in %s", fileExtension, filePath)
                     try:
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
                     except Exception as e:
                         Logger.error("MAIN: Failed to link file: %s", file)
                         Logger.debug(e)
-            elif fileExtention in metaContainer:
-                Logger.info("MAIN: Found metadata file %s for file %s", fileExtention, filePath)
+            elif fileExtension in metaContainer:
+                Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
                 except Exception as e:
                     Logger.error("MAIN: Failed to link file: %s", file)
                     Logger.debug(e)
-            elif fileExtention in compressedContainer:
-                Logger.info("MAIN: Found compressed archive %s for file %s", fileExtention, filePath)
+            elif fileExtension in keepExtensions:
+                Logger.info("MAIN: Found file of type %s. Processing file %s.", fileExtension, filePath)
+                try:
+                    copy_link(filePath, targetDirectory, useLink, outputDestination)
+                except Exception as e:
+                    Logger.error("MAIN: Failed to link file: %s", file)
+                    Logger.debug(e)
+            elif fileExtension in compressedContainer:
+                Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
                     extractor.extract(filePath, outputDestination)
                 except Exception as e:
                     Logger.warn("MAIN: Extraction failed for: %s", file)
                     Logger.debug(e)
             else:
-                Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
+                Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
     flatten(outputDestination)
 
@@ -101,8 +108,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
             filePath = os.path.join(dirpath, file)
-            fileExtention = os.path.splitext(file)[1]
-            if fileExtention in mediaContainer:  # If the file is a video file
+            fileExtension = os.path.splitext(file)[1]
+            if fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):
                     Logger.debug("MAIN: Removing sample file: %s", filePath)
                     os.unlink(filePath)  # remove samples
@@ -110,6 +117,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     video2 = video2 + 1
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
+
+    if not (inputCategory == cpsCategory or inputCategory == sbCategory): # no extra processign to be done... yet.
+        Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
+        Logger.info("MAIN: All done.")
+        sys.exit(0)
 
     if status == 0: #### Maybe we should move this to a more appropriate place?
         Logger.info("MAIN: Successful run")
@@ -179,9 +191,10 @@ if __name__ == "__main__":
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
 
-    compressedContainer = (config.get("Torrent", "compressedExtentions")).split(',')    # .zip,.rar,.7z
-    mediaContainer = (config.get("Torrent", "mediaExtentions")).split(',')              # .mkv,.avi,.divx
-    metaContainer = (config.get("Torrent", "metaExtentions")).split(',')                # .nfo,.sub,.srt
+    compressedContainer = (config.get("Torrent", "compressedExtensions")).split(',')    # .zip,.rar,.7z
+    mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',')              # .mkv,.avi,.divx
+    metaContainer = (config.get("Torrent", "metaExtensions")).split(',')                # .nfo,.sub,.srt
+    keepExtensions = (config.get("Torrent", "keepExtensions")).split(',')               # .mp3,.jpg,.exe
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
