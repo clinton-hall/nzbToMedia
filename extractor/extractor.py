@@ -36,7 +36,7 @@ def which(program):
 
     return None
 
-def extract(dirpath, file, outputDestination):
+def extract(filePath, outputDestination):
     # Using Windows
     if os.name == 'nt':
         if os_platform() == 'AMD64':
@@ -89,7 +89,6 @@ def extract(dirpath, file, outputDestination):
             Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
     ext = os.path.splitext(file)
-    filePath = os.path.join(dirpath, file)
     if ext[1] in (".gz", ".bz2", ".lzma"):
     # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":

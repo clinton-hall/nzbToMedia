@@ -11,7 +11,7 @@ Logger = logging.getLogger()
 
 def process_all_exceptions(name, dirname):
     for group, exception in __customgroups__.items():
-        if not group in name:
+        if not (group in name or group in dirname):
             continue
         process_exception(exception, name, dirname)
 
@@ -23,7 +23,7 @@ def process_exception(exception, name, dirname):
 
 def process_qoq(filename, dirname):
     Logger.debug("Reversing the file name for a QoQ release %s", filename)
-    head, fileExtention = os.path.splitext(filename)
+    head, fileExtention = os.path.splitext(os.path.basename(filename))
     newname = head[::-1]
     newfile = newname + fileExtention
     newfilePath = os.path.join(dirname, newfile)
@@ -32,4 +32,4 @@ def process_qoq(filename, dirname):
 
 # dict for custom groups
 # we can add more to this list
-__customgroups__ = {'[=-< Q o Q >-=]': process_qoq}
+__customgroups__ = {'Q o Q': process_qoq}

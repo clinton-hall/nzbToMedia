@@ -57,7 +57,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     if not os.path.isfile(configFilename):
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-        sys.exit(-1)
+        return 1 # failure
 
     try:
         fp = open(configFilename, "r")
@@ -65,7 +65,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
         fp.close()
     except IOError, e:
         Logger.error("Could not read configuration file: %s", str(e))
-        sys.exit(1)
+        return 1 # failure
 
     watch_dir = ""
     host = config.get("SickBeard", "host")
@@ -98,7 +98,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
     #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
     if nzbName == "Manual Run" and watch_dir == "":
         Logger.error("In order to run this script manually you must specify a watch_dir in autoProcessTV.cfg")
-        sys.exit(-1)
+        return 1 # failure
     #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
     if watch_dir != "":
         dirName = watch_dir
@@ -126,7 +126,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
         # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
         if status:
             Logger.info("The download failed. Nothing to process")
-            sys.exit()
+            return 0 # Success (as far as this script is concerned)
         else:
             Logger.info("The download succeeded. Sending process request to SickBeard")
 
@@ -145,8 +145,9 @@ def processEpisode(dirName, nzbName=None, failed=False):
         urlObj = myOpener.openit(url)
     except IOError, e:
         Logger.error("Unable to open URL: %s", str(e))
-        sys.exit(1)
+        return 1 # failure
 
     result = urlObj.readlines()
     for line in result:
         Logger.info("%s", line)
+    return 0 # Success
