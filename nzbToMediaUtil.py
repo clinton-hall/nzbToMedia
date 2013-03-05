@@ -202,8 +202,8 @@ def iterate_media_files(dirname):
 
     for dirpath, dirnames, filesnames in os.walk(dirname):
         for filename in filesnames:
-            fileExtention = os.path.splitext(filename)[1]
-            if not (fileExtention in mediaContainer):
+            fileExtension = os.path.splitext(filename)[1]
+            if not (fileExtension in mediaContainer):
                 continue
             yield dirpath, os.path.join(dirpath, filename)
 
