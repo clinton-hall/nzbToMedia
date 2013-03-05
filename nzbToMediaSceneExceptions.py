@@ -23,9 +23,9 @@ def process_exception(exception, name, dirname):
 
 def process_qoq(filename, dirname):
     Logger.debug("Reversing the file name for a QoQ release %s", filename)
-    head, fileExtention = os.path.splitext(os.path.basename(filename))
+    head, fileExtension = os.path.splitext(os.path.basename(filename))
     newname = head[::-1]
-    newfile = newname + fileExtention
+    newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     os.rename(filename, newfilePath)
     Logger.debug("New file name is %s", newfile)
