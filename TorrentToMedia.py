@@ -66,7 +66,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if fileExtension in mediaContainer:  # If the file is a video file
+            if not (inputCategory == cpsCategory or inputCategory == sbCategory): #process all for non-video categories.
+                Logger.info("MAIN: Found file %s for category %s", filepath, inputCategory)
+                copy_link(filePath, targetDirectory, useLink, outputDestination
+            elif fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
@@ -80,13 +83,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                         Logger.debug(e)
             elif fileExtension in metaContainer:
                 Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
-                try:
-                    copy_link(filePath, targetDirectory, useLink, outputDestination)
-                except Exception as e:
-                    Logger.error("MAIN: Failed to link file: %s", file)
-                    Logger.debug(e)
-            elif fileExtension in keepExtensions:
-                Logger.info("MAIN: Found file of type %s. Processing file %s.", fileExtension, filePath)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
                 except Exception as e:
