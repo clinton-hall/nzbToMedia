@@ -29,10 +29,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
-
+        
     for category in categories:
         if category == inputCategory:
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, category, inputName))
+            outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
             Logger.info("MAIN: Output directory set to: %s", outputDestination)
             break
         else:
@@ -50,7 +50,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 
             if root == 1:
                 Logger.debug("MAIN: Looking for %s in filename", inputName)
-                if (inputName in file) or (os.path.splitext(file)[0] in inputName):
+                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)):
                     pass  # This file does match the Torrent name
                     Logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
                 else:
