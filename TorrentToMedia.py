@@ -93,11 +93,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     Logger.warn("MAIN: Extraction failed for: %s", file)
                     Logger.debug(e)
             else:
-<<<<<<< HEAD
-                video2 = video2 + 1
-if video2 >= video and video2 > 0:  # Check that all video files were moved
-    status = 0
-=======
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtention, filePath)
                 continue
     flatten(outputDestination)
@@ -122,9 +117,8 @@ if video2 >= video and video2 > 0:  # Check that all video files were moved
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
->>>>>>> refactor0.7
 
-    #### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
+    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
     if inputHash and useLink and clientAgent == 'utorrent':
         try:
             Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
@@ -135,7 +129,7 @@ if video2 >= video and video2 > 0:  # Check that all video files were moved
         Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
         utorrentClass.stop(inputHash)
         time.sleep(5)  # Give uTorrent some time to catch up with the change
-    ##### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
+    ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
 
     # Now we pass off to CouchPotato or Sick-Beard
     if inputCategory == cpsCategory:
@@ -148,11 +142,11 @@ if video2 >= video and video2 > 0:  # Check that all video files were moved
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
-    #### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
+    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
     if inputHash and useLink and clientAgent == 'utorrent' and status == 0: # only resume seeding for successfully extracted files?
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
-    #### quick 'n dirt hardlink solution for uTorrent, need to implent support for deluge, transmission
+    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
     
     Logger.info("MAIN: All done.")
 
@@ -195,37 +189,9 @@ if __name__ == "__main__":
     categories.append(sbCategory)
 
     try:
-<<<<<<< HEAD
-        Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
-        utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-    except:
-        Logger.error("MAIN: Failed to connect to uTorrent")
-    Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-    utorrentClass.stop(inputHash)
-    time.sleep(5)  # Give uTorrent some time to catch up with the change
-
-# Now we pass off to CouchPotato or Sick-Beard
-if inputCategory == movieCategory:
-    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)  # can we use logger while logfile open?
-    autoProcessMovie.process(outputDestination, inputName, status)
-elif inputCategory == tvCategory:
-    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)  # can we use logger while logfile open?
-    autoProcessTV.processEpisode(outputDestination, inputName, status)
-
-# Check if the file still exists in the post-process directory
-now = datetime.datetime.now()  # set time for timeout
-while os.path.exists(outputDestination):  # while this directory is still here, CPS hasn't finished renaming
-    if (datetime.datetime.now() - now) > datetime.timedelta(minutes=3):  # note; minimum 1 minute delay in autoProcessMovie
-        Logger.info("MAIN: The directory %s has not been moved after 3 minutes.", outputDestination)
-        break
-    time.sleep(10) #Just stop this looping infinitely and hogging resources for 3 minutes ;)
-else:  # CPS (and SickBeard) have finished. We can now resume seeding.
-    Logger.info("MAIN: Post-process appears to have succeeded for: %s", inputName)
-=======
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
     except Exception as e:
         Logger.error("MAIN: There was a problem loading variables: %s", e)
         sys.exit(-1)
->>>>>>> refactor0.7
 
     main(inputDirectory, inputName, inputCategory, inputHash)
