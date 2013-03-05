@@ -1,5 +1,21 @@
 Change_LOG / History
 
+VX.X XX/03/2013
+
+Impacts Torrents
+uTorrent only resumes seeding successful downloads. i.e. if a .rar file is password protected, we don't bother seeding.
+
+Impacts NZB 
+
+
+Impacts All
+Added CouchPotato status check to provide confirmation of renamer complete. 
+CouchPotato status check will timeout after 2 minutes in case something goes wrong.
+Improved logging.
+Improved scen exception handling.
+Major changes to code layout. Better efficiency.
+
+
 V6.0 03/03/2013
 
 Impacts Torrents
