@@ -1,11 +1,17 @@
 import logging
 import logging.config
 import os
+import re
 import sys
 
 import linktastic.linktastic as linktastic
 
 Logger = logging.getLogger()
+
+
+def safeName(name):
+    safename = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", name) #make this name safe for use in directories for windows etc.
+    return safename
 
 
 def nzbtomedia_configure_logging(dirname):
@@ -76,6 +82,11 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 if categorySearch[0] == os.path.normpath(inputDirectory):  # only true on first pass, x =0
                     inputDirectory = os.path.join(categorySearch[0], inputName)  # we only want to search this next dir up.
                 break  # we are done
+            elif os.path.isdir(os.path.join(categorySearch[0], safeName(inputName))) and inputName:  # testing for torrent name in first sub directory
+                Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], safeName(inputName)), categorySearch[0])
+                if categorySearch[0] == os.path.normpath(inputDirectory):  # only true on first pass, x =0
+                    inputDirectory = os.path.join(categorySearch[0], safeName(inputName))  # we only want to search this next dir up.
+                break  # we are done
             elif inputName:  # if these exists, we are ok to proceed, but we are in a root/common directory.
                 Logger.info("SEARCH: Could not find a unique torrent folder in the directory structure")
                 Logger.info("SEARCH: The directory passed is the root directory for category %s", categorySearch2[1])
@@ -89,7 +100,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                 root = 2
                 break
-        elif categorySearch2[1] == inputName and inputName:  # we have identified a unique directory.
+        elif safeName(categorySearch2[1]) == safeName(inputName) and inputName:  # we have identified a unique directory.
             Logger.info("SEARCH: Files appear to be in their own directory")
             if inputCategory:  # we are ok to proceed.
                 break  # we are done
