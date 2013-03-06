@@ -28,6 +28,16 @@ watch_dir=
 failed_fork=0
 
 
+[Mylar]
+MlCategory = comics
+host=localhost
+port=8090
+username=
+password=
+web_root=
+ssl=0
+
+
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
