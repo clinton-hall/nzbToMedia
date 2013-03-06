@@ -15,6 +15,8 @@ from subprocess import call
 import extractor.extractor as extractor
 import autoProcessMovie
 import autoProcessTV
+import autoProcessMusic
+import autoProcessComics
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
@@ -114,7 +116,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
 
-    if not (inputCategory == cpsCategory or inputCategory == sbCategory): # no extra processign to be done... yet.
+    processCategories = {cpsCategory, sbCategory, hpCategory, mlCategory}
+    if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
         Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
         Logger.info("MAIN: All done.")
         sys.exit(0)
@@ -146,6 +149,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     elif inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(outputDestination, inputName, status)
+    elif inputCategory == hpCategory:
+        Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
+        result = autoProcessMusic.processEpisode(outputDestination, inputName, status)
+    elif inputCategory == mlCategory:
+        Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
+        result = autoProcessComics.processEpisode(outputDestination, inputName, status)
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
@@ -194,8 +203,12 @@ if __name__ == "__main__":
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
+    hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
+    mlCategory = config.get("Mylar", "mlCategory")                                      # comics
     categories.append(cpsCategory)
     categories.append(sbCategory)
+    categories.append(hpCategory)
+    categories.append(mlCategory)
 
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
