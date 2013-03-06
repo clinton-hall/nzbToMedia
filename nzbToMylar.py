@@ -23,7 +23,7 @@ if len(sys.argv) == 8:
 # 5 User-defined category
 # 6 Group that the NZB was posted in e.g. alt.binaries.x
 # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-  Logger.info("Script triggered from SABnzbd, starting autoProcessComics...")
+    Logger.info("Script triggered from SABnzbd, starting autoProcessComics...")
 	result = autoProcessComics.processEpisode(sys.argv[1], sys.argv[3])
 
 # NZBGet
