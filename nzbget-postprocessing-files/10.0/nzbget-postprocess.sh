@@ -116,6 +116,40 @@ nzbToMedia() {
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
 		fi
 	fi
+	if [ "$NZBPP_CATEGORY" = "$HeadPhonesCategory" ]; then
+		if [ "$HeadPhones" = "yes" -a -e "$NzbToHeadPhones" ]; then
+			script=$NzbToHeadPhones
+			# Call HeadPhones' postprocessing script
+			echo "[INFO] Post-Process: Running HeadPhones' postprocessing script"
+			if [ "$Debug" = "yes" ]; then
+				echo "[DETAIL] Post-Process: HeadPhones-Script-Path=$NzbToHeadPhones" 
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV1=$NZBPP_DIRECTORY" 
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME"
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus"
+			fi
+			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+		else
+			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')"; fi
+			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist"; fi
+		fi
+	fi
+	if [ "$NZBPP_CATEGORY" = "$MylarCategory" ]; then
+		if [ "$Mylar" = "yes" -a -e "$NzbToMylar" ]; then
+			script=$NzbToMylar
+			# Call Mylar's postprocessing script
+			echo "[INFO] Post-Process: Running Mylar's postprocessing script"
+			if [ "$Debug" = "yes" ]; then
+				echo "[DETAIL] Post-Process: Mylar-Script-Path=$NzbToMylar" 
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV1=$NZBPP_DIRECTORY" 
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME"
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus"
+			fi
+			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+		else
+			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')"; fi
+			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist"; fi
+		fi
+	fi
 	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
 		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
 			script=$CustomScript
