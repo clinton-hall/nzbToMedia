@@ -58,6 +58,19 @@ web_root=
 ssl=0
 
 
+[Gamez]
+#### autoProcessing for Games
+#### gzCategory - category that gets called for post-processing with Gamez
+gzCategory = movie
+host = localhost
+port = 8085
+username = 
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+ssl = 0
+web_root =
+
+
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
