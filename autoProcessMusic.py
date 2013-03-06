@@ -96,6 +96,10 @@ def process(dirName, nzbName=None, status=0):
         else:
             Logger.error("%s has NOT started on HeadPhones for %s. Exiting", command, nzbName)
             return 1 # failure
+            
+    else:
+        Logger.info("The download failed. Nothing to process")
+            return 0 # Success (as far as this script is concerned)
 
     if nzbName == "Manual Run":
         return 0 # success
