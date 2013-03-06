@@ -1,4 +1,5 @@
 [CouchPotato]
+#### autoProcessing for Movies
 #### cpsCategory - category that gets called for post-processing with CPS
 cpsCategory = movie
 apikey =
@@ -15,7 +16,8 @@ delete_failed = 0
 
 
 [SickBeard]
-#### sbCategory - category that gets called for post-processing with CPS
+#### autoProcessing for TV Series
+#### sbCategory - category that gets called for post-processing with SB
 sbCategory = tv
 host=localhost
 port=8081
@@ -28,12 +30,30 @@ watch_dir=
 failed_fork=0
 
 
+[HeadPhones]
+#### autoProcessing for Music
+#### hpCategory - category that gets called for post-processing with HP
+hpCategory = music
+apikey =
+host = localhost
+port = 8181
+username = 
+password =
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
+ssl = 0
+web_root =
+delay = 65
+
+
 [Mylar]
-MlCategory = comics
-host=localhost
-port=8090
+#### autoProcessing for Comics
+#### mlCategory - category that gets called for post-processing with Mylar
+mlCategory = comics
+host = localhost
+port  =8090
 username=
 password=
+###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 web_root=
 ssl=0
 
@@ -47,8 +67,8 @@ useLink = false
 minSampleSize = 200
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/
-###### **insert descriptive comment for categories here** :-)
-categories = music,music_videos,pictures,software
+###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
+categories = music_videos,pictures,software
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username
