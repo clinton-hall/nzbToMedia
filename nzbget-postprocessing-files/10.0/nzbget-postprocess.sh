@@ -150,6 +150,23 @@ nzbToMedia() {
 			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist"; fi
 		fi
 	fi
+	if [ "$NZBPP_CATEGORY" = "$GamezCategory" ]; then
+		if [ "$Gamez" = "yes" -a -e "$NzbToGamez" ]; then
+			script=$NzbToGamez
+			# Call Gamez's postprocessing script
+			echo "[INFO] Post-Process: Running Gamez's postprocessing script"
+			if [ "$Debug" = "yes" ]; then
+				echo "[DETAIL] Post-Process: Gamez-Script-Path=$NzbToGamez" 
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV1=$NZBPP_DIRECTORY" 
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME"
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus"
+			fi
+			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+		else
+			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')"; fi
+			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist"; fi
+		fi
+	fi
 	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
 		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
 			script=$CustomScript
