@@ -85,4 +85,4 @@ def processEpisode(dirName, nzbName=None):
     result = urlObj.readlines()
     for line in result:
          Logger.info("%s", line)
-        
+    return 0 # Success        
