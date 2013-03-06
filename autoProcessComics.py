@@ -3,6 +3,7 @@ import urllib
 import os.path
 import time
 import ConfigParser
+import logging
 
 from nzbToMediaEnv import *
 from nzbToMediaSceneExceptions import process_all_exceptions
