@@ -36,6 +36,5 @@ elif len(sys.argv) == 4:
     result = autoProcessGames.process(sys.argv[1], sys.argv[2], sys.argv[3])
 
 else:
-    Logger.warn("Invalid number of arguments received from client.")
-    Logger.info("Running autoProcessGames as a manual run...")
-    result = autoProcessGames.process('Manual Run', 'Manual Run', 0)
+    Logger.warn("Invalid number of arguments received from client. Exiting")
+    sys.exit(1)
