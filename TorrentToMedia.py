@@ -13,10 +13,11 @@ from subprocess import call
 
 # Custom imports
 import extractor.extractor as extractor
-import autoProcessMovie
-import autoProcessTV
-import autoProcessMusic
 import autoProcessComics
+import autoProcessGames 
+import autoProcessMusic
+import autoProcessTV
+import autoProcessMovie
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
@@ -151,10 +152,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         result = autoProcessTV.processEpisode(outputDestination, inputName, status)
     elif inputCategory == hpCategory:
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-        result = autoProcessMusic.processEpisode(outputDestination, inputName, status)
+        result = autoProcessMusic.process(outputDestination, inputName, status)
     elif inputCategory == mlCategory:
         Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
         result = autoProcessComics.processEpisode(outputDestination, inputName, status)
+    elif inputCategory == gzCategory:
+        Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
+        result = autoProcessGames.process(outputDestination, inputName, status)
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
@@ -204,11 +208,13 @@ if __name__ == "__main__":
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
     hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
-    mlCategory = config.get("Mylar", "mlCategory")                                      # comics
+    mlCategory = config.get("Mylar", "mlCategory")                                     # comics
+    gzCategory = config.get("Gamez", "gzCategory")
     categories.append(cpsCategory)
     categories.append(sbCategory)
     categories.append(hpCategory)
     categories.append(mlCategory)
+    categories.append(gzCategory)
 
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
