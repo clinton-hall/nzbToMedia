@@ -97,8 +97,10 @@ metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 transcode = 0
 ###### duplicate =1 will cretae a new file. =0 will replace the original
 duplicate = 1
-videoCodec = 
-audioCodec =
+outputVideoCodec = 
+outputVideoFramrate = 
+outputAudioCodec = 
+outputAudioBitrate = 
 
 # Logging configuration
 [loggers]
