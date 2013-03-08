@@ -240,13 +240,13 @@ do_exit() {
 
 # Check if the script is called from nzbget 10.0 or later
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
-        echo "*** NZBGet post-processing script ***"
-        echo "This script is supposed to be called from nzbget (10.0 or later)."
-        exit $POSTPROCESS_ERROR
+    echo "*** NZBGet post-processing script ***"
+    echo "This script is supposed to be called from nzbget (10.0 or later)."
+    exit $POSTPROCESS_ERROR
 fi
 if [ "$NZBOP_UNPACK" = "" ]; then
-        echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable."
-        exit $POSTPROCESS_ERROR
+    echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable."
+    exit $POSTPROCESS_ERROR
 fi 
 
 # Check if postprocessing was disabled in postprocessing parameters 
@@ -257,16 +257,13 @@ if [ "$NZBPR_PostProcess" = "no" ]; then
 	exit $POSTPROCESS_NONE
 fi
 
-echo "[INFO] Post-Process: Post-process script successfully started"
+echo "[INFO] Post-Process: Post-processing script successfully started"
+cd "$NZBPP_DIRECTORY" 
 
 # Determine the location of configuration file (it must be stored in
-# the directory with nzbget.conf or in this script's directory).
+# the directory with nzbget.conf).
 ConfigDir="${NZBOP_CONFIGFILE%/*}"
 ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
-if [ ! -f "$ScriptConfigFile" ]; then
-	ConfigDir="${0%/*}"
-	ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
-fi
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting"
 	exit $POSTPROCESS_ERROR
@@ -283,30 +280,55 @@ if [ "$NZBOP_ALLOWREPROCESS" = "yes" ]; then
 	BadConfig=1
 fi 
 
+if [ "$NZBOP_UNPACK" != "yes" ]; then
+    echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file"
+	BadConfig=1
+fi
+
 if [ "$BadConfig" -eq 1 ]; then
 	echo "[ERROR] Post-Process: Exiting due to incompatible nzbget configuration"
 	exit $POSTPROCESS_ERROR
 fi 
 
 # Check par status
-if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 ]; then
-	if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
-		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting"
-	else
-		echo "[WARNING] Post-Process: Par-check failed, exiting"
-	fi
+if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
+	echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting"
 	do_exit $POSTPROCESS_NONE
+fi
+if [ "$NZBPP_PARSTATUS" -eq 1 ]; then
+    echo "[WARNING] Post-Process: Par-check failed, exiting"
+    do_exit $POSTPROCESS_NONE
 fi 
 
 # Check unpack status
-if [ "$NZBPP_UNPACKSTATUS" -ne 2 ]; then
-	echo "[WARNING] Post-Process: Unpack failed or disabled, exiting"
+if [ "$NZBPP_UNPACKSTATUS" -eq 1 ]; then
+	echo "[WARNING] Post-Process: Unpack failed, exiting"
 	do_exit $POSTPROCESS_NONE
 fi 
+if [ "$NZBPP_UNPACKSTATUS" -eq 0 -a "$NZBPP_PARSTATUS" -ne 2 ]; then
+    # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
+
+	if (ls *.rar *.7z *.7z.??? >/dev/null 2>&1); then
+		echo "[WARNING] Post-Process: Archive files exist but unpack skipped, exiting"
+		exit $POSTPROCESS_NONE
+	fi
+
+	if (ls *.par2 >/dev/null 2>&1); then
+		echo "[WARNING] Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting"
+		exit $POSTPROCESS_NONE
+	fi
+
+	if [ -f "_brokenlog.txt" ]; then
+		echo "[WARNING] Post-Process: _brokenlog.txt exists, download is probably damaged, exiting"
+		exit $POSTPROCESS_NONE
+	fi
+
+	echo "[INFO] Post-Process: Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful"
+fi
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
-	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist"
+    echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist"
 	do_exit $POSTPROCESS_ERROR
 fi
 
@@ -340,14 +362,14 @@ if [ "$JoinTS" = "yes" ]; then
 	# Join any split .ts files if they are named xxxx.0000.ts xxxx.0001.ts
 	# They will be joined together to a file called xxxx.0001.ts
 	if (ls *.ts >/dev/null 2>&1); then
-	    echo "[INFO] Post-Process: Joining ts-files"
+        echo "[INFO] Post-Process: Joining ts-files"
 		tsname=`find . -name "*0001.ts" |awk -F/ '{print $NF}'`
 		cat *0???.ts > ./$tsname
-	fi   
-   
-	# Remove all the split .ts files
-    echo "[INFO] Post-Process: Deleting source ts-files"
-	rm *0???.ts >/dev/null 2>&1
+
+        # Remove all the split .ts files
+        echo "[INFO] Post-Process: Deleting source ts-files"
+        rm *0???.ts >/dev/null 2>&1
+    fi
 fi
 
 if [ "$RenameIMG" = "yes" ]; then
@@ -355,9 +377,9 @@ if [ "$RenameIMG" = "yes" ]; then
 	# It will be renamed to .img.iso so you can see that it has been renamed
 	if (ls *.img >/dev/null 2>&1); then
 	    echo "[INFO] Post-Process: Renaming img-files to iso"
-		imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
+        imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
 		mv $imgname $imgname.iso
-	fi   
+	fi
 fi
 
 # Check if destination directory was set in postprocessing parameters
@@ -368,8 +390,8 @@ if [ "$NZBPR_DestDir" != "" ]; then
 	mv * $NZBPR_DestDir >/dev/null 2>&1
 	cd ..
 	rmdir $NZBPP_DIRECTORY
-	NZBPP_DIRECTORY=$NZBPR_DestDir
-	cd $NZBPP_DIRECTORY
+    NZBPP_DIRECTORY=$NZBPR_DestDir
+    cd $NZBPP_DIRECTORY
 fi
 
 # All OK, requesting cleaning up of download queue
