@@ -31,9 +31,9 @@ Installation
 
 ### Windows
 
-Download the the compiled versions of this code here [nzbToMedia - win.zip](https://dl.dropbox.com/u/68130597/nzbToMedia%20-%20win.zip "nzbToMedia - win.zip")
+Download the the compiled versions of this code here [nzbToMedia - win.zip](http://bit.ly/13KcaRr "nzbToMedia - win.zip")
 
-For nzbget downlaod the Full package with nzbget support (including shell script environment) from here [nzbToMedia - win - nzbget support.zip](https://dl.dropbox.com/u/68130597/nzbToMedia%20-%20win%20-%20nzbget%20support.zip "nzbToMedia - win - nzbget support.zip")
+For nzbget download the Full package with nzbget support (including shell script environment) from here [nzbToMedia - win - nzbget support.zip](http://bit.ly/WxV7zr "nzbToMedia - win - nzbget support.zip")
 
 Copy all files from *\nzbToMedia\nzbget-postprocessing-files\Shell\ to a location in your system path, 
 or add the location of these files to the system path.
