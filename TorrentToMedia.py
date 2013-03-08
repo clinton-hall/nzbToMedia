@@ -95,6 +95,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
                     extractor.extract(filePath, outputDestination)
+                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (dont need to pause archived content)
                 except Exception as e:
                     Logger.warn("MAIN: Extraction failed for: %s", file)
                     Logger.debug(e)
@@ -131,7 +132,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         sys.exit(-1)
 
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if inputHash and useLink and clientAgent == 'utorrent':
+    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent':
         try:
             Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
             utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
@@ -164,7 +165,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if inputHash and useLink and clientAgent == 'utorrent' and status == 0: # only resume seeding for successfully extracted files?
+    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent': # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
