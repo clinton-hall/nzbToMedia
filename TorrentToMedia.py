@@ -115,6 +115,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     os.unlink(filePath)  # remove samples
                 else:
                     video2 = video2 + 1
+                    if transcode:
+                        pass #this is where we will be calling the transcoder.
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
 
@@ -131,8 +133,20 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
 
+    #### Delete original files from uTorrent
+    if deleteOriginal and clientAgent == 'utorrent':
+        try:
+            Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
+            utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+        except Exception as e:
+            Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
+
+        Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
+        utorrentClass.stop(inputHash)
+        time.sleep(5)  # Give uTorrent some time to catch up with the change
+
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent':
+    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent' and not deleteOriginal:
         try:
             Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
             utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
@@ -140,7 +154,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
             Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
         Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-        utorrentClass.stop(inputHash)
+        utorrentClass.removedata(inputHash)
         time.sleep(5)  # Give uTorrent some time to catch up with the change
     ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
 
@@ -165,7 +179,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent': # we always want to resume seeding, for now manually find out what is wrong when extraction fails
+    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent' and not deleteOriginal: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
@@ -200,7 +214,8 @@ if __name__ == "__main__":
     uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
-
+    
+    deleteOriginal = config.get("Torrent", "deleteOriginal")                            # 0
     compressedContainer = (config.get("Torrent", "compressedExtensions")).split(',')    # .zip,.rar,.7z
     mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',')              # .mkv,.avi,.divx
     metaContainer = (config.get("Torrent", "metaExtensions")).split(',')                # .nfo,.sub,.srt
@@ -209,13 +224,15 @@ if __name__ == "__main__":
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
     hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
-    mlCategory = config.get("Mylar", "mlCategory")                                     # comics
+    mlCategory = config.get("Mylar", "mlCategory")                                      # comics
     gzCategory = config.get("Gamez", "gzCategory")
     categories.append(cpsCategory)
     categories.append(sbCategory)
     categories.append(hpCategory)
     categories.append(mlCategory)
     categories.append(gzCategory)
+    
+    transcode = config.get("Transcoder", "transcode")
 
     try:
         inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
