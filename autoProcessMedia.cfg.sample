@@ -101,7 +101,7 @@ outputVideoExtension = .avi
 outputVideoCodec = mpeg-4
 outputVideoFramrate = 24
 outputVideoBitrate = 800k
-outputAudioCodec = libmp3lame
+outputAudioCodec = mp3
 outputAudioBitrate = 128k
 
 # Logging configuration
