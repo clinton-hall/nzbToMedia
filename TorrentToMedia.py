@@ -143,7 +143,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
             Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
         Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
-        utorrentClass.stop(inputHash)
+        utorrentClass.removedata(inputHash)
         time.sleep(5)  # Give uTorrent some time to catch up with the change
 
     #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
@@ -155,7 +155,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
             Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
         Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-        utorrentClass.removedata(inputHash)
+        utorrentClass.stop(inputHash)
         time.sleep(5)  # Give uTorrent some time to catch up with the change
     ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
 
