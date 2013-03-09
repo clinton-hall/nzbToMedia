@@ -25,6 +25,9 @@ To enable Torrent extraction, on Windows, you need to install [7-zip](http://www
 	"unrar", "unzip", "tar", "7zr"
 	note: "7zr" is available from the p7zip package. Available on optware.
 
+In order to use the transcoding option you will need to install ffmpeg.
+Installation instructions for this are available in the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki/Transcoder "wiki")
+
 
 Installation
 ------------
