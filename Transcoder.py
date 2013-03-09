@@ -20,6 +20,7 @@ def Transcode_file(filePath):
     config.read(configFilename)
     
     duplicate = config.get("Transcoder", "duplicate")
+    ffmpeg = os.path.normpath(config.get("Transcoder", "ffmpeg"))
     outputVideoExtension = config.get("Transcoder", "outputVideoExtension")
     outputVideoCodec = config.get("Transcoder", "outputVideoCodec")
     outputVideoFramrate = config.get("Transcoder", "outputVideoFramrate")
@@ -29,8 +30,8 @@ def Transcode_file(filePath):
     
     name, ext = os.path.splitext(file)
     newfilePath = os.path.normpath(name + outputVideoExtension)
-    #ffmpeg = os.path.join(os.path.join(os.path.normpath(sys.argv[0]), ffmpeg), ffmpeg) #if not in path... got to figure out where this goes.
-    command = ['ffmpeg', '-i', filePath]
+    
+    command = [ffmpeg, '-i', filePath]
     if outputVideoCodec:
         command.append('-c:v')
         command.append(outputVideoCodec)
