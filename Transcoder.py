@@ -2,9 +2,7 @@ import sys
 import os
 import ConfigParser
 import logging
-
-from nzbToMediaEnv import *
-from nzbToMediaSceneExceptions import process_all_exceptions
+from subprocess import call
 
 Logger = logging.getLogger()
 
@@ -21,6 +19,7 @@ def Transcode_file(filePath):
     
     duplicate = config.get("Transcoder", "duplicate")
     ffmpeg = os.path.normpath(config.get("Transcoder", "ffmpeg"))
+    ignoreExtensions = (config.get("Transcoder", "ignoreExtensions")).split(',')
     outputVideoExtension = config.get("Transcoder", "outputVideoExtension")
     outputVideoCodec = config.get("Transcoder", "outputVideoCodec")
     outputVideoFramrate = config.get("Transcoder", "outputVideoFramrate")
@@ -29,6 +28,11 @@ def Transcode_file(filePath):
     outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate")
     
     name, ext = os.path.splitext(file)
+    if ext in ignoreExtensions:
+        Logger.info("No need to transcode video type %s", ext)
+        return 0 # exit Transcoder.
+    if ext == outputVideoExtension: # we need to change the name to prevent overwriting itself.
+        outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
     newfilePath = os.path.normpath(name + outputVideoExtension)
     
     command = [ffmpeg, '-i', filePath]
@@ -49,7 +53,7 @@ def Transcode_file(filePath):
         command.append(outputAudioBitrate)
     command.append(newfilePath)
 
-    Logger.info("Transcoding video %s to %s", filePath, newfilePath)
+    Logger.debug("Transcoding video %s to %s", filePath, newfilePath)
     try:
         result = call(command)
     except e:
