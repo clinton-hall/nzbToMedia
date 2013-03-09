@@ -97,7 +97,6 @@ metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 transcode = 0
 ###### duplicate =1 will cretae a new file. =0 will replace the original
 duplicate = 1
-ffmpeg = /abs/path/to/ffmpeg/executable
 ignoreExtensions = .avi,.mkv
 outputVideoExtension = .avi
 outputVideoCodec = mpeg-4
