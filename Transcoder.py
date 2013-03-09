@@ -54,6 +54,7 @@ def Transcode_file(filePath):
     command.append(newfilePath)
 
     Logger.debug("Transcoding video %s to %s", filePath, newfilePath)
+    result = 1 # set result to failed in case call fails.
     try:
         result = call(command)
     except e:
