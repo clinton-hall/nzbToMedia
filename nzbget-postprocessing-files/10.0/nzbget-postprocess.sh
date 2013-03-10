@@ -203,7 +203,21 @@ replaceVarBy() {
 do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
 	nzbStatus=0
-	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then nzbStatus=1 ; fi
+	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
+		if [ "$DELETE_FAILED" = "yes" ]; then
+			rm * >/dev/null 2>&1
+			cd ..
+			rmdir $NZBPP_DIRECTORY
+		else
+			mkdir $FAILED_DIRECTORY
+			mv * $FAILED_DIRECTORY >/dev/null 2>&1
+			cd ..
+			rmdir $NZBPP_DIRECTORY
+    			NZBPP_DIRECTORY=$FAILED_DIRECTORY
+    			cd $NZBPP_DIRECTORY
+		fi
+		nzbStatus=1 
+	fi
 	script=none
 	nzbToMedia $nzbStatus
         echo "[DETAIL] after calling nzbToMedia"
