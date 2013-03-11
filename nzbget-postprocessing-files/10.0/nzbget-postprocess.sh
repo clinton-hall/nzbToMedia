@@ -204,16 +204,16 @@ do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" ; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
-		if [ "$DELETE_FAILED" = "yes" ]; then
+		if [ "$Delete_Failed" = "yes" ]; then
 			rm * >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
 		else
-			mkdir $FAILED_DIRECTORY
-			mv * $FAILED_DIRECTORY >/dev/null 2>&1
+			mkdir $Failed_Directory
+			mv * $Failed_Directory >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
-    			NZBPP_DIRECTORY=$FAILED_DIRECTORY
+    			NZBPP_DIRECTORY=$Failed_Directory
     			cd $NZBPP_DIRECTORY
 		fi
 		nzbStatus=1 
@@ -237,6 +237,10 @@ do_exit() {
 		Email_Subject="${REPLACEDRESULT}"
 		replaceVarBy "${Email_Message}" "<status>" "completed"
 		Email_Message="${REPLACEDRESULT}"
+		if [ "${Add_Log}" = "yes" ]; then 
+			Email_Message=$Email_Message"\nLog Result\n"
+			while read line; do Email_Message=$Email_Message"$line\n"; done < tmp.log
+		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
 	for item in $Email_failed; do
@@ -247,11 +251,17 @@ do_exit() {
 		Email_Subject="${REPLACEDRESULT}"
 		replaceVarBy "${Email_Message}" "<status>" "failed"
 		Email_Message="${REPLACEDRESULT}"
+		if [ "${Add_Log}" = "yes" ]; then 
+			Email_Message=$Email_Message"\nLog Result\n"
+			while read line; do Email_Message=$Email_Message"$line\n"; done < tmp.log
+		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
 	exit $1
 }
 
+# the main routine. ## not indented to ensure easy compare to original nzbget script.
+main() {
 # Check if the script is called from nzbget 10.0 or later
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
     echo "*** NZBGet post-processing script ***"
@@ -410,3 +420,7 @@ fi
 
 # All OK, requesting cleaning up of download queue
 do_exit $POSTPROCESS_SUCCESS
+}
+
+#call the main routine with output to stdout and tmp.log (should over-write on each call)
+main | tee tmp.log
