@@ -3,6 +3,7 @@ import logging.config
 import os
 import re
 import sys
+import shutil
 
 import linktastic.linktastic as linktastic
 
