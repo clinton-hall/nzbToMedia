@@ -88,7 +88,7 @@ def extract(filePath, outputDestination):
         if not EXTRACT_COMMANDS:
             Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
-    ext = os.path.splitext(file)
+    ext = os.path.splitext(filePath)
     if ext[1] in (".gz", ".bz2", ".lzma"):
     # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":
