@@ -14,9 +14,9 @@ def Transcode_file(filePath):
             Logger.error("ffmpeg not found. ffmpeg needs to be located at: %s", ffmpeg) 
             Logger.info("Cannot transcode file %s", filepath)
             return 1 # failure
-    else
+    else:
         if call(['which', ffmpeg]):
-            res = call([os.path,join(os.path.dirname(sys.argv[0]),getffmpeg.sh')])
+            res = call([os.path.join(os.path.dirname(sys.argv[0]),'getffmpeg.sh')])
             if res or call(['which', ffmpeg]): # did not install or ffmpeg still not found.
                 Logger.error("Failed to install ffmpeg. Please install manually") 
                 Logger.info("Cannot transcode file %s", filepath)
