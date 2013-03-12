@@ -61,7 +61,7 @@ ssl=0
 [Gamez]
 #### autoProcessing for Games
 #### gzCategory - category that gets called for post-processing with Gamez
-gzCategory = movie
+gzCategory = games
 apikey =
 host = localhost
 port = 8085
