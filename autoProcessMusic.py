@@ -99,7 +99,7 @@ def process(dirName, nzbName=None, status=0):
             
     else:
         Logger.info("The download failed. Nothing to process")
-            return 0 # Success (as far as this script is concerned)
+        return 0 # Success (as far as this script is concerned)
 
     if nzbName == "Manual Run":
         return 0 # success
