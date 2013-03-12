@@ -145,7 +145,7 @@ def is_sample(filePath, inputName, minSampleSize):
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     create_destination(outputDestination)
-    if useLink:
+    if useLink != 0:
         try:
             Logger.info("COPYLINK: Linking %s to %s", filePath, targetDirectory)
             linktastic.link(filePath, targetDirectory)
