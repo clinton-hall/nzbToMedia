@@ -50,7 +50,7 @@ delay = 65
 #### mlCategory - category that gets called for post-processing with Mylar
 mlCategory = comics
 host = localhost
-port  =8090
+port= 8090
 username=
 password=
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
@@ -75,8 +75,8 @@ web_root =
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
-###### useLink - Set to true or false depending on if you want to use hardlinks
-useLink = false
+###### useLink - Set to 1 to use or 0 depending on if you want to use hardlinks
+useLink = 1
 ###### minSampleSize - Minimum required size to consider a file not an sample file (in MB, eg 200mb)
 minSampleSize = 200
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
