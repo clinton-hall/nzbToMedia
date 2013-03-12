@@ -104,7 +104,20 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
     flatten(outputDestination)
+    
+    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
+    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent':
+        try:
+            Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
+            utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+        except Exception as e:
+            Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
+        Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
+        utorrentClass.stop(inputHash)
+        time.sleep(5)  # Give uTorrent some time to catch up with the change
+    ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
+    
     # Now check if movie files exist in destination:
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
@@ -121,19 +134,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
 
-    processCategories = {cpsCategory, sbCategory, hpCategory, mlCategory}
-    if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
-        Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
-        Logger.info("MAIN: All done.")
-        sys.exit(0)
-
-    if status == 0: #### Maybe we should move this to a more appropriate place?
-        Logger.info("MAIN: Successful run")
-        Logger.debug("MAIN: Calling autoProcess script for successful download.")
-    else:
-        Logger.error("MAIN: Something failed! Please check logs. Exiting")
-        sys.exit(-1)
-
     #### Delete original files from uTorrent
     if deleteOriginal and clientAgent == 'utorrent':
         try:
@@ -145,19 +145,17 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
         utorrentClass.removedata(inputHash)
         time.sleep(5)  # Give uTorrent some time to catch up with the change
-
-    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if not extractionSuccess and inputHash and useLink and clientAgent == 'utorrent' and not deleteOriginal:
-        try:
-            Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
-            utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-        except Exception as e:
-            Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
-
-        Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-        utorrentClass.stop(inputHash)
-        time.sleep(5)  # Give uTorrent some time to catch up with the change
-    ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
+        
+    processCategories = {cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory}
+    if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
+        Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
+        result = 1
+    elif status == 0: #### Maybe we should move this to a more appropriate place?
+        Logger.info("MAIN: Successful run")
+        Logger.debug("MAIN: Calling autoProcess script for successful download.")
+    else:
+        Logger.error("MAIN: Something failed! Please check logs. Exiting")
+        sys.exit(-1)
 
     # Now we pass off to CouchPotato or Sick-Beard
     if inputCategory == cpsCategory:
