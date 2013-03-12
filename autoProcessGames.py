@@ -88,10 +88,7 @@ def process(dirName, nzbName=None, status=0):
     Logger.info("Gamez returned %s", result)
     if result['success']:
         Logger.info("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)
+        return 0 # Success
     else:
         Logger.error("Status for %s has NOT been updated in Gamez", gamezID)
         return 1 # failure
-            
-    else:
-        Logger.info("The download failed. Nothing to process")
-        return 0 # Success (as far as this script is concerned)
