@@ -93,7 +93,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')"; fi
 			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist"; fi
@@ -110,7 +110,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')"; fi
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist"; fi
@@ -127,7 +127,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')"; fi
 			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist"; fi
@@ -144,7 +144,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')"; fi
 			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist"; fi
@@ -161,7 +161,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus"
 			fi
-			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')"; fi
 			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist"; fi
@@ -178,7 +178,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME"
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus"
 			fi
-			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
+			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')"; fi
 			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist"; fi
@@ -197,6 +197,23 @@ replaceVarBy() {
 	fi
 
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" ; fi
+}
+
+replaceLogLine() {
+	# This converts the output logigng from nzbTo* script to a compatible format with NZBGet
+	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
+	if [ -n "${BASH_VERSION}" ]; then
+		newline="${1/*DEBUG/[DETAIL]}"
+		newline="${newline/*INFO/[INFO]}"
+		newline="${newline/*WARNING/[WARNING]}"
+		newline="${newline/*ERROR/[ERROR]}"
+	else
+		newline=$(echo "${1}" | sed "s^.*DEBUG^[DETAIL]^")
+		newline=$(echo $newline | sed "s^.*INFO^[INFO]^")
+		newline=$(echo $newline | sed "s^.*WARNING^[WARNING]^")
+		newline=$(echo $newline | sed "s^.*ERROR^[ERROR]^")
+	fi\
+	echo "$newline"
 }
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
