@@ -3,7 +3,7 @@ Change_LOG / History
 VX.X XX/03/2013
 
 Impacts Torrents
-uTorrent only resumes seeding successful downloads. i.e. if a .rar file is password protected, we don't bother seeding.
+Added option to delete torrent and original files after processing (utorrent)
 
 Impacts NZB 
 Improved nzbget logging
