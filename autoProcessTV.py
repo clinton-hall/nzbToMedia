@@ -136,16 +136,12 @@ def processEpisode(dirName, nzbName=None, failed=False):
             Logger.info("The download failed. Nothing to process")
             return 0 # Success (as far as this script is concerned)
     
-    if status == 0: # only transcode successful downlaods
-        if transcode == 1:
-            Logger.info("Checking for files to be transcoded")
-            mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
-            for dirpath, dirnames, filenames in os.walk(dirName):
-                for file in filenames:
-                    filePath = os.path.join(dirpath, file)
-                    fileExtension = os.path.splitext(file)[1]
-                    if fileExtension in mediaContainer:  # If the file is a video file
-                        result = Transcoder.Transcode_file(filePath)
+    if status == 0 and transcode == 1: # only transcode successful downlaods
+        result = Transcoder.Transcode_directory(dirName)
+        if result == 0:
+            Logger.debug("Transcoding succeeded for files in %s", dirName)
+        else:
+            Logger.warning("Transcoding failed for files in %s", dirName)
 
     myOpener = AuthURLOpener(username, password)
 
