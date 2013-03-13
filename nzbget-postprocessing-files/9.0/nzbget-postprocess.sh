@@ -227,7 +227,7 @@ do_exit() {
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
-	exit $1
+	return $1
 }
 
 # the main routine. ## not indented to ensure easy compare to original nzbget script.
@@ -236,7 +236,7 @@ main() {
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
 	echo "*** NZBGet post-process script ***"
 	echo "This script is supposed to be called from nzbget (0.7.0 or later)."
-	exit $POSTPROCESS_ERROR
+	return $POSTPROCESS_ERROR
 fi 
 
 # Check if postprocessing was disabled in postprocessing parameters 
@@ -244,7 +244,7 @@ fi
 # "nzbget -E G O PostProcess=no <ID>"
 if [ "$NZBPR_PostProcess" = "no" ]; then
 	echo "[WARNING] Post-Process: Postprocessing disabled for this nzb-file, exiting"
-	exit $POSTPROCESS_NONE
+	return $POSTPROCESS_NONE
 fi
 
 echo "[INFO] Post-Process: Post-process script successfully started"
@@ -259,7 +259,7 @@ if [ ! -f "$ScriptConfigFile" ]; then
 fi
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting"
-	exit $POSTPROCESS_ERROR
+	return $POSTPROCESS_ERROR
 fi
 
 # Readg configuration file
@@ -285,13 +285,13 @@ fi
 
 if [ "$BadConfig" -eq 1 ]; then
 	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration"
-	exit $POSTPROCESS_ERROR
+	return $POSTPROCESS_ERROR
 fi 
 
 # Check if all collections in nzb-file were downloaded
 if [ ! "$NZBPP_NZBCOMPLETED" -eq 1 ]; then
 	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting"
-	exit $POSTPROCESS_SUCCESS
+	return $POSTPROCESS_SUCCESS
 fi 
 
 # Check par status
@@ -318,7 +318,7 @@ if [ ! "$NZBPP_PARSTATUS" -eq 2 ]; then
 	if [ -f "_brokenlog.txt" ]; then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair"
-			exit $POSTPROCESS_PARCHECK_ALL
+			return $POSTPROCESS_PARCHECK_ALL
 		fi
 	fi
 fi
@@ -361,7 +361,7 @@ if (ls *.rar >/dev/null 2>&1); then
 		# for delayed par-check/-repair at least one par-file must be already downloaded
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
 			echo "[INFO] Post-Process: Requesting par-repair"
-			exit $POSTPROCESS_PARCHECK_ALL
+			return $POSTPROCESS_PARCHECK_ALL
 		fi
 		do_exit $POSTPROCESS_ERROR
 	fi
@@ -409,7 +409,7 @@ fi
 if [ "$Unrared" -eq 0 -a "$NZBPP_PARSTATUS" -eq 0 ]; then
     if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
         echo "[INFO] Post-Process: No rar-files found, requesting par-check"
-        exit $POSTPROCESS_PARCHECK_ALL
+        return $POSTPROCESS_PARCHECK_ALL
     fi
 fi
 
@@ -526,3 +526,4 @@ do_exit $POSTPROCESS_SUCCESS
 
 #call the main routine with output to stdout and tmp.log (should over-write on each call)
 main | tee tmp.log
+exit $?
