@@ -23,6 +23,7 @@ import os
 import ConfigParser
 import logging
 
+import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
@@ -91,6 +92,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
         failed_fork = int(config.get("SickBeard", "failed_fork"))
     except (ConfigParser.NoOptionError, ValueError):
         failed_fork = 0
+    try:    
+        transcode = int(config.get("Transcoder", "transcode"))
+    except (ConfigParser.NoOptionError, ValueError):
+        transcode = 0
 
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -113,10 +118,11 @@ def processEpisode(dirName, nzbName=None, failed=False):
         if nzbName != None:
             params['nzbName'] = nzbName
         params['failed'] = failed
-        if status:
-            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
-        else:
+        if status == 0:
             Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
+        else:
+            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
+            
 
     # this is our default behaviour to work with the standard Master branch of SickBeard
     else:
@@ -124,11 +130,22 @@ def processEpisode(dirName, nzbName=None, failed=False):
         if nzbName != None:
             params['nzbName'] = nzbName
         # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
-        if status:
+        if status == 0:
+            Logger.info("The download succeeded. Sending process request to SickBeard")
+        else:
             Logger.info("The download failed. Nothing to process")
             return 0 # Success (as far as this script is concerned)
-        else:
-            Logger.info("The download succeeded. Sending process request to SickBeard")
+    
+    if status == 0: # only transcode successful downlaods
+        if transcode == 1:
+            Logger.info("Checking for files to be transcoded")
+            mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',') # for now, this is in Torrent section...
+            for dirpath, dirnames, filenames in os.walk(dirName):
+                for file in filenames:
+                    filePath = os.path.join(dirpath, file)
+                    fileExtension = os.path.splitext(file)[1]
+                    if fileExtension in mediaContainer:  # If the file is a video file
+                        result = Transcoder.Transcode_file(filePath)
 
     myOpener = AuthURLOpener(username, password)
 
