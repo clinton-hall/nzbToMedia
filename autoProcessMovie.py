@@ -162,7 +162,7 @@ def process(dirName, nzbName=None, status=0):
 
     if status == 0:
         if transcode == 1:
-            result = Transcoder.Transcode_file(dirName)
+            result = Transcoder.Transcode_directory(dirName)
             if result == 0:
                 Logger.debug("Transcoding succeeded for files in %s", dirName)
             else:
