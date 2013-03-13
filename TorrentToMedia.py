@@ -18,7 +18,6 @@ import autoProcessGames
 import autoProcessMusic
 import autoProcessTV
 import autoProcessMovie
-import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
@@ -130,10 +129,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     os.unlink(filePath)  # remove samples
                 else:
                     video2 = video2 + 1
-                    if transcode == 0: # don't transcode
-                        continue
-                    else:
-                        result = Transcoder.Transcode_file(filePath)
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
 
