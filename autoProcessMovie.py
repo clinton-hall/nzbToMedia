@@ -8,6 +8,7 @@ import time
 import json
 import logging
 
+import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
@@ -131,6 +132,11 @@ def process(dirName, nzbName=None, status=0):
         web_root = config.get("CouchPotato", "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
+        
+    try:    
+        transcode = int(config.get("Transcoder", "transcode"))
+    except (ConfigParser.NoOptionError, ValueError):
+        transcode = 0
 
     myOpener = AuthURLOpener(username, password)
 
@@ -155,6 +161,16 @@ def process(dirName, nzbName=None, status=0):
     process_all_exceptions(nzbName.lower(), dirName)
 
     if status == 0:
+        if transcode == 1:
+            Logger.info("Checking for files to be transcoded")
+            mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',') # for now, this is in Torrent section...
+            for dirpath, dirnames, filenames in os.walk(dirName):
+                for file in filenames:
+                    filePath = os.path.join(dirpath, file)
+                    fileExtension = os.path.splitext(file)[1]
+                    if fileExtension in mediaContainer:  # If the file is a video file
+                        result = Transcoder.Transcode_file(filePath)
+        
         if method == "manage":
             command = "manage.update"
         else:
