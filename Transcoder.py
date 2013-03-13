@@ -63,7 +63,7 @@ def Transcode_file(filePath):
         command.append(outputVideoBitrate)
     if outputAudioCodec:
         command.append('-c:a')
-        command.append('lib' + outputAudioCodec + 'lame')
+        command.append(outputAudioCodec)
     if outputAudioBitrate:
         command.append('-b:a')
         command.append(outputAudioBitrate)
