@@ -163,7 +163,7 @@ def process(dirName, nzbName=None, status=0):
     if status == 0:
         if transcode == 1:
             Logger.info("Checking for files to be transcoded")
-            mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',') # for now, this is in Torrent section...
+            mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
             for dirpath, dirnames, filenames in os.walk(dirName):
                 for file in filenames:
                     filePath = os.path.join(dirpath, file)
