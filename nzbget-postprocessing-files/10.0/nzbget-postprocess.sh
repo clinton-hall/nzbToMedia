@@ -212,7 +212,7 @@ replaceLogLine() {
 		newline=$(echo $newline | sed "s^.*INFO^[INFO]^")
 		newline=$(echo $newline | sed "s^.*WARNING^[WARNING]^")
 		newline=$(echo $newline | sed "s^.*ERROR^[ERROR]^")
-	fi\
+	fi
 	echo "$newline"
 }
 
@@ -274,7 +274,7 @@ do_exit() {
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
-	exit $1
+	exit $POSTPROCESS_SUCCESS
 }
 
 # the main routine. ## not indented to ensure easy compare to original nzbget script.
