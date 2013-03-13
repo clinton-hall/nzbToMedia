@@ -98,11 +98,11 @@ transcode = 0
 ###### duplicate =1 will cretae a new file. =0 will replace the original
 duplicate = 1
 ignoreExtensions = .avi,.mkv
-outputVideoExtension = .avi
-outputVideoCodec = mpeg-4
+outputVideoExtension = .mp4
+outputVideoCodec = libx264
 outputVideoFramerate = 24
 outputVideoBitrate = 800k
-outputAudioCodec = mp3
+outputAudioCodec = libmp3lame
 outputAudioBitrate = 128k
 
 # Logging configuration
