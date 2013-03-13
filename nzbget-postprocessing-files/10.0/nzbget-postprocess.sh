@@ -274,7 +274,7 @@ do_exit() {
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
-	exit $POSTPROCESS_SUCCESS
+	return $1
 }
 
 # the main routine. ## not indented to ensure easy compare to original nzbget script.
@@ -283,11 +283,11 @@ main() {
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
     echo "*** NZBGet post-processing script ***"
     echo "This script is supposed to be called from nzbget (10.0 or later)."
-    exit $POSTPROCESS_ERROR
+    return $POSTPROCESS_ERROR
 fi
 if [ "$NZBOP_UNPACK" = "" ]; then
     echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable."
-    exit $POSTPROCESS_ERROR
+    return $POSTPROCESS_ERROR
 fi 
 
 # Check if postprocessing was disabled in postprocessing parameters 
@@ -295,7 +295,7 @@ fi
 # "nzbget -E G O PostProcess=no <ID>"
 if [ "$NZBPR_PostProcess" = "no" ]; then
 	echo "[WARNING] Post-Process: Post-processing disabled for this nzb-file, exiting"
-	exit $POSTPROCESS_NONE
+	return $POSTPROCESS_NONE
 fi
 
 echo "[INFO] Post-Process: Post-processing script successfully started"
@@ -307,7 +307,7 @@ ConfigDir="${NZBOP_CONFIGFILE%/*}"
 ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting"
-	exit $POSTPROCESS_ERROR
+	return $POSTPROCESS_ERROR
 fi
 
 # Readg configuration file
@@ -328,7 +328,7 @@ fi
 
 if [ "$BadConfig" -eq 1 ]; then
 	echo "[ERROR] Post-Process: Exiting due to incompatible nzbget configuration"
-	exit $POSTPROCESS_ERROR
+	return $POSTPROCESS_ERROR
 fi 
 
 # Check par status
@@ -351,17 +351,17 @@ if [ "$NZBPP_UNPACKSTATUS" -eq 0 -a "$NZBPP_PARSTATUS" -ne 2 ]; then
 
 	if (ls *.rar *.7z *.7z.??? >/dev/null 2>&1); then
 		echo "[WARNING] Post-Process: Archive files exist but unpack skipped, exiting"
-		exit $POSTPROCESS_NONE
+		return $POSTPROCESS_NONE
 	fi
 
 	if (ls *.par2 >/dev/null 2>&1); then
 		echo "[WARNING] Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting"
-		exit $POSTPROCESS_NONE
+		return $POSTPROCESS_NONE
 	fi
 
 	if [ -f "_brokenlog.txt" ]; then
 		echo "[WARNING] Post-Process: _brokenlog.txt exists, download is probably damaged, exiting"
-		exit $POSTPROCESS_NONE
+		return $POSTPROCESS_NONE
 	fi
 
 	echo "[INFO] Post-Process: Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful"
@@ -441,3 +441,4 @@ do_exit $POSTPROCESS_SUCCESS
 
 #call the main routine with output to stdout and tmp.log (should over-write on each call)
 main | tee tmp.log
+exit $?
