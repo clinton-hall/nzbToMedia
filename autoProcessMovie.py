@@ -162,15 +162,12 @@ def process(dirName, nzbName=None, status=0):
 
     if status == 0:
         if transcode == 1:
-            Logger.info("Checking for files to be transcoded")
-            mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
-            for dirpath, dirnames, filenames in os.walk(dirName):
-                for file in filenames:
-                    filePath = os.path.join(dirpath, file)
-                    fileExtension = os.path.splitext(file)[1]
-                    if fileExtension in mediaContainer:  # If the file is a video file
-                        result = Transcoder.Transcode_file(filePath)
-        
+            result = Transcoder.Transcode_file(dirName)
+            if result == 0:
+                Logger.debug("Transcoding succeeded for files in %s", dirName)
+            else:
+                Logger.warning("Transcoding failed for files in %s", dirName)
+
         if method == "manage":
             command = "manage.update"
         else:
