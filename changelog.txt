@@ -6,15 +6,21 @@ Impacts Torrents
 uTorrent only resumes seeding successful downloads. i.e. if a .rar file is password protected, we don't bother seeding.
 
 Impacts NZB 
-
+Improved nzbget logging
+Add logging to nzbget email notification
+Synchronised v10 to latest nzbget testing scripts
+Added failed download folder for failed downloads in nzbget
+Added option to delete failed in nzbget
 
 Impacts All
-Added CouchPotato status check to provide confirmation of renamer complete. 
-CouchPotato status check will timeout after 2 minutes in case something goes wrong.
+Added ffmpeg transcoder
+Added CouchPotato status check to provide confirmation of renamer complete 
+CouchPotato status check will timeout after 2 minutes in case something goes wrong
 Improved logging.
 Improved scen exception handling.
-Major changes to code layout. Better efficiency.
-
+Major changes to code layout
+Better efficiency
+Added support for Mylar, Gamez, and HeadPhones
 
 V6.0 03/03/2013
 
