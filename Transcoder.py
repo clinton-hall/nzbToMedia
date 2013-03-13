@@ -6,7 +6,7 @@ from subprocess import call
 
 Logger = logging.getLogger()
 
-def Transcode_file(dirName):
+def Transcode_directory(dirName):
     
     if os.name == 'nt':
         ffmpeg = os.path.join(os.path.dirname(sys.argv[0]), 'ffmpeg\\bin\\ffmpeg.exe') # note, will need to package in this dir.
