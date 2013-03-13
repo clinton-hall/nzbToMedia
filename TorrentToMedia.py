@@ -213,9 +213,10 @@ if __name__ == "__main__":
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
     
     deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
-    compressedContainer = (config.get("Torrent", "compressedExtensions")).split(',')    # .zip,.rar,.7z
-    mediaContainer = (config.get("Torrent", "mediaExtensions")).split(',')              # .mkv,.avi,.divx
-    metaContainer = (config.get("Torrent", "metaExtensions")).split(',')                # .nfo,.sub,.srt
+    
+    compressedContainer = (config.get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
+    mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
+    metaContainer = (config.get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
