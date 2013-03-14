@@ -10,7 +10,7 @@ def migrate():
     confignew.read(configFilenamenew)
 
     configold = ConfigParser.ConfigParser()
-    confignew.optionxform = str
+    configold.optionxform = str
 
     section = "CouchPotato"
     original = []
