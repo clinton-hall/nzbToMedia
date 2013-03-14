@@ -58,3 +58,10 @@ e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\She
 ### Issues
 
 1. Please report all issues, or potential enhancements using the issues page on this repo.
+
+Contribution
+------------
+We how have developed beleve in the openess of open-source, and as such we hope that any modifications will lead back to the orignal repo ( https://github.com/clinton-hall/nzbToMedia ) via pull requests. As a recognition of your work you should add your name below in your PR.
+
+Founder: @clinton-hall
+Contributors: https://github.com/clinton-hall/nzbToMedia/contributors
