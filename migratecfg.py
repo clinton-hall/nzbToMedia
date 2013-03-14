@@ -182,6 +182,8 @@ def migrate():
 
     # create a backup of our old config
     backupname = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.old")
+    if os.path.isfile(backupname): # remove older backups
+        os.unlink(backupname)
     os.rename(configFilenameold, backupname)
 
     # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
