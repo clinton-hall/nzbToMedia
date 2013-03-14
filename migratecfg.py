@@ -5,15 +5,17 @@ import os
 
 def migrate():
     confignew = ConfigParser.ConfigParser()
+    confignew.optionxform = str
     configFilenamenew = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")
     confignew.read(configFilenamenew)
 
-    section = CouchPotato
-    original = []
     configold = ConfigParser.ConfigParser()
+    confignew.optionxform = str
+
+    section = "CouchPotato"
+    original = []
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     if not os.path.isfile(configFilenameold): # lets look back for an older version.
-        configold = ConfigParser.ConfigParser()
         configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMovie.cfg")
         if not os.path.isfile(configFilenameold): # no config available
             configFilenameold = ""
@@ -25,18 +27,18 @@ def migrate():
             pass
     for item in original:
         option, value = item
-        if option == "category" # change this old format
+        if option == "category": # change this old format
             option = "cpsCategory"
-        if option = "outputdirectory" # skip this old format
+        if option == "outputDirectory": # move this to new location format
+            value = os.path.split(os.path.normpath(outputdirectory))[0]
+            confignew.set("Torrent", option, value)
             continue
         confignew.set(section, option, value)
 
-    section = SickBeard
+    section = "SickBeard"
     original = []
-    configold = ConfigParser.ConfigParser()
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     if not os.path.isfile(configFilenameold): # lets look back for an older version.
-        configold = ConfigParser.ConfigParser()
         configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessTV.cfg")
         if not os.path.isfile(configFilenameold): # no config available
             configFilenameold = ""
@@ -48,15 +50,16 @@ def migrate():
             pass
     for item in original:
         option, value = item
-        if option == "category" # change this old format
+        if option == "category": # change this old format
             option = "sbCategory"
-        if option = "outputdirectory" # skip this old format
+        if option == "outputDirectory": # move this to new location format
+            value = os.path.split(os.path.normpath(outputdirectory))[0]
+            confignew.set("Torrent", option, value)
             continue
         confignew.set(section, option, value) 
 
-    section = HeadPhones
+    section = "HeadPhones"
     original = []
-    configold = ConfigParser.ConfigParser()
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     if not os.path.isfile(configFilenameold):
         configFilenameold = ""
@@ -70,7 +73,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value) 
 
-    section = Mylar
+    section = "Mylar"
     original = []
     try:
         original = configold.items(section)
@@ -80,7 +83,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = Gamez
+    section = "Gamez"
     original = []
     try:
         original = configold.items(section)
@@ -90,7 +93,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = Torrent
+    section = "Torrent"
     original = []
     try:
         original = configold.items(section)
@@ -98,22 +101,12 @@ def migrate():
         pass
     for item in original:
         option, value = item
-        if option in ["compressedextensions", "mediaextensions", "metaExtensions"]:
-            section = Extensions # these were moved
+        if option in ["compressedExtensions", "mediaExtensions", "metaExtensions"]:
+            section = "Extensions" # these were moved
         confignew.set(section, option, value)
-        section = Torrent # reset in case extensions out of order.
+        section = "Torrent" # reset in case extensions out of order.
 
-    section = Transcoder
-    original = []
-    try:
-        original = configold.items(section)
-    except:
-        pass
-    for item in original:
-        option, value = item
-        confignew.set(section, option, value)
-
-    section = loggers
+    section = "Transcoder"
     original = []
     try:
         original = configold.items(section)
@@ -123,7 +116,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = handlers
+    section = "loggers"
     original = []
     try:
         original = configold.items(section)
@@ -133,7 +126,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = formatters
+    section = "handlers"
     original = []
     try:
         original = configold.items(section)
@@ -143,7 +136,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = logger_root
+    section = "formatters"
     original = []
     try:
         original = configold.items(section)
@@ -153,7 +146,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = handler_console
+    section = "logger_root"
     original = []
     try:
         original = configold.items(section)
@@ -163,7 +156,17 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-    section = formatter_generic
+    section = "handler_console"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
+    section = "formatter_generic"
     original = []
     try:
         original = configold.items(section)
@@ -174,8 +177,8 @@ def migrate():
         confignew.set(section, option, value)
 
     # writing our configuration file to 'autoProcessMedia.cfg.sample'
-    with open(configFilenamenew, 'wb') as configFile
-        config.write(configfile)
+    with open(configFilenamenew, 'wb') as configFile:
+        confignew.write(configFile)
 
     # create a backup of our old config
     backupname = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.old")
