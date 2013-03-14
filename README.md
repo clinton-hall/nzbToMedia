@@ -24,6 +24,14 @@ To enable Torrent extraction, on Windows, you need to install [7-zip](http://www
 	
 	"unrar", "unzip", "tar", "7zr"
 	note: "7zr" is available from the p7zip package. Available on optware.
+	
+Contribution
+------------
+We who have developed nzbToMedia believe in the openess of open-source, and as such we hope that any modifications will lead back to the orignal repo ( https://github.com/clinton-hall/nzbToMedia ) via pull requests.
+
+Founder: https://github.com/clinton-hall
+
+Contributors: https://github.com/clinton-hall/nzbToMedia/contributors
 
 
 Installation
@@ -58,10 +66,3 @@ e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\She
 ### Issues
 
 1. Please report all issues, or potential enhancements using the issues page on this repo.
-
-Contribution
-------------
-We how have developed beleve in the openess of open-source, and as such we hope that any modifications will lead back to the orignal repo ( https://github.com/clinton-hall/nzbToMedia ) via pull requests. As a recognition of your work you should add your name below in your PR.
-
-Founder: @clinton-hall
-Contributors: https://github.com/clinton-hall/nzbToMedia/contributors
