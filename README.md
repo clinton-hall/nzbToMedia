@@ -29,9 +29,9 @@ Contribution
 ------------
 We who have developed nzbToMedia believe in the openess of open-source, and as such we hope that any modifications will lead back to the orignal repo ( https://github.com/clinton-hall/nzbToMedia ) via pull requests.
 
-Founder: https://github.com/clinton-hall
+Founder: [clinton-hall](https://github.com/clinton-hall "clinton-hall")
 
-Contributors: https://github.com/clinton-hall/nzbToMedia/contributors
+Contributors: Can be viewed [here](https://github.com/clinton-hall/nzbToMedia/contributors "here")
 
 
 Installation
