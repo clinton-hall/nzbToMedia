@@ -30,7 +30,7 @@ def migrate():
         if option == "category": # change this old format
             option = "cpsCategory"
         if option == "outputDirectory": # move this to new location format
-            value = os.path.split(os.path.normpath(outputdirectory))[0]
+            value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
         confignew.set(section, option, value)
@@ -53,7 +53,7 @@ def migrate():
         if option == "category": # change this old format
             option = "sbCategory"
         if option == "outputDirectory": # move this to new location format
-            value = os.path.split(os.path.normpath(outputdirectory))[0]
+            value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
         confignew.set(section, option, value) 
