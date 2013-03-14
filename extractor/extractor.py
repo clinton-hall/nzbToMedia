@@ -1,5 +1,6 @@
-import os
 import sys
+sys.path.insert(0, 'autoProcess/') # add this folder to path as this allows out-of-sight files to be called.
+import os
 import logging
 from subprocess import call
 from nzbToMediaUtil import create_destination
