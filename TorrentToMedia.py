@@ -187,7 +187,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 if __name__ == "__main__":
 
     #check to migrate old cfg before trying to load.
-    if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample"))
+    if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
         migratecfg.migrate()
     
     # Logging
