@@ -27,7 +27,7 @@ To enable Torrent extraction, on Windows, you need to install [7-zip](http://www
 	
 Contribution
 ------------
-We who have developed nzbToMedia believe in the openess of open-source, and as such we hope that any modifications will lead back to the orignal repo ( https://github.com/clinton-hall/nzbToMedia ) via pull requests.
+We who have developed nzbToMedia believe in the openess of open-source, and as such we hope that any modifications will lead back to the [orignal repo](https://github.com/clinton-hall/nzbToMedia "orignal repo") via pull requests.
 
 Founder: [clinton-hall](https://github.com/clinton-hall "clinton-hall")
 
