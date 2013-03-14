@@ -11,6 +11,7 @@ Add logging to nzbget email notification
 Synchronised v10 to latest nzbget testing scripts
 Added failed download folder for failed downloads in nzbget
 Added option to delete failed in nzbget
+Created a single nzbToMedia.py script for all categories (will be the only nzb script compiled for windows)
 
 Impacts All
 Added ffmpeg transcoder
@@ -21,6 +22,8 @@ Improved scen exception handling.
 Major changes to code layout
 Better efficiency
 Added support for Mylar, Gamez, and HeadPhones
+Moved many of the "support" files to the autoProcess directory so that they aren't visible (looks neater)
+Added migration tool to update .cfg file on first run following update.
 
 V6.0 03/03/2013
 
