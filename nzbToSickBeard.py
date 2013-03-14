@@ -22,8 +22,9 @@
 # Also added suppot for NZBGet. With help from thorli
 
 
+import os
 import sys
-sys.path.insert(0, 'autoProcess/') # add this folder to path as this allows out-of-sight files to be called.
+sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import logging
 
 import migratecfg
