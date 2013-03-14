@@ -7,6 +7,10 @@ import autoProcessComics
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 
+#check to migrate old cfg before trying to load.
+if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample"))
+    migratecfg.migrate()
+
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
 
