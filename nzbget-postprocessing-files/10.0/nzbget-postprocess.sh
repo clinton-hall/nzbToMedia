@@ -279,13 +279,13 @@ do_exit() {
 
 # Check if the script is called from nzbget 10.0 or later
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
-    echo "*** NZBGet post-processing script ***" 
-    echo "This script is supposed to be called from nzbget (10.0 or later)." 
-    exit $POSTPROCESS_ERROR
+	echo "*** NZBGet post-processing script ***" 
+	echo "This script is supposed to be called from nzbget (10.0 or later)." 
+	exit $POSTPROCESS_ERROR
 fi
 if [ "$NZBOP_UNPACK" = "" ]; then
-    echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable." 
-    exit $POSTPROCESS_ERROR
+	echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable." 
+	exit $POSTPROCESS_ERROR
 fi 
 
 # Check if postprocessing was disabled in postprocessing parameters 
@@ -320,7 +320,7 @@ if [ "$NZBOP_ALLOWREPROCESS" = "yes" ]; then
 fi 
 
 if [ "$NZBOP_UNPACK" != "yes" ]; then
-    echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file" | tee -a tmp.log
 	BadConfig=1
 fi
 
@@ -335,8 +335,8 @@ if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
 	do_exit $POSTPROCESS_NONE
 fi
 if [ "$NZBPP_PARSTATUS" -eq 1 ]; then
-    echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a tmp.log
-    do_exit $POSTPROCESS_NONE
+	echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a tmp.log
+	do_exit $POSTPROCESS_NONE
 fi 
 
 # Check unpack status
@@ -367,11 +367,9 @@ fi
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
-    echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a tmp.log
 	do_exit $POSTPROCESS_ERROR
 fi
-
-cd "$NZBPP_DIRECTORY"
 
 # All checks done, now processing the files
 
@@ -401,22 +399,22 @@ if [ "$JoinTS" = "yes" ]; then
 	# Join any split .ts files if they are named xxxx.0000.ts xxxx.0001.ts
 	# They will be joined together to a file called xxxx.0001.ts
 	if (ls *.ts >/dev/null 2>&1); then
-        echo "[INFO] Post-Process: Joining ts-files" | tee -a tmp.log
+        	echo "[INFO] Post-Process: Joining ts-files" | tee -a tmp.log
 		tsname=`find . -name "*0001.ts" |awk -F/ '{print $NF}'`
 		cat *0???.ts > ./$tsname
 
-        # Remove all the split .ts files
-        echo "[INFO] Post-Process: Deleting source ts-files" | tee -a tmp.log
-        rm *0???.ts >/dev/null 2>&1
-    fi
+		# Remove all the split .ts files
+		echo "[INFO] Post-Process: Deleting source ts-files" | tee -a tmp.log
+		rm *0???.ts >/dev/null 2>&1
+	fi
 fi
 
 if [ "$RenameIMG" = "yes" ]; then
 	# Rename img file to iso
 	# It will be renamed to .img.iso so you can see that it has been renamed
 	if (ls *.img >/dev/null 2>&1); then
-	    echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a tmp.log
-        imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
+		echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a tmp.log
+		imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
 		mv $imgname $imgname.iso
 	fi
 fi
@@ -429,8 +427,8 @@ if [ "$NZBPR_DestDir" != "" ]; then
 	mv * $NZBPR_DestDir >/dev/null 2>&1
 	cd ..
 	rmdir $NZBPP_DIRECTORY
-    NZBPP_DIRECTORY=$NZBPR_DestDir
-    cd $NZBPP_DIRECTORY
+	NZBPP_DIRECTORY=$NZBPR_DestDir
+	cd $NZBPP_DIRECTORY
 fi
 
 # All OK, requesting cleaning up of download queue
