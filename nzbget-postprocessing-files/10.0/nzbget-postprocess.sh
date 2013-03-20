@@ -77,117 +77,117 @@ POSTPROCESS_NONE=95
 
 # Postprocessing function for nzbToCouchPotato and nzbToSickBeard
 nzbToMedia() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" | tee -a $tmplog; fi
 	PostProcessStatus=0	
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" | tee -a $tmplog; fi
 	find "$NZBPP_DIRECTORY" -type f -size -200000k -iname \*sample\* -exec rm {} \; >/dev/null 2>&1
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			script=$NzbToCouchPotato
 			# Call Couchpotato's postprocessing script
-			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist" | tee -a tmp.log; fi
+			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
 			script=$NzbToSickBeard
 			# Call SickBeard's postprocessing script
-			echo "[INFO] Post-Process: Running SickBeard's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running SickBeard's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: SickBeard-Script-Path=$NzbToSickBeard" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: SickBeard-Script-Path=$NzbToSickBeard" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a tmp.log; fi
+			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$HeadPhonesCategory" ]; then
 		if [ "$HeadPhones" = "yes" -a -e "$NzbToHeadPhones" ]; then
 			script=$NzbToHeadPhones
 			# Call HeadPhones' postprocessing script
-			echo "[INFO] Post-Process: Running HeadPhones' postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running HeadPhones' postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: HeadPhones-Script-Path=$NzbToHeadPhones" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: HeadPhones-Script-Path=$NzbToHeadPhones" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist" | tee -a tmp.log; fi
+			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$MylarCategory" ]; then
 		if [ "$Mylar" = "yes" -a -e "$NzbToMylar" ]; then
 			script=$NzbToMylar
 			# Call Mylar's postprocessing script
-			echo "[INFO] Post-Process: Running Mylar's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running Mylar's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Mylar-Script-Path=$NzbToMylar" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: Mylar-Script-Path=$NzbToMylar" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist" | tee -a tmp.log; fi
+			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$GamezCategory" ]; then
 		if [ "$Gamez" = "yes" -a -e "$NzbToGamez" ]; then
 			script=$NzbToGamez
 			# Call Gamez's postprocessing script
-			echo "[INFO] Post-Process: Running Gamez's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running Gamez's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Gamez-Script-Path=$NzbToGamez" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: Gamez-Script-Path=$NzbToGamez" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist" | tee -a tmp.log; fi
+			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
 		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
 			script=$CustomScript
 			# Call Custom postprocessing script
-			echo "[INFO] Post-Process: Running the Custom postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running the Custom postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
-			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')" | tee -a tmp.log; fi
-			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist" | tee -a tmp.log; fi
+			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')" | tee -a $tmplog; fi
+			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 }
 
 replaceVarBy() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'replaceVarBy'. Going to replace '${2}' in '${1}' by '${3}'" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'replaceVarBy'. Going to replace '${2}' in '${1}' by '${3}'" | tee -a $tmplog; fi
 
 	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
 	if [ -n "${BASH_VERSION}" ]; then
@@ -196,7 +196,7 @@ replaceVarBy() {
 		REPLACEDRESULT=$(echo "${1}" | sed "s^${2}^${3}^g")
 	fi
 
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" | tee -a $tmplog; fi
 }
 
 replaceLogLine() {
@@ -213,12 +213,12 @@ replaceLogLine() {
 		newline=$(echo $newline | sed "s^.*WARNING^[WARNING]^")
 		newline=$(echo $newline | sed "s^.*ERROR^[ERROR]^")
 	fi
-	echo "$newline" | tee -a tmp.log
+	echo "$newline" | tee -a $tmplog
 }
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
 do_exit() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a $tmplog; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
 		if [ "$Delete_Failed" = "yes" ]; then
@@ -237,7 +237,7 @@ do_exit() {
 	fi
 	script=none
 	nzbToMedia $nzbStatus
-        echo "[DETAIL] after calling nzbToMedia" | tee -a tmp.log
+        echo "[DETAIL] after calling nzbToMedia" | tee -a $tmplog
 	replaceVarBy "${Email_Subject}" "<name>" "${NZBPP_NZBFILENAME}"
 	replaceVarBy "${REPLACEDRESULT}" "<cat>" "${NZBPP_CATEGORY}"
 	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
@@ -256,7 +256,7 @@ do_exit() {
 		Email_Message="${REPLACEDRESULT}"
 		if [ "${Add_Log}" = "yes" ]; then 
 			Email_Message="$Email_Message \r\nLog Result"
-			while read line; do Email_Message="$Email_Message \r\n$line"; done < tmp.log
+			while read line; do Email_Message="$Email_Message \r\n$line"; done < $tmplog
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
@@ -270,7 +270,7 @@ do_exit() {
 		Email_Message="${REPLACEDRESULT}"
 		if [ "${Add_Log}" = "yes" ]; then 
 			Email_Message="$Email_Message \r\nLog Result"
-			while read line; do Email_Message="$Email_Message \r\n$line"; done < tmp.log
+			while read line; do Email_Message="$Email_Message \r\n$line"; done < $tmplog
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
@@ -296,15 +296,17 @@ if [ "$NZBPR_PostProcess" = "no" ]; then
 	exit $POSTPROCESS_NONE
 fi
 
-echo "[INFO] Post-Process: Post-processing script successfully started" | tee tmp.log
+ConfigDir="${NZBOP_CONFIGFILE%/*}"
+tmplog="$ConfigDir/$tmp.log" 
+
+echo "[INFO] Post-Process: Post-processing script successfully started" | tee $tmplog
 cd "$NZBPP_DIRECTORY" 
 
 # Determine the location of configuration file (it must be stored in
 # the directory with nzbget.conf).
-ConfigDir="${NZBOP_CONFIGFILE%/*}"
 ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
 if [ ! -f "$ScriptConfigFile" ]; then
-	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
 fi
 
@@ -315,59 +317,59 @@ while read line; do	eval "$line"; done < $ScriptConfigFile
 BadConfig=0
 
 if [ "$NZBOP_ALLOWREPROCESS" = "yes" ]; then
-	echo "[ERROR] Post-Process: Please disable option \"AllowReProcess\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please disable option \"AllowReProcess\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi 
 
 if [ "$NZBOP_UNPACK" != "yes" ]; then
-	echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi
 
 if [ "$BadConfig" -eq 1 ]; then
-	echo "[ERROR] Post-Process: Exiting due to incompatible nzbget configuration" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Exiting due to incompatible nzbget configuration" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
 fi 
 
 # Check par status
 if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
-	echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a tmp.log
+	echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a $tmplog
 	do_exit $POSTPROCESS_NONE
 fi
 if [ "$NZBPP_PARSTATUS" -eq 1 ]; then
-	echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a tmp.log
+	echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a $tmplog
 	do_exit $POSTPROCESS_NONE
 fi 
 
 # Check unpack status
 if [ "$NZBPP_UNPACKSTATUS" -eq 1 ]; then
-	echo "[WARNING] Post-Process: Unpack failed, exiting" | tee -a tmp.log
+	echo "[WARNING] Post-Process: Unpack failed, exiting" | tee -a $tmplog
 	do_exit $POSTPROCESS_NONE
 fi 
 if [ "$NZBPP_UNPACKSTATUS" -eq 0 -a "$NZBPP_PARSTATUS" -ne 2 ]; then
     # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
 
 	if (ls *.rar *.7z *.7z.??? >/dev/null 2>&1); then
-		echo "[WARNING] Post-Process: Archive files exist but unpack skipped, exiting" | tee -a tmp.log
+		echo "[WARNING] Post-Process: Archive files exist but unpack skipped, exiting" | tee -a $tmplog
 		exit $POSTPROCESS_NONE
 	fi
 
 	if (ls *.par2 >/dev/null 2>&1); then
-		echo "[WARNING] Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting" | tee -a tmp.log
+		echo "[WARNING] Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting" | tee -a $tmplog
 		exit $POSTPROCESS_NONE
 	fi
 
 	if [ -f "_brokenlog.txt" ]; then
-		echo "[WARNING] Post-Process: _brokenlog.txt exists, download is probably damaged, exiting" | tee -a tmp.log
+		echo "[WARNING] Post-Process: _brokenlog.txt exists, download is probably damaged, exiting" | tee -a $tmplog
 		exit $POSTPROCESS_NONE
 	fi
 
-	echo "[INFO] Post-Process: Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful" | tee -a tmp.log
+	echo "[INFO] Post-Process: Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful" | tee -a $tmplog
 fi
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
-	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a $tmplog
 	do_exit $POSTPROCESS_ERROR
 fi
 
@@ -381,13 +383,13 @@ if [ "$?" -ne 127 ]; then
 	AllFilesCount=`ls -1 2>/dev/null | wc -l`
 	NZBFilesCount=`ls -1 *.nzb 2>/dev/null | wc -l`
 	if [ "$AllFilesCount" -eq "$NZBFilesCount" ]; then
-		echo "[INFO] Moving downloaded nzb-files into incoming nzb-directory for further download" | tee -a tmp.log
+		echo "[INFO] Moving downloaded nzb-files into incoming nzb-directory for further download" | tee -a $tmplog
 		mv *.nzb $NZBOP_NZBDIR
 	fi
 fi
 
 # Clean up
-echo "[INFO] Post-Process: Cleaning up" | tee -a tmp.log
+echo "[INFO] Post-Process: Cleaning up" | tee -a $tmplog
 chmod -R a+rw .
 # Clean up list, space seperated array from GUI
 for word in $FileCleanUp ; do rm $word >/dev/null 2>&1 ; done
@@ -399,12 +401,12 @@ if [ "$JoinTS" = "yes" ]; then
 	# Join any split .ts files if they are named xxxx.0000.ts xxxx.0001.ts
 	# They will be joined together to a file called xxxx.0001.ts
 	if (ls *.ts >/dev/null 2>&1); then
-        	echo "[INFO] Post-Process: Joining ts-files" | tee -a tmp.log
+        	echo "[INFO] Post-Process: Joining ts-files" | tee -a $tmplog
 		tsname=`find . -name "*0001.ts" |awk -F/ '{print $NF}'`
 		cat *0???.ts > ./$tsname
 
 		# Remove all the split .ts files
-		echo "[INFO] Post-Process: Deleting source ts-files" | tee -a tmp.log
+		echo "[INFO] Post-Process: Deleting source ts-files" | tee -a $tmplog
 		rm *0???.ts >/dev/null 2>&1
 	fi
 fi
@@ -413,7 +415,7 @@ if [ "$RenameIMG" = "yes" ]; then
 	# Rename img file to iso
 	# It will be renamed to .img.iso so you can see that it has been renamed
 	if (ls *.img >/dev/null 2>&1); then
-		echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a tmp.log
+		echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a $tmplog
 		imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
 		mv $imgname $imgname.iso
 	fi
