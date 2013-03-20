@@ -98,66 +98,66 @@ POSTPROCESS_NONE=95
 
 # Postprocessing function for nzbToCouchPotato and nzbToSickBeard
 nzbToMedia() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing external postprocessing with argument $1" | tee -a $tmplog; fi
 	PostProcessStatus=0	
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" | tee -a $tmplog; fi
 	find "$NZBPP_DIRECTORY" -type f -size -200000k -iname \*sample\* -exec rm {} \; >/dev/null 2>&1
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			script=$NzbToCouchPotato
 			# Call Couchpotato's postprocessing script
-			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: CouchPotato-Script-Path=$NzbToCouchPotato" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
-			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist" | tee -a tmp.log; fi
+			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" ]; then
 		if [ "$SickBeard" = "yes" -a -e "$NzbToSickBeard" ]; then
 			script=$NzbToSickBeard
 			# Call SickBeard's postprocessing script
-			echo "[INFO] Post-Process: Running SickBeard's postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running SickBeard's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: SickBeard-Script-Path=$NzbToSickBeard" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: SickBeard-Script-Path=$NzbToSickBeard" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
-			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a tmp.log; fi
-			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a tmp.log; fi
+			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a $tmplog; fi
+			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
 		if [ "$Custom" = "yes" -a -e "$CustomScript" ]; then
 			script=$CustomScript
 			# Call Custom postprocessing script
-			echo "[INFO] Post-Process: Running the Custom postprocessing script" | tee -a tmp.log
+			echo "[INFO] Post-Process: Running the Custom postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a tmp.log
-				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus" | tee -a tmp.log
+				echo "[DETAIL] Post-Process: Custom-Script-Path=$CustomScript" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
+				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
 			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then echo "[INFO] Post-Process: $line" ; fi ; done
 		else
-			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')" | tee -a tmp.log; fi
-			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist" | tee -a tmp.log; fi
+			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')" | tee -a $tmplog; fi
+			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 }
 
 replaceVarBy() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'replaceVarBy'. Going to replace '${2}' in '${1}' by '${3}'" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'replaceVarBy'. Going to replace '${2}' in '${1}' by '${3}'" | tee -a $tmplog; fi
 
 	# If we're not using Bash use sed, as we need to support as much as systems possible, also those running sh/dash etc
 	if [ -n "${BASH_VERSION}" ]; then
@@ -166,12 +166,12 @@ replaceVarBy() {
 		REPLACEDRESULT=$(echo "${1}" | sed "s^${2}^${3}^g")
 	fi
 
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: replace result: ${REPLACEDRESULT}" | tee -a $tmplog; fi
 }
 
 # Pass on postprocess exit codes to external scripts for handling failed downloads
 do_exit() {
-	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a tmp.log; fi
+	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a $tmplog; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
 		if [ "$Delete_Failed" = "yes" ]; then
@@ -190,7 +190,7 @@ do_exit() {
 	fi
 	script=none
 	nzbToMedia $nzbStatus
-        echo "[DETAIL] after calling nzbToMedia" | tee -a tmp.log
+        echo "[DETAIL] after calling nzbToMedia" | tee -a $tmplog
 	replaceVarBy "${Email_Subject}" "<name>" "${NZBPP_NZBFILENAME}"
 	replaceVarBy "${REPLACEDRESULT}" "<cat>" "${NZBPP_CATEGORY}"
 	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
@@ -209,7 +209,7 @@ do_exit() {
 		Email_Message="${REPLACEDRESULT}"
 		if [ "${Add_Log}" = "yes" ]; then 
 			Email_Message="$Email_Message \r\nLog Result"
-			while read line; do Email_Message="$Email_Message \r\n$line"; done < tmp.log
+			while read line; do Email_Message="$Email_Message \r\n$line"; done < $tmplog
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
@@ -223,7 +223,7 @@ do_exit() {
 		Email_Message="${REPLACEDRESULT}"
 		if [ "${Add_Log}" = "yes" ]; then 
 			Email_Message="$Email_Message \r\nLog Result"
-			while read line; do Email_Message="$Email_Message \r\n$line"; done < tmp.log
+			while read line; do Email_Message="$Email_Message \r\n$line"; done < $tmplog
 		fi
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
@@ -245,18 +245,20 @@ if [ "$NZBPR_PostProcess" = "no" ]; then
 	exit $POSTPROCESS_NONE
 fi
 
-echo "[INFO] Post-Process: Post-process script successfully started" | tee tmp.log
+ConfigDir="${NZBOP_CONFIGFILE%/*}"
+tmplog="$ConfigDir/$tmp.log" 
+
+echo "[INFO] Post-Process: Post-process script successfully started" | tee $tmplog
 
 # Determine the location of configuration file (it must be stored in
 # the directory with nzbget.conf or in this script's directory).
-ConfigDir="${NZBOP_CONFIGFILE%/*}"
 ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
 if [ ! -f "$ScriptConfigFile" ]; then
 	ConfigDir="${0%/*}"
 	ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
 fi
 if [ ! -f "$ScriptConfigFile" ]; then
-	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
 fi
 
@@ -267,44 +269,44 @@ while read line; do	eval "$line"; done < $ScriptConfigFile
 BadConfig=0
 
 if [ "$NZBOP_ALLOWREPROCESS" = "yes" ]; then
-	echo "[ERROR] Post-Process: Please disable option \"AllowReProcess\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please disable option \"AllowReProcess\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi 
 
 if [ "$NZBOP_LOADPARS" = "none" ]; then
-	echo "[ERROR] Post-Process: Please set option \"LoadPars\" to \"One\" or \"All\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please set option \"LoadPars\" to \"One\" or \"All\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi
 
 if [ "$NZBOP_PARREPAIR" = "no" ]; then
-	echo "[ERROR] Post-Process: Please set option \"ParRepair\" to \"Yes\" in nzbget configuration file" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Please set option \"ParRepair\" to \"Yes\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi
 
 if [ "$BadConfig" -eq 1 ]; then
-	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
 fi 
 
 # Check if all collections in nzb-file were downloaded
 if [ ! "$NZBPP_NZBCOMPLETED" -eq 1 ]; then
-	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting" | tee -a tmp.log
+	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting" | tee -a $tmplog
 	exit $POSTPROCESS_SUCCESS
 fi 
 
 # Check par status
 if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" -eq 1 ]; then
 	if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
-		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a tmp.log
+		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a $tmplog
 	else
-		echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a tmp.log
+		echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a $tmplog
 	fi
 	do_exit $POSTPROCESS_ERROR
 fi 
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
-	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a tmp.log
+	echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY doesn't exist" | tee -a $tmplog
 	do_exit $POSTPROCESS_ERROR
 fi
 
@@ -315,7 +317,7 @@ cd "$NZBPP_DIRECTORY"
 if [ ! "$NZBPP_PARSTATUS" -eq 2 ]; then
 	if [ -f "_brokenlog.txt" ]; then
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
-			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair" | tee -a tmp.log
+			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair" | tee -a $tmplog
 			exit $POSTPROCESS_PARCHECK_ALL
 		fi
 	fi
@@ -332,7 +334,7 @@ if (ls *.rar >/dev/null 2>&1); then
 	# Check if unrar exists
 	$UnrarCmd >/dev/null 2>&1
 	if [ "$?" -eq 127 ]; then
-		echo "[ERROR] Post-Process: Unrar not found. Set the path to unrar in script's configuration" | tee -a tmp.log
+		echo "[ERROR] Post-Process: Unrar not found. Set the path to unrar in script's configuration" | tee -a $tmplog
 		do_exit $POSTPROCESS_ERROR
 	fi
 
@@ -344,7 +346,7 @@ if (ls *.rar >/dev/null 2>&1); then
 		mkdir extracted
 	fi
 	
-	echo "[INFO] Post-Process: Unraring" | tee -a tmp.log
+	echo "[INFO] Post-Process: Unraring" | tee -a $tmplog
 	rarpasswordparam=""
 	if [ "$NZBPR_Password" != "" ]; then
 		rarpasswordparam="-p$NZBPR_Password"
@@ -352,13 +354,13 @@ if (ls *.rar >/dev/null 2>&1); then
 
 	$UnrarCmd x -y -p- "$rarpasswordparam" -o+ "*.rar"  ./extracted/
 	if [ "$?" -ne 0 ]; then
-		echo "[ERROR] Post-Process: Unrar failed" | tee -a tmp.log
+		echo "[ERROR] Post-Process: Unrar failed" | tee -a $tmplog
 		if [ "$ExtractedDirExists" -eq 0 ]; then
 			rm -R extracted
 		fi
 		# for delayed par-check/-repair at least one par-file must be already downloaded
 		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
-			echo "[INFO] Post-Process: Requesting par-repair" | tee -a tmp.log
+			echo "[INFO] Post-Process: Requesting par-repair" | tee -a $tmplog
 			exit $POSTPROCESS_PARCHECK_ALL
 		fi
 		do_exit $POSTPROCESS_ERROR
@@ -367,7 +369,7 @@ if (ls *.rar >/dev/null 2>&1); then
    
 	# Remove the rar files
 	if [ "$DeleteRarFiles" = "yes" ]; then
-		echo "[INFO] Post-Process: Deleting rar-files" | tee -a tmp.log
+		echo "[INFO] Post-Process: Deleting rar-files" | tee -a $tmplog
 		rm *.r[0-9][0-9] >/dev/null 2>&1
 		rm *.rar >/dev/null 2>&1
 		rm *.s[0-9][0-9] >/dev/null 2>&1
@@ -377,17 +379,17 @@ if (ls *.rar >/dev/null 2>&1); then
 	# If there are any rars inside the extracted rars then these will no also be unrarred
 	cd extracted
 	if (ls *.rar >/dev/null 2>&1); then
-		echo "[INFO] Post-Process: Unraring (second pass)" | tee -a tmp.log
+		echo "[INFO] Post-Process: Unraring (second pass)" | tee -a $tmplog
 		$UnrarCmd x -y -p- -o+ "*.rar"
 
 		if [ "$?" -ne 0 ]; then
-			echo "[INFO] Post-Process: Unrar (second pass) failed" | tee -a tmp.log
+			echo "[INFO] Post-Process: Unrar (second pass) failed" | tee -a $tmplog
 			do_exit $POSTPROCESS_ERROR
 		fi
 
 		# Delete the Rar files
 		if [ "$DeleteRarFiles" = "yes" ]; then
-			echo "[INFO] Post-Process: Deleting rar-files (second pass)" | tee -a tmp.log
+			echo "[INFO] Post-Process: Deleting rar-files (second pass)" | tee -a $tmplog
 			rm *.r[0-9][0-9] >/dev/null 2>&1
 			rm *.rar >/dev/null 2>&1
 			rm *.s[0-9][0-9] >/dev/null 2>&1
@@ -406,7 +408,7 @@ fi
 # The par-repair will rename files to correct names, then we can unpack.
 if [ "$Unrared" -eq 0 -a "$NZBPP_PARSTATUS" -eq 0 ]; then
     if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
-        echo "[INFO] Post-Process: No rar-files found, requesting par-check" | tee -a tmp.log
+        echo "[INFO] Post-Process: No rar-files found, requesting par-check" | tee -a $tmplog
         exit $POSTPROCESS_PARCHECK_ALL
     fi
 fi
@@ -419,13 +421,13 @@ if [ "$?" -ne 127 ]; then
 	AllFilesCount=`ls -1 2>/dev/null | wc -l`
 	NZBFilesCount=`ls -1 *.nzb 2>/dev/null | wc -l`
 	if [ "$AllFilesCount" -eq "$NZBFilesCount" ]; then
-		echo "[INFO] Moving downloaded nzb-files into incoming nzb-directory for further download" | tee -a tmp.log
+		echo "[INFO] Moving downloaded nzb-files into incoming nzb-directory for further download" | tee -a $tmplog
 		mv *.nzb $NZBOP_NZBDIR
 	fi
 fi
 
 # Clean up
-echo "[INFO] Post-Process: Cleaning up" | tee -a tmp.log
+echo "[INFO] Post-Process: Cleaning up" | tee -a $tmplog
 chmod -R a+rw .
 # Clean up list, space seperated array from GUI
 for word in $FileCleanUp ; do rm $word >/dev/null 2>&1 ; done
@@ -440,13 +442,13 @@ if [ "$JoinTS" = "yes" ]; then
 	# Join any split .ts files if they are named xxxx.0000.ts xxxx.0001.ts
 	# They will be joined together to a file called xxxx.0001.ts
 	if (ls *.ts >/dev/null 2>&1); then
-	    echo "[INFO] Post-Process: Joining ts-files" | tee -a tmp.log
+	    echo "[INFO] Post-Process: Joining ts-files" | tee -a $tmplog
 		tsname=`find . -name "*0001.ts" |awk -F/ '{print $NF}'`
 		cat *0???.ts > ./$tsname
 	fi   
    
 	# Remove all the split .ts files
-    echo "[INFO] Post-Process: Deleting source ts-files" | tee -a tmp.log
+    echo "[INFO] Post-Process: Deleting source ts-files" | tee -a $tmplog
 	rm *0???.ts >/dev/null 2>&1
 fi
 
@@ -454,7 +456,7 @@ if [ "$RenameIMG" = "yes" ]; then
 	# Rename img file to iso
 	# It will be renamed to .img.iso so you can see that it has been renamed
 	if (ls *.img >/dev/null 2>&1); then
-	    echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a tmp.log
+	    echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a $tmplog
 		imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
 		mv $imgname $imgname.iso
 	fi   
@@ -467,10 +469,10 @@ fi
 # Move categories to /share/your_directory and remove download destination directory
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir" | tee -a tmp.log
+        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir" | tee -a $tmplog
         mv $NZBPP_DIRECTORY $TvDownloadDir
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $TvDownloadDir" | tee -a tmp.log
+           echo "[ERROR] Post-Process: Moving to $TvDownloadDir" | tee -a $tmplog
            exit $POSTPROCESS_ERROR
         else
            NZBPP_DIRECTORY=$TvDownloadDir
@@ -479,10 +481,10 @@ if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" | tee -a tmp.log
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" | tee -a $tmplog
         mv $NZBPP_DIRECTORY $MoviesDownloadDir 
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir" | tee -a tmp.log
+           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir" | tee -a $tmplog
            exit $POSTPROCESS_ERROR
         else
            NZBPP_DIRECTORY=$MoviesDownloadDir
@@ -491,10 +493,10 @@ if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; th
 fi
 # Test for category and ensure the passed directory exists as a directory.
 if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
-        echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" | tee -a tmp.log
+        echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" | tee -a $tmplog
         mv $NZBPP_DIRECTORY $CustomDownloadDir 
         if [ "$?" -ne 0 ]; then
-           echo "[ERROR] Post-Process: Moving to $CustomDownloadDir" | tee -a tmp.log
+           echo "[ERROR] Post-Process: Moving to $CustomDownloadDir" | tee -a $tmplog
            exit $POSTPROCESS_ERROR
         else
            NZBPP_DIRECTORY=$CustomDownloadDir
