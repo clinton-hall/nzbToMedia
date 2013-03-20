@@ -61,9 +61,7 @@ def migrate():
     section = "HeadPhones"
     original = []
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    if not os.path.isfile(configFilenameold):
-        configFilenameold = ""
-    if configFilenameold: # read our old config.
+    if os.path.isfile(configFilenameold): # read our old config.
         configold.read(configFilenameold)
     try:
         original = configold.items(section)
@@ -181,10 +179,11 @@ def migrate():
         confignew.write(configFile)
 
     # create a backup of our old config
-    backupname = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.old")
-    if os.path.isfile(backupname): # remove older backups
-        os.unlink(backupname)
-    os.rename(configFilenameold, backupname)
+    if os.path.isfile(configFilenameold):
+        backupname = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.old")
+        if os.path.isfile(backupname): # remove older backups
+            os.unlink(backupname)
+        os.rename(configFilenameold, backupname)
 
     # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
     os.rename(configFilenamenew, configFilenameold)
