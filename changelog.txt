@@ -1,11 +1,14 @@
 Change_LOG / History
 
-VX.X XX/03/2013
+V7.0 21/03/2013
 
 Impacts Torrents
 Added option to delete torrent and original files after processing (utorrent)
 
 Impacts NZB 
+Added nzbget windows script (to be compiled)
+Changed nzbget folders to previous X.X, current-stable, testing X.X format
+Fix nzbget change directory failure problem
 Improved nzbget logging
 Add logging to nzbget email notification
 Synchronised v10 to latest nzbget testing scripts
@@ -14,6 +17,7 @@ Added option to delete failed in nzbget
 Created a single nzbToMedia.py script for all categories (will be the only nzb script compiled for windows)
 
 Impacts All
+Added rotating log file handler
 Added ffmpeg transcoder
 Added CouchPotato status check to provide confirmation of renamer complete 
 CouchPotato status check will timeout after 2 minutes in case something goes wrong
