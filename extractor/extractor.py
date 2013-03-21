@@ -45,14 +45,16 @@ def extract(filePath, outputDestination):
         else:
             platform = 'x86'
         if not os.path.dirname(sys.argv[0]):
+            chplocation = os.path.normpath(os.path.join(os.getcwd(), 'extractor/bin/chp.exe'))
             sevenzipLocation = os.path.normpath(os.path.join(os.getcwd(), 'extractor/bin/' + platform + '/7z.exe'))
         else:
+            chplocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/chp.exe'))
             sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             sys.exit(-1)
         else:
-            cmd_7zip = [sevenzipLocation, "x", "-y"]
+            cmd_7zip = [chplocation, sevenzipLocation, "x", "-y"]
             ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
             EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
@@ -110,14 +112,12 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
         cmd.append(filePath) # add filePath to final cmd arg.
-        p = Popen(cmd, stdout=PIPE, stderr=PIPE) # should extract files fine.
-        out, err = p.communicate()
-        res = p.returncode
-        if res == 0:
+        p = Popen(cmd)) # should extract files fine.
+        res = p.wait()
+        if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linus returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
-            Logger.error("EXTRACTOR: 7zip output was: %s. 7zip error was %s", out, err)
     except:
         Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory
