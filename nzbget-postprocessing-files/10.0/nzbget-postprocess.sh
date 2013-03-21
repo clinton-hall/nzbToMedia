@@ -300,7 +300,7 @@ ConfigDir="${NZBOP_CONFIGFILE%/*}"
 tmplog="$ConfigDir/$tmp.log" 
 
 echo "[INFO] Post-Process: Post-processing script successfully started" | tee $tmplog
-cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" && do_exit $POSTPROCESS_ERROR)
+cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" | tee $tmplog && do_exit $POSTPROCESS_ERROR)
 
 # Determine the location of configuration file (it must be stored in
 # the directory with nzbget.conf).
