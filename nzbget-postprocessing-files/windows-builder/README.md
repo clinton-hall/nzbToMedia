@@ -1,6 +1,6 @@
-To compile for windows, add the following files into the same folder.
-
 Compile with pyinstaller using options -F -w
+
+To compile for windows, add the following files into the same folder.
 
 
 Transcoder.py
