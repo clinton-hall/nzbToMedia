@@ -6,6 +6,7 @@ sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import ConfigParser
 import logging
 
+import migratecfg
 import autoProcessComics
 import autoProcessGames 
 import autoProcessMusic
