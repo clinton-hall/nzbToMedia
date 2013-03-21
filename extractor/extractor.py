@@ -2,7 +2,7 @@ import os
 import sys
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import logging
-from subprocess import call
+from subprocess import call, Popen, PIPE
 from nzbToMediaUtil import create_destination
 
 
@@ -110,11 +110,14 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
         cmd.append(filePath) # add filePath to final cmd arg.
-        res = call(cmd) # should extract files fine.
+        p = Popen(cmd, stdout=PIPE, stderr=PIPE) # should extract files fine.
+        out, err = p.communicate()
+        res = p.returncode
         if res == 0:
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
+            Logger.error("EXTRACTOR: 7zip output was: %s. 7zip error was %s", out, err)
     except:
         Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory
