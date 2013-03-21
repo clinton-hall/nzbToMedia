@@ -310,7 +310,7 @@ if [ ! -d "$NZBPP_DIRECTORY" ]; then
 	do_exit $POSTPROCESS_ERROR
 fi
 
-cd "$NZBPP_DIRECTORY"
+cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" | tee $tmplog && do_exit $POSTPROCESS_ERROR)
 
 # If not just repaired and file "_brokenlog.txt" exists, the collection is damaged
 # exiting with exiting code $POSTPROCESS_PARCHECK_ALL to request par-repair
