@@ -1,3 +1,6 @@
+# nzbToMedia Configuration
+# For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
+
 [CouchPotato]
 #### autoProcessing for Movies
 #### cpsCategory - category that gets called for post-processing with CPS
