@@ -198,7 +198,8 @@ do_exit() {
 			rmdir $NZBPP_DIRECTORY
 		elif [ "$NZBPP_DIRECTORY" != "$ConfigDir" -a "$Failed_Directory" != "" ]
 			mkdir $Failed_Directory
-			mv * $Failed_Directory >/dev/null 2>&1
+			mkdir $Failed_Directory/$NZBPP_CATEGORY
+			mv * $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
     			NZBPP_DIRECTORY=$Failed_Directory
