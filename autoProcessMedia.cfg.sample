@@ -22,15 +22,15 @@ delete_failed = 0
 #### autoProcessing for TV Series
 #### sbCategory - category that gets called for post-processing with SB
 sbCategory = tv
-host=localhost
-port=8081
-username=
-password=
+host = localhost
+port = 8081
+username =
+password =
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
-web_root=
-ssl=0
-watch_dir=
-failed_fork=0
+web_root =
+ssl = 0
+watch_dir =
+failed_fork = 0
 
 
 [HeadPhones]
