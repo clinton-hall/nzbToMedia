@@ -220,7 +220,7 @@ def process(dirName, nzbName=None, status=0):
             Logger.info("%s", line)
 
         Logger.info("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
-        if delete_failed:
+        if delete_failed and not dirName in ['sys.argv[0]','/','']:
             Logger.info("Deleting failed files and folder %s", dirName)
             try:
                 shutil.rmtree(dirName)
