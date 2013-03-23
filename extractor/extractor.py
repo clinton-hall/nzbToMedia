@@ -54,7 +54,10 @@ def extract(filePath, outputDestination):
             Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             sys.exit(-1)
         else:
-            cmd_7zip = [chplocation, sevenzipLocation, "x", "-y"]
+            if not os.path.exists(chplocation):
+                cmd_7zip = [sevenzipLocation, "x", "-y"]
+            else:
+                cmd_7zip = [chplocation, sevenzipLocation, "x", "-y"]
             ext_7zip = [".rar",".zip",".tar.gz","tgz",".tar.bz2",".tbz",".tar.lzma",".tlz",".7z",".xz"]
             EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
