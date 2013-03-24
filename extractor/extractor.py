@@ -52,7 +52,7 @@ def extract(filePath, outputDestination):
             sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
-            sys.exit(-1)
+            return False
         else:
             if not os.path.exists(chplocation):
                 cmd_7zip = [sevenzipLocation, "x", "-y"]
@@ -99,6 +99,8 @@ def extract(filePath, outputDestination):
     # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":
             cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+    elif ext[1] in (".1", ".01", ".001") and os.path.splitext(ext[0])[1] in (".rar", ".zip", ".7z"): #support for *.zip.001, *.zip.002 etc.
+            cmd = EXTRACT_COMMANDS[os.path.splitext(ext[0])[1]]
     else:
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]
