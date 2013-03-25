@@ -117,7 +117,7 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
         cmd.append(filePath) # add filePath to final cmd arg.
-        p = Popen(cmd)) # should extract files fine.
+        p = Popen(cmd) # should extract files fine.
         res = p.wait()
         if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linus returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
