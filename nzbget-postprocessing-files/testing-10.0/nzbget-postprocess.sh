@@ -221,16 +221,16 @@ do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a $tmplog; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
-		cd $NZBPP_DIRECTORY
-		if [ "$Delete_Failed" = "yes" -a "$NZBPP_DIRECTORY" != "$ConfigDir" ]; then
+		if [ "$Delete_Failed" = "yes" -a "$NZBPP_DIRECTORY" != "$ConfigDir" -a -d "$NZBPP_DIRECTORY" ]; then
+			cd $NZBPP_DIRECTORY
 			rm * >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
-		elif [ "$NZBPP_DIRECTORY" != "$ConfigDir" -a "$Failed_Directory" != "" ]; then
+		elif [ "$NZBPP_DIRECTORY" != "$ConfigDir" -a "$Failed_Directory" != "" -a -d "$NZBPP_DIRECTORY" ]; then
+			cd $NZBPP_DIRECTORY
 			mkdir $Failed_Directory
 			mkdir $Failed_Directory/$NZBPP_CATEGORY
-			mkdir $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME
-			mv * $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME >/dev/null 2>&1
+			mv * $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
     			NZBPP_DIRECTORY=$Failed_Directory
