@@ -99,7 +99,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 if re.search(r'\d+', os.path.splitext(fileName)[1]): # find part numbers in second "extension" from right
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
                     if part == 1: # we only want to extract the primary part.
-                        Logger.info("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
+                        Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
                     else:
                         Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
                         continue
