@@ -1,5 +1,15 @@
 Change_LOG / History
 
+V7.X XX/03/2013
+
+Impacts Torrents
+Added test for chp.exe. If not found, calls 7zip directly
+Added test for multi-part archives. Will only extratc part1
+
+Impacs NZB
+Fixed failed download handling from nzbget (won't delete or move root!!!)
+Fixed sendEmail for nzbget to use html with <br> line breaks
+
 V7.0 21/03/2013
 
 Impacts Torrents
