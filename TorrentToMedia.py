@@ -30,6 +30,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     root = int(0)
     video = int(0)
     video2 = int(0)
+    num_compressed = int(0)
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
@@ -51,7 +52,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
         for file in filenames:
 
             filePath = os.path.join(dirpath, file)
-            fileExtension = os.path.splitext(file)[1]
+            fileName, fileExtension = os.path.splitext(file)
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
@@ -95,6 +96,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     Logger.error("MAIN: Failed to link file: %s", file)
                     Logger.debug(e)
             elif fileExtension in compressedContainer:
+                if re.search(r'\d+', os.path.splitext(fileName)[1]): # find part numbers in second "extension" from right
+                    part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
+                    if part == 1: # we only want to extract the primary part.
+                        Logger.info("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
+                    else:
+                        Logger.info("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
+                        continue
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
                     extractor.extract(filePath, outputDestination)
