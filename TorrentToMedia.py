@@ -101,7 +101,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     if part == 1: # we only want to extract the primary part.
                         Logger.info("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
                     else:
-                        Logger.info("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
+                        Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
                         continue
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
