@@ -31,12 +31,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     root = int(0)
     video = int(0)
     video2 = int(0)
+    foundFile = int(0)
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
-        
+
     for category in categories:
         if category == inputCategory:
             outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
@@ -57,8 +58,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 
             if root == 1:
                 Logger.debug("MAIN: Looking for %s in filename", inputName)
-                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)):
+                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile = 0:
                     pass  # This file does match the Torrent name
+                    foundFile = 1
                     Logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
                 else:
                     continue  # This file does not match the Torrent name, skip it
@@ -67,8 +69,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
-                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
+                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)) and foundFile = 0:
                     pass  # This file does match the date time criteria
+                    foundFile = 1
                     Logger.debug("Found file %s with date modifed/created less than 5 minutes ago.", file)
                 else:
                     continue  # This file has not been recently moved or created, skip it
