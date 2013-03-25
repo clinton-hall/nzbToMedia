@@ -32,6 +32,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     video = int(0)
     video2 = int(0)
     foundFile = int(0)
+    deleteOriginal = int(0)
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
@@ -57,11 +58,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
-                Logger.debug("MAIN: Looking for %s in filename", inputName)
-                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile = 0:
+                if not foundFile: 
+                    Logger.debug("MAIN: Looking for %s in: %s", inputName, file)
+                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile == 0:
                     pass  # This file does match the Torrent name
                     foundFile = 1
-                    Logger.debug("Found file %s that matches Torrent Name %s", file, inputName)
+                    Logger.debug("MAIN: Found file %s that matches Torrent Name %s", file, inputName)
                 else:
                     continue  # This file does not match the Torrent name, skip it
 
@@ -69,10 +71,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
-                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)) and foundFile = 0:
+                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)) and foundFile == 0:
                     pass  # This file does match the date time criteria
                     foundFile = 1
-                    Logger.debug("Found file %s with date modifed/created less than 5 minutes ago.", file)
+                    Logger.debug("MAIN: Found file %s with date modifed/created less than 5 minutes ago.", file)
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
@@ -117,20 +119,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
     flatten(outputDestination)
-    
-    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if not extractionSuccess and inputHash and useLink != 0 and clientAgent == 'utorrent':
-        try:
-            Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
-            utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-        except Exception as e:
-            Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
-        Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-        utorrentClass.stop(inputHash)
-        time.sleep(5)  # Give uTorrent some time to catch up with the change
-    ##### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    
     # Now check if movie files exist in destination:
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
@@ -145,30 +134,38 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     if video2 >= video and video2 > 0:  # Check that all video files were moved
         status = 0
 
-    #### Delete original files from uTorrent
-    if deleteOriginal != 0 and clientAgent == 'utorrent':
+    # Hardlink solution for uTorrent, need to implent support for deluge, transmission
+    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash:
         try:
             Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
             utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
         except Exception as e:
             Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
-        Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
-        utorrentClass.removedata(inputHash)
-        time.sleep(5)  # Give uTorrent some time to catch up with the change
-        
+        # if we are using links with uTorrent it means we need to pause it in order to access the files
+        if useLink == 1:
+            Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
+            utorrentClass.stop(inputHash)
+            time.sleep(5)  # Give uTorrent some time to catch up with the change
+
+        # Delete torrent and torrentdata from uTorrent
+        if deleteOriginal == 1:
+            Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
+            utorrentClass.removedata(inputHash)
+            utorrentClass.remove(inputHash)
+            time.sleep(5)
+
     processCategories = {cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory}
+
     if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
         Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
         result = 1
-    elif status == 0: #### Maybe we should move this to a more appropriate place?
-        Logger.info("MAIN: Successful run")
+    elif status == 0:
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
 
-    # Now we pass off to CouchPotato or Sick-Beard
     if inputCategory == cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
         result = autoProcessMovie.process(outputDestination, inputName, status)
@@ -188,12 +185,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
-    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if not extractionSuccess and inputHash and useLink != 0 and clientAgent == 'utorrent' and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
+    # Hardlink solution for uTorrent, need to implent support for deluge, transmission
+    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash and useLink == 1 and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
-    #### quick 'n dirty hardlink solution for uTorrent, need to implent support for deluge, transmission
-    
+
     Logger.info("MAIN: All done.")
 
 if __name__ == "__main__":
