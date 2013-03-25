@@ -9,6 +9,7 @@ import shutil
 import logging
 import datetime
 import time
+import re
 from subprocess import call
 
 
@@ -30,7 +31,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     root = int(0)
     video = int(0)
     video2 = int(0)
-    num_compressed = int(0)
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
