@@ -230,10 +230,11 @@ do_exit() {
 			cd $NZBPP_DIRECTORY
 			mkdir $Failed_Directory
 			mkdir $Failed_Directory/$NZBPP_CATEGORY
-			mv * $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
+			mkdir $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME
+			mv * $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME >/dev/null 2>&1
 			cd ..
 			rmdir $NZBPP_DIRECTORY
-    			NZBPP_DIRECTORY=$Failed_Directory
+    			NZBPP_DIRECTORY=$Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME
     			cd $NZBPP_DIRECTORY
 		fi
 		nzbStatus=1 
