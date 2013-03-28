@@ -191,18 +191,14 @@ do_exit() {
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: Executing function 'do_exit' with argument $1" | tee -a $tmplog; fi
 	nzbStatus=0
 	if [ "$1" -ne "$POSTPROCESS_SUCCESS" ]; then 
-		if [ "$Delete_Failed" = "yes" -a "$NZBPP_DIRECTORY" != "$ConfigDir" -a -d "$NZBPP_DIRECTORY" ]; then
-			cd $NZBPP_DIRECTORY
-			rm * >/dev/null 2>&1
+		if [ "$Delete_Failed" = "yes" -a "$NZBPP_DIRECTORY" != "$ConfigDir" -a -d "$NZBPP_DIRECTORY" -a ! -d "$NZBPP_DIRECTORY/.git" ]; then
 			cd ..
-			rmdir $NZBPP_DIRECTORY
-		elif [ "$NZBPP_DIRECTORY" != "$ConfigDir" -a "$Failed_Directory" != "" -a -d "$NZBPP_DIRECTORY" ]; then
-			cd $NZBPP_DIRECTORY
+			rm -rf $NZBPP_DIRECTORY >/dev/null 2>&1
+		elif [ "$NZBPP_DIRECTORY" != "$ConfigDir" -a "$Failed_Directory" != "" -a -d "$NZBPP_DIRECTORY" -a ! -d "$NZBPP_DIRECTORY/.git" ]; then
+			cd ..
 			mkdir $Failed_Directory
 			mkdir $Failed_Directory/$NZBPP_CATEGORY
-			mv * $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
-			cd ..
-			rmdir $NZBPP_DIRECTORY
+			mv $NZBPP_DIRECTORY $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
     			NZBPP_DIRECTORY=$Failed_Directory
     			cd $NZBPP_DIRECTORY
 		fi
