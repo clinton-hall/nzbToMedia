@@ -89,9 +89,9 @@ def process(dirName, nzbName=None, status=0):
             Logger.error("Unable to open URL: %s", str(e))
             return 1 # failure
 
-        result = json.load(urlObj)
+        result = urlObj.readlines()
         Logger.info("HeaPhones returned %s", result)
-        if result == "OK":
+        if result[0] == "OK":
             Logger.info("%s started on HeadPhones for %s", command, nzbName)
         else:
             Logger.error("%s has NOT started on HeadPhones for %s. Exiting", command, nzbName)
