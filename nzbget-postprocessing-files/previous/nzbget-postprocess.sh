@@ -1,12 +1,13 @@
 #!/bin/sh 
-#
-# This file if part of nzbget
+# -*- coding: cp1252 -*-
 #
 # Example postprocessing script for NZBGet
 #
 # Copyright (C) 2008 Peter Roubos <peterroubos@hotmail.com>
 # Copyright (C) 2008 Otmar Werner
-# Copyright (C) 2008-2013 Andrey Prygunkov <hugbug@users.sourceforge.net>
+# Copyright (C) 2008-2012 Andrei Prygunkov <hugbug@users.sourceforge.net>
+# Copyright (C) 2012 Antoine Bertin <diaoulael@gmail.com>
+# Copyright (C) 2012 J�rgen Seif <thor78@gmx.at>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -20,25 +21,45 @@
 # 
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, write to the Free Software
-# Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+# Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
 #
 #
 
 #######################    Usage instructions     #######################
-# o  Script will cleanup, join ts-files and rename img-files to iso.
+# o  Script will unrar downloaded rar files, join ts-files and rename img-files
+#    to iso.
 #
 # o  To use this script with nzbget set the option "PostProcess" in
 #    nzbget configuration file to point to this script file. E.g.:
 #        PostProcess=/home/user/nzbget/nzbget-postprocess.sh
 #
 # o  The script needs a configuration file. An example configuration file
-#    is provided in file "nzbget-postprocess.conf". Put the configuration file 
-#    into the directory where nzbget's configuration file (nzbget.conf) is located.
-#    Then edit the configuration file in any text editor to adjust the settings.
+#    is provided in file "postprocess-example.conf". Put the configuration file 
+#    into the directory where nzbget's configuration file (nzbget.conf) or where
+#    this script itself is located. Then edit the configuration file in any
+#    text editor to adjust the settings.
 #
-# o  You can also edit the script's configuration via web-interface.
+# o  You can also edit the script's configuration via web-interface (requires
+#    NZBGetWeb 1.4 or later). Set the options "PostProcessConfigFile" and 
+#    "PostProcessConfigTemplate" to point to "postprocess-example.conf"
+#    (including full path). The both options are under the section 
+#    "CONFIGURATION OF POSTPROCESSING-SCRIPT" in NZBGetWeb.
 #
-# o  There are few options, which can be ajdusted for each nzb-file individually.
+# o  There are few options, which can be ajdusted for each nzb-file 
+#    individually. To view/edit them in web-interface click on a spanner icon
+#    near the name of nzb-file.
+#
+# o  The script supports the feature called "delayed par-check".
+#    That means it can try to unpack downloaded files without par-checking
+#    them fisrt. Only if unpack fails, the script schedules par-check,
+#    then unpacks again.
+#    To use delayed par-check set following options in nzbget configuration file:
+#        ParCheck=no
+#        ParRepair=yes
+#        LoadPars=one (or) LoadPars=all
+#
+# o  If you want to par-check/repair all files before trying to unpack them,
+#    set option "ParCheck=yes".
 #
 ####################### End of Usage instructions #######################
 
@@ -46,23 +67,23 @@
 # NZBGet passes following arguments to postprocess-programm as environment
 # variables:
 #  NZBPP_DIRECTORY    - path to destination dir for downloaded files;
-#  NZBPP_NZBNAME      - user-friendly name of processed nzb-file as it is displayed
-#                       by the program. The file path and extension are removed.
-#                       If download was renamed, this parameter reflects the new name;
-#  NZBPP_NZBFILENAME  - name of processed nzb-file. It includes file extension and also
-#                       may include full path;
-#  NZBPP_CATEGORY     - category assigned to nzb-file (can be empty string);
+#  NZBPP_NZBFILENAME  - name of processed nzb-file;
+#  NZBPP_PARFILENAME  - name of par-file or empty string (if no collections were 
+#                       found);
 #  NZBPP_PARSTATUS    - result of par-check:
-#                       0 = not checked: par-check is disabled or nzb-file does
+#                       0 = not checked: par-check disabled or nzb-file does
 #                           not contain any par-files;
 #                       1 = checked and failed to repair;
 #                       2 = checked and successfully repaired;
-#                       3 = checked and can be repaired but repair is disabled.
-#  NZBPP_UNPACKSTATUS - result of unpack:
-#                       0 = unpack is disabled or was skipped due to nzb-file
-#                           properties or due to errors during par-check;
-#                       1 = unpack failed;
-#                       2 = unpack successful.
+#                       3 = checked and can be repaired but repair is disabled;
+#  NZBPP_NZBCOMPLETED - state of nzb-job:
+#                       0 = there are more collections in this nzb-file queued;
+#                       1 = this was the last collection in nzb-file;
+#  NZBPP_PARFAILED    - indication of failed par-jobs for current nzb-file:
+#                       0 = no failed par-jobs;
+#                       1 = current par-job or any of the previous par-jobs for
+#                           the same nzb-files failed;
+#  NZBPP_CATEGORY     - category assigned to nzb-file (can be empty string).
 
 
 # Name of script's configuration file
@@ -114,57 +135,6 @@ nzbToMedia() {
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a $tmplog; fi
-		fi
-	fi
-	if [ "$NZBPP_CATEGORY" = "$HeadPhonesCategory" ]; then
-		if [ "$HeadPhones" = "yes" -a -e "$NzbToHeadPhones" ]; then
-			script=$NzbToHeadPhones
-			# Call HeadPhones' postprocessing script
-			echo "[INFO] Post-Process: Running HeadPhones' postprocessing script" | tee -a $tmplog
-			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: HeadPhones-Script-Path=$NzbToHeadPhones" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
-			fi
-			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
-		else
-			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')" | tee -a $tmplog; fi
-			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist" | tee -a $tmplog; fi
-		fi
-	fi
-	if [ "$NZBPP_CATEGORY" = "$MylarCategory" ]; then
-		if [ "$Mylar" = "yes" -a -e "$NzbToMylar" ]; then
-			script=$NzbToMylar
-			# Call Mylar's postprocessing script
-			echo "[INFO] Post-Process: Running Mylar's postprocessing script" | tee -a $tmplog
-			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Mylar-Script-Path=$NzbToMylar" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
-			fi
-			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
-		else
-			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')" | tee -a $tmplog; fi
-			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist" | tee -a $tmplog; fi
-		fi
-	fi
-	if [ "$NZBPP_CATEGORY" = "$GamezCategory" ]; then
-		if [ "$Gamez" = "yes" -a -e "$NzbToGamez" ]; then
-			script=$NzbToGamez
-			# Call Gamez's postprocessing script
-			echo "[INFO] Post-Process: Running Gamez's postprocessing script" | tee -a $tmplog
-			if [ "$Debug" = "yes" ]; then
-				echo "[DETAIL] Post-Process: Gamez-Script-Path=$NzbToGamez" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV1=$NZBPP_DIRECTORY" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
-				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
-			fi
-			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
-		else
-			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')" | tee -a $tmplog; fi
-			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist" | tee -a $tmplog; fi
 		fi
 	fi
 	if [ "$NZBPP_CATEGORY" = "$CustomCategory" ]; then
@@ -228,9 +198,8 @@ do_exit() {
 			cd ..
 			mkdir $Failed_Directory
 			mkdir $Failed_Directory/$NZBPP_CATEGORY
-			mkdir $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME
-			mv $NZBPP_DIRECTORY $Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME >/dev/null 2>&1
-    			NZBPP_DIRECTORY=$Failed_Directory/$NZBPP_CATEGORY/$NZBPP_NZBNAME
+			mv $NZBPP_DIRECTORY $Failed_Directory/$NZBPP_CATEGORY >/dev/null 2>&1
+    			NZBPP_DIRECTORY=$Failed_Directory
     			cd $NZBPP_DIRECTORY
 		fi
 		nzbStatus=1 
@@ -277,14 +246,10 @@ do_exit() {
 	exit $1
 }
 
-# Check if the script is called from nzbget 10.0 or later
+# Check if the script is called from nzbget
 if [ "$NZBPP_DIRECTORY" = "" -o "$NZBOP_CONFIGFILE" = "" ]; then
-	echo "*** NZBGet post-processing script ***" 
-	echo "This script is supposed to be called from nzbget (10.0 or later)." 
-	exit $POSTPROCESS_ERROR
-fi
-if [ "$NZBOP_UNPACK" = "" ]; then
-	echo "[ERROR] This script requires nzbget version at least 10.0-testing-r555 or 10.0-stable." 
+	echo "*** NZBGet post-process script ***"
+	echo "This script is supposed to be called from nzbget (0.7.0 or later)."
 	exit $POSTPROCESS_ERROR
 fi 
 
@@ -292,19 +257,22 @@ fi
 # (for current nzb-file) via web-interface or via command line with 
 # "nzbget -E G O PostProcess=no <ID>"
 if [ "$NZBPR_PostProcess" = "no" ]; then
-	echo "[WARNING] Post-Process: Post-processing disabled for this nzb-file, exiting" 
+	echo "[WARNING] Post-Process: Postprocessing disabled for this nzb-file, exiting"
 	exit $POSTPROCESS_NONE
 fi
 
 ConfigDir="${NZBOP_CONFIGFILE%/*}"
 tmplog="$ConfigDir/$tmp.log" 
 
-echo "[INFO] Post-Process: Post-processing script successfully started" | tee $tmplog
-cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" | tee $tmplog && do_exit $POSTPROCESS_ERROR)
+echo "[INFO] Post-Process: Post-process script successfully started" | tee $tmplog
 
 # Determine the location of configuration file (it must be stored in
-# the directory with nzbget.conf).
+# the directory with nzbget.conf or in this script's directory).
 ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
+if [ ! -f "$ScriptConfigFile" ]; then
+	ConfigDir="${0%/*}"
+	ScriptConfigFile="$ConfigDir/$SCRIPT_CONFIG_FILE"
+fi
 if [ ! -f "$ScriptConfigFile" ]; then
 	echo "[ERROR] Post-Process: Configuration file $ScriptConfigFile not found, exiting" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
@@ -321,51 +289,36 @@ if [ "$NZBOP_ALLOWREPROCESS" = "yes" ]; then
 	BadConfig=1
 fi 
 
-if [ "$NZBOP_UNPACK" != "yes" ]; then
-	echo "[ERROR] Post-Process: Please enable option \"Unpack\" in nzbget configuration file" | tee -a $tmplog
+if [ "$NZBOP_LOADPARS" = "none" ]; then
+	echo "[ERROR] Post-Process: Please set option \"LoadPars\" to \"One\" or \"All\" in nzbget configuration file" | tee -a $tmplog
+	BadConfig=1
+fi
+
+if [ "$NZBOP_PARREPAIR" = "no" ]; then
+	echo "[ERROR] Post-Process: Please set option \"ParRepair\" to \"Yes\" in nzbget configuration file" | tee -a $tmplog
 	BadConfig=1
 fi
 
 if [ "$BadConfig" -eq 1 ]; then
-	echo "[ERROR] Post-Process: Exiting due to incompatible nzbget configuration" | tee -a $tmplog
+	echo "[ERROR] Post-Process: Exiting because of not compatible nzbget configuration" | tee -a $tmplog
 	exit $POSTPROCESS_ERROR
 fi 
 
+# Check if all collections in nzb-file were downloaded
+if [ ! "$NZBPP_NZBCOMPLETED" -eq 1 ]; then
+	echo "[INFO] Post-Process: Not the last collection in nzb-file, exiting" | tee -a $tmplog
+	exit $POSTPROCESS_SUCCESS
+fi 
+
 # Check par status
-if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
-	echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a $tmplog
-	do_exit $POSTPROCESS_NONE
-fi
-if [ "$NZBPP_PARSTATUS" -eq 1 ]; then
-	echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a $tmplog
-	do_exit $POSTPROCESS_NONE
+if [ "$NZBPP_PARSTATUS" -eq 1 -o "$NZBPP_PARSTATUS" -eq 3 -o "$NZBPP_PARFAILED" -eq 1 ]; then
+	if [ "$NZBPP_PARSTATUS" -eq 3 ]; then
+		echo "[WARNING] Post-Process: Par-check successful, but Par-repair disabled, exiting" | tee -a $tmplog
+	else
+		echo "[WARNING] Post-Process: Par-check failed, exiting" | tee -a $tmplog
+	fi
+	do_exit $POSTPROCESS_ERROR
 fi 
-
-# Check unpack status
-if [ "$NZBPP_UNPACKSTATUS" -eq 1 ]; then
-	echo "[WARNING] Post-Process: Unpack failed, exiting" | tee -a $tmplog
-	do_exit $POSTPROCESS_NONE
-fi 
-if [ "$NZBPP_UNPACKSTATUS" -eq 0 -a "$NZBPP_PARSTATUS" -ne 2 ]; then
-    # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
-
-	if (ls *.rar *.7z *.7z.??? >/dev/null 2>&1); then
-		echo "[WARNING] Post-Process: Archive files exist but unpack skipped, exiting" | tee -a $tmplog
-		exit $POSTPROCESS_NONE
-	fi
-
-	if (ls *.par2 >/dev/null 2>&1); then
-		echo "[WARNING] Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting" | tee -a $tmplog
-		exit $POSTPROCESS_NONE
-	fi
-
-	if [ -f "_brokenlog.txt" ]; then
-		echo "[WARNING] Post-Process: _brokenlog.txt exists, download is probably damaged, exiting" | tee -a $tmplog
-		exit $POSTPROCESS_NONE
-	fi
-
-	echo "[INFO] Post-Process: Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful" | tee -a $tmplog
-fi
 
 # Check if destination directory exists (important for reprocessing of history items)
 if [ ! -d "$NZBPP_DIRECTORY" ]; then
@@ -373,7 +326,108 @@ if [ ! -d "$NZBPP_DIRECTORY" ]; then
 	do_exit $POSTPROCESS_ERROR
 fi
 
+cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" | tee $tmplog && do_exit $POSTPROCESS_ERROR)
+
+# If not just repaired and file "_brokenlog.txt" exists, the collection is damaged
+# exiting with exiting code $POSTPROCESS_PARCHECK_ALL to request par-repair
+if [ ! "$NZBPP_PARSTATUS" -eq 2 ]; then
+	if [ -f "_brokenlog.txt" ]; then
+		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
+			echo "[INFO] Post-Process: Brokenlog found, requesting par-repair" | tee -a $tmplog
+			exit $POSTPROCESS_PARCHECK_ALL
+		fi
+	fi
+fi
+
 # All checks done, now processing the files
+
+# Flag indicates that something was unrared
+Unrared=0
+   
+# Unrar the files (if any) to the temporary directory, if there are no rar files this will do nothing
+if (ls *.rar >/dev/null 2>&1); then
+
+	# Check if unrar exists
+	$UnrarCmd >/dev/null 2>&1
+	if [ "$?" -eq 127 ]; then
+		echo "[ERROR] Post-Process: Unrar not found. Set the path to unrar in script's configuration" | tee -a $tmplog
+		do_exit $POSTPROCESS_ERROR
+	fi
+
+	# Make a temporary directory to store the unrarred files
+	ExtractedDirExists=0
+	if [ -d extracted ]; then
+		ExtractedDirExists=1
+	else
+		mkdir extracted
+	fi
+	
+	echo "[INFO] Post-Process: Unraring" | tee -a $tmplog
+	rarpasswordparam=""
+	if [ "$NZBPR_Password" != "" ]; then
+		rarpasswordparam="-p$NZBPR_Password"
+	fi
+
+	$UnrarCmd x -y -p- "$rarpasswordparam" -o+ "*.rar"  ./extracted/
+	if [ "$?" -ne 0 ]; then
+		echo "[ERROR] Post-Process: Unrar failed" | tee -a $tmplog
+		if [ "$ExtractedDirExists" -eq 0 ]; then
+			rm -R extracted
+		fi
+		# for delayed par-check/-repair at least one par-file must be already downloaded
+		if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
+			echo "[INFO] Post-Process: Requesting par-repair" | tee -a $tmplog
+			exit $POSTPROCESS_PARCHECK_ALL
+		fi
+		do_exit $POSTPROCESS_ERROR
+	fi
+	Unrared=1
+   
+	# Remove the rar files
+	if [ "$DeleteRarFiles" = "yes" ]; then
+		echo "[INFO] Post-Process: Deleting rar-files" | tee -a $tmplog
+		rm *.r[0-9][0-9] >/dev/null 2>&1
+		rm *.rar >/dev/null 2>&1
+		rm *.s[0-9][0-9] >/dev/null 2>&1
+	fi
+	
+	# Go to the temp directory and try to unrar again.  
+	# If there are any rars inside the extracted rars then these will no also be unrarred
+	cd extracted
+	if (ls *.rar >/dev/null 2>&1); then
+		echo "[INFO] Post-Process: Unraring (second pass)" | tee -a $tmplog
+		$UnrarCmd x -y -p- -o+ "*.rar"
+
+		if [ "$?" -ne 0 ]; then
+			echo "[INFO] Post-Process: Unrar (second pass) failed" | tee -a $tmplog
+			do_exit $POSTPROCESS_ERROR
+		fi
+
+		# Delete the Rar files
+		if [ "$DeleteRarFiles" = "yes" ]; then
+			echo "[INFO] Post-Process: Deleting rar-files (second pass)" | tee -a $tmplog
+			rm *.r[0-9][0-9] >/dev/null 2>&1
+			rm *.rar >/dev/null 2>&1
+			rm *.s[0-9][0-9] >/dev/null 2>&1
+		fi
+	fi
+	
+	# Move everything back to the Download folder
+	mv * ..
+	cd ..
+	rmdir extracted
+fi
+
+# If there were nothing to unrar and the download was not par-checked,
+# we don't know if it's OK. To be sure we force par-check.
+# In particular that helps with downloads containing renamed rar-files.
+# The par-repair will rename files to correct names, then we can unpack.
+if [ "$Unrared" -eq 0 -a "$NZBPP_PARSTATUS" -eq 0 ]; then
+    if (ls *.[pP][aA][rR]2 >/dev/null 2>&1); then
+        echo "[INFO] Post-Process: No rar-files found, requesting par-check" | tee -a $tmplog
+        exit $POSTPROCESS_PARCHECK_ALL
+    fi
+fi
 
 # If download contains only nzb-files move them into nzb-directory
 # for further download
@@ -395,31 +449,80 @@ chmod -R a+rw .
 for word in $FileCleanUp ; do rm $word >/dev/null 2>&1 ; done
 # Removed by default
 rm _brokenlog.txt >/dev/null 2>&1
-rm *.[pP][aA][rR]2 >/dev/null 2>&1
+if [ "$Unrared" -eq 1 ]; then
+	# Delete par2-file only if there were files for unpacking.
+	rm *.[pP][aA][rR]2 >/dev/null 2>&1
+fi
 
 if [ "$JoinTS" = "yes" ]; then
 	# Join any split .ts files if they are named xxxx.0000.ts xxxx.0001.ts
 	# They will be joined together to a file called xxxx.0001.ts
 	if (ls *.ts >/dev/null 2>&1); then
-        	echo "[INFO] Post-Process: Joining ts-files" | tee -a $tmplog
+	    echo "[INFO] Post-Process: Joining ts-files" | tee -a $tmplog
 		tsname=`find . -name "*0001.ts" |awk -F/ '{print $NF}'`
 		cat *0???.ts > ./$tsname
-
-		# Remove all the split .ts files
-		echo "[INFO] Post-Process: Deleting source ts-files" | tee -a $tmplog
-		rm *0???.ts >/dev/null 2>&1
-	fi
+	fi   
+   
+	# Remove all the split .ts files
+    echo "[INFO] Post-Process: Deleting source ts-files" | tee -a $tmplog
+	rm *0???.ts >/dev/null 2>&1
 fi
 
 if [ "$RenameIMG" = "yes" ]; then
 	# Rename img file to iso
 	# It will be renamed to .img.iso so you can see that it has been renamed
 	if (ls *.img >/dev/null 2>&1); then
-		echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a $tmplog
+	    echo "[INFO] Post-Process: Renaming img-files to iso" | tee -a $tmplog
 		imgname=`find . -name "*.img" |awk -F/ '{print $NF}'`
 		mv $imgname $imgname.iso
-	fi
+	fi   
 fi
+
+############################
+### BEGIN CUSTOMIZATIONS ###
+############################
+
+# Move categories to /share/your_directory and remove download destination directory
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$SickBeardCategory" -a -d "$TvDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving TV shows to $TvDownloadDir" | tee -a $tmplog
+        mv $NZBPP_DIRECTORY $TvDownloadDir
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $TvDownloadDir" | tee -a $tmplog
+           exit $POSTPROCESS_ERROR
+        else
+           NZBPP_DIRECTORY=$TvDownloadDir
+	   cd "$NZBPP_DIRECTORY"
+        fi
+fi
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" -a -d "$MoviesDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving Movies to $MoviesDownloadDir" | tee -a $tmplog
+        mv $NZBPP_DIRECTORY $MoviesDownloadDir 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $MoviesDownloadDir" | tee -a $tmplog
+           exit $POSTPROCESS_ERROR
+        else
+           NZBPP_DIRECTORY=$MoviesDownloadDir
+	   cd "$NZBPP_DIRECTORY"
+        fi
+fi
+# Test for category and ensure the passed directory exists as a directory.
+if [ "$NZBPP_CATEGORY" = "$CustomCategory" -a -d "$CustomDownloadDir" ]; then
+        echo "[INFO] Post-Process: Moving $CustomCategory to $CustomDownloadDir" | tee -a $tmplog
+        mv $NZBPP_DIRECTORY $CustomDownloadDir 
+        if [ "$?" -ne 0 ]; then
+           echo "[ERROR] Post-Process: Moving to $CustomDownloadDir" | tee -a $tmplog
+           exit $POSTPROCESS_ERROR
+        else
+           NZBPP_DIRECTORY=$CustomDownloadDir
+	   cd "$NZBPP_DIRECTORY"
+        fi
+fi
+
+##########################
+### END CUSTOMIZATIONS ###
+##########################
 
 # Check if destination directory was set in postprocessing parameters
 # (for current nzb-file) via web-interface or via command line with 
