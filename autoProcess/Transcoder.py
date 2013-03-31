@@ -15,7 +15,7 @@ def Transcode_directory(dirName):
             Logger.info("Cannot transcode files in folder %s", dirName)
             return 1 # failure
     else:
-        if call(['which', 'ffmpeg']):
+        if call(['which', 'ffmpeg']) != 0:
             res = call([os.path.join(os.path.dirname(sys.argv[0]),'getffmpeg.sh')])
             if res or call(['which', 'ffmpeg']): # did not install or ffmpeg still not found.
                 Logger.error("Failed to install ffmpeg. Please install manually") 
@@ -23,6 +23,8 @@ def Transcode_directory(dirName):
                 return 1 # failure
             else:
                 ffmpeg = 'ffmpeg'
+        else:
+            ffmpeg = 'ffmpeg'
     
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
