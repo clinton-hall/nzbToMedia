@@ -39,6 +39,7 @@ def Transcode_directory(dirName):
     ignoreExtensions = (config.get("Transcoder", "ignoreExtensions")).split(',')
     outputVideoExtension = config.get("Transcoder", "outputVideoExtension")
     outputVideoCodec = config.get("Transcoder", "outputVideoCodec")
+    outputVideoPreset = config.get("Transcoder", "outputVideoPreset")
     outputVideoFramerate = config.get("Transcoder", "outputVideoFramerate")
     outputVideoBitrate = config.get("Transcoder", "outputVideoBitrate")
     outputAudioCodec = config.get("Transcoder", "outputAudioCodec")
@@ -62,6 +63,9 @@ def Transcode_directory(dirName):
                 if outputVideoCodec:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
+                    if outputVideoCodec == 'libx264' and outputVideoPreset:
+                        command.append('-preset')
+                        command.append(outputVideoPreset)
                 if outputVideoFramerate:
                     command.append('-r')
                     command.append(outputVideoFramerate)
