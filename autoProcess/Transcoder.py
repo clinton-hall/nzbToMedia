@@ -61,13 +61,16 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
         
-                command = [ffmpeg, '-i', filePath, '-map', '0']
+                command = [ffmpeg, '-i', filePath, '-map', '0', '-c:s', 'copy']
                 if outputVideoCodec:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
                     if outputVideoCodec == 'libx264' and outputVideoPreset:
                         command.append('-preset')
                         command.append(outputVideoPreset)
+                else:
+                    command.append('-c:v')
+                    command.append('copy')
                 if outputVideoFramerate:
                     command.append('-r')
                     command.append(outputVideoFramerate)
@@ -77,6 +80,9 @@ def Transcode_directory(dirName):
                 if outputAudioCodec:
                     command.append('-c:a')
                     command.append(outputAudioCodec)
+                else:
+                    command.append('-c:a')
+                    command.append('copy')
                 if outputAudioBitrate:
                     command.append('-b:a')
                     command.append(outputAudioBitrate)
