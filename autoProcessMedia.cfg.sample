@@ -110,6 +110,7 @@ outputVideoFramerate = 24
 outputVideoBitrate = 800k
 outputAudioCodec = libmp3lame
 outputAudioBitrate = 128k
+outputSubtitleCodec = 
 
 # Logging configuration
 [loggers]
