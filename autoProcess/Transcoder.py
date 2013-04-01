@@ -61,7 +61,7 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
         
-                command = [ffmpeg, '-i', filePath]
+                command = [ffmpeg, '-i', filePath, '-map', '0']
                 if outputVideoCodec:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
