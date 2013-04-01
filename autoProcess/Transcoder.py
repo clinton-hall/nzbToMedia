@@ -17,7 +17,7 @@ def Transcode_directory(dirName):
     else:
         if call(['which', 'ffmpeg']) != 0:
             res = call([os.path.join(os.path.dirname(sys.argv[0]),'getffmpeg.sh')])
-            if res or call(['which', 'ffmpeg']): # did not install or ffmpeg still not found.
+            if res or call(['which', 'ffmpeg']) != 0: # did not install or ffmpeg still not found.
                 Logger.error("Failed to install ffmpeg. Please install manually") 
                 Logger.info("Cannot transcode files in folder %s", dirName)
                 return 1 # failure
