@@ -33,6 +33,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
     video2 = int(0)
     foundFile = int(0)
     deleteOriginal = int(0)
+    numCompressed = int(0)
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
@@ -101,7 +102,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
                     Logger.error("MAIN: Failed to link file: %s", file)
                     Logger.debug(e)
             elif fileExtension in compressedContainer:
-                if re.search(r'\d+', os.path.splitext(fileName)[1]): # find part numbers in second "extension" from right
+                numCompressed = numCompressed + 1
+                if re.search(r'\d+', os.path.splitext(fileName)[1]) and numCompressed > 1: # find part numbers in second "extension" from right, if we have more than 1 compressed file.
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
                     if part == 1: # we only want to extract the primary part.
                         Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
