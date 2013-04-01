@@ -2,3 +2,5 @@ autoProcessMedia.cfg
 
 *.pyc
 *.pyo
+
+postprocess.log
