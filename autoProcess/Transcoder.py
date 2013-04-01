@@ -39,14 +39,17 @@ def Transcode_directory(dirName):
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     duplicate = int(config.get("Transcoder", "duplicate"))
     ignoreExtensions = (config.get("Transcoder", "ignoreExtensions")).split(',')
-    outputVideoExtension = config.get("Transcoder", "outputVideoExtension")
-    outputVideoCodec = config.get("Transcoder", "outputVideoCodec")
-    outputVideoPreset = config.get("Transcoder", "outputVideoPreset")
-    outputVideoFramerate = config.get("Transcoder", "outputVideoFramerate")
-    outputVideoBitrate = config.get("Transcoder", "outputVideoBitrate")
-    outputAudioCodec = config.get("Transcoder", "outputAudioCodec")
-    outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate")
-    outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec")
+    outputVideoExtension = config.get("Transcoder", "outputVideoExtension").strip()
+    outputVideoCodec = config.get("Transcoder", "outputVideoCodec").strip()
+    outputVideoPreset = config.get("Transcoder", "outputVideoPreset").strip()
+    outputVideoFramerate = config.get("Transcoder", "outputVideoFramerate").strip()
+    outputVideoBitrate = config.get("Transcoder", "outputVideoBitrate").strip()
+    outputAudioCodec = config.get("Transcoder", "outputAudioCodec").strip()
+    outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate").strip()
+    outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec").strip()
+
+    map(lambda ext: ext.strip(), mediaContainer)
+    map(lambda ext: ext.strip(), ignoreExtensions)
     
     Logger.info("Checking for files to be transcoded")
     final_result = 0 # initialize as successful
@@ -63,7 +66,7 @@ def Transcode_directory(dirName):
                 newfilePath = os.path.normpath(name + outputVideoExtension)
         
                 command = [ffmpeg, '-i', filePath, '-map', '0']
-                if outputVideoCodec:
+                if len(outputVideoCodec) > 0:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
                     if outputVideoCodec == 'libx264' and outputVideoPreset:
@@ -72,22 +75,22 @@ def Transcode_directory(dirName):
                 else:
                     command.append('-c:v')
                     command.append('copy')
-                if outputVideoFramerate:
+                if len(outputVideoFramerate) > 0:
                     command.append('-r')
                     command.append(outputVideoFramerate)
-                if outputVideoBitrate:
+                if len(outputVideoBitrate) > 0:
                     command.append('-b:v')
                     command.append(outputVideoBitrate)
-                if outputAudioCodec:
+                if len(outputAudioCodec) > 0:
                     command.append('-c:a')
                     command.append(outputAudioCodec)
                 else:
                     command.append('-c:a')
                     command.append('copy')
-                if outputAudioBitrate:
+                if len(outputAudioBitrate) > 0:
                     command.append('-b:a')
                     command.append(outputAudioBitrate)
-                if outputSubtitleCodec:
+                if len(outputSubtitleCodec) > 0:
                     command.append('-c:s')
                     command.append(outputSubtitleCodec)
                 else:
