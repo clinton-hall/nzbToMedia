@@ -105,6 +105,7 @@ duplicate = 1
 ignoreExtensions = .avi,.mkv
 outputVideoExtension = .mp4
 outputVideoCodec = libx264
+outputVideoPreset = medium
 outputVideoFramerate = 24
 outputVideoBitrate = 800k
 outputAudioCodec = libmp3lame
