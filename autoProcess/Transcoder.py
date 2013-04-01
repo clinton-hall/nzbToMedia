@@ -46,6 +46,7 @@ def Transcode_directory(dirName):
     outputVideoBitrate = config.get("Transcoder", "outputVideoBitrate")
     outputAudioCodec = config.get("Transcoder", "outputAudioCodec")
     outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate")
+    outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec")
     
     Logger.info("Checking for files to be transcoded")
     final_result = 0 # initialize as successful
@@ -61,7 +62,7 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
         
-                command = [ffmpeg, '-i', filePath, '-map', '0', '-c:s', 'copy']
+                command = [ffmpeg, '-i', filePath, '-map', '0']
                 if outputVideoCodec:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
@@ -86,6 +87,11 @@ def Transcode_directory(dirName):
                 if outputAudioBitrate:
                     command.append('-b:a')
                     command.append(outputAudioBitrate)
+                if outputSubtitleCodec:
+                    command.append('-c:s')
+                    command.append(outputSubtitleCodec)
+                else:
+                    command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
 
                 Logger.debug("Transcoding video %s to %s", filePath, newfilePath)
