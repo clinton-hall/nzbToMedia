@@ -162,5 +162,5 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     result = urlObj.readlines()
     for line in result:
-        Logger.info("%s", line)
+        Logger.info("%s", line.rstrip())
     return 0 # Success

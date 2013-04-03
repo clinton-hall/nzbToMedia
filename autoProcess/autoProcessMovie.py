@@ -54,9 +54,9 @@ def get_imdb(nzbName, dirName):
         Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
         return ""
 
-def get_movie_info(myOpener, baseURL, imdbid):
+def get_movie_info(myOpener, baseURL, imdbid, download_id):
     
-    if not imdbid:
+    if not imdbid and not download_id:
         return ""
     url = baseURL + "movie.list/?status=active"
 
@@ -70,6 +70,16 @@ def get_movie_info(myOpener, baseURL, imdbid):
 
     movie_id = ""
     result = json.load(urlObj)
+    if not imdbid:
+        released = [item for item in result["movies"] if len(item["releases"]) > 0 and len(item["releases"]["info"]) > 0 and len(item["releases"]["info"]["download_id") > 0] # doing it in this order should stop exceeding list dimensions?
+        imdbid_list = [item["library"]["identifier"] for item in released if item["releases"]["info"]["download_id"] == download_id]
+        unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
+        if len(unique_imdbid_list) == 1: # we found it.
+            imdbid = unique_imdbid_list[0]
+            Logger.info("Found movie id %s in database via download_id %s", imdbid, download_id)
+        else:
+            return ""
+
     movieid = [item["id"] for item in result["movies"]]
     library = [item["library"]["identifier"] for item in result["movies"]]
     for index in range(len(movieid)):
@@ -210,7 +220,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
-    movie_id = get_movie_info(myOpener, baseURL, imdbid) # get the CPS database movie id this movie.
+    movie_id = get_movie_info(myOpener, baseURL, imdbid, download_id) # get the CPS database movie id this movie.
    
     initial_status, clientAgent, download_id, initial_release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id)
     

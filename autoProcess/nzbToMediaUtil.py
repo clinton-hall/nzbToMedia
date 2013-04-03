@@ -230,7 +230,7 @@ def parse_utorrent(args):
     except:
         inputID = ''
 
-    return inputDirectory, inputName, inputCategory, inputHash, inputID]
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
 def parse_deluge(args):
