@@ -31,7 +31,8 @@ if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("Script triggered from SABnzbd, starting autoProcessMovie...")
-    result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[7])
+    clientAgent = "sabnzbd"
+    result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent)
 # NZBGet
 elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # NZBGet argv:
@@ -39,8 +40,10 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # 2  The original name of the NZB file
     # 3  The status of the download: 0 == successful
     Logger.info("Script triggered from NZBGet, starting autoProcessMovie...")
-    result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[3])
+    clientAgent = "nzbget"
+    result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[3], clientAgent)
 else:
     Logger.warn("Invalid number of arguments received from client.")
     Logger.info("Running autoProcessMovie as a manual run...")
-    result = autoProcessMovie.process('Manual Run', 'Manual Run', 0)
+    clientAgent = "manual"
+    result = autoProcessMovie.process('Manual Run', 'Manual Run', 0, clientAgent)

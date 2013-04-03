@@ -50,6 +50,7 @@ if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("MAIN: Script triggered from SABnzbd")
+    clientAgent = "sabnzbd"
     nzbDir, inputName, status, inputCategory = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5])
 # NZBGet
 elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
@@ -59,15 +60,17 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # 3  The status of the download: 0 == successful
     # 4  User-defined category
     Logger.info("MAIN: Script triggered from NZBGet")
+    clientAgent = "nzbget"
     nzbDir, inputName, status, inputCategory = (sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
 else: # only CPS supports this manual run for now.
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
+    clientAgent = "manual"
     nzbDir, inputName, status, inputCategory = ('Manual Run', 'Manual Run', 0, cpsCategory)
 
 if inputCategory == cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-    result = autoProcessMovie.process(nzbDir, inputName, status)
+    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent)
 elif inputCategory == sbCategory:
     Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
     result = autoProcessTV.processEpisode(nzbDir, inputName, status)

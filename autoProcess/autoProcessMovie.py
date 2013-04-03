@@ -58,7 +58,7 @@ def get_movie_info(myOpener, baseURL, imdbid):
     
     if not imdbid:
         return ""
-    url = baseURL + "movie.list"
+    url = baseURL + "movie.list/?status=active"
 
     Logger.debug("Opening URL: %s", url)
 
@@ -77,31 +77,87 @@ def get_movie_info(myOpener, baseURL, imdbid):
             movie_id = str(movieid[index])
             Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
             break
+
     return movie_id
 
-def get_status(myOpener, baseURL, movie_id):
+def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
     
     if not movie_id:
-        return ""
+        return "", clientAgent, "none", "none"
     url = baseURL + "movie.get/?id=" + str(movie_id)
-
+    Logger.debug("Looking for status of movie: %s - with release sent to clientAgent: %s and download_id: %s", movie_id, clientAgent, download_id)
     Logger.debug("Opening URL: %s", url)
 
     try:
         urlObj = myOpener.openit(url)
     except IOError, e:
         Logger.error("Unable to open URL: %s", str(e))
-        return ""
+        return "", clientAgent, "none", "none"
     result = json.load(urlObj)
     try:
         movie_status = result["movie"]["status"]["identifier"]
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
-        return movie_status
     except e: # index out of range/doesn't exist?
         Logger.error("Could not find a status for this movie due to: %s", str(e))
-        return ""
+        movie_status = ""
+    try:
+        release_status = "none"
+        if download_id != "" and download_id != "none": # we have the download id from the downloader. Let's see if it's valid.
+            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id]
+            if len(release_statuslist) == 1: # we have found a release by this id. :)
+                release_status = release_statuslist[0]
+                clientAgent = clientAgentlist[0]
+                Logger.debug("Found a single release with download_id: %s for clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
+                return movie_status, clientAgent, download_id, release_status
+            elif len(release_statuslist) > 1: # we have found many releases by this id. Check for snatched status
+                clients = [item in clientAgentlist if item.lower() == clientAgent.lower()]
+                clientAgent = clients[0]
+                if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
+                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
+                    Logger.debug("Found a single release for download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
+                else: # doesn't matter. only really used as secondary confirmation of movie status change. Let's continue.                
+                    Logger.debug("Found several releases for download_id: %s and clientAgent: %s. Cannot determine the release status", download_id, clientAgent)
+                return movie_status, clientAgent, download_id, release_status
+            else: # clearly the id we were passed doesn't match the database. Reset it and search all snatched releases.... hence the next if (not elif ;) )
+                download_id = "" 
+        if download_id == "none": # if we couldn't find this initially, there is no need to check next time around.
+            return movie_status, clientAgent, download_id, release_status
+        elif download_id == "": # in case we didn't get this from the downloader.
+            download_idlist = [item["info"]["download_id"] for item in result["movie"]["releases"] if item["status"]["identifier"] == "snatched"]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if item["status"]["identifier"] == "snatched"]
+            if len(clientAgentlist) == 1:
+                if clientAgent == "manual":
+                    clientAgent = clientAgentlist[0]
+                    download_id = download_idlist[0]
+                    release_status = "snatched"
+                elif clientAgent.lower() == clientAgentlist[0].lower():
+                    download_id = download_idlist[0]
+                    clientAgent = clientAgentlist[0]
+                    release_status = "snatched"
+                Logger.debug("Found a single download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status) 
+            elif clientAgent == "manual":
+                download_id = "none"
+                release_status = "none"
+            else:
+                index = [index for index in range(len(clientAgentlist)) if clientAgentlist[index] == clientAgent]            
+                if len(index) == 1:
+                    download_id = download_idlist[index[0]]
+                    release_status = "snatched"
+                    Logger.debug("Found download_id: %s for clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
+                else:
+                    Logger.info("Found a total of %s releases snatched for clientAgent: %s. Cannot determine download_id. Will perform a renamenr scan to try and process.", len(index), clientAgent)                
+                    download_id = "none"
+                    release_status = "none"
+        else: #something went wrong here.... we should never get to this.
+            Logger.info("Could not find a download_id in the database for this movie")
+            release_status = "none"
+    except: # index out of range/doesn't exist?
+        Logger.error("Could not find a download_id for this movie")
+        download_id = "none"
+    return movie_status, clientAgent, download_id, release_status
 
-def process(dirName, nzbName=None, status=0):
+def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id = ""):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -155,8 +211,8 @@ def process(dirName, nzbName=None, status=0):
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
     movie_id = get_movie_info(myOpener, baseURL, imdbid) # get the CPS database movie id this movie.
-    
-    initial_status = get_status(myOpener, baseURL, movie_id)
+   
+    initial_status, clientAgent, download_id, initial_release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id)
     
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -172,6 +228,8 @@ def process(dirName, nzbName=None, status=0):
             command = "manage.update"
         else:
             command = "renamer.scan"
+            if clientAgent != "manual" and download_id != "none":
+                command = command + "/?movie_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
 
         url = baseURL + command
 
@@ -234,9 +292,12 @@ def process(dirName, nzbName=None, status=0):
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     start = datetime.datetime.now()  # set time for timeout
     while (datetime.datetime.now() - start) < datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
-        movie_status = get_status(myOpener, baseURL, movie_id) # get the current status fo this movie.
+        movie_status, clientAgent, download_id, release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id) # get the current status fo this movie.
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
+            return 0 # success
+        if release_status != initial_release_status:  # Something has changed. CPS must have processed this movie.
+            Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
             return 0 # success
         time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
     else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.

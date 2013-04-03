@@ -210,7 +210,7 @@ def iterate_media_files(dirname):
 
 
 def parse_other(args):
-    return os.path.normpath(sys.argv[1]), '', '', ''
+    return os.path.normpath(sys.argv[1]), '', '', '', ''
 
 
 def parse_utorrent(args):
@@ -225,8 +225,12 @@ def parse_utorrent(args):
         inputHash = args[4]
     except:
         inputHash = ''
+    try:
+        inputID = args[4]
+    except:
+        inputID = ''
 
-    return inputDirectory, inputName, inputCategory, inputHash
+    return inputDirectory, inputName, inputCategory, inputHash, inputID]
 
 
 def parse_deluge(args):
@@ -235,7 +239,8 @@ def parse_deluge(args):
     inputName = sys.argv[2]
     inputCategory = ''  # We dont have a category yet
     inputHash = ''
-    return inputDirectory, inputName, inputCategory, inputHash
+    inputID = sys.argv[1]
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
 def parse_transmission(args):
@@ -243,8 +248,9 @@ def parse_transmission(args):
     inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
     inputName = os.getenv('TR_TORRENT_NAME')
     inputCategory = ''  # We dont have a category yet
-    inputHash = ''
-    return inputDirectory, inputName, inputCategory, inputHash
+    inputHash = os.getenv('TR_TORRENT_HASH')
+    inputID = os.getenv('TR_TORRENT_ID')
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
 __ARG_PARSERS__ = {

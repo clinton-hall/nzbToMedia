@@ -25,7 +25,7 @@ from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
 
-def main(inputDirectory, inputName, inputCategory, inputHash):
+def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
@@ -170,7 +170,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash):
 
     if inputCategory == cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-        result = autoProcessMovie.process(outputDestination, inputName, status)
+        result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, inputID)
     elif inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(outputDestination, inputName, status)
@@ -247,9 +247,9 @@ if __name__ == "__main__":
     transcode = int(config.get("Transcoder", "transcode"))
 
     try:
-        inputDirectory, inputName, inputCategory, inputHash = parse_args(clientAgent)
+        inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
     except Exception as e:
         Logger.error("MAIN: There was a problem loading variables: %s", e)
         sys.exit(-1)
 
-    main(inputDirectory, inputName, inputCategory, inputHash)
+    main(inputDirectory, inputName, inputCategory, inputHash, inputID)
