@@ -247,7 +247,7 @@ do_exit() {
 	replaceVarBy "${REPLACEDRESULT}" "<script>" "${script}"
 	Email_Message="${REPLACEDRESULT}"
 	for item in $Email_successful; do
-	if [ "${NZBPP_CATEGORY}" = "$item" -a "$nzbStatus" = 0 ]; then
+	if [ "${NZBPP_CATEGORY}" = "$item" -o "$item" = "all" ] && [ "$nzbStatus" = 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		replaceVarBy "${Email_Subject}" "<status>" "completed"
@@ -261,7 +261,7 @@ do_exit() {
 		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" -o "message-content-type=html" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
 	for item in $Email_failed; do
-	if [ "${NZBPP_CATEGORY}" = "$item" -a "$nzbStatus" != 0 ]; then
+	if [ "${NZBPP_CATEGORY}" = "$item" -o "$item" = "all" ] && [ "$nzbStatus" != 0 ]; then
 		User=""
 		if [ -n "$Email_User" -a -n "$Email_Pass" ]; then User="-xu $Email_User -xp $Email_Pass" ; fi
 		replaceVarBy "${Email_Subject}" "<status>" "failed"
