@@ -70,9 +70,12 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
 
     movie_id = ""
     result = json.load(urlObj)
+    movieid = [item["id"] for item in result["movies"]]
+    library = [item["library"]["identifier"] for item in result["movies"]]
+    releases = [item["releases"] for item in result["movies"]]
     if not imdbid:
-        released = [item for item in result["movies"] if len(item["releases"]) > 0 and len(item["releases"]["info"]) > 0 and len(item["releases"]["info"]["download_id"]) > 0] # doing it in this order should stop exceeding list dimensions?
-        imdbid_list = [item["library"]["identifier"] for item in released if item["releases"]["info"]["download_id"] == download_id]
+        index = [index for index in range(len(movieid)) if len(releases[index]) > 0 and len(releases[index]["info"]) > 0 and len(releases[index]["info"]["download_id"]) > 0] # doing it in this order should stop exceeding list dimensions?
+        imdbid_list = [library[index2] for index2 in index if releases[index2]["info"]["download_id"] == download_id]
         unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
         if len(unique_imdbid_list) == 1: # we found it.
             imdbid = unique_imdbid_list[0]
@@ -80,8 +83,6 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
         else:
             return ""
 
-    movieid = [item["id"] for item in result["movies"]]
-    library = [item["library"]["identifier"] for item in result["movies"]]
     for index in range(len(movieid)):
         if library[index] == imdbid:
             movie_id = str(movieid[index])
@@ -121,7 +122,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
                 Logger.debug("Found a single release with download_id: %s for clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 return movie_status, clientAgent, download_id, release_status
             elif len(release_statuslist) > 1: # we have found many releases by this id. Check for snatched status
-                clients = [item in clientAgentlist if item.lower() == clientAgent.lower()]
+                clients = [item for item in clientAgentlist if item.lower() == clientAgent.lower()]
                 clientAgent = clients[0]
                 if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
                     release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
