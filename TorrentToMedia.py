@@ -170,7 +170,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     if inputCategory == cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-        result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, inputID)
+        result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, inputHash)
     elif inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(outputDestination, inputName, status)
