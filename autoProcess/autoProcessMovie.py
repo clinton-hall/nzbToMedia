@@ -71,7 +71,7 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
     movie_id = ""
     result = json.load(urlObj)
     if not imdbid:
-        released = [item for item in result["movies"] if len(item["releases"]) > 0 and len(item["releases"]["info"]) > 0 and len(item["releases"]["info"]["download_id") > 0] # doing it in this order should stop exceeding list dimensions?
+        released = [item for item in result["movies"] if len(item["releases"]) > 0 and len(item["releases"]["info"]) > 0 and len(item["releases"]["info"]["download_id"]) > 0] # doing it in this order should stop exceeding list dimensions?
         imdbid_list = [item["library"]["identifier"] for item in released if item["releases"]["info"]["download_id"] == download_id]
         unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
         if len(unique_imdbid_list) == 1: # we found it.
