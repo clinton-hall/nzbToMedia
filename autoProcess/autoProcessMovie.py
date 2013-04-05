@@ -77,7 +77,7 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
     if not imdbid:
         movieindex = [index for index in range(len(movieid)) if len(releases[index]) > 0] # and len(releases[index]["info"]) > 0 and len(releases[index]["info"]["download_id"]) > 0] # doing it in this order should stop exceeding list dimensions?
         for index in movieindex:
-            releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and releases[index][index2]["identifier"] == download_id]
+            releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"] == download_id]
             if len(releaseindex) > 0:
                 imdbid_list.append(library[index])
         unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
