@@ -135,7 +135,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
                 clients = [item for item in clientAgentlist if item.lower() == clientAgent.lower()]
                 clientAgent = clients[0]
                 if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
-                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
+                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
                     Logger.debug("Found a single release for download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 else: # doesn't matter. only really used as secondary confirmation of movie status change. Let's continue.                
                     Logger.debug("Found several releases for download_id: %s and clientAgent: %s. Cannot determine the release status", download_id, clientAgent)
