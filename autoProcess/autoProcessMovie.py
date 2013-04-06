@@ -69,29 +69,35 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
         return ""
 
     movie_id = ""
-    result = json.load(urlObj)
-    movieid = [item["id"] for item in result["movies"]]
-    library = [item["library"]["identifier"] for item in result["movies"]]
-    releases = [item["releases"] for item in result["movies"]]
-    imdbid_list = []
-    if not imdbid:
-        movieindex = [index for index in range(len(movieid)) if len(releases[index]) > 0] # and len(releases[index]["info"]) > 0 and len(releases[index]["info"]["download_id"]) > 0] # doing it in this order should stop exceeding list dimensions?
-        for index in movieindex:
-            releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"] == download_id]
-            if len(releaseindex) > 0:
-                imdbid_list.append(library[index])
-        unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
-        if len(unique_imdbid_list) == 1: # we found it.
-            imdbid = unique_imdbid_list[0]
-            Logger.info("Found movie id %s in database via download_id %s", imdbid, download_id)
-        else:
-            return ""
+    try:
+        result = json.load(urlObj)
+        movieid = [item["id"] for item in result["movies"]]
+        library = [item["library"]["identifier"] for item in result["movies"]]
+        releases = [item["releases"] for item in result["movies"]]
+        imdbid_list = []
+        if not imdbid:
+            movieindex = [index for index in range(len(movieid)) if len(releases[index]) > 0] 
+            for index in movieindex:
+                releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"] == download_id]
+                if len(releaseindex) > 0:
+                    imdbid_list.append(library[index])
+            unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
+            if len(unique_imdbid_list) == 1: # we found it.
+                imdbid = unique_imdbid_list[0]
+                Logger.info("Found movie id %s in database via download_id %s", imdbid, download_id)
+            else:
+                return ""
 
-    for index in range(len(movieid)):
-        if library[index] == imdbid:
-            movie_id = str(movieid[index])
-            Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
-            break
+        for index in range(len(movieid)):
+            if library[index] == imdbid:
+                movie_id = str(movieid[index])
+                Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
+                break
+    except:
+        if not imdbid:
+            Logger.error("Could not parse database results to determine imdbid or movie id")
+        else:
+            Logger.error("Could not parse database results to determine movie id for imdbid: %s", imdbid)
 
     return movie_id
 
@@ -118,8 +124,8 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
     try:
         release_status = "none"
         if download_id != "" and download_id != "none": # we have the download id from the downloader. Let's see if it's valid.
-            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id]
-            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id]
+            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id]
             if len(release_statuslist) == 1: # we have found a release by this id. :)
                 release_status = release_statuslist[0]
                 clientAgent = clientAgentlist[0]
@@ -129,7 +135,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
                 clients = [item for item in clientAgentlist if item.lower() == clientAgent.lower()]
                 clientAgent = clients[0]
                 if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
-                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
+                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
                     Logger.debug("Found a single release for download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 else: # doesn't matter. only really used as secondary confirmation of movie status change. Let's continue.                
                     Logger.debug("Found several releases for download_id: %s and clientAgent: %s. Cannot determine the release status", download_id, clientAgent)
@@ -311,7 +317,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success
-        if release_status != initial_release_status:  # Something has changed. CPS must have processed this movie.
+        if release_status != initial_release_status and release_status != "none":  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
             return 0 # success
         time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
