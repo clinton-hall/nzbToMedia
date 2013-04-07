@@ -1,1 +1,1 @@
-Currently testing NZBGet V10+
+Currently testing NZBGet V11
