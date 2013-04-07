@@ -258,7 +258,7 @@ do_exit() {
 			Email_Message="$Email_Message <br>Log Result"
 			while read line; do Email_Message="$Email_Message <br>$line"; done < $tmplog
 		fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" -o "message-content-type=html" $User -u "$Email_Subject" -m "$Email_Message" 
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tls=$Tls" -o "message-content-type=html" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
 	for item in $Email_failed; do
 	if [ "${NZBPP_CATEGORY}" = "$item" -o "$item" = "all" ] && [ "$nzbStatus" != 0 ]; then
@@ -272,7 +272,7 @@ do_exit() {
 			Email_Message="$Email_Message <br>nLog Result"
 			while read line; do Email_Message="$Email_Message <br>$line"; done < $tmplog
 		fi
-		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tsl=$Tsl" -o "message-content-type=html" $User -u "$Email_Subject" -m "$Email_Message" 
+		$sendEmail -f "$Email_From" -t "$Email_To" -s "$Email_Server" -o "tls=$Tls" -o "message-content-type=html" $User -u "$Email_Subject" -m "$Email_Message" 
 	fi; done
 	exit $1
 }
