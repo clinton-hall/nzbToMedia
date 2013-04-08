@@ -33,22 +33,27 @@ class AuthURLOpener(urllib.FancyURLopener):
         return urllib.FancyURLopener.open(self, url)
 
 def get_imdb(nzbName, dirName):
-    
-    a=nzbName.find('.cp(')+4 #search for .cptt( in nzbName
-    b=nzbName[a:].find(')')+a
-    imdbid=nzbName[a:b]
+ 
+    imdbid = ""    
+
+    a = nzbName.find('.cp(') + 4 #search for .cptt( in nzbName
+    b = nzbName[a:].find(')') + a
+    if a > 3: # a == 3 if not exist
+        imdbid = nzbName[a:b]
     
     if imdbid:
         Logger.info("Found movie id %s in name", imdbid) 
         return imdbid
     
-    a=dirName.find('.cp(')+4 #search for .cptt( in dirname
-    b=dirName[a:].find(')')+a
-    imdbid=dirName[a:b]
+    a = dirName.find('.cp(') + 4 #search for .cptt( in dirname
+    b = dirName[a:].find(')') + a
+    if a > 3: # a == 3 if not exist
+        imdbid = dirName[a:b]
     
     if imdbid:
         Logger.info("Found movie id %s in directory", imdbid) 
         return imdbid
+
     else:
         Logger.warning("Could not find an imdb id in directory or name")
         Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
@@ -78,7 +83,7 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
         if not imdbid:
             movieindex = [index for index in range(len(movieid)) if len(releases[index]) > 0] 
             for index in movieindex:
-                releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"] == download_id]
+                releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"].lower() == download_id.lower()]
                 if len(releaseindex) > 0:
                     imdbid_list.append(library[index])
             unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
@@ -124,8 +129,8 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
     try:
         release_status = "none"
         if download_id != "" and download_id != "none": # we have the download id from the downloader. Let's see if it's valid.
-            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id]
-            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id]
+            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
             if len(release_statuslist) == 1: # we have found a release by this id. :)
                 release_status = release_statuslist[0]
                 clientAgent = clientAgentlist[0]
@@ -135,7 +140,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
                 clients = [item for item in clientAgentlist if item.lower() == clientAgent.lower()]
                 clientAgent = clients[0]
                 if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
-                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"] == download_id and item["info"]["download_downloader"] == clientAgent][0]
+                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower() and item["info"]["download_downloader"] == clientAgent][0]
                     Logger.debug("Found a single release for download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 else: # doesn't matter. only really used as secondary confirmation of movie status change. Let's continue.                
                     Logger.debug("Found several releases for download_id: %s and clientAgent: %s. Cannot determine the release status", download_id, clientAgent)
@@ -161,9 +166,10 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
                 download_id = "none"
                 release_status = "none"
             else:
-                index = [index for index in range(len(clientAgentlist)) if clientAgentlist[index] == clientAgent]            
+                index = [index for index in range(len(clientAgentlist)) if clientAgentlist[index].lower() == clientAgent.lower()]            
                 if len(index) == 1:
                     download_id = download_idlist[index[0]]
+                    clientAgent = clientAgentlist[index[0]]
                     release_status = "snatched"
                     Logger.debug("Found download_id: %s for clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 else:
@@ -269,9 +275,9 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         result = json.load(urlObj)
         Logger.info("CouchPotatoServer returned %s", result)
         if result['success']:
-            Logger.info("%s started on CouchPotatoServer for %s", command, nzbName)
+            Logger.info("%s scan started on CouchPotatoServer for %s", method, nzbName)
         else:
-            Logger.error("%s has NOT started on CouchPotatoServer for %s. Exiting", command, nzbName)
+            Logger.error("%s scan has NOT started on CouchPotatoServer for %s. Exiting", method, nzbName)
             return 1 # failure
 
     else:

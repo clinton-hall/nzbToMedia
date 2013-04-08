@@ -51,26 +51,27 @@ if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("MAIN: Script triggered from SABnzbd")
     clientAgent = "sabnzbd"
-    nzbDir, inputName, status, inputCategory = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5])
+    nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5], '')
 # NZBGet
 elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # NZBGet argv:
     # 1  The final directory of the job (full path)
     # 2  The original name of the NZB file
     # 3  The status of the download: 0 == successful
-    # 4  User-defined category
+    # 4  The category of the download:
+    # 5  The download_id
     Logger.info("MAIN: Script triggered from NZBGet")
     clientAgent = "nzbget"
-    nzbDir, inputName, status, inputCategory = (sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4])
+    nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
 else: # only CPS supports this manual run for now.
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
     clientAgent = "manual"
-    nzbDir, inputName, status, inputCategory = ('Manual Run', 'Manual Run', 0, cpsCategory)
+    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory, '')
 
 if inputCategory == cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent)
+    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id)
 elif inputCategory == sbCategory:
     Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
     result = autoProcessTV.processEpisode(nzbDir, inputName, status)

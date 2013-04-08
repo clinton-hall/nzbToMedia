@@ -1,5 +1,15 @@
 Change_LOG / History
 
+V7.2 XX/04/2013
+
+Impacts All
+Added download_id pass through for CouchPotato release matching
+Uses single directory scanning for CouchPotato renamer
+Matches imdb_id, download_id, clientAgent with CPS database
+
+Impacts NZB
+Fixed TLS support for NZBGet email notifications  
+
 V7.1 28/03/2013
 
 Impacts Torrents

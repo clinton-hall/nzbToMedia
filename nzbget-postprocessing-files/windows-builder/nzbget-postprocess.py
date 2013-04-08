@@ -83,7 +83,7 @@ def nzbToMedia(nzbStatus):
                 Logger.debug("Post-Process: CouchPotato-Script-ARGV1= %s", NZBPP_DIRECTORY)
                 Logger.debug("Post-Process: CouchPotato-Script-ARGV2= %s", NZBPP_NZBFILENAME)
                 Logger.debug("Post-Process: CouchPotato-Script-ARGV3= %s", PostProcessStatus)
-            result = autoProcessMovie.process(NZBPP_DIRECTORY, NZBPP_NZBFILENAME, PostProcessStatus)
+            result = autoProcessMovie.process(NZBPP_DIRECTORY, NZBPP_NZBFILENAME, PostProcessStatus, clientAgent, download_id)
         else:
             Logger.debug("Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user")
 
@@ -188,7 +188,7 @@ def do_exit(Process_Code):
                 if line != "":
                     Email_Message2 = Email_Message2 + "\r\n" + line
             f.close()
-        command = [sendEmail, "-f", Email_From, "-t", Email_To, "-s", Email_Server, "-o", "tsl=" + Tsl]
+        command = [sendEmail, "-f", Email_From, "-t", Email_To, "-s", Email_Server, "-o", "tls=" + Tls]
         if Email_User != "" and Email_Pass != "":
             command.append("-xu")
             command.append(Email_User)
@@ -211,7 +211,7 @@ def do_exit(Process_Code):
                 if line != "":
                     Email_Message2 = Email_Message2 + "\r\n" + line
             f.close()
-        command = [sendEmail, "-f", Email_From, "-t", Email_To, "-s", Email_Server, "-o", "tsl=" + Tsl]
+        command = [sendEmail, "-f", Email_From, "-t", Email_To, "-s", Email_Server, "-o", "tls=" + Tls]
         if Email_User != "" and Email_Pass != "":
             command.append("-xu")
             command.append(Email_User)
@@ -275,6 +275,12 @@ NZBOP_UNPACK = os.getenv('NZBOP_UNPACK')
 NZBPR_PostProcess = os.getenv('NZBPR_PostProcess') 
 NZBPR_DestDir = os.getenv('NZBPR_DestDir')
 NZBOP_ALLOWREPROCESS = os.getenv('NZBOP_ALLOWREPROCESS')
+
+clientAgent = "nzbget"
+try:
+    download_id = os.getenv('NZBPR_couchpotato')
+except:
+    download_id = ""
 
 # Name of script's configuration file
 SCRIPT_CONFIG_FILE = "nzbget-postprocess.conf"

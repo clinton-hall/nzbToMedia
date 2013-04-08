@@ -82,9 +82,13 @@ nzbToMedia() {
 	if [ -n "$1" ]; then PostProcessStatus=$1 ; fi
 	if [ "$Debug" = "yes" ]; then echo "[DETAIL] Post-Process: comparing '$NZBPP_CATEGORY' to '$CouchPotatoCategory' and '$SickBeardCategory'" | tee -a $tmplog; fi
 	find "$NZBPP_DIRECTORY" -type f -size -200000k -iname \*sample\* -exec rm {} \; >/dev/null 2>&1
+	download_id=""
 	if [ "$NZBPP_CATEGORY" = "$CouchPotatoCategory" ]; then
 		if [ "$CouchPotato" = "yes" -a -e "$NzbToCouchPotato" ]; then
 			script=$NzbToCouchPotato
+			if [ $NZBPR_couchpotato ]; then
+				download_id=$NZBPR_couchpotato
+			fi
 			# Call Couchpotato's postprocessing script
 			echo "[INFO] Post-Process: Running CouchPotato's postprocessing script" | tee -a $tmplog
 			if [ "$Debug" = "yes" ]; then
@@ -93,7 +97,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: CouchPotato-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$PythonCmd $NzbToCouchPotato "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$CouchPotato" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as it is disabled by user ('$CouchPotato')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToCouchPotato" ]; then echo "[DETAIL] Post-Process: Ignored to run CouchPotato's postprocessing script as the specified script ('$NzbToCouchPotato') does not exist" | tee -a $tmplog; fi
@@ -110,7 +114,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: SickBeard-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$PythonCmd $NzbToSickBeard "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$SickBeard" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as it is disabled by user ('$SickBeard')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToSickBeard" ]; then echo "[DETAIL] Post-Process: Ignored to run SickBeard's postprocessing script as the specified script ('$NzbToSickBeard') does not exist" | tee -a $tmplog; fi
@@ -127,7 +131,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: HeadPhones-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$PythonCmd $NzbToHeadPhones "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$HeadPhones" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as it is disabled by user ('$HeadPhones')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToHeadPhones" ]; then echo "[DETAIL] Post-Process: Ignored to run HeadPhones' postprocessing script as the specified script ('$NzbToHeadPhones') does not exist" | tee -a $tmplog; fi
@@ -144,7 +148,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Mylar-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: Mylar-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$PythonCmd $NzbToMylar "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Mylar" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as it is disabled by user ('$Mylar')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToMylar" ]; then echo "[DETAIL] Post-Process: Ignored to run Mylar's postprocessing script as the specified script ('$NzbToMylar') does not exist" | tee -a $tmplog; fi
@@ -161,7 +165,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Gamez-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: Gamez-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$PythonCmd $NzbToGamez "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Gamez" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as it is disabled by user ('$Gamez')" | tee -a $tmplog; fi
 			if [ ! -e "$NzbToGamez" ]; then echo "[DETAIL] Post-Process: Ignored to run Gamez's postprocessing script as the specified script ('$NzbToGamez') does not exist" | tee -a $tmplog; fi
@@ -178,7 +182,7 @@ nzbToMedia() {
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV2=$NZBPP_NZBFILENAME" | tee -a $tmplog
 				echo "[DETAIL] Post-Process: Custom-Script-ARGV3=$PostProcessStatus" | tee -a $tmplog
 			fi
-			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
+			$CustomCmd $CustomScript "$NZBPP_DIRECTORY" "$NZBPP_NZBFILENAME" "$PostProcessStatus" "$NZBPP_CATEGORY" "$download_id" | while read line ; do if [ "$line" != "" ] ; then replaceLogLine "${line}" ; fi ; done
 		else
 			if [ "$Custom" != "yes" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as it is disabled by user ('$Custom')" | tee -a $tmplog; fi
 			if [ ! -e "$CustomScript" ]; then echo "[DETAIL] Post-Process: Ignored to run the Custom postprocessing script as the specified script ('$CustomScript') does not exist" | tee -a $tmplog; fi

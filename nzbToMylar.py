@@ -38,6 +38,8 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     # 1  The final directory of the job (full path)
     # 2  The original name of the NZB file
     # 3  The status of the download: 0 == successful
+    # 4  The category of the download:
+    # 5  The download_id
     Logger.info("Script triggered from NZBGet, starting autoProcessComics...")
     result = autoProcessComics.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
