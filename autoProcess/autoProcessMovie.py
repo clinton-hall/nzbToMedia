@@ -323,10 +323,11 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success
+        time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
+    else:
         if release_status != initial_release_status and release_status != "none":  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
             return 0 # success
-        time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
-    else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        else: # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now. 
         Logger.warning("The movie does not appear to have changed status after 2 minutes. Please check CouchPotato Logs")
     return 1 # failure
