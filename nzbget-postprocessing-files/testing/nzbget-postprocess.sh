@@ -301,7 +301,7 @@ if [ "$NZBPR_PostProcess" = "no" ]; then
 fi
 
 ConfigDir="${NZBOP_CONFIGFILE%/*}"
-tmplog="$ConfigDir/$tmp.log" 
+tmplog="$ConfigDir/tmp.log" 
 
 echo "[INFO] Post-Process: Post-processing script successfully started" | tee $tmplog
 cd "$NZBPP_DIRECTORY" || (echo "[ERROR] Post-Process: Nothing to post-process: destination directory $NZBPP_DIRECTORY isn't accessible" | tee $tmplog && do_exit $POSTPROCESS_ERROR)

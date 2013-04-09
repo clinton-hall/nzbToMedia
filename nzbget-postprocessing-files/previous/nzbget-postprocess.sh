@@ -266,7 +266,7 @@ if [ "$NZBPR_PostProcess" = "no" ]; then
 fi
 
 ConfigDir="${NZBOP_CONFIGFILE%/*}"
-tmplog="$ConfigDir/$tmp.log" 
+tmplog="$ConfigDir/tmp.log" 
 
 echo "[INFO] Post-Process: Post-process script successfully started" | tee $tmplog
 
