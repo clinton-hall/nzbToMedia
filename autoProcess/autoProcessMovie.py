@@ -329,5 +329,5 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
             Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
             return 0 # success
         else: # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now. 
-        Logger.warning("The movie does not appear to have changed status after 2 minutes. Please check CouchPotato Logs")
-    return 1 # failure
+            Logger.warning("The movie does not appear to have changed status after 2 minutes. Please check CouchPotato Logs")
+            return 1 # failure
