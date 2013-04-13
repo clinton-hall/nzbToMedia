@@ -31,6 +31,7 @@ web_root =
 ssl = 0
 watch_dir =
 failed_fork = 0
+delete_failed = 0
 
 
 [HeadPhones]

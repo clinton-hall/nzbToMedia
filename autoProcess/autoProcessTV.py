@@ -22,6 +22,7 @@ import urllib
 import os
 import ConfigParser
 import logging
+import shutil
 
 import Transcoder
 from nzbToMediaEnv import *
@@ -47,6 +48,14 @@ class AuthURLOpener(urllib.FancyURLopener):
     def openit(self, url):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
+
+
+def delete(dirName):
+    Logger.info("Deleting failed files and folder %s", dirName)
+    try:
+        shutil.rmtree(dirName)
+    except e:
+        Logger.error("Unable to delete folder %s due to: %s", dirName, str(e))
 
 
 def processEpisode(dirName, nzbName=None, failed=False):
@@ -92,10 +101,17 @@ def processEpisode(dirName, nzbName=None, failed=False):
         failed_fork = int(config.get("SickBeard", "failed_fork"))
     except (ConfigParser.NoOptionError, ValueError):
         failed_fork = 0
+
     try:    
         transcode = int(config.get("Transcoder", "transcode"))
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
+
+    try:
+        delete_failed = int(config.get("CouchPotato", "delete_failed"))
+    except (ConfigParser.NoOptionError, ValueError):
+        delete_failed = 0
+
 
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -134,6 +150,8 @@ def processEpisode(dirName, nzbName=None, failed=False):
             Logger.info("The download succeeded. Sending process request to SickBeard")
         else:
             Logger.info("The download failed. Nothing to process")
+            if delete_failed and not dirName in ['sys.argv[0]','/','']:
+                delete(dirName)
             return 0 # Success (as far as this script is concerned)
     
     if status == 0 and transcode == 1: # only transcode successful downlaods
@@ -163,4 +181,6 @@ def processEpisode(dirName, nzbName=None, failed=False):
     result = urlObj.readlines()
     for line in result:
         Logger.info("%s", line.rstrip())
+    if status != 0 and delete_failed and not dirName in ['sys.argv[0]','/','']:
+        delete(dirName)
     return 0 # Success
