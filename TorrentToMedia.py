@@ -3,7 +3,6 @@
 #System imports
 import os
 import sys
-sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import ConfigParser
 import shutil
 import logging
@@ -12,17 +11,16 @@ import time
 import re
 from subprocess import call
 
-
 # Custom imports
-import migratecfg
+import autoProcess.migratecfg as migratecfg
 import extractor.extractor as extractor
-import autoProcessComics
-import autoProcessGames 
-import autoProcessMusic
-import autoProcessTV
-import autoProcessMovie
-from nzbToMediaEnv import *
-from nzbToMediaUtil import *
+import autoProcess.autoProcessComics as autoProcessComics
+import autoProcess.autoProcessGames as autoProcessGames 
+import autoProcess.autoProcessMusic as autoProcessMusic
+import autoProcess.autoProcessTV as autoProcessTV
+import autoProcess.autoProcessMovie as autoProcessMovie
+from autoProcess.nzbToMediaEnv import *
+from autoProcess.nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
 
 def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
