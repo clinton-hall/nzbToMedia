@@ -237,11 +237,9 @@ def WakeOnLan(ethernet_address):
 
 
 #Test Connection function
-def TestCon(host,port):
-    (family, socktype, proto, garbage, address) = socket.getaddrinfo(host, port)[0]
-    s = socket.socket(family, socktype, proto)
+def TestCon(host, port):
     try:
-        s.connect(address)
+        socket.create_connection((host, port))
         return "Up"
     except:
         return "Down"
@@ -262,11 +260,11 @@ def WakeUp():
     Logger.info("Loading WakeOnLan config from %s", configFilename)
     config.get("WakeOnLan", "host")
     host = config.get("WakeOnLan", "host")
-    port = config.get("WakeOnLan", "port")
+    port = int(config.get("WakeOnLan", "port"))
     mac = config.get("WakeOnLan", "mac")
 
     i=1
-    while TestCon(host,port) == "Down" and i < 4:
+    while TestCon(host, port) == "Down" and i < 4:
         Logger.info("Sending WakeOnLan Magic Packet for mac: %s", mac)
         WakeOnLan(mac)
         time.sleep(20)
