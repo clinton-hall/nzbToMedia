@@ -253,10 +253,10 @@ def WakeUp():
 
     if not os.path.isfile(configFilename):
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-        return 1 # failure
+        return
 
     config.read(configFilename)
-    wake = config.get("WakeOnLan", "wake")
+    wake = int(config.get("WakeOnLan", "wake"))
     if wake == 0: # just return if we don't need to wake anything.
         return
     Logger.info("Loading WakeOnLan config from %s", configFilename)
