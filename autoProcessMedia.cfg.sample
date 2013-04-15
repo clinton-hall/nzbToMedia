@@ -113,6 +113,14 @@ outputAudioCodec = libmp3lame
 outputAudioBitrate = 128k
 outputSubtitleCodec = 
 
+[WakeOnLan]
+###### set wake = 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) the host and port specified.
+wake = 0
+host = 192.168.1.37
+port = 80
+mac = 00:01:2e:2D:64:e1
+
+
 # Logging configuration
 [loggers]
 keys = root

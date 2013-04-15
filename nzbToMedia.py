@@ -23,6 +23,9 @@ Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log
 Logger.info("nzbToMedia %s", VERSION)
+
+WakeUp()
+
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 if not os.path.isfile(configFilename):
@@ -36,7 +39,7 @@ cpsCategory = config.get("CouchPotato", "cpsCategory")                          
 sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
 hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
 mlCategory = config.get("Mylar", "mlCategory")                                      # comics
-gzCategory = config.get("Gamez", "gzCategory")
+gzCategory = config.get("Gamez", "gzCategory")                                      # games
 
 # SABnzbd
 if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:

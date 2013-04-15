@@ -4,6 +4,9 @@ import os
 import re
 import sys
 import shutil
+import struct
+import socket
+import time
 
 import linktastic.linktastic as linktastic
 
@@ -207,6 +210,71 @@ def iterate_media_files(dirname):
             if not (fileExtension in mediaContainer):
                 continue
             yield dirpath, os.path.join(dirpath, filename)
+
+
+#Wake function
+def WakeOnLan(ethernet_address):
+
+    addr_byte = ethernet_address.split(':')
+    hw_addr = struct.pack('BBBBBB', int(addr_byte[0], 16),
+    int(addr_byte[1], 16),
+    int(addr_byte[2], 16),
+    int(addr_byte[3], 16),
+    int(addr_byte[4], 16),
+    int(addr_byte[5], 16))
+
+    # Build the Wake-On-LAN "Magic Packet"...
+
+    msg = '\xff' * 6 + hw_addr * 16
+
+    # ...and send it to the broadcast address using UDP
+
+    ss = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    ss.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
+    ss.sendto(msg, ('<broadcast>', 9))
+    ss.close()
+
+
+#Test Connection function
+def TestCon(host,port):
+    (family, socktype, proto, garbage, address) = socket.getaddrinfo(host, port)[0]
+    s = socket.socket(family, socktype, proto)
+    try:
+        s.connect(address)
+        return "Up"
+    except:
+        return "Down"
+
+
+def WakeUp():
+    config = ConfigParser.ConfigParser()
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+
+    if not os.path.isfile(configFilename):
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+        return 1 # failure
+
+    config.read(configFilename)
+    wake = config.get("WakeOnLan", "wake")
+    if wake == 0: # just return if we don't need to wake anything.
+        return
+    Logger.info("Loading WakeOnLan config from %s", configFilename)
+    config.get("WakeOnLan", "host")
+    host = config.get("WakeOnLan", "host")
+    port = config.get("WakeOnLan", "port")
+    mac = config.get("WakeOnLan", "mac")
+
+    i=1
+    while TestCon(host,port) == "Down" and i < 4:
+        Logger.info("Sending WakeOnLan Magic Packet for mac: %s", mac)
+        WakeOnLan(mac)
+        time.sleep(20)
+        i=i+1
+
+    if TestCon(host,port) == "Down": # final check.
+        Logger.warning("System with mac: %s has not woken after 3 attempts. Continuing with the rest of the script.", mac)
+    else:
+        Logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
 
 
 def parse_other(args):

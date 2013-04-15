@@ -19,6 +19,8 @@ Logger = logging.getLogger(__name__)
 Logger.info("====================") # Seperate old from new log
 Logger.info("nzbToCouchPotato %s", VERSION)
 
+WakeUp()
+
 # SABnzbd
 if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:

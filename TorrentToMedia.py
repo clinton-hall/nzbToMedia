@@ -210,6 +210,9 @@ if __name__ == "__main__":
 
     Logger.info("====================") # Seperate old from new log
     Logger.info("TorrentToMedia %s", VERSION)
+
+    WakeUp()
+
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 
