@@ -7,6 +7,7 @@ import shutil
 import struct
 import socket
 import time
+import ConfigParser
 
 import linktastic.linktastic as linktastic
 
