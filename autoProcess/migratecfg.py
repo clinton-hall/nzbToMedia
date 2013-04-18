@@ -104,6 +104,16 @@ def migrate():
         confignew.set(section, option, value)
         section = "Torrent" # reset in case extensions out of order.
 
+    section = "Extensions"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
     section = "Transcoder"
     original = []
     try:
@@ -197,4 +207,98 @@ def migrate():
 
     # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
     os.rename(configFilenamenew, configFilenameold)
+    return
+
+def addnzbget():
+    confignew = ConfigParser.ConfigParser()
+    confignew.optionxform = str
+    configFilenamenew = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+    confignew.read(configFilenamenew)
+
+    section = "CouchPotato"
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED']
+    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'delay', 'method', 'delete_failed']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_CPS' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+
+    section = "SickBeard"
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FAILED_FORK']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'failed_fork']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_SB' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+    section = "HeadPhones"
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'DELAY']
+    cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'delay']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_HP' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value) 
+
+    section = "Mylar"
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
+    cfgKeys = ['mlCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_ML' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+    section = "Gamez"
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
+    cfgKeys = ['gzCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_GZ' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+    section = "Extensions"
+    envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
+    cfgKeys = ['compressedExtensions', 'mediaExtensions', 'metaExtensions']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+    section = "Transcoder"
+    envKeys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'OUTPUTAUDIOBITRATE', 'OUTPUTSUBTITLECODEC']
+    cfgKeys = ['transcode', 'duplicate', 'ignoreExtensions', 'outputVideoExtension', 'outputVideoCodec', 'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec', 'outputAudioBitrate', 'outputSubtitleCodec']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+    section = "WakeOnLan"
+    envKeys = ['WAKE', 'HOST', 'PORT', 'MAC']
+    cfgKeys = ['wake', 'host', 'port', 'mac']
+    for index in range(len(envKeys)):
+        key = 'NZBPO_WOL' + envKeys[index]
+        if os.environ.has_key(key):
+            option = cfgKeys[index]
+            value = os.environ[key]
+            confignew.set(section, option, value)
+
+
+    # writing our configuration file to 'autoProcessMedia.cfg'
+    with open(configFilenamenew, 'wb') as configFile:
+        confignew.write(configFile)
+
     return

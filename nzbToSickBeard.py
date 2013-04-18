@@ -1,26 +1,113 @@
 #!/usr/bin/env python
+#
+##############################################################################
+### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Author: Nic Wolfe <nic@wolfeden.ca>
-# URL: http://code.google.com/p/sickbeard/
+# Post-Process to SickBeard.
 #
-# This file is part of Sick Beard.
+# This script sends the download to your automated media management servers.
 #
-# Sick Beard is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Sick Beard is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Sick Beard.  If not, see <http://www.gnu.org/licenses/>.
-#
-# Edited by Clinton Hall to prevent processing of failed downloads.
-# Also added suppot for NZBGet. With help from thorli
+# NOTE: This script requires Python to be installed on your system.
 
+##############################################################################
+### OPTIONS                                                                ###
+
+## SickBeard
+
+# SickBeard script category.
+#
+# category that gets called for post-processing with SickBeard.
+#sbCategory=tv
+
+# SickBeard host.
+#sbhost=localhost
+
+# SickBeard port.
+#sbport=8081
+
+# SickBeard username.
+#sbusername= 
+
+# SickBeard password.
+#sbpassword=
+
+# SickBeard uses ssl.
+#
+# Set to 1 if using ssl, else set to 0.
+#sbssl=0
+
+# SickBeard web_root
+#
+# set this if using a reverse proxy.
+#sbweb_root=
+
+# SickBeard watch directory.
+#
+# set this if SickBeard and nzbGet are on different systems.
+#sbwatch_dir=
+
+# SickBeard uses failed fork.
+#
+# set to 1 if using the custom "failed fork". Default sickBeard uses 0.
+#sbfailed_fork=0
+
+# SickBeard Delete Failed Downloads
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#sbdelete_failed=0
+
+## Extensions
+
+# Media Extensions
+#
+# This is a list of media extensions that may be transcoded if transcoder is enabled below.
+#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
+
+## Transcoder]
+
+# Transcode
+#
+# set to 1 to transcode, otherwise set to 0.
+#transcode=0
+
+# create a duplicate, or replace the original.
+#
+# set to 1 to cretae a new file or 0 to replace the original
+#duplicate=1
+
+# ignore extensions
+#
+# list of extensions that won't be transcoded. 
+#ignoreExtensions=.avi,.mkv
+
+# ffmpeg output settings.
+#outputVideoExtension=.mp4
+#outputVideoCodec=libx264
+#outputVideoPreset=medium
+#outputVideoFramerate=24
+#outputVideoBitrate=800k
+#outputAudioCodec=libmp3lame
+#outputAudioBitrate=128k
+#outputSubtitleCodec=
+
+## WakeOnLan
+
+# use WOL
+#
+# set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
+#wolwake=0
+
+# WOL MAC
+#
+# enter the mac address of the system to be woken.
+#wolmac=00:01:2e:2D:64:e1
+
+# Set the Host and Port of a server to verify system has woken.
+#wolhost=192.168.1.37
+#wolport=80
+
+### NZBGET POST-PROCESSING SCRIPT                                          ###
+##############################################################################
 
 import os
 import sys
@@ -34,6 +121,9 @@ from autoProcess.nzbToMediaUtil import *
 #check to migrate old cfg before trying to load.
 if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
     migratecfg.migrate()
+# check to write settings from nzbGet UI to autoProcessMedia.cfg.
+if os.environ.has_key('NZBOP_SCRIPTDIR'):
+    migratecfg.addnzbget()
 
 nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
 Logger = logging.getLogger(__name__)
@@ -43,8 +133,70 @@ Logger.info("nzbToSickBeard %s", VERSION)
 
 WakeUp
 
+# NZBGet V11+
+# Check if the script is called from nzbget 11.0 or later
+if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
+    Logger.info("MAIN: Script triggered from NZBGet (11.0 or later).")
+
+    # NZBGet argv: all passed as environment variables.
+    # Exit codes used by NZBGet
+    POSTPROCESS_PARCHECK=92
+    POSTPROCESS_SUCCESS=93
+    POSTPROCESS_ERROR=94
+    POSTPROCESS_NONE=95
+
+    # Check nzbget.conf options
+    status = 0
+
+    if os.environ['NZBOP_UNPACK'] != "yes":
+        Logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
+        sys.exit(POSTPROCESS_ERROR)
+
+    # Check par status
+    if os.environ['NZBPP_PARSTATUS'] == 3:
+        Logger.warning("Par-check successful, but Par-repair disabled, exiting")
+        sys.exit(POSTPROCESS_NONE)
+
+    if os.environ['NZBPP_PARSTATUS'] == 1:
+        Logger.warning("Par-check failed, setting status \"failed\"")
+        status = 1
+
+    # Check unpack status
+    if os.environ['NZBPP_UNPACKSTATUS'] == 1:
+        Logger.warning("Unpack failed, setting status \"failed\"")
+        status = 1
+
+    if os.environ['NZBPP_UNPACKSTATUS'] == 0 and os.environ['NZBPP_PARSTATUS'] != 2:
+        # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
+
+        for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
+            for file in filenames:
+                fileExtension = os.path.splitext(file)[1]
+
+                if fileExtension in ['.rar', '.7z'] or os.path.splitext(fileExtension)[1] in ['.rar', '.7z']:
+                    Logger.warning("Post-Process: Archive files exist but unpack skipped, exiting")
+                    sys.exit(POSTPROCESS_NONE)
+
+                if fileExtension in ['.par2']:
+                    Logger.warning("Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting")
+                    sys.exit(POSTPROCESS_NONE)
+
+        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")):
+            Logger.warning("Post-Process: _brokenlog.txt exists, download is probably damaged, exiting")
+            sys.exit(POSTPROCESS_NONE)
+
+        Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
+
+    # Check if destination directory exists (important for reprocessing of history items)
+    if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
+        Logger.error("Post-Process: Nothing to post-process: destination directory %s doesn't exist", os.environ['NZBPP_DIRECTORY'])
+        status = 1
+
+    # All checks done, now launching the script.
+    Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
+    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
 # SABnzbd
-if len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
+elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
     # 1 The final directory of the job (full path)
     # 2 The original name of the NZB file
@@ -69,3 +221,12 @@ else:
     Logger.debug("Invalid number of arguments received from client.")
     Logger.info("Running autoProcessTV as a manual run...")
     result = autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
+
+if result == 0:
+    Logger.info("MAIN: The autoProcessTV script completed successfully.")
+    if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
+        sys.exit(POSTPROCESS_SUCCESS)
+else:
+    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+    if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
+        sys.exit(POSTPROCESS_ERROR)

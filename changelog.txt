@@ -8,7 +8,10 @@ Uses single directory scanning for CouchPotato renamer
 Matches imdb_id, download_id, clientAgent with CPS database
 
 Impacts NZB
-Fixed TLS support for NZBGet email notifications  
+Addeed direct configuration support via nzbget webUI (nzbget v11+)
+All nzb scripts are now directly callabale in nzbget v11
+Settings made in nzbget webUI will be applied to the auotPorcessMedia.cfg when the scripts are run from nzbget.
+Fixed TLS support for NZBGet email notifications (for V10 support) 
 
 V7.1 28/03/2013
 
