@@ -34,7 +34,7 @@
 # CouchPotato password.
 #cpspassword=
 
-# CouchPotato uses ssl.
+# CouchPotato uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #cpsssl=0
@@ -49,12 +49,12 @@
 # must be at least 60 seconds.
 #cpsdelay=65
 
-# CouchPotato Postprocess Method.
+# CouchPotato Postprocess Method (renamer, manage).
 #
 # use "renamer" for CPS renamer (default) or "manage" to call a manage update.
 #cpsmethod=renamer
 
-# CouchPotato Delete Failed Downloads
+# CouchPotato Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
@@ -78,7 +78,7 @@
 # SickBeard password.
 #sbpassword=
 
-# SickBeard uses ssl.
+# SickBeard uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #sbssl=0
@@ -93,12 +93,12 @@
 # set this if SickBeard and nzbGet are on different systems.
 #sbwatch_dir=
 
-# SickBeard uses failed fork.
+# SickBeard uses failed fork (0, 1).
 #
 # set to 1 if using the custom "failed fork". Default sickBeard uses 0.
 #sbfailed_fork=0
 
-# SickBeard Delete Failed Downloads
+# SickBeard Delete Failed Downloads (0, 1)
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0
@@ -125,7 +125,7 @@
 # HeadPhones password.
 #hppassword=
 
-# HeadPhones uses ssl.
+# HeadPhones uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #hpssl=0
@@ -159,7 +159,7 @@
 # Mylar password.
 #mypassword=
 
-# Mylar uses ssl.
+# Mylar uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #myssl=0
@@ -191,7 +191,7 @@
 # Gamez password.
 #gzpassword=
 
-# Gamez uses ssl.
+# Gamez uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #gzssl=0
@@ -210,12 +210,12 @@
 
 ## Transcoder
 
-# Transcode
+# Transcode (0, 1).
 #
 # set to 1 to transcode, otherwise set to 0.
 #transcode=0
 
-# create a duplicate, or replace the original.
+# create a duplicate, or replace the original (0, 1).
 #
 # set to 1 to cretae a new file or 0 to replace the original
 #duplicate=1
@@ -237,7 +237,7 @@
 
 ## WakeOnLan
 
-# use WOL
+# use WOL (0, 1).
 #
 # set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
 #wolwake=0

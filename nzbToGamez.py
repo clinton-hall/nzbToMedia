@@ -34,19 +34,19 @@
 # Gamez password.
 #gzpassword=
 
-# Gamez uses ssl.
+# Gamez uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #gzssl=0
 
-# Gamez web_root
+# Gamez web_root.
 #
 # set this if using a reverse proxy.
 #gzweb_root=
 
 ## WakeOnLan
 
-# use WOL
+# use WOL (0, 1).
 #
 # set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
 #wolwake=0

@@ -31,7 +31,7 @@
 # SickBeard password.
 #sbpassword=
 
-# SickBeard uses ssl.
+# SickBeard uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #sbssl=0
@@ -46,12 +46,12 @@
 # set this if SickBeard and nzbGet are on different systems.
 #sbwatch_dir=
 
-# SickBeard uses failed fork.
+# SickBeard uses failed fork (0, 1).
 #
 # set to 1 if using the custom "failed fork". Default sickBeard uses 0.
 #sbfailed_fork=0
 
-# SickBeard Delete Failed Downloads
+# SickBeard Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0
@@ -63,14 +63,14 @@
 # This is a list of media extensions that may be transcoded if transcoder is enabled below.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
-## Transcoder]
+## Transcoder
 
-# Transcode
+# Transcode (0, 1).
 #
 # set to 1 to transcode, otherwise set to 0.
 #transcode=0
 
-# create a duplicate, or replace the original.
+# create a duplicate, or replace the original (0, 1).
 #
 # set to 1 to cretae a new file or 0 to replace the original
 #duplicate=1
@@ -92,7 +92,7 @@
 
 ## WakeOnLan
 
-# use WOL
+# use WOL (0, 1).
 #
 # set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
 #wolwake=0

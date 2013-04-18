@@ -31,7 +31,7 @@
 # Mylar password.
 #mypassword=
 
-# Mylar uses ssl.
+# Mylar uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
 #myssl=0
@@ -43,7 +43,7 @@
 
 ## WakeOnLan
 
-# use WOL
+# use WOL (0, 1).
 #
 # set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
 #wolwake=0
