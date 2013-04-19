@@ -79,8 +79,8 @@ web_root =
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
-###### useLink - Set to 1 to use or 0 depending on if you want to use hardlinks
-useLink = 1
+###### useLink - Set to hard for physical links, sym for symbolic links, and no to not use links
+useLink = hard
 ###### minSampleSize - Minimum required size to consider a file not an sample file (in MB, eg 200mb)
 minSampleSize = 200
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)

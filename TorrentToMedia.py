@@ -143,7 +143,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
 
         # if we are using links with uTorrent it means we need to pause it in order to access the files
-        if useLink == 1:
+        if useLink != "no":
             Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
             utorrentClass.stop(inputHash)
             time.sleep(5)  # Give uTorrent some time to catch up with the change
@@ -192,7 +192,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash and useLink == 1 and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
+    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash and useLink != "no" and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
         utorrentClass.start(inputHash)
 
@@ -225,7 +225,7 @@ if __name__ == "__main__":
     config.read(configFilename)
                                                                                         # EXAMPLE VALUES:
     clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
-    useLink = int(config.get("Torrent", "useLink"))                                     # true | false
+    useLink = config.get("Torrent", "useLink")                                          # no | hard | sym
     minSampleSize = int(config.get("Torrent", "minSampleSize"))                         # 200 (in MB)
     outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
     categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
