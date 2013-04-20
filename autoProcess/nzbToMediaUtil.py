@@ -150,10 +150,23 @@ def is_sample(filePath, inputName, minSampleSize):
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     create_destination(outputDestination)
-    if useLink != 0:
+    if useLink == "hard":
         try:
-            Logger.info("COPYLINK: Linking %s to %s", filePath, targetDirectory)
+            Logger.info("COPYLINK: Hard linking %s to %s", filePath, targetDirectory)
             linktastic.link(filePath, targetDirectory)
+        except:
+            if os.path.isfile(targetDirectory):
+                Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+            else:
+                Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
+                Logger.debug("COPYLINK: Copying %s to %s", filePath, targetDirectory)
+                shutil.copy(filePath, targetDirectory)
+    elif useLink == "sym":
+        try:
+            Logger.info("COPYLINK: Moving %s to %s before sym linking", filePath, targetDirectory)
+            shutil.move(filePath, targetDirectory)
+            Logger.info("COPYLINK: Sym linking %s to %s", targetDirectory, filePath)
+            linktastic.symlink(targetDirectory, filePath)
         except:
             if os.path.isfile(targetDirectory):
                 Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")

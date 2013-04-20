@@ -101,6 +101,15 @@ def migrate():
         option, value = item
         if option in ["compressedExtensions", "mediaExtensions", "metaExtensions"]:
             section = "Extensions" # these were moved
+        if option == "useLink": # Sym links supported now as well.
+            try:
+                num_value = int(value)
+                if num_value == 1:
+                    value = "hard"
+                else:
+                    value = "no"
+            except ValueError:
+                pass
         confignew.set(section, option, value)
         section = "Torrent" # reset in case extensions out of order.
 
