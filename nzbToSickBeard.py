@@ -148,25 +148,25 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     # Check nzbget.conf options
     status = 0
 
-    if os.environ['NZBOP_UNPACK'] != "yes":
+    if os.environ['NZBOP_UNPACK'] != 'yes':
         Logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
         sys.exit(POSTPROCESS_ERROR)
 
     # Check par status
-    if os.environ['NZBPP_PARSTATUS'] == 3:
+    if os.environ['NZBPP_PARSTATUS'] == '3':
         Logger.warning("Par-check successful, but Par-repair disabled, exiting")
         sys.exit(POSTPROCESS_NONE)
 
-    if os.environ['NZBPP_PARSTATUS'] == 1:
+    if os.environ['NZBPP_PARSTATUS'] == '1':
         Logger.warning("Par-check failed, setting status \"failed\"")
         status = 1
 
     # Check unpack status
-    if os.environ['NZBPP_UNPACKSTATUS'] == 1:
+    if os.environ['NZBPP_UNPACKSTATUS'] == '1':
         Logger.warning("Unpack failed, setting status \"failed\"")
         status = 1
 
-    if os.environ['NZBPP_UNPACKSTATUS'] == 0 and os.environ['NZBPP_PARSTATUS'] != 2:
+    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] != '2':
         # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
 
         for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
@@ -174,18 +174,21 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                 fileExtension = os.path.splitext(file)[1]
 
                 if fileExtension in ['.rar', '.7z'] or os.path.splitext(fileExtension)[1] in ['.rar', '.7z']:
-                    Logger.warning("Post-Process: Archive files exist but unpack skipped, exiting")
-                    sys.exit(POSTPROCESS_NONE)
+                    Logger.warning("Post-Process: Archive files exist but unpack skipped, setting status \"failed\"")
+                    status = 1
+                    break
 
                 if fileExtension in ['.par2']:
-                    Logger.warning("Post-Process: Unpack skipped and par-check skipped (although par2-files exist), exiting")
-                    sys.exit(POSTPROCESS_NONE)
+                    Logger.warning("Post-Process: Unpack skipped and par-check skipped (although par2-files exist), setting status \"failed\"g")
+                    status = 1
+                    break
 
-        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")):
+        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")) and not status == 1:
             Logger.warning("Post-Process: _brokenlog.txt exists, download is probably damaged, exiting")
-            sys.exit(POSTPROCESS_NONE)
+            status = 1)
 
-        Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
+        if not status == 1:
+            Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
 
     # Check if destination directory exists (important for reprocessing of history items)
     if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
