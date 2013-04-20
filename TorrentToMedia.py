@@ -9,6 +9,7 @@ import logging
 import datetime
 import time
 import re
+from sets import Set
 from subprocess import call
 
 # Custom imports
@@ -155,7 +156,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             utorrentClass.remove(inputHash)
             time.sleep(5)
 
-    processCategories = {cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory}
+    processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
 
     if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
         Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
