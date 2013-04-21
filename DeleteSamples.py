@@ -108,7 +108,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
             mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE'):  # Ignore samples
+                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE']):  # Ignore samples
                     print "Deleting sample file: ", filePath
                     try:
                         os.unlink()
