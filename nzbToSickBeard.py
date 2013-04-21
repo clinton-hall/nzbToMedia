@@ -185,7 +185,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
         if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")) and not status == 1:
             Logger.warning("Post-Process: _brokenlog.txt exists, download is probably damaged, exiting")
-            status = 1)
+            status = 1
 
         if not status == 1:
             Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
