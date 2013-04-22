@@ -111,7 +111,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                 if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE']):  # Ignore samples
                     print "Deleting sample file: ", filePath
                     try:
-                        os.unlink()
+                        os.unlink(filePath)
                     except:
                         print "Error: unable to delete file", filePath
                         sys.exit(POSTPROCESS_ERROR)
