@@ -42,17 +42,11 @@ Installation
 
 ### Windows
 
-Download the the compiled versions of this code here [nzbToMedia - win.zip](http://bit.ly/161ZTGg "nzbToMedia - win.zip")
-
-For nzbget download the package with nzbget support from here [nzbToMedia - win - nzbget support.zip](http://bit.ly/ZeXLop "nzbToMedia - win - nzbget support.zip")
-
-Copy all files from *\nzbToMedia\nzbget-postprocessing-files\Shell\ to a location in your system path, 
-or add the location of these files to the system path.
-e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\Shell" to system path.
+Download the the compiled versions of this code here [nzbToMedia - win - v8.0.zip](http://bit.ly/188imjs "nzbToMedia - win - v8.0.zip")
 
 ### General
 
-1. Clone all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
+1. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
    and change the permission accordingly so the download client can access these files.
 	
 	git clone git://github.com/clinton-hall/nzbToMedia.git
@@ -65,6 +59,18 @@ e.g. copy to "C:\Program Files (x86)\Shell\" and add "C:\Program Files (x86)\She
 2. Please read the wiki pages on this repo for further configuration settings appropriate to your system.
 
 3. Please add to the wiki pages to help assist others ;)
+
+### NZBGet (V11+)
+
+1. Place the nzbToMedia folder inside the ppscripts folder. These scripts can now be configured via the web UI.
+
+2. Run scripts (for all required categories) in this order.
+
+	DeleteSamples.py, nzbToMedia*.py, Email.py, Logger.py
+
+3. For Windows compiled versions, set the same config for all categories.
+
+	DeleteSamples.bat, nzbToMedia.bat
  
 ### Issues
 

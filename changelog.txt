@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V7.2 XX/04/2013
+V8.0 28/04/2013
 
 Impacts All
 Added download_id pass through for CouchPotato release matching
