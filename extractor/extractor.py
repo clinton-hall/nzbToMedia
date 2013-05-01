@@ -124,6 +124,6 @@ def extract(filePath, outputDestination):
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
     except:
-        Logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
+        Logger.exception("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory
     return True

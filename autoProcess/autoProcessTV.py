@@ -54,8 +54,8 @@ def delete(dirName):
     Logger.info("Deleting failed files and folder %s", dirName)
     try:
         shutil.rmtree(dirName)
-    except e:
-        Logger.error("Unable to delete folder %s due to: %s", dirName, str(e))
+    except:
+        Logger.exception("Unable to delete folder %s", dirName)
 
 
 def processEpisode(dirName, nzbName=None, failed=False):
@@ -69,13 +69,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
 
-    try:
-        fp = open(configFilename, "r")
-        config.readfp(fp)
-        fp.close()
-    except IOError, e:
-        Logger.error("Could not read configuration file: %s", str(e))
-        return 1 # failure
+    config.read(configFilename)
 
     watch_dir = ""
     host = config.get("SickBeard", "host")
@@ -174,8 +168,8 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     try:
         urlObj = myOpener.openit(url)
-    except IOError, e:
-        Logger.error("Unable to open URL: %s", str(e))
+    except:
+        Logger.exception("Unable to open URL")
         return 1 # failure
 
     result = urlObj.readlines()

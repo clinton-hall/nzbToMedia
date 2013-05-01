@@ -80,8 +80,8 @@ def process(dirName, nzbName=None, status=0):
 
     try:
         urlObj = myOpener.openit(url)
-    except IOError, e:
-        Logger.error("Unable to open URL: %s", str(e))
+    except:
+        Logger.exception("Unable to open URL")
         return 1 # failure
 
     result = json.load(urlObj)

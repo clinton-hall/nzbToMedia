@@ -90,16 +90,14 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.info("MAIN: Found video file %s in %s", fileExtension, filePath)
                     try:
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
-                    except Exception as e:
-                        Logger.error("MAIN: Failed to link file: %s", file)
-                        Logger.debug(e)
+                    except:
+                        Logger.exception("MAIN: Failed to link file: %s", file)
             elif fileExtension in metaContainer:
                 Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
-                except Exception as e:
-                    Logger.error("MAIN: Failed to link file: %s", file)
-                    Logger.debug(e)
+                except:
+                    Logger.exception("MAIN: Failed to link file: %s", file)
             elif fileExtension in compressedContainer:
                 numCompressed = numCompressed + 1
                 if re.search(r'\d+', os.path.splitext(fileName)[1]) and numCompressed > 1: # find part numbers in second "extension" from right, if we have more than 1 compressed file.
@@ -113,9 +111,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 try:
                     extractor.extract(filePath, outputDestination)
                     extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (dont need to pause archived content)
-                except Exception as e:
-                    Logger.warn("MAIN: Extraction failed for: %s", file)
-                    Logger.debug(e)
+                except:
+                    Logger.exception("MAIN: Extraction failed for: %s", file)
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
@@ -140,8 +137,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         try:
             Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
             utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-        except Exception as e:
-            Logger.error("MAIN: Failed to connect to uTorrent: %s", e)
+        except:
+            Logger.exception("MAIN: Failed to connect to uTorrent")
 
         # if we are using links with uTorrent it means we need to pause it in order to access the files
         if useLink != "no":
@@ -256,8 +253,8 @@ if __name__ == "__main__":
 
     try:
         inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
-    except Exception as e:
-        Logger.error("MAIN: There was a problem loading variables: %s", e)
+    except:
+        Logger.exception("MAIN: There was a problem loading variables")
         sys.exit(-1)
 
     main(inputDirectory, inputName, inputCategory, inputHash, inputID)

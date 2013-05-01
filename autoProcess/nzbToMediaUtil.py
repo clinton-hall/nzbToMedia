@@ -34,8 +34,8 @@ def create_destination(outputDestination):
     try:
         Logger.info("CREATE DESTINATION: Creating destination folder: %s", outputDestination)
         os.makedirs(outputDestination)
-    except Exception, e:
-        Logger.error("CREATE DESTINATION: Not possible to create destination folder: %s. Exiting", e)
+    except:
+        Logger.exception("CREATE DESTINATION: Not possible to create destination folder. Exiting")
         sys.exit(-1)
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
@@ -155,10 +155,11 @@ def copy_link(filePath, targetDirectory, useLink, outputDestination):
             Logger.info("COPYLINK: Hard linking %s to %s", filePath, targetDirectory)
             linktastic.link(filePath, targetDirectory)
         except:
+            Logger.exception("COPYLINK")
             if os.path.isfile(targetDirectory):
-                Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+                Logger.warn("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
             else:
-                Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
+                Logger.warn("COPYLINK: Something went wrong in linktastic.link, copying instead")
                 Logger.debug("COPYLINK: Copying %s to %s", filePath, targetDirectory)
                 shutil.copy(filePath, targetDirectory)
     elif useLink == "sym":
@@ -168,8 +169,9 @@ def copy_link(filePath, targetDirectory, useLink, outputDestination):
             Logger.info("COPYLINK: Sym linking %s to %s", targetDirectory, filePath)
             linktastic.symlink(targetDirectory, filePath)
         except:
+            Logger.exception("COPYLINK")
             if os.path.isfile(targetDirectory):
-                Logger.info("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+                Logger.warn("COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
             else:
                 Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
                 Logger.debug("COPYLINK: Copying %s to %s", filePath, targetDirectory)
@@ -190,8 +192,8 @@ def flatten(outputDestination):
             target = os.path.join(outputDestination, filename)
             try:
                 shutil.move(source, target)
-            except OSError:
-                Logger.error("FLATTEN: Could not flatten %s", source)
+            except:
+                Logger.exception("FLATTEN: Could not flatten %s", source)
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
 

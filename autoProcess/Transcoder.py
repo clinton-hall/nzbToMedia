@@ -101,8 +101,8 @@ def Transcode_directory(dirName):
                 result = 1 # set result to failed in case call fails.
                 try:
                     result = call(command)
-                except e:
-                    Logger.error("Transcoding of video %s failed due to: ", filePath, str(e))
+                except:
+                    Logger.exception("Transcoding of video %s has failed", filePath)
                 if result == 0:
                     Logger.info("Transcoding of video %s to %s succeded", filePath, newfilePath)
                     if duplicate == 0: # we get rid of the original file

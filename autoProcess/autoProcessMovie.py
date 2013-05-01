@@ -69,8 +69,8 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
 
     try:
         urlObj = myOpener.openit(url)
-    except IOError, e:
-        Logger.error("Unable to open URL: %s", str(e))
+    except:
+        Logger.exception("Unable to open URL")
         return ""
 
     movie_id = ""
@@ -100,9 +100,9 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
                 break
     except:
         if not imdbid:
-            Logger.error("Could not parse database results to determine imdbid or movie id")
+            Logger.exception("Could not parse database results to determine imdbid or movie id")
         else:
-            Logger.error("Could not parse database results to determine movie id for imdbid: %s", imdbid)
+            Logger.exception("Could not parse database results to determine movie id for imdbid: %s", imdbid)
 
     return movie_id
 
@@ -116,15 +116,15 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
 
     try:
         urlObj = myOpener.openit(url)
-    except IOError, e:
-        Logger.error("Unable to open URL: %s", str(e))
+    except:
+        Logger.exception("Unable to open URL")
         return "", clientAgent, "none", "none"
     result = json.load(urlObj)
     try:
         movie_status = result["movie"]["status"]["identifier"]
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
-    except e: # index out of range/doesn't exist?
-        Logger.error("Could not find a status for this movie due to: %s", str(e))
+    except: # index out of range/doesn't exist?
+        Logger.exception("Could not find a status for this movie")
         movie_status = ""
     try:
         release_status = "none"
@@ -180,7 +180,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
             Logger.info("Could not find a download_id in the database for this movie")
             release_status = "none"
     except: # index out of range/doesn't exist?
-        Logger.error("Could not find a download_id for this movie")
+        Logger.exception("Could not find a download_id for this movie")
         download_id = "none"
     return movie_status, clientAgent, download_id, release_status
 
@@ -268,8 +268,8 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
         try:
             urlObj = myOpener.openit(url)
-        except IOError, e:
-            Logger.error("Unable to open URL: %s", str(e))
+        except:
+            Logger.exception("Unable to open URL")
             return 1 # failure
 
         result = json.load(urlObj)
@@ -296,8 +296,8 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
         try:
             urlObj = myOpener.openit(url)
-        except IOError, e:
-            Logger.error("Unable to open URL: %s", str(e))
+        except:
+            Logger.exception("Unable to open URL")
             return 1 # failure
 
         result = urlObj.readlines()
@@ -309,8 +309,8 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
             Logger.info("Deleting failed files and folder %s", dirName)
             try:
                 shutil.rmtree(dirName)
-            except e:
-                Logger.error("Unable to delete folder %s due to: %s", dirName, str(e))
+            except:
+                Logger.exception("Unable to delete folder %s", dirName)
         return 0 # success
     
     if nzbName == "Manual Run":
