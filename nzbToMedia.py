@@ -365,7 +365,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     download_id = ""
     if os.environ.has_key('NZBPR_COUCHPOTATO'):
         download_id = os.environ['NZBPR_COUCHPOTATO']
-    nzbDir, inputName, inputCategory = (os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], os.environ['NZBPP_CATEGORY'])
+    nzbDir, inputName, inputCategory = (os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], os.environ['NZBPP_CATEGORY'])
 # SABnzbd
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:

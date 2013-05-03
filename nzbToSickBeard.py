@@ -197,7 +197,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # All checks done, now launching the script.
     Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
-    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
+    result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status)
 # SABnzbd
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
