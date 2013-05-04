@@ -1,5 +1,17 @@
 Change_LOG / History
 
+V8.1 04/05/2013
+
+Impacts All
+Improved exception logging for error conditions
+
+Impacts Torrents
+Fixed an import error when extracting
+
+Impacts NZBs
+Fixed passthrough of nzbName from NZBGet to pass the .nzb extension (required for SickBeard's failed fork)
+
+
 V8.0 28/04/2013
 
 Impacts All

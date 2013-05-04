@@ -3,7 +3,7 @@ import sys
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import logging
 from subprocess import call, Popen, PIPE
-from nzbToMediaUtil import create_destination
+from autoProcess.nzbToMediaUtil import create_destination
 
 
 Logger = logging.getLogger()

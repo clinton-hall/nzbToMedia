@@ -42,7 +42,7 @@ Installation
 
 ### Windows
 
-Download the the compiled versions of this code here [nzbToMedia - win - v8.0.zip](http://bit.ly/188imjs "nzbToMedia - win - v8.0.zip")
+Download the the compiled versions of this code from the links provided here [nzbToMedia installation](https://github.com/clinton-hall/nzbToMedia/wiki/installation")
 
 ### General
 
