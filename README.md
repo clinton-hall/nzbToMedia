@@ -42,7 +42,7 @@ Installation
 
 ### Windows
 
-Download the the compiled versions of this code from the links provided here [nzbToMedia installation](https://github.com/clinton-hall/nzbToMedia/wiki/installation")
+Download the the compiled versions of this code from the links provided here [nzbToMedia installation](https://github.com/clinton-hall/nzbToMedia/wiki/installation)
 
 ### General
 
