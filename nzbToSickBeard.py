@@ -131,7 +131,7 @@ Logger = logging.getLogger(__name__)
 Logger.info("====================") # Seperate old from new log
 Logger.info("nzbToSickBeard %s", VERSION)
 
-WakeUp
+WakeUp()
 
 # NZBGet V11+
 # Check if the script is called from nzbget 11.0 or later
