@@ -31,7 +31,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     video = int(0)
     video2 = int(0)
     foundFile = int(0)
-    deleteOriginal = int(0)
     numCompressed = int(0)
     extractionSuccess = False
 
