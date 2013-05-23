@@ -26,6 +26,7 @@ import shutil
 
 import Transcoder
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
@@ -106,9 +107,29 @@ def processEpisode(dirName, nzbName=None, failed=False):
     except (ConfigParser.NoOptionError, ValueError):
         delete_failed = 0
 
+    mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
+    minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
     process_all_exceptions(nzbName.lower(), dirName)
 
+    # Now check if movie files exist in destination:
+    video = int(0)
+    for dirpath, dirnames, filenames in os.walk(dirName):
+        for file in filenames:
+            filePath = os.path.join(dirpath, file)
+            fileExtension = os.path.splitext(file)[1]
+            if fileExtension in mediaContainer:  # If the file is a video file
+                if is_sample(filePath, nzbName, minSampleSize):
+                    Logger.debug("Removing sample file: %s", filePath)
+                    os.unlink(filePath)  # remove samples
+                else:
+                    video = video + 1
+    if video > 0:  # Check that a video exists. if not, assume failed.
+        flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
+    else:
+        Logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
+        status = int(1)
+        failed = True
 
     #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
     if nzbName == "Manual Run" and watch_dir == "":

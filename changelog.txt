@@ -4,9 +4,14 @@ VX.X
 
 Impacts All
 Add option to set the "wait_for" period. This is how long the script waits to see if the movie changes status in CouchPotato.
+minSampleSize now moved to [extensions] section and availabe for nzbs and torrents.
+
+Impacts NZBs
+Added Flatten of input directory and test for media files (including sample deletion) in autoProcessTV
 
 Impacts Torrents
 Fixed Delete_Original option
+
 
 V8.1 04/05/2013
 

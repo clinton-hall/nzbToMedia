@@ -99,7 +99,7 @@ def migrate():
         pass
     for item in original:
         option, value = item
-        if option in ["compressedExtensions", "mediaExtensions", "metaExtensions"]:
+        if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
             section = "Extensions" # these were moved
         if option == "useLink": # Sym links supported now as well.
             try:

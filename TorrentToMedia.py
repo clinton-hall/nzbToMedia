@@ -223,7 +223,6 @@ if __name__ == "__main__":
                                                                                         # EXAMPLE VALUES:
     clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
     useLink = config.get("Torrent", "useLink")                                          # no | hard | sym
-    minSampleSize = int(config.get("Torrent", "minSampleSize"))                         # 200 (in MB)
     outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
     categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
 
@@ -236,6 +235,7 @@ if __name__ == "__main__":
     compressedContainer = (config.get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
     metaContainer = (config.get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
+    minSampleSize = int(config.get("Extensions", "minSampleSize"))                      # 200 (in MB)
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
