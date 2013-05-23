@@ -205,6 +205,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     delay = float(config.get("CouchPotato", "delay"))
     method = config.get("CouchPotato", "method")
     delete_failed = int(config.get("CouchPotato", "delete_failed"))
+    wait_for = int(config.get("CouchPotato", "wait_for"))
 
     try:
         ssl = int(config.get("CouchPotato", "ssl"))
@@ -318,16 +319,17 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     start = datetime.datetime.now()  # set time for timeout
-    while (datetime.datetime.now() - start) < datetime.timedelta(minutes=2):  # only wait 2 minutes, then return to TorrentToMedia
+    pause_for = wait_for * 10 # keep this so we only ever have 6 complete loops.
+    while (datetime.datetime.now() - start) < datetime.timedelta(minutes=wait_for):  # only wait 2 (default) minutes, then return.
         movie_status, clientAgent, download_id, release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id) # get the current status fo this movie.
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success
-        time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
+        time.sleep(pause_for) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
     else:
         if release_status != initial_release_status and release_status != "none":  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
             return 0 # success
         else: # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now. 
-            Logger.warning("The movie does not appear to have changed status after 2 minutes. Please check CouchPotato Logs")
+            Logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
             return 1 # failure
