@@ -165,7 +165,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
             Logger.info("The download succeeded. Sending process request to SickBeard")
         else:
             Logger.info("The download failed. Nothing to process")
-            if delete_failed and not dirName in ['sys.argv[0]','/','']:
+            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
                 delete(dirName)
             return 0 # Success (as far as this script is concerned)
     

@@ -412,6 +412,9 @@ elif inputCategory == mlCategory:
 elif inputCategory == gzCategory:
     Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
     result = autoProcessGames.process(nzbDir, inputName, status)
+else:
+    Logger.warning("MAIN: The download category %s does not match any category defines in autoProcessMedia.cfg. Exiting.", inputCategory)
+    sys.exit(POSTPROCESS_ERROR)
 
 if result == 0:
     Logger.info("MAIN: The autoProcess* script completed successfully.")
