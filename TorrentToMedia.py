@@ -79,7 +79,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if not (inputCategory == cpsCategory or inputCategory == sbCategory): #process all for non-video categories.
-                Logger.info("MAIN: Found file %s for category %s", filepath, inputCategory)
+                Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
             elif fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):  # Ignore samples
