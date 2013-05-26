@@ -10,6 +10,7 @@ def Transcode_directory(dirName):
     
     if os.name == 'nt':
         ffmpeg = os.path.join(os.path.dirname(sys.argv[0]), 'ffmpeg\\bin\\ffmpeg.exe') # note, will need to package in this dir.
+        useNiceness = False
         if not os.path.isfile(ffmpeg): # problem
             Logger.error("ffmpeg not found. ffmpeg needs to be located at: %s", ffmpeg) 
             Logger.info("Cannot transcode files in folder %s", dirName)
@@ -25,6 +26,7 @@ def Transcode_directory(dirName):
                 ffmpeg = 'ffmpeg'
         else:
             ffmpeg = 'ffmpeg'
+        useNiceness = True
     
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -47,6 +49,8 @@ def Transcode_directory(dirName):
     outputAudioCodec = config.get("Transcoder", "outputAudioCodec").strip()
     outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate").strip()
     outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec").strip()
+    if useNiceness:
+        niceness = int(config.get("Transcoder", "niceness"))
 
     map(lambda ext: ext.strip(), mediaContainer)
     map(lambda ext: ext.strip(), ignoreExtensions)
@@ -65,7 +69,15 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
         
+<<<<<<< HEAD
                 command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0']
+=======
+                command = [ffmpeg, '-i', filePath, '-map', '0']
+
+                if useNiceness:
+                    command = ['nice', '-%d' % niceness] + command
+
+>>>>>>> master
                 if len(outputVideoCodec) > 0:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
