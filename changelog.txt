@@ -1,16 +1,19 @@
 Change_LOG / History
 
-VX.X
+V8.2 26/05/2013
 
 Impacts All
 Add option to set the "wait_for" period. This is how long the script waits to see if the movie changes status in CouchPotato.
 minSampleSize now moved to [extensions] section and availabe for nzbs and torrents.
+New option in transcoder to use "niceness" on Linux.
+Remove excess logging from transcoder.
 
 Impacts NZBs
 Added Flatten of input directory and test for media files (including sample deletion) in autoProcessTV
 
 Impacts Torrents
 Fixed Delete_Original option
+Fix type which caused crash if not sickbeard or couchpotato.
 
 
 V8.1 04/05/2013
