@@ -68,16 +68,12 @@ def Transcode_directory(dirName):
                 if ext == outputVideoExtension: # we need to change the name to prevent overwriting itself.
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
-        
-<<<<<<< HEAD
+
                 command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0']
-=======
-                command = [ffmpeg, '-i', filePath, '-map', '0']
 
                 if useNiceness:
                     command = ['nice', '-%d' % niceness] + command
 
->>>>>>> master
                 if len(outputVideoCodec) > 0:
                     command.append('-c:v')
                     command.append(outputVideoCodec)
