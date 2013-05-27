@@ -92,6 +92,9 @@ def Transcode_directory(dirName):
                 if len(outputAudioCodec) > 0:
                     command.append('-c:a')
                     command.append(outputAudioCodec)
+                    if outputAudioCodec == 'aac': # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
+                        command.append('-strict')
+                        command.append('-2')
                 else:
                     command.append('-c:a')
                     command.append('copy')
