@@ -28,12 +28,6 @@
 # CouchPotato port.
 #cpsport=5050
 
-# CouchPotato username.
-#cpsusername= 
-
-# CouchPotato password.
-#cpspassword=
-
 # CouchPotato uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
@@ -119,12 +113,6 @@
 # HeadPhones port.
 #hpport=8181
 
-# HeadPhones username.
-#hpusername= 
-
-# HeadPhones password.
-#hppassword=
-
 # HeadPhones uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
@@ -184,12 +172,6 @@
 
 # Gamez port.
 #gzport=8085
-
-# Gamez username.
-#gzusername=
-
-# Gamez password.
-#gzpassword=
 
 # Gamez uses ssl (0, 1).
 #

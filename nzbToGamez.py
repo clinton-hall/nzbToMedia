@@ -28,12 +28,6 @@
 # Gamez port.
 #gzport=8085
 
-# Gamez username.
-#gzusername=
-
-# Gamez password.
-#gzpassword=
-
 # Gamez uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.

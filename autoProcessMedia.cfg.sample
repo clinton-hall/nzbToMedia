@@ -8,8 +8,6 @@ cpsCategory = movie
 apikey =
 host = localhost
 port = 5050
-username = 
-password =
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 ssl = 0
 web_root =
@@ -42,8 +40,6 @@ hpCategory = music
 apikey =
 host = localhost
 port = 8181
-username = 
-password =
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 ssl = 0
 web_root =
@@ -70,8 +66,6 @@ gzCategory = games
 apikey =
 host = localhost
 port = 8085
-username = 
-password =
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 ssl = 0
 web_root =

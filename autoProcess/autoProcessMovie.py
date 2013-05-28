@@ -14,24 +14,6 @@ from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
 
-class AuthURLOpener(urllib.FancyURLopener):
-    def __init__(self, user, pw):
-        self.username = user
-        self.password = pw
-        self.numTries = 0
-        urllib.FancyURLopener.__init__(self)
-
-    def prompt_user_passwd(self, host, realm):
-        if self.numTries == 0:
-            self.numTries = 1
-            return (self.username, self.password)
-        else:
-            return ('', '')
-
-    def openit(self, url):
-        self.numTries = 0
-        return urllib.FancyURLopener.open(self, url)
-
 def get_imdb(nzbName, dirName):
  
     imdbid = ""    
@@ -59,7 +41,7 @@ def get_imdb(nzbName, dirName):
         Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
         return ""
 
-def get_movie_info(myOpener, baseURL, imdbid, download_id):
+def get_movie_info(baseURL, imdbid, download_id):
     
     if not imdbid and not download_id:
         return ""
@@ -68,7 +50,7 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
     Logger.debug("Opening URL: %s", url)
 
     try:
-        urlObj = myOpener.openit(url)
+        urlObj = urllib.urlopen(url)
     except:
         Logger.exception("Unable to open URL")
         return ""
@@ -106,7 +88,7 @@ def get_movie_info(myOpener, baseURL, imdbid, download_id):
 
     return movie_id
 
-def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
+def get_status(baseURL, movie_id, clientAgent, download_id):
     
     if not movie_id:
         return "", clientAgent, "none", "none"
@@ -115,7 +97,7 @@ def get_status(myOpener, baseURL, movie_id, clientAgent, download_id):
     Logger.debug("Opening URL: %s", url)
 
     try:
-        urlObj = myOpener.openit(url)
+        urlObj = urllib.urlopen(url)
     except:
         Logger.exception("Unable to open URL")
         return "", clientAgent, "none", "none"
@@ -199,8 +181,6 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     host = config.get("CouchPotato", "host")
     port = config.get("CouchPotato", "port")
-    username = config.get("CouchPotato", "username")
-    password = config.get("CouchPotato", "password")
     apikey = config.get("CouchPotato", "apikey")
     delay = float(config.get("CouchPotato", "delay"))
     method = config.get("CouchPotato", "method")
@@ -222,8 +202,6 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
 
-    myOpener = AuthURLOpener(username, password)
-
     nzbName = str(nzbName) # make sure it is a string
     
     imdbid = get_imdb(nzbName, dirName)
@@ -238,9 +216,9 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
-    movie_id = get_movie_info(myOpener, baseURL, imdbid, download_id) # get the CPS database movie id this movie.
+    movie_id = get_movie_info(baseURL, imdbid, download_id) # get the CPS database movie id this movie.
    
-    initial_status, clientAgent, download_id, initial_release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id)
+    initial_status, clientAgent, download_id, initial_release_status = get_status(baseURL, movie_id, clientAgent, download_id)
     
     process_all_exceptions(nzbName.lower(), dirName)
 
@@ -268,7 +246,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         Logger.debug("Opening URL: %s", url)
 
         try:
-            urlObj = myOpener.openit(url)
+            urlObj = urllib.urlopen(url)
         except:
             Logger.exception("Unable to open URL")
             return 1 # failure
@@ -296,7 +274,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         Logger.debug("Opening URL: %s", url)
 
         try:
-            urlObj = myOpener.openit(url)
+            urlObj = urllib.urlopen(url)
         except:
             Logger.exception("Unable to open URL")
             return 1 # failure
@@ -321,7 +299,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     start = datetime.datetime.now()  # set time for timeout
     pause_for = wait_for * 10 # keep this so we only ever have 6 complete loops.
     while (datetime.datetime.now() - start) < datetime.timedelta(minutes=wait_for):  # only wait 2 (default) minutes, then return.
-        movie_status, clientAgent, download_id, release_status = get_status(myOpener, baseURL, movie_id, clientAgent, download_id) # get the current status fo this movie.
+        movie_status, clientAgent, download_id, release_status = get_status(baseURL, movie_id, clientAgent, download_id) # get the current status fo this movie.
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
             Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
             return 0 # success

@@ -12,24 +12,6 @@ from nzbToMediaEnv import *
 
 Logger = logging.getLogger()
 
-class AuthURLOpener(urllib.FancyURLopener):
-    def __init__(self, user, pw):
-        self.username = user
-        self.password = pw
-        self.numTries = 0
-        urllib.FancyURLopener.__init__(self)
-
-    def prompt_user_passwd(self, host, realm):
-        if self.numTries == 0:
-            self.numTries = 1
-            return (self.username, self.password)
-        else:
-            return ('', '')
-
-    def openit(self, url):
-        self.numTries = 0
-        return urllib.FancyURLopener.open(self, url)
-
 def process(dirName, nzbName=None, status=0):
 
     status = int(status)
@@ -45,8 +27,6 @@ def process(dirName, nzbName=None, status=0):
 
     host = config.get("Gamez", "host")
     port = config.get("Gamez", "port")
-    username = config.get("Gamez", "username")
-    password = config.get("Gamez", "password")
     apikey = config.get("Gamez", "apikey")
 
     try:
@@ -58,8 +38,6 @@ def process(dirName, nzbName=None, status=0):
         web_root = config.get("Gamez", "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
-
-    myOpener = AuthURLOpener(username, password)
 
     if ssl:
         protocol = "https://"
@@ -79,7 +57,7 @@ def process(dirName, nzbName=None, status=0):
     Logger.debug("Opening URL: %s", url)
 
     try:
-        urlObj = myOpener.openit(url)
+        urlObj = urllib.urlopen(url)
     except:
         Logger.exception("Unable to open URL")
         return 1 # failure

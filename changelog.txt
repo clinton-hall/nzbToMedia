@@ -1,5 +1,12 @@
 Change_LOG / History
 
+VX.X XX/XX/2013
+
+Impacts All
+Allow use of experimental AAC codec in transcoder.
+Remove username and password when api key is used. 
+
+
 V8.2 26/05/2013
 
 Impacts All

@@ -28,12 +28,6 @@
 # HeadPhones port.
 #hpport=8181
 
-# HeadPhones username.
-#hpusername= 
-
-# HeadPhones password.
-#hppassword=
-
 # HeadPhones uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.

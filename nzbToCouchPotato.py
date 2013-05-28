@@ -28,12 +28,6 @@
 # CouchPotato port.
 #cpsport=5050
 
-# CouchPotato username.
-#cpsusername= 
-
-# CouchPotato password.
-#cpspassword=
-
 # CouchPotato uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.

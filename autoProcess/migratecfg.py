@@ -33,6 +33,8 @@ def migrate():
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
+        if option in ["username", "password" ]: # these are no-longer needed.
+            continue
         confignew.set(section, option, value)
 
     section = "SickBeard"
@@ -68,6 +70,8 @@ def migrate():
     except:
         pass
     for item in original:
+        if option in ["username", "password" ]: # these are no-longer needed.
+            continue
         option, value = item
         confignew.set(section, option, value) 
 
@@ -88,6 +92,8 @@ def migrate():
     except:
         pass
     for item in original:
+        if option in ["username", "password" ]: # these are no-longer needed.
+            continue
         option, value = item
         confignew.set(section, option, value)
 
@@ -225,8 +231,8 @@ def addnzbget():
     confignew.read(configFilenamenew)
 
     section = "CouchPotato"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED']
-    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'delay', 'method', 'delete_failed']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED']
+    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed']
     for index in range(len(envKeys)):
         key = 'NZBPO_CPS' + envKeys[index]
         if os.environ.has_key(key):
@@ -246,8 +252,8 @@ def addnzbget():
             confignew.set(section, option, value)
 
     section = "HeadPhones"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'DELAY']
-    cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'delay']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY']
+    cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay']
     for index in range(len(envKeys)):
         key = 'NZBPO_HP' + envKeys[index]
         if os.environ.has_key(key):
@@ -266,8 +272,8 @@ def addnzbget():
             confignew.set(section, option, value)
 
     section = "Gamez"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
-    cfgKeys = ['gzCategory', 'apikey', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
+    cfgKeys = ['gzCategory', 'apikey', 'host', 'port', 'ssl', 'web_root']
     for index in range(len(envKeys)):
         key = 'NZBPO_GZ' + envKeys[index]
         if os.environ.has_key(key):
