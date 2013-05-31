@@ -54,7 +54,7 @@ class AuthURLOpener(urllib.FancyURLopener):
 def delete(dirName):
     Logger.info("Deleting failed files and folder %s", dirName)
     try:
-        shutil.rmtree(dirName, true)
+        shutil.rmtree(dirName, True)
     except:
         Logger.exception("Unable to delete folder %s", dirName)
 
