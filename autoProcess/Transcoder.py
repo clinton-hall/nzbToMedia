@@ -105,7 +105,7 @@ def Transcode_directory(dirName):
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
 
-                Logger.debug("Transcoding video %s to %s", filePath, newfilePath)
+                Logger.info("Transcoding video: %s", file)
                 result = 1 # set result to failed in case call fails.
                 try:
                     result = call(command)
