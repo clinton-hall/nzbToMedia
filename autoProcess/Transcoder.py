@@ -107,6 +107,14 @@ def Transcode_directory(dirName):
                 else:
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
+                
+                try: # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
+                    os.remove(newFilePath)
+                except OSError, e:
+                    if e.errno != errno.ENOENT: # Ignore the error if it's just telling us that the file doesn't exist
+                        Logger.debug("Error when removing transcoding target: %s", e)
+                except Exception, e:
+                    Logger.debug("Error when removing transcoding target: %s", e)
 
                 Logger.info("Transcoding video: %s", file)
                 result = 1 # set result to failed in case call fails.
