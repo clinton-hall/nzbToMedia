@@ -52,7 +52,7 @@ def process(dirName, nzbName=None, status=0):
     if status == 0:
         downloadStatus = 'Downloaded'
 
-    URL = baseURL + "UPDATEREQUESTEDSTATUS&db_id=" + gamezID + "&status=" + downloadStatus
+    url = baseURL + "UPDATEREQUESTEDSTATUS&db_id=" + gamezID + "&status=" + downloadStatus
 
     Logger.debug("Opening URL: %s", url)
 
