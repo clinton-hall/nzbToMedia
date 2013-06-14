@@ -54,11 +54,18 @@ def processEpisode(dirName, nzbName=None, status=0):
         web_root = config.get("Mylar", "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
-    
+
+    try:
+        watch_dir = config.get("Mylar", "watch_dir")
+    except ConfigParser.NoOptionError:
+        watch_dir = ""
     params = {}
+
+    if dirName == "Manual Run" and watch_dir != "":
+        dirName = watch_dir
     
     params['nzb_folder'] = dirName
-    if nzbName != None:
+    if nzbName != None and nzbName != "Manual Run":
         params['nzb_name'] = nzbName
         
     myOpener = AuthURLOpener(username, password)

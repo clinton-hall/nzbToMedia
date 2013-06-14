@@ -57,6 +57,7 @@ password=
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 web_root=
 ssl=0
+watch_dir = 
 
 
 [Gamez]

@@ -172,8 +172,10 @@ elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
     Logger.info("Script triggered from NZBGet, starting autoProcessComics...")
     result = autoProcessComics.processEpisode(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
-    Logger.warn("Invalid number of arguments received from client. Exiting")
-    sys.exit(-1)
+
+    Logger.warn("Invalid number of arguments received from client.")
+    Logger.info("Running autoProcessComics as a manual run...")
+    result = autoProcessComics.processEpisode('Manual Run', 'Manual Run', 0)
 
 if result == 0:
     Logger.info("MAIN: The autoProcessComics script completed successfully.")
