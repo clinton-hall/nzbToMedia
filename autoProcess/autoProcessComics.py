@@ -65,7 +65,7 @@ def processEpisode(dirName, nzbName=None, status=0):
         dirName = watch_dir
     
     params['nzb_folder'] = dirName
-    if nzbName != None and nzbName != "Manual Run":
+    if nzbName != None:
         params['nzb_name'] = nzbName
         
     myOpener = AuthURLOpener(username, password)
