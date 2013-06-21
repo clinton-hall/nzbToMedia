@@ -10,14 +10,6 @@
 #
 # NOTE: This script requires Python to be installed on your system.
 
-##############################################################################
-### OPTIONS                                                                ###
-
-# ResetDateTime (yes, no).
-#
-# Do you want to reset the date modified and accessed?
-#ResetDateTime=yes
-
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
