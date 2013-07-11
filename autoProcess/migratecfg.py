@@ -231,8 +231,8 @@ def addnzbget():
     confignew.read(configFilenamenew)
 
     section = "CouchPotato"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED']
-    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS']
+    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS']
     for index in range(len(envKeys)):
         key = 'NZBPO_CPS' + envKeys[index]
         if os.environ.has_key(key):

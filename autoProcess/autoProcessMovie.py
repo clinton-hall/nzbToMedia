@@ -202,6 +202,11 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
 
+    try:
+        remoteCPS = int(config.get("CouchPotato", "remoteCPS"))
+    except (ConfigParser.NoOptionError, ValueError):
+        remoteCPS = 0
+
     nzbName = str(nzbName) # make sure it is a string
     
     imdbid = get_imdb(nzbName, dirName)
@@ -235,7 +240,10 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         else:
             command = "renamer.scan"
             if clientAgent != "manual" and download_id != "none":
-                command = command + "/?movie_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
+                if remoteCPS == 1:
+                    command = command + "/?downloader=" + clientAgent + "&download_id=" + download_id
+                else:
+                    command = command + "/?movie_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
 
         url = baseURL + command
 

@@ -53,6 +53,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
 
+# CouchPotatoServer and NZBGet are on same system (0, 1).
+#
+# set to 1 if CouchPotato and NZBGet are on the same system, or 0 if on teh same system.
+#remoteCPS = 0
+
 ## SickBeard
 
 # SickBeard script category.

@@ -1,10 +1,18 @@
 Change_LOG / History
 
-VX.X XX/XX/2013
+V8.3 11/07/2013
 
 Impacts All
 Allow use of experimental AAC codec in transcoder.
-Remove username and password when api key is used. 
+Remove username and password when api key is used.
+Add .m4v as media
+Added ResetDateTime.py
+Manual Opion for Mylar script.
+Fixes for Gamez script.
+
+Impacts NZBs
+Added option to remove folder path when CouchPotato on different system to downlaoder.
+NZBGet v11.0 stable now current.
 
 
 V8.2 26/05/2013
