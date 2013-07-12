@@ -31,7 +31,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     video = int(0)
     video2 = int(0)
     foundFile = int(0)
-    numCompressed = int(0)
+    extracted_folder = []
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
@@ -98,8 +98,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 except:
                     Logger.exception("MAIN: Failed to link file: %s", file)
             elif fileExtension in compressedContainer:
-                numCompressed = numCompressed + 1
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and numCompressed > 1: # find part numbers in second "extension" from right, if we have more than 1 compressed file.
+                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder: # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
                     if part == 1: # we only want to extract the primary part.
                         Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
@@ -109,7 +108,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
                     extractor.extract(filePath, outputDestination)
-                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (dont need to pause archived content)
+                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
+                    extracted_folder.append(os.path.dirname(filePath))
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
             else:
