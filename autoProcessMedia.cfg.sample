@@ -77,7 +77,7 @@ web_root =
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, other
 clientAgent = other
-###### useLink - Set to hard for physical links, sym for symbolic links, and no to not use links
+###### useLink - Set to hard for physical links, sym for symbolic links, move to move, and no to not use links (copy)
 useLink = hard
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/

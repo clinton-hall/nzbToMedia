@@ -176,6 +176,9 @@ def copy_link(filePath, targetDirectory, useLink, outputDestination):
                 Logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
                 Logger.debug("COPYLINK: Copying %s to %s", filePath, targetDirectory)
                 shutil.copy(filePath, targetDirectory)
+    elif useLink == "move":
+        Logger.debug("Moving %s to %s", filePath, targetDirectory)
+        shutil.move(filePath, targetDirectory)
     else:
         Logger.debug("Copying %s to %s", filePath, targetDirectory)
         shutil.copy(filePath, targetDirectory)
