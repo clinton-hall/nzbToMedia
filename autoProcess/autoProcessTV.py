@@ -103,9 +103,14 @@ def processEpisode(dirName, nzbName=None, failed=False):
         transcode = 0
 
     try:
-        delete_failed = int(config.get("CouchPotato", "delete_failed"))
+        delete_failed = int(config.get("SickBeard", "delete_failed"))
     except (ConfigParser.NoOptionError, ValueError):
         delete_failed = 0
+    try:
+        delay = float(config.get("SickBeard", "delay"))
+    except (ConfigParser.NoOptionError, ValueError):
+        delay = 0
+
 
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
@@ -184,6 +189,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
         protocol = "http://"
 
     url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(params)
+
+    Logger.info("Waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
+
+    time.sleep(delay)
 
     Logger.debug("Opening URL: %s", url)
 

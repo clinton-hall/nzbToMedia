@@ -1,5 +1,16 @@
 Change_LOG / History
 
+V8.4 XX/XX/2013
+
+Impacts Torrents
+Don't include 720p or 1080p as parts for extracting.
+Extracts all sub-folders.
+Added option to Move files.
+
+Impacts All
+Added option for SickBeard delay (for forks that use 1 minute check.
+
+
 V8.3 11/07/2013
 
 Impacts All
