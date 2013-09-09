@@ -149,6 +149,10 @@ def is_sample(filePath, inputName, minSampleSize):
 
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
+    if os.path.isfile(targetDirectory):
+        Logger.info("COPYLINK: target file already exists. Nothing to be done")
+        return True
+
     create_destination(outputDestination)
     if useLink == "hard":
         try:

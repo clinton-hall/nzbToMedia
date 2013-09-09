@@ -40,8 +40,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     for category in categories:
         if category == inputCategory:
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
-            Logger.info("MAIN: Output directory set to: %s", outputDestination)
+            if os.path.basename(inputDirectory) == inputName:
+                Logger.info("MAIN: Download is a directory")
+                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
+            else:
+                Logger.info("MAIN: Download is not a directory")
+                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, os.path.splitext(safeName(inputName))[0]))
+                Logger.info("MAIN: Output directory set to: %s", outputDestination)
             break
         else:
             continue

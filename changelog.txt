@@ -6,6 +6,7 @@ Impacts Torrents
 Don't include 720p or 1080p as parts for extracting.
 Extracts all sub-folders.
 Added option to Move files.
+Fix for single file torrents linked to subfolder of same name.
 
 Impacts All
 Added option for SickBeard delay (for forks that use 1 minute check.
