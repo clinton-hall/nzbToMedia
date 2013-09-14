@@ -1,7 +1,7 @@
 # Make things easy and less error prone by centralising all common values
 
 # Global Constants
-VERSION = 'V8.3'
+VERSION = 'V8.4'
 
 # Constants pertinant to SabNzb
 SABNZB_NO_OF_ARGUMENTS = 8
