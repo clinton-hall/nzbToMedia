@@ -209,7 +209,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash and useLink != "no" and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
+    if clientAgent in ['utorrent', 'transmission'] and extractionSuccess == False and inputHash and useLink != "no" and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
         if clientAgent == 'utorrent':
             utorrentClass.start(inputHash)
