@@ -23,6 +23,7 @@ import autoProcess.autoProcessMovie as autoProcessMovie
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
+from transmissionrpc.client import Client as TransmissionClient
 
 def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
@@ -138,24 +139,37 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         status = 0
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent == 'utorrent' and extractionSuccess == False and inputHash:
-        try:
-            Logger.debug("MAIN: Connecting to uTorrent: %s", uTorrentWEBui)
-            utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-        except:
-            Logger.exception("MAIN: Failed to connect to uTorrent")
+    if clientAgent in ['utorrent', 'transmission'] and extractionSuccess == False and inputHash:
+        if clientAgent == 'utorrent':
+            try:
+                Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
+                utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to uTorrent")
+        else:
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
+                TransmissionClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to Transmission")
 
         # if we are using links with uTorrent it means we need to pause it in order to access the files
         if useLink != "no":
-            Logger.debug("MAIN: Stoping torrent %s in uTorrent while processing", inputName)
-            utorrentClass.stop(inputHash)
+            Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
+            if clientAgent == 'utorrent':            
+                utorrentClass.stop(inputHash)
+            else:
+                TransmissionClass.stop_torrent(inputID)
             time.sleep(5)  # Give uTorrent some time to catch up with the change
 
         # Delete torrent and torrentdata from uTorrent
         if deleteOriginal == 1:
-            Logger.debug("MAIN: Deleting torrent %s from uTorrent", inputName)
-            utorrentClass.removedata(inputHash)
-            utorrentClass.remove(inputHash)
+            Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
+            if clientAgent == 'utorrent':
+                utorrentClass.removedata(inputHash)
+                utorrentClass.remove(inputHash)
+            else:
+                TransmissionClass.remove_torrent(inputID, True)
             time.sleep(5)
 
     processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
@@ -196,8 +210,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent == 'utorrent' and extractionSuccess == False and inputHash and useLink != "no" and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
-        Logger.debug("MAIN: Starting torrent %s in uTorrent", inputName)
-        utorrentClass.start(inputHash)
+        Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
+        if clientAgent == 'utorrent':
+            utorrentClass.start(inputHash)
+        else:
+            TransmissionClass.start_torrent(inputID)
 
     Logger.info("MAIN: All done.")
 
@@ -235,6 +252,11 @@ if __name__ == "__main__":
     uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
+
+    TransmissionWEBui = config.get("Torrent", "TransmissionHost")                       # localhost
+    TransmissionWEBui = config.get("Torrent", "TransmissionPort")                       # 8084
+    TransmissionUSR = config.get("Torrent", "TransmissionUSR")                          # mysecretusr
+    TransmissionPWD = config.get("Torrent", "TransmissionPWD")                          # mysecretpwr
     
     deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
     

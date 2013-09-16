@@ -6,5 +6,3 @@ VERSION = 'V8.4'
 # Constants pertinant to SabNzb
 SABNZB_NO_OF_ARGUMENTS = 8
 
-# Constants pertinant to NzbGet
-NZBGET_NO_OF_ARGUMENTS = 6

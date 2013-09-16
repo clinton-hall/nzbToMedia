@@ -218,17 +218,6 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     Logger.info("Script triggered from SABnzbd, starting autoProcessMovie...")
     clientAgent = "sabnzbd"
     result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent)
-# NZBGet V10 or earlier
-elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
-    # NZBGet argv:
-    # 1  The final directory of the job (full path)
-    # 2  The original name of the NZB file
-    # 3  The status of the download: 0 == successful
-    # 4  The category of the download:
-    # 5  The download_id
-    Logger.info("Script triggered from NZBGet, starting autoProcessMovie...")
-    clientAgent = "nzbget"
-    result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[3], clientAgent, sys.argv[5])
 else:
     Logger.warn("Invalid number of arguments received from client.")
     Logger.info("Running autoProcessMovie as a manual run...")

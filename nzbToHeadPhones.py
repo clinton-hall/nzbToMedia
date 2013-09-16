@@ -163,16 +163,6 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("Script triggered from SABnzbd, starting autoProcessMusic...")
     result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[7])
-# NZBGet
-elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS:
-    # NZBGet argv:
-    # 1  The final directory of the job (full path)
-    # 2  The original name of the NZB file
-    # 3  The status of the download: 0 == successful
-    # 4  The category of the download:
-    # 5  The download_id
-    Logger.info("Script triggered from NZBGet, starting autoProcessMusic...")
-    result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[3])
 else:
     Logger.warn("Invalid number of arguments received from client.")
     Logger.info("Running autoProcessMusic as a manual run...")

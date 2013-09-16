@@ -88,6 +88,11 @@ categories = music_videos,pictures,software
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username
 uTorrentPWD = your password
+###### Transmission (You must edit this if your using TorrentToMedia.py with uTorrent)
+TransmissionHost = localhost
+TransmissionPort = 8084
+TransmissionUSR = your username
+TransmissionPWD = your password
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
 deleteOriginal = 0
 

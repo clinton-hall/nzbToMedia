@@ -366,18 +366,6 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     Logger.info("MAIN: Script triggered from SABnzbd")
     clientAgent = "sabnzbd"
     nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5], '')
-# NZBGet
-elif len(sys.argv) == NZBGET_NO_OF_ARGUMENTS: # nzbget v10 or earlier.
-    # NZBGet argv:
-    # 1  The final directory of the job (full path)
-    # 2  The original name of the NZB file
-    # 3  The status of the download: 0 == successful
-    # 4  The category of the download:
-    # 5  The download_id
-    Logger.info("MAIN: Script triggered from NZBGet")
-    clientAgent = "nzbget"
-    nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5])
-
 else: # only CPS supports this manual run for now.
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
