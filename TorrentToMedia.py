@@ -253,8 +253,8 @@ if __name__ == "__main__":
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
 
-    TransmissionWEBui = config.get("Torrent", "TransmissionHost")                       # localhost
-    TransmissionWEBui = config.get("Torrent", "TransmissionPort")                       # 8084
+    TransmissionHost = config.get("Torrent", "TransmissionHost")                       # localhost
+    TransmissionPort = config.get("Torrent", "TransmissionPort")                       # 8084
     TransmissionUSR = config.get("Torrent", "TransmissionUSR")                          # mysecretusr
     TransmissionPWD = config.get("Torrent", "TransmissionPWD")                          # mysecretpwr
     
