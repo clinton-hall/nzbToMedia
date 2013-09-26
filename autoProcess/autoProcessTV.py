@@ -191,7 +191,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(params)
 
-    Logger.info("Waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
+    Logger.info("Waiting for %s seconds to allow SB to process newly extracted files", str(delay))
 
     time.sleep(delay)
 
