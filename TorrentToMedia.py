@@ -177,7 +177,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if inputCategory and not (inputCategory in processCategories): # no extra processign to be done... yet.
         Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
         result = 1
-    elif status == 0:
+    elif status == 0 or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
