@@ -56,35 +56,45 @@ def get_movie_info(baseURL, imdbid, download_id):
         return ""
 
     movie_id = ""
+    releaselist = []
     try:
         result = json.load(urlObj)
         movieid = [item["id"] for item in result["movies"]]
         library = [item["library"]["identifier"] for item in result["movies"]]
-        releases = [item["releases"] for item in result["movies"]]
-        imdbid_list = []
+    except:
+        Logger.exception("Unable to parse json data for movies")
+        return ""
+
+    for index in range(len(movieid)):
         if not imdbid:
-            movieindex = [index for index in range(len(movieid)) if len(releases[index]) > 0] 
-            for index in movieindex:
-                releaseindex = [index2 for index2 in range(len(releases[index])) if len(releases[index][index2]) > 0 and "download_id" in releases[index][index2]["info"] and releases[index][index2]["info"]["download_id"].lower() == download_id.lower()]
-                if len(releaseindex) > 0:
-                    imdbid_list.append(library[index])
-            unique_imdbid_list = list(set(imdbid_list)) # convert this to a unique list to be sure we only have one imdbid
-            if len(unique_imdbid_list) == 1: # we found it.
-                imdbid = unique_imdbid_list[0]
-                Logger.info("Found movie id %s in database via download_id %s", imdbid, download_id)
-            else:
+            url = baseURL + "movie.get/?id=" + str(movieid[index])
+            Logger.debug("Opening URL: %s", url)
+            try:
+                urlObj = urllib.urlopen(url)
+            except:
+                Logger.exception("Unable to open URL")
+                return ""
+            try:
+                result = json.load(urlObj)
+                releaselist = [item["info"]["download_id"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]  
+            except:
+                Logger.exception("Unable to parse json data for releases")
                 return ""
 
-        for index in range(len(movieid)):
-            if library[index] == imdbid:
+            if len(releaselist) > 0:
                 movie_id = str(movieid[index])
-                Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
+                Logger.info("Found movie id %s in database via download_id %s", movie_id, download_id)
                 break
-    except:
-        if not imdbid:
-            Logger.exception("Could not parse database results to determine imdbid or movie id")
-        else:
-            Logger.exception("Could not parse database results to determine movie id for imdbid: %s", imdbid)
+            else:
+                continue
+
+        if library[index] == imdbid:
+            movie_id = str(movieid[index])
+            Logger.info("Found movie id %s in CPS database for movie %s", movie_id, imdbid)
+            break
+
+    if not movie_id:
+        Logger.exception("Could not parse database results to determine imdbid or movie id")
 
     return movie_id
 

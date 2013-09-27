@@ -185,12 +185,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     if inputCategory == cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-        if clientAgent == 'utorrent' and inputHash != '':
-            download_id = 'uTorrent_' + inputHash
-        elif clientAgent == 'transmission' and inputHash != '':
-            download_id = 'Transmission_' + inputHash
-        else:
-            download_id = inputHash
+        download_id = inputHash
         result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, download_id)
     elif inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
