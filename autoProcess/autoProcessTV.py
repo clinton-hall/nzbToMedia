@@ -118,30 +118,26 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     process_all_exceptions(nzbName.lower(), dirName)
 
-    # Now check if movie files exist in destination:
-    video = int(0)
-    for dirpath, dirnames, filenames in os.walk(dirName):
-        for file in filenames:
-            filePath = os.path.join(dirpath, file)
-            fileExtension = os.path.splitext(file)[1]
-            if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, nzbName, minSampleSize):
-                    Logger.debug("Removing sample file: %s", filePath)
-                    os.unlink(filePath)  # remove samples
-                else:
-                    video = video + 1
-    if video > 0:  # Check that a video exists. if not, assume failed.
-        flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
-    else:
-        Logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
-        status = int(1)
-        failed = True
+    if nzbName != "Manual Run":
+        # Now check if movie files exist in destination:
+        video = int(0)
+        for dirpath, dirnames, filenames in os.walk(dirName):
+            for file in filenames:
+                filePath = os.path.join(dirpath, file)
+                fileExtension = os.path.splitext(file)[1]
+                if fileExtension in mediaContainer:  # If the file is a video file
+                    if is_sample(filePath, nzbName, minSampleSize):
+                        Logger.debug("Removing sample file: %s", filePath)
+                        os.unlink(filePath)  # remove samples
+                    else:
+                        video = video + 1
+        if video > 0:  # Check that a video exists. if not, assume failed.
+            flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
+        else:
+            Logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
+            status = int(1)
+            failed = True
 
-    #allows manual call of postprocess script if we have specified a watch_dir. Check that here.
-    if nzbName == "Manual Run" and watch_dir == "":
-        Logger.error("In order to run this script manually you must specify a watch_dir in autoProcessTV.cfg")
-        return 1 # failure
-    #allows us to specify the default watch directory and call the postproecssing on another PC with different directory structure.
     if watch_dir != "":
         dirName = watch_dir
 
