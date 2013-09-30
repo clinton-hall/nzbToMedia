@@ -41,6 +41,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     for category in categories:
         if category == inputCategory:
+            if inputCategory == hpCategory:
+                outputDestination = inputDirectory #HP needs to scan the same dir as passed to downloader.
+                break
             if os.path.basename(inputDirectory) == inputName:
                 Logger.info("MAIN: Download is a directory")
                 outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
@@ -62,7 +65,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             fileName, fileExtension = os.path.splitext(file)
             targetDirectory = os.path.join(outputDestination, file)
 
-            if root == 1:
+            if root == 1 and not inputCategory == hpCategory:
                 if not foundFile: 
                     Logger.debug("MAIN: Looking for %s in: %s", inputName, file)
                 if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile == 0:
@@ -72,7 +75,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file does not match the Torrent name, skip it
 
-            if root == 2:
+            if root == 2 and not inputCategory == hpCategory:
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
@@ -83,10 +86,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if not (inputCategory == cpsCategory or inputCategory == sbCategory): #process all for non-video categories.
+            if not (inputCategory == cpsCategory or inputCategory == sbCategory or inputCategory == hpCategory): #process all for non-video categories.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
-            elif fileExtension in mediaContainer:  # If the file is a video file
+            elif fileExtension in mediaContainer and not inputCategory == hpCategory:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
@@ -97,7 +100,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
                     except:
                         Logger.exception("MAIN: Failed to link file: %s", file)
-            elif fileExtension in metaContainer:
+            elif fileExtension in metaContainer and not inputCategory == hpCategory:
                 Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
                 try:
                     copy_link(filePath, targetDirectory, useLink, outputDestination)
@@ -119,6 +122,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     extracted_folder.append(os.path.dirname(filePath))
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
+            elif inputCategory == hpCategory:
+                continue
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
@@ -167,9 +172,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
             if clientAgent == 'utorrent':
                 utorrentClass.removedata(inputHash)
-                utorrentClass.remove(inputHash)
+                if not inputCategory == hpCategory:
+                    utorrentClass.remove(inputHash)
             else:
-                TransmissionClass.remove_torrent(inputID, True)
+                if inputCategory == hpCategory:
+                    TransmissionClass.remove_torrent(inputID, False)
+                else:
+                    TransmissionClass.remove_torrent(inputID, True)
             time.sleep(5)
 
     processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
