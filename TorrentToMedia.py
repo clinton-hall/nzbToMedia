@@ -65,7 +65,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             fileName, fileExtension = os.path.splitext(file)
             targetDirectory = os.path.join(outputDestination, file)
 
-            if root == 1 and not inputCategory == hpCategory:
+            if root == 1:
                 if not foundFile: 
                     Logger.debug("MAIN: Looking for %s in: %s", inputName, file)
                 if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile == 0:
@@ -75,7 +75,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file does not match the Torrent name, skip it
 
-            if root == 2 and not inputCategory == hpCategory:
+            if root == 2:
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
