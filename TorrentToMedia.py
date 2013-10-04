@@ -283,6 +283,11 @@ if __name__ == "__main__":
     
     transcode = int(config.get("Transcoder", "transcode"))
 
+    n = 0    
+    for arg in sys.argv:
+        Logger.debug("arg %s is: %s", n, arg)
+        n = n+1
+
     try:
         inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
     except:

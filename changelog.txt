@@ -1,5 +1,19 @@
 Change_LOG / History
 
+V8.5 05/10/2013
+
+Impacts Torrents
+Added Transmission RPC client.
+Now pauses and resumes or removes from transmission.
+Added debugging of input arguments from torrent clients.
+
+Impacts NZBs
+Removed obsolete NZBget (pre V11) code.
+
+Impacts All.
+Fixed HeadPhones processing.
+Fixed movie parsing in CPS api.
+
 V8.4 14/09/2013
 
 Impacts Torrents
