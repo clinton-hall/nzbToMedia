@@ -1,5 +1,11 @@
 Change_LOG / History
 
+V8.6 xx/xx/2013
+
+Impacts Torrents
+Moved delete to end of routine, only when succesful process occurs.
+Don't flatten hp category (in case multi cd album)
+
 V8.5 05/10/2013
 
 Impacts Torrents

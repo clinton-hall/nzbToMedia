@@ -86,7 +86,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if not (inputCategory == cpsCategory or inputCategory == sbCategory or inputCategory == hpCategory): #process all for non-video categories.
+            if not inputCategory in [cpsCategory, sbCategory, hpCategory]: #process all for non-video categories, except HP.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
             elif fileExtension in mediaContainer and not inputCategory == hpCategory:  # If the file is a video file
@@ -127,7 +127,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
-    flatten(outputDestination)
+    if not inputCategory in [hpCategory]: #don't flatten hp in case multi cd albums. 
+        flatten(outputDestination)
 
     # Now check if movie files exist in destination:
     for dirpath, dirnames, filenames in os.walk(outputDestination):
@@ -144,42 +145,29 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         status = 0
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission'] and extractionSuccess == False and inputHash:
+    if clientAgent in ['utorrent', 'transmission'] and inputHash and useLink != "no":
         if clientAgent == 'utorrent':
             try:
                 Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
                 utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
             except:
                 Logger.exception("MAIN: Failed to connect to uTorrent")
-        else:
+                utorrentClass = ""
+        if clientAgent == 'transmission':
             try:
                 Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
                 TransmissionClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
             except:
                 Logger.exception("MAIN: Failed to connect to Transmission")
+                TransmissionClass = ""
 
         # if we are using links with uTorrent it means we need to pause it in order to access the files
-        if useLink != "no":
-            Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
-            if clientAgent == 'utorrent':            
-                utorrentClass.stop(inputHash)
-            else:
-                TransmissionClass.stop_torrent(inputID)
-            time.sleep(5)  # Give uTorrent some time to catch up with the change
-
-        # Delete torrent and torrentdata from uTorrent
-        if deleteOriginal == 1:
-            Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
-            if clientAgent == 'utorrent':
-                utorrentClass.removedata(inputHash)
-                if not inputCategory == hpCategory:
-                    utorrentClass.remove(inputHash)
-            else:
-                if inputCategory == hpCategory:
-                    TransmissionClass.remove_torrent(inputID, False)
-                else:
-                    TransmissionClass.remove_torrent(inputID, True)
-            time.sleep(5)
+        Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
+        if clientAgent == 'utorrent' and utorrentClass != "":            
+            utorrentClass.stop(inputHash)
+        if clientAgent == 'transmission' and TransmissionClass !="":
+            TransmissionClass.stop_torrent(inputID)
+        time.sleep(5)  # Give Torrent client some time to catch up with the change
 
     processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
 
@@ -214,12 +202,27 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission'] and extractionSuccess == False and inputHash and useLink != "no" and deleteOriginal == 0: # we always want to resume seeding, for now manually find out what is wrong when extraction fails
-        Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
-        if clientAgent == 'utorrent':
-            utorrentClass.start(inputHash)
-        else:
-            TransmissionClass.start_torrent(inputID)
+    if clientAgent in ['utorrent', 'transmission']  and inputHash and useLink != "no":
+        # we always want to resume seeding, for now manually find out what is wrong when extraction fails
+        if deleteOriginal == 0:
+            Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
+            if clientAgent == 'utorrent' and utorrentClass != "":
+                utorrentClass.start(inputHash)
+            if clientAgent == 'transmission' and TransmissionClass !="":
+                TransmissionClass.start_torrent(inputID)
+        # Delete torrent and torrentdata from Torrent client if processing was successful.
+        if deleteOriginal == 1 and result != 1:
+            Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
+            if clientAgent == 'utorrent' and utorrentClass != "":
+                utorrentClass.removedata(inputHash)
+                if not inputCategory == hpCategory:
+                    utorrentClass.remove(inputHash)
+            if clientAgent == 'transmission' and TransmissionClass !="":
+                if inputCategory == hpCategory: #don't delete actual files for hp category, just remove torrent.
+                    TransmissionClass.remove_torrent(inputID, False)
+                else:
+                    TransmissionClass.remove_torrent(inputID, True)
+            time.sleep(5)
 
     Logger.info("MAIN: All done.")
 
