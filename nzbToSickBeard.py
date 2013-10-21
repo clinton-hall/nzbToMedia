@@ -46,10 +46,10 @@
 # set this if SickBeard and nzbGet are on different systems.
 #sbwatch_dir=
 
-# SickBeard uses failed fork (0, 1).
+# SickBeard fork.
 #
-# set to 1 if using the custom "failed fork". Default sickBeard uses 0.
-#sbfailed_fork=0
+# set to default or TPB or failed if using the custom "TPB" or "failed fork".
+#sbfork=default
 
 # SickBeard Delete Failed Downloads (0, 1).
 #

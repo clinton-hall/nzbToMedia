@@ -36,6 +36,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+    if sbFork == TPB and inputCategory == sbCategory:
+        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+        result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
+        if result == 1:
+            Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
+        Logger.info("MAIN: All done.")
+        sys.exit()
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
@@ -261,8 +268,8 @@ if __name__ == "__main__":
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
     uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
 
-    TransmissionHost = config.get("Torrent", "TransmissionHost")                       # localhost
-    TransmissionPort = config.get("Torrent", "TransmissionPort")                       # 8084
+    TransmissionHost = config.get("Torrent", "TransmissionHost")                        # localhost
+    TransmissionPort = config.get("Torrent", "TransmissionPort")                        # 8084
     TransmissionUSR = config.get("Torrent", "TransmissionUSR")                          # mysecretusr
     TransmissionPWD = config.get("Torrent", "TransmissionPWD")                          # mysecretpwr
     
@@ -275,6 +282,7 @@ if __name__ == "__main__":
     
     cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
     sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
+    sbFork = config.get("SickBeard", "fork")                                            # tv
     hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
     mlCategory = config.get("Mylar", "mlCategory")                                      # comics
     gzCategory = config.get("Gamez", "gzCategory")                                      # games

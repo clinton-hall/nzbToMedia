@@ -32,7 +32,7 @@ web_root =
 ssl = 0
 delay = 0
 watch_dir =
-failed_fork = 0
+fork = default
 delete_failed = 0
 
 

@@ -94,9 +94,9 @@ def processEpisode(dirName, nzbName=None, failed=False):
         watch_dir = ""
 
     try:
-        failed_fork = int(config.get("SickBeard", "failed_fork"))
+        fork = int(config.get("SickBeard", "fork"))
     except (ConfigParser.NoOptionError, ValueError):
-        failed_fork = 0
+        fork = "default"
 
     try:    
         transcode = int(config.get("Transcoder", "transcode"))
@@ -116,9 +116,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
-    process_all_exceptions(nzbName.lower(), dirName)
+    if fork != "TPB":
+        process_all_exceptions(nzbName.lower(), dirName)
 
-    if nzbName != "Manual Run":
+    if nzbName != "Manual Run" and fork != "TPB":
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -146,7 +147,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
     params['quiet'] = 1
 
     # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if failed_fork:
+    if fork == "failed":
         params['dirName'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
@@ -156,9 +157,19 @@ def processEpisode(dirName, nzbName=None, failed=False):
         else:
             Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
             
+    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
+    if fork == "TPB":
+        params['dirName'] = dirName
+        if nzbName != None:
+            params['nzbName'] = nzbName
+        params['failed'] = failed
+        if status == 0:
+            Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
+        else:
+            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
 
     # this is our default behaviour to work with the standard Master branch of SickBeard
-    else:
+    elif fork == "default":
         params['dir'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName

@@ -54,6 +54,12 @@ def migrate():
         option, value = item
         if option == "category": # change this old format
             option = "sbCategory"
+        if option == "failed_fork": # change this old format
+            option = "fork"
+            if int(value) == 1:
+                value = "failed"
+            else:
+                value = "default"
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
@@ -242,8 +248,8 @@ def addnzbget():
 
 
     section = "SickBeard"
-    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FAILED_FORK']
-    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'failed_fork']
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork']
     for index in range(len(envKeys)):
         key = 'NZBPO_SB' + envKeys[index]
         if os.environ.has_key(key):
