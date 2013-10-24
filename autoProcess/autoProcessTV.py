@@ -94,8 +94,8 @@ def processEpisode(dirName, nzbName=None, failed=False):
         watch_dir = ""
 
     try:
-        fork = int(config.get("SickBeard", "fork"))
-    except (ConfigParser.NoOptionError, ValueError):
+        fork = config.get("SickBeard", "fork")
+    except ConfigParser.NoOptionError:
         fork = "default"
 
     try:    
