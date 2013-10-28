@@ -112,7 +112,6 @@ def processEpisode(dirName, nzbName=None, failed=False):
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
 
-
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
@@ -159,14 +158,16 @@ def processEpisode(dirName, nzbName=None, failed=False):
             
     # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
     if fork == "TPB":
-        params['dirName'] = dirName
+        params['dir'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
-        params['failed'] = failed
         if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
+            Logger.info("The download succeeded. Sending process request to SickBeard's TPB branch")
         else:
-            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
+            Logger.info("The download failed. Nothing to process")
+            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
+                delete(dirName)
+            return 0 # Success (as far as this script is concerned)
 
     # this is our default behaviour to work with the standard Master branch of SickBeard
     elif fork == "default":
