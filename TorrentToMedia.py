@@ -177,6 +177,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         time.sleep(5)  # Give Torrent client some time to catch up with the change
 
     processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
+    if inputCategory == "":
+        inputCategory = "UNCAT"
 
     if inputCategory and not (inputCategory in processCategories): # no extra processing to be done... yet.
         Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
@@ -184,6 +186,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     elif status == 0 or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = 0 # hp, my, gz don't support failed.
+    elif (user_script_categories != "NONE" and inputCategory in user_script_categories) or user_script_categories == "ALL":
+        Logger.info("MAIN: Processing user script %s.", user_script)
+        result, deleteOriginal = external_script(outputDestination)
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
@@ -232,6 +237,38 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             time.sleep(5)
 
     Logger.info("MAIN: All done.")
+
+def external_script(outputDestination):
+
+    result_final = int(0) # start at 0.
+    for dirpath, dirnames, filenames in os.walk(outputDestination):
+        for file in filenames:
+
+            filePath = os.path.join(dirpath, file)
+            fileName, fileExtension = os.path.splitext(file)
+
+            if fileExtension in user_script_mediaExtensions or user_script_mediaExtensions == "ALL":
+                command = [user_script]
+                for param in user_script_param:
+                    if param == "FN":
+                        command.append(file)
+                        continue
+                    if param == "FP":
+                        command.append(filePath)
+                        continue
+                    if param == "DN":
+                        command.append(dirpath)
+                        continue
+                Logger.info("Running script %s on file %s.", command, filePath)
+                try:
+                    result = call(command)
+                except:
+                    Logger.exception("UserScript %s has failed", command)
+                    result = 1
+                final_result = final_result + result
+
+    time.sleep(user_delay)               
+    return final_result, user_script_clean
 
 if __name__ == "__main__":
 
@@ -291,6 +328,15 @@ if __name__ == "__main__":
     categories.append(hpCategory)
     categories.append(mlCategory)
     categories.append(gzCategory)
+
+    user_script_categories = config.get("UserScript", "user_script_categories")         # NONE
+    if user_script_categories != "None" 
+        user_manage_compressed = int(config.get("UserScript", "user_manage_compressed"))
+        user_script_mediaExtensions = (config.get("UserScript", "user_script_mediaExtensions")).split(',')
+        user_script = config.get("UserScript", "user_script_path")
+        user_script_param = (config.get("UserScript", "user_script_param")).split(',')
+        user_script_clean = int(config.get("UserScript", "user_script_clean"))
+        user_delay = int(config.get("UserScript", "delay"))
     
     transcode = int(config.get("Transcoder", "transcode"))
 

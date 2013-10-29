@@ -83,7 +83,7 @@ useLink = hard
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/
 ###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
-categories = music_videos,pictures,software
+categories = music_videos,pictures,software,
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username
@@ -126,6 +126,22 @@ host = 192.168.1.37
 port = 80
 mac = 00:01:2e:2D:64:e1
 
+[UserScript]
+#Use user_script for uncategorized download?
+#Set the categories to use external script, comma separated. 
+#Use "UNCAT" to process non-category downloads, and "ALL" for all. Set to "NONE" to disable external script.
+user_script_categories = NONE
+#What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
+user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
+#Specify the path of the script
+user_script_path = /media/test/script/script.sh
+#Specify the argument(s) passed to script, comma separated in order.
+#for example FP,FN,DN for file path (absolute file name with path), file anme, absolute directory name (with path).
+#So the result is /media/test/script/script.sh FP FN DN
+user_script_param = FN
+#Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
+user_script_clean = 1
+delay = 120
 
 # Logging configuration
 [loggers]
