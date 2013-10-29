@@ -188,7 +188,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         status = 0 # hp, my, gz don't support failed.
     elif (user_script_categories != "NONE" and inputCategory in user_script_categories) or user_script_categories == "ALL":
         Logger.info("MAIN: Processing user script %s.", user_script)
-        result, deleteOriginal = external_script(outputDestination)
+        result = external_script(outputDestination)
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
@@ -241,6 +241,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 def external_script(outputDestination):
 
     result_final = int(0) # start at 0.
+    num_files = int(0)
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
 
@@ -248,6 +249,7 @@ def external_script(outputDestination):
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in user_script_mediaExtensions or user_script_mediaExtensions == "ALL":
+                num_files = num_files + 1
                 command = [user_script]
                 for param in user_script_param:
                     if param == "FN":
@@ -267,8 +269,23 @@ def external_script(outputDestination):
                     result = 1
                 final_result = final_result + result
 
-    time.sleep(user_delay)               
-    return final_result, user_script_clean
+    time.sleep(user_delay)
+    num_files_new = int(0)
+    for dirpath, dirnames, filenames in os.walk(outputDestination):
+        for file in filenames:
+
+            filePath = os.path.join(dirpath, file)
+            fileName, fileExtension = os.path.splitext(file)
+
+            if fileExtension in user_script_mediaExtensions or user_script_mediaExtensions == "ALL":
+                num_files_new = num_files + 1
+
+    if user_script_clean == int(1) and num_files_new == int(0) and final_result == int(0):
+        Logger.info("All files have been processed. Cleaning outPutDirectory")
+        shutil.rmtree(outputDestination)
+    elif user_script_clean == int(1) and num_files_new != int(0):
+        Logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned.", num_files, num_files_new)           
+    return final_result
 
 if __name__ == "__main__":
 
