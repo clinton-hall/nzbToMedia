@@ -36,7 +36,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
-    if sbFork == TPB and inputCategory == sbCategory:
+    if sbFork == "TPB" and inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
         if result == 1:
@@ -361,8 +361,7 @@ if __name__ == "__main__":
     categories.append(gzCategory)
 
     user_script_categories = config.get("UserScript", "user_script_categories")         # NONE
-    if user_script_categories != "None" 
-        user_manage_compressed = int(config.get("UserScript", "user_manage_compressed"))
+    if user_script_categories != "None": 
         user_script_mediaExtensions = (config.get("UserScript", "user_script_mediaExtensions")).split(',')
         user_script = config.get("UserScript", "user_script_path")
         user_script_param = (config.get("UserScript", "user_script_param")).split(',')
