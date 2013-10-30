@@ -180,15 +180,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if inputCategory == "":
         inputCategory = "UNCAT"
 
-    if inputCategory and not (inputCategory in processCategories): # no extra processing to be done... yet.
-        Logger.info("MAIN: No further processing to be done for category %s.", inputCategory)
-        result = 1
+    if (user_script_categories != "NONE" and inputCategory in user_script_categories) or (user_script_categories == "ALL" and not inputCategory in processCategories):
+        Logger.info("MAIN: Processing user script %s.", user_script)
+        result = external_script(outputDestination)
     elif status == 0 or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = 0 # hp, my, gz don't support failed.
-    elif (user_script_categories != "NONE" and inputCategory in user_script_categories) or user_script_categories == "ALL":
-        Logger.info("MAIN: Processing user script %s.", user_script)
-        result = external_script(outputDestination)
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
@@ -211,7 +208,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         result = autoProcessGames.process(outputDestination, inputName, status)
 
     if result == 1:
-        Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
+        Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission']  and inputHash and useLink != "no":
@@ -235,7 +232,24 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     TransmissionClass.remove_torrent(inputID, True)
             time.sleep(5)
-
+    #cleanup
+    if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
+        num_files_new = int(0)
+        file_list = []
+        for dirpath, dirnames, filenames in os.walk(outputDestination):
+            for file in filenames:
+                filePath = os.path.join(dirpath, file)
+                fileName, fileExtension = os.path.splitext(file)
+                if fileExtension in mediaContainer or fileExtension in metaContainer:
+                    num_files_new = num_files_new + 1
+                    file_list.append(file)
+        if num_files_new == int(0): 
+            Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
+            shutil.rmtree(outputDestination)
+        else:
+            Logger.info("outputDirectory %s still contains %s media and/or meta files. This directory will not be removed.", outputDestination, num_files_new)
+            for item in file_list:
+                Logger.debug("media/meta file found: %s", item)
     Logger.info("MAIN: All done.")
 
 def external_script(outputDestination):
@@ -278,10 +292,10 @@ def external_script(outputDestination):
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in user_script_mediaExtensions or user_script_mediaExtensions == "ALL":
-                num_files_new = num_files + 1
+                num_files_new = num_files_new + 1
 
     if user_script_clean == int(1) and num_files_new == int(0) and final_result == int(0):
-        Logger.info("All files have been processed. Cleaning outPutDirectory")
+        Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
         shutil.rmtree(outputDestination)
     elif user_script_clean == int(1) and num_files_new != int(0):
         Logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned.", num_files, num_files_new)           
