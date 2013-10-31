@@ -60,8 +60,13 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 root = 2
                 break  # we are done
             else:
-                Logger.error("SEARCH: Could not identify Category of Torrent Name in the directory structure. Please check downloader settings. Exiting")
-                sys.exit(-1)
+                Logger.info("SEARCH: Could not identify Category or Torrent Name from the directory structure.")
+                Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+                Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+                Logger.info("SEARCH: We will try and determine which files to process, individually")
+                Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
+                root = 2
+                break  # we are done
 
         if categorySearch2[1] in categories:
             Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch2[1])
@@ -135,8 +140,12 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             Logger.info("SEARCH: We will try and determine which files to process, individually")
             root = 2
     if not inputCategory:  # we didn't find this after 10 loops. This is a problem.
-            Logger.error("SEARCH: Could not identify category and torrent name from the directory structure. Please check downloader settings. Exiting")
-            sys.exit(-1)  # Oh yeah.... WE ARE DONE!
+            Logger.info("SEARCH: Could not identify Category or Torrent Name from the directory structure.")
+            Logger.info("SEARCH: We assume the directory passed is the root directory for your downlaoder")
+            Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
+            Logger.info("SEARCH: We will try and determine which files to process, individually")
+            Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
+            root = 2
 
     return inputDirectory, inputName, inputCategory, root
 
