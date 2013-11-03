@@ -68,7 +68,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                 root = 2
                 break  # we are done
-            elif inputName::  # we didn't find category after 10 loops. This is a problem.
+            elif inputName:  # we didn't find category after 10 loops. This is a problem.
                 Logger.info("SEARCH: Could not find a category in the directory structure")
                 Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
                 root = 1
@@ -146,7 +146,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             Logger.info("SEARCH: Could not find a torrent name or category in the directory structure")
             Logger.info("SEARCH: We will try and determine which files to process, individually")
             root = 2
-        elif inputName::  # we didn't find category after 10 loops. This is a problem.
+        elif inputName:  # we didn't find category after 10 loops. This is a problem.
             Logger.info("SEARCH: Could not find a category in the directory structure")
             Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
             root = 1
