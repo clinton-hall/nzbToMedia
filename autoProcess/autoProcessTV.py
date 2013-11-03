@@ -115,10 +115,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
-    if fork != "TPB":
+    if not fork in ["TPB", "TPB-failed"]:
         process_all_exceptions(nzbName.lower(), dirName)
 
-    if nzbName != "Manual Run" and fork != "TPB":
+    if nzbName != "Manual Run" and not fork in ["TPB", "TPB-failed"]:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -157,12 +157,17 @@ def processEpisode(dirName, nzbName=None, failed=False):
             Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
             
     # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if fork == "TPB":
+    if fork in ["TPB", "TPB-failed"]:
         params['dir'] = dirName
         if nzbName != None:
             params['nzbName'] = nzbName
         if status == 0:
             Logger.info("The download succeeded. Sending process request to SickBeard's TPB branch")
+            if fork == "TPB-failed":
+                params['failed'] = failed
+        elif fork == "TPB-failed":
+            Logger.info("The download failed. Sending 'failed' process request to SickBeard's TPB-failed branch")
+            params['failed'] = failed               
         else:
             Logger.info("The download failed. Nothing to process")
             if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:

@@ -36,7 +36,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     extractionSuccess = False
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
-    if sbFork == "TPB" and inputCategory == sbCategory:
+    if sbFork in ["TPB", "TPB-failed"] and inputCategory == sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
         if result == 1:
