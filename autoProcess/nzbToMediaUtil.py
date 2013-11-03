@@ -43,11 +43,11 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         Logger.info("SEARCH: Found category directory %s in input directory directory %s", inputCategory, inputDirectory)
         inputDirectory = os.path.join(inputDirectory, inputCategory)
         Logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
-    if inputName os.path.isdir(os.path.join(inputDirectory, inputName)):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
         Logger.info("SEARCH: Found torrent directory %s in input directory directory %s", inputName, inputDirectory)
         inputDirectory = os.path.join(inputDirectory, inputName)
         Logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
-    if inputName os.path.isdir(os.path.join(inputDirectory, safeName(inputName))):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, safeName(inputName))):
         Logger.info("SEARCH: Found torrent directory %s in input directory directory %s", safeName(inputName), inputDirectory)
         inputDirectory = os.path.join(inputDirectory, safeName(inputName))
         Logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
