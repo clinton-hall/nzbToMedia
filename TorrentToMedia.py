@@ -46,6 +46,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
+    outputDestination = ""
     for category in categories:
         if category == inputCategory:
             if inputCategory == hpCategory:
@@ -57,10 +58,18 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             else:
                 Logger.info("MAIN: Download is not a directory")
                 outputDestination = os.path.normpath(os.path.join(outputDirectory, category, os.path.splitext(safeName(inputName))[0]))
-                Logger.info("MAIN: Output directory set to: %s", outputDestination)
+            Logger.info("MAIN: Output directory set to: %s", outputDestination)
             break
         else:
             continue
+    if outputDestination == "":
+        if os.path.basename(inputDirectory) == inputName:
+            Logger.info("MAIN: Download is a directory")
+            outputDestination = os.path.normpath(os.path.join(outputDirectory, safeName(inputName)))
+        else:
+            Logger.info("MAIN: Download is not a directory")
+            outputDestination = os.path.normpath(os.path.join(outputDirectory, os.path.splitext(safeName(inputName))[0]))
+        Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)      
 
@@ -75,7 +84,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             if root == 1:
                 if foundFile == int(0): 
                     Logger.debug("MAIN: Looking for %s in: %s", inputName, file)
-                if ((safeName(inputName) in safeName(file)) or (safeName(fileName) in safeName(inputName))) and foundFile == int(0):
+                if (safeName(inputName) in safeName(file)) or (safeName(fileName) in safeName(inputName)):
                     #pass  # This file does match the Torrent name
                     foundFile = 1
                     Logger.debug("MAIN: Found file %s that matches Torrent Name %s", file, inputName)
@@ -86,7 +95,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
-                if ((mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5))) and foundFile == int(0):
+                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
                     #pass  # This file does match the date time criteria
                     foundFile = 1
                     Logger.debug("MAIN: Found file %s with date modifed/created less than 5 minutes ago.", file)
