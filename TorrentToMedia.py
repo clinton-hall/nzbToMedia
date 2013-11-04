@@ -73,10 +73,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
-                if not foundFile: 
+                if foundFile == int(0): 
                     Logger.debug("MAIN: Looking for %s in: %s", inputName, file)
-                if (safeName(inputName) in safeName(file)) or (safeName(os.path.splitext(file)[0]) in safeName(inputName)) and foundFile == 0:
-                    pass  # This file does match the Torrent name
+                if ((safeName(inputName) in safeName(file)) or (safeName(fileName) in safeName(inputName))) and foundFile == int(0):
+                    #pass  # This file does match the Torrent name
                     foundFile = 1
                     Logger.debug("MAIN: Found file %s that matches Torrent Name %s", file, inputName)
                 else:
@@ -86,8 +86,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
-                if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)) and foundFile == 0:
-                    pass  # This file does match the date time criteria
+                if ((mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5))) and foundFile == int(0):
+                    #pass  # This file does match the date time criteria
                     foundFile = 1
                     Logger.debug("MAIN: Found file %s with date modifed/created less than 5 minutes ago.", file)
                 else:
