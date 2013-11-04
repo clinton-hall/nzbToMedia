@@ -89,7 +89,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                     Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
                     inputName = categorySearch[1]
                     Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
-                    break  # we are done
+                break  # we are done
             elif categorySearch[1] and not inputName:  # assume the the next directory deep is the torrent name.
                 Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
                 inputName = categorySearch[1]
