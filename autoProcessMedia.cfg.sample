@@ -139,6 +139,8 @@ user_script_path = /media/test/script/script.sh
 #for example FP,FN,DN for file path (absolute file name with path), file anme, absolute directory name (with path).
 #So the result is /media/test/script/script.sh FP FN DN
 user_script_param = FN
+#Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
+user_script_successCodes = 0
 #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
 user_script_clean = 1
 delay = 120

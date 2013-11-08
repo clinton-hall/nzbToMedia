@@ -119,7 +119,7 @@ def extract(filePath, outputDestination):
         cmd.append(filePath) # add filePath to final cmd arg.
         p = Popen(cmd) # should extract files fine.
         res = p.wait()
-        if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linus returns 0 for successful.
+        if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         else:
             Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)

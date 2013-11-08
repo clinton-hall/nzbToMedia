@@ -10,7 +10,7 @@ import datetime
 import time
 import re
 from sets import Set
-from subprocess import call
+from subprocess import call, Popen
 
 # Custom imports
 import autoProcess.migratecfg as migratecfg
@@ -286,9 +286,16 @@ def external_script(outputDestination):
                         continue
                 Logger.info("Running script %s on file %s.", command, filePath)
                 try:
-                    result = call(command)
+                    p = Popen(command)
+                    res = p.wait()
+                    if res in user_script_successCodes: Linux returns 0 for successful.
+                        Logger.info("UserScript %s was successfull", command[0])
+                    else:
+                       Logger.error("UserScript %s has failed with return code: %s", command[0], res)
+                       Logger.info("If the UserScript completed successfully you should add "%s" to the user_script_successCodes", res)
+                       result = 1
                 except:
-                    Logger.exception("UserScript %s has failed", command)
+                    Logger.exception("UserScript %s has failed", command[0])
                     result = 1
                 final_result = final_result + result
 
@@ -374,6 +381,7 @@ if __name__ == "__main__":
         user_script_mediaExtensions = (config.get("UserScript", "user_script_mediaExtensions")).split(',')
         user_script = config.get("UserScript", "user_script_path")
         user_script_param = (config.get("UserScript", "user_script_param")).split(',')
+        user_script_successCodes = (config.get("UserScript", "user_script_successCodes")).split(',')
         user_script_clean = int(config.get("UserScript", "user_script_clean"))
         user_delay = int(config.get("UserScript", "delay"))
     
