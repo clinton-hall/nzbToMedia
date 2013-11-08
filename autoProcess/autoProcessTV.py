@@ -96,10 +96,10 @@ def processEpisode(dirName, nzbName=None, failed=False):
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
-    if not fork in ["TPB", "TPB-failed"]:
+    if not fork in SICKBEARD_TORRENT:
         process_all_exceptions(nzbName.lower(), dirName)
 
-    if nzbName != "Manual Run" and not fork in ["TPB", "TPB-failed"]:
+    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -125,49 +125,27 @@ def processEpisode(dirName, nzbName=None, failed=False):
     params = {}
 
     params['quiet'] = 1
-
-    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if fork == "failed":
+    if fork in SICKBEARD_DIRNAME:
         params['dirName'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        params['failed'] = failed
-        if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
-        else:
-            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
-            
-    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if fork in ["TPB", "TPB-failed"]:
+    else:
         params['dir'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard's TPB branch")
-            if fork == "TPB-failed":
-                params['failed'] = failed
-        elif fork == "TPB-failed":
-            Logger.info("The download failed. Sending 'failed' process request to SickBeard's TPB-failed branch")
-            params['failed'] = failed               
-        else:
-            Logger.info("The download failed. Nothing to process")
-            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
-                delete(dirName)
-            return 0 # Success (as far as this script is concerned)
 
-    # this is our default behaviour to work with the standard Master branch of SickBeard
-    elif fork == "default":
-        params['dir'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
-        if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard")
-        else:
-            Logger.info("The download failed. Nothing to process")
-            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
-                delete(dirName)
-            return 0 # Success (as far as this script is concerned)
+    if nzbName != None:
+        params['nzbName'] = nzbName
+
+    if fork in SICKBEARD_FAILED:
+        params['failed'] = failed
+
+    if status == 0:
+        Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
+    elif fork in SICKBEARD_FAILED:
+        Logger.info("The download failed. Sending 'failed' process request to SickBeard's %s branch", fork)
+    else:
+        Logger.info("The download failed. SickBeard's %s branch does not handle failed downloads. Nothing to process", fork)
+        if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
+            Logger.info("Deleting directory: %s", dirName)
+            delete(dirName)
+        return 0 # Success (as far as this script is concerned)
     
     if status == 0 and transcode == 1: # only transcode successful downlaods
         result = Transcoder.Transcode_directory(dirName)
