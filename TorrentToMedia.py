@@ -278,11 +278,14 @@ def external_script(outputDestination):
                     if param == "FN":
                         command.append(file)
                         continue
-                    if param == "FP":
+                    elif param == "FP":
                         command.append(filePath)
                         continue
-                    if param == "DN":
+                    elif param == "DN":
                         command.append(dirpath)
+                        continue
+                    else:
+                        command.append(param)
                         continue
                 Logger.info("Running script %s on file %s.", command, filePath)
                 try:
