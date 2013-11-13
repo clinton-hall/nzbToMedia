@@ -291,11 +291,11 @@ def external_script(outputDestination):
                 try:
                     p = Popen(command)
                     res = p.wait()
-                    if res in user_script_successCodes: Linux returns 0 for successful.
+                    if res in user_script_successCodes: # Linux returns 0 for successful.
                         Logger.info("UserScript %s was successfull", command[0])
                     else:
                        Logger.error("UserScript %s has failed with return code: %s", command[0], res)
-                       Logger.info("If the UserScript completed successfully you should add "%s" to the user_script_successCodes", res)
+                       Logger.info("If the UserScript completed successfully you should add %s to the user_script_successCodes", res)
                        result = 1
                 except:
                     Logger.exception("UserScript %s has failed", command[0])
