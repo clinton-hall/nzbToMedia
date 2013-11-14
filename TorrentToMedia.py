@@ -276,13 +276,13 @@ def external_script(outputDestination):
                 command = [user_script]
                 for param in user_script_param:
                     if param == "FN":
-                        command.append(file)
+                        command.append('"' + file + '"')
                         continue
                     elif param == "FP":
-                        command.append(filePath)
+                        command.append('"' + filePath + '"')
                         continue
                     elif param == "DN":
-                        command.append(dirpath)
+                        command.append('"' + dirpath + '"')
                         continue
                     else:
                         command.append(param)
