@@ -276,13 +276,13 @@ def external_script(outputDestination):
                 command = [user_script]
                 for param in user_script_param:
                     if param == "FN":
-                        command.append('"' + file + '"')
+                        command.append(file)
                         continue
                     elif param == "FP":
-                        command.append('"' + filePath + '"')
+                        command.append(filePath)
                         continue
                     elif param == "DN":
-                        command.append('"' + dirpath + '"')
+                        command.append(dirpath)
                         continue
                     else:
                         command.append(param)
@@ -291,7 +291,7 @@ def external_script(outputDestination):
                 try:
                     p = Popen(command)
                     res = p.wait()
-                    if res in user_script_successCodes: # Linux returns 0 for successful.
+                    if str(res) in user_script_successCodes: # Linux returns 0 for successful.
                         Logger.info("UserScript %s was successfull", command[0])
                     else:
                        Logger.error("UserScript %s has failed with return code: %s", command[0], res)
