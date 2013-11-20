@@ -156,9 +156,15 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.debug("MAIN: Removing sample file: %s", filePath)
                     os.unlink(filePath)  # remove samples
                 else:
+                    Logger.debug("MAIN: Found media file: %s", filePath)
                     video2 = video2 + 1
+            else:
+                Logger.debug("MAIN: File %s is not a media file", filepath)
     if video2 >= video and video2 > 0:  # Check that all video files were moved
+        Logger.debug("MAIN: Found %s media files", video2)
         status = 0
+    else:
+        Logger.debug("MAIN: Found %s media files in output. %s were found in input", video2, video)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission'] and inputHash and useLink != "no":
