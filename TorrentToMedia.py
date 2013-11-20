@@ -150,7 +150,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
             filePath = os.path.join(dirpath, file)
-            fileExtension = os.path.splitext(file)[1]
+            fileName, fileExtension = os.path.splitext(file)
             if fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize):
                     Logger.debug("MAIN: Removing sample file: %s", filePath)
@@ -160,11 +160,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     video2 = video2 + 1
             else:
                 Logger.debug("MAIN: File %s is not a media file", filepath)
-    if video2 >= video and video2 > 0:  # Check that all video files were moved
-        Logger.debug("MAIN: Found %s media files", video2)
-        status = 0
+    if video2 >= video and video2 > int(0):  # Check that all video files were moved
+        Logger.debug("MAIN: Found %s media files", str(video2))
+        status = int(0)
     else:
-        Logger.debug("MAIN: Found %s media files in output. %s were found in input", video2, video)
+        Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission'] and inputHash and useLink != "no":
@@ -198,9 +198,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if (user_script_categories != "NONE" and inputCategory in user_script_categories) or (user_script_categories == "ALL" and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination)
-    elif status == 0 or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
-        status = 0 # hp, my, gz don't support failed.
+        status = int(0) # hp, my, gz don't support failed.
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
