@@ -45,27 +45,40 @@ def get_movie_info(baseURL, imdbid, download_id):
     
     if not imdbid and not download_id:
         return ""
-    url = baseURL + "movie.list/?status=active"
-
-    Logger.debug("Opening URL: %s", url)
-
-    try:
-        urlObj = urllib.urlopen(url)
-    except:
-        Logger.exception("Unable to open URL")
-        return ""
 
     movie_id = ""
     releaselist = []
-    try:
-        result = json.load(urlObj)
-        movieid = [item["id"] for item in result["movies"]]
-        library = [item["library"]["identifier"] for item in result["movies"]]
-    except:
-        Logger.exception("Unable to parse json data for movies")
-        return ""
+    movieid = []
+    library = []
+    offset = int(0)
+    while True:
+        url = baseURL + "movie.list/?status=active" + "&limit_offset=50," + str(offset)
 
-    for index in range(len(movieid)):
+        Logger.debug("Opening URL: %s", url)
+
+        try:
+            urlObj = urllib.urlopen(url)
+        except:
+            Logger.exception("Unable to open URL")
+            break
+
+        movieid2 = []
+        library2 = []
+        try:
+            result = json.load(urlObj)
+            movieid2 = [item["id"] for item in result["movies"]]
+            library2 = [item["library"]["identifier"] for item in result["movies"]]
+        except:
+            Logger.exception("Unable to parse json data for movies")
+            break
+
+        movieid.append(movieid2)
+        library.append(library2)
+        if len(movieid2) < int(50): # finished parsing list of movies. Time to break.
+            break
+        offset = offset + 50
+
+     for index in range(len(movieid)):
         if not imdbid:
             url = baseURL + "movie.get/?id=" + str(movieid[index])
             Logger.debug("Opening URL: %s", url)
