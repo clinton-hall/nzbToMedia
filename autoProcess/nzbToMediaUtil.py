@@ -369,7 +369,7 @@ def parse_deluge(args):
     inputDirectory = os.path.normpath(sys.argv[3])
     inputName = sys.argv[2]
     inputCategory = ''  # We dont have a category yet
-    inputHash = ''
+    inputHash = sys.argv[1]
     inputID = sys.argv[1]
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
