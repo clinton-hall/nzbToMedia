@@ -98,6 +98,7 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     if not fork in SICKBEARD_TORRENT:
         process_all_exceptions(nzbName.lower(), dirName)
+        nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
     if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
         # Now check if movie files exist in destination:

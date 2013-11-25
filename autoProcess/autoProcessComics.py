@@ -61,6 +61,8 @@ def processEpisode(dirName, nzbName=None, status=0):
         watch_dir = ""
     params = {}
 
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
+
     if dirName == "Manual Run" and watch_dir != "":
         dirName = watch_dir
     

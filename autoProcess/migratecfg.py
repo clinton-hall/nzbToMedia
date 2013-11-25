@@ -165,6 +165,16 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
+   section = "ASCII"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
     section = "loggers"
     original = []
     try:

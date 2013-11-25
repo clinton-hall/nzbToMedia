@@ -48,6 +48,8 @@ def process(dirName, nzbName=None, status=0):
     if nzbName == "Manual Run":
         delay = 0
 
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
+
     baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
 
     if status == 0:

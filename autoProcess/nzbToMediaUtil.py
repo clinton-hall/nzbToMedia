@@ -314,6 +314,31 @@ def WakeUp():
     else:
         Logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
 
+def converto_to_ascii(nzbName, dirName):
+    config = ConfigParser.ConfigParser()
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+    if not os.path.isfile(configFilename):
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+        return nzbName, dirName
+    config.read(configFilename)
+    ascii_convert = int(config.get("ASCII", "convert"))
+    if ascii_convert == 0: # just return if we don't need to wake anything.
+        return nzbName, dirName
+    
+    nzbName2 = str(nzbName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
+    dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
+    if dirName != nzbName2:
+        Logger.info("Renaming directory:%s  to: %s.", dirName, nzbName2)
+        shutil.move(dirName, nzbName2)
+    for dirpath, dirnames, filesnames in os.walk(dirName2):
+        for filename in filesnames:
+            filename2 = str(filename.decode('ascii', 'replace').replace(u'\ufffd', '_'))
+            if filename != filename2:
+                Logger.info("Renaming file:%s  to: %s.", filename, filename2)
+                shutil.move(filename, filename2)
+    nzbName = nzbName2
+    dirName = nzbName2
+    return nzbName, dirName
 
 def parse_other(args):
     return os.path.normpath(sys.argv[1]), '', '', '', ''

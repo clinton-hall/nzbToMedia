@@ -249,6 +249,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     initial_status, clientAgent, download_id, initial_release_status = get_status(baseURL, movie_id, clientAgent, download_id)
     
     process_all_exceptions(nzbName.lower(), dirName)
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
     if status == 0:
         if transcode == 1:

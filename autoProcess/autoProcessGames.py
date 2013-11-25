@@ -44,6 +44,8 @@ def process(dirName, nzbName=None, status=0):
     else:
         protocol = "http://"
 
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
+
     baseURL = protocol + host + ":" + port + web_root + "/api?api_key=" + apikey + "&mode="
 
     fields = nzbName.split("-")
