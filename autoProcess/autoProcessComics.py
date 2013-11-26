@@ -6,6 +6,7 @@ import ConfigParser
 import logging
 
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
