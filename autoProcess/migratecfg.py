@@ -165,7 +165,7 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
-   section = "ASCII"
+    section = "ASCII"
     original = []
     try:
         original = configold.items(section)
