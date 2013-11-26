@@ -78,7 +78,7 @@ def get_movie_info(baseURL, imdbid, download_id):
             break
         offset = offset + 50
 
-     for index in range(len(movieid)):
+    for index in range(len(movieid)):
         if not imdbid:
             url = baseURL + "movie.get/?id=" + str(movieid[index])
             Logger.debug("Opening URL: %s", url)
