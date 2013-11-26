@@ -9,6 +9,7 @@ import json
 import logging
 
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
 
