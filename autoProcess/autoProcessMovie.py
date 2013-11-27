@@ -73,8 +73,8 @@ def get_movie_info(baseURL, imdbid, download_id):
             Logger.exception("Unable to parse json data for movies")
             break
 
-        movieid.append(movieid2)
-        library.append(library2)
+        movieid.extend(movieid2)
+        library.extend(library2)
         if len(movieid2) < int(50): # finished parsing list of movies. Time to break.
             break
         offset = offset + 50
