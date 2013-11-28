@@ -1,5 +1,6 @@
 import os
 import sys
+import ConfigParser
 sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import logging
 from subprocess import call, Popen, PIPE
@@ -122,7 +123,28 @@ def extract(filePath, outputDestination):
         if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         else:
-            Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
+            Logger.info("EXTRACTOR: Attempting to extract with passwords")
+            pass_success = int(0)
+            passwords = ConfigParser.ConfigParser()
+            passwordsfile = os.path.join(os.path.dirname(sys.argv[0]), 'autoProcessMedia.cfg')
+            passwords.read(passwordsfile)
+            passwordslist = passwords.items('passwords')
+            for item in passwordslist:
+                option, password = item
+                cmd2 = cmd
+                #append password here.
+                passcmd = "-p" + password
+                cmd2.append(passcmd)
+                p = Popen(cmd2) # should extract files fine.
+                res = p.wait()
+                if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+                    Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
+                    pass_success = int(1)
+                    break
+                else:
+                    continue
+            if pass_success == int(0):
+                Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
     except:
         Logger.exception("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory

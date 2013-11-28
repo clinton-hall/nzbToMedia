@@ -175,6 +175,16 @@ def migrate():
         option, value = item
         confignew.set(section, option, value)
 
+    section = "passwords"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
     section = "loggers"
     original = []
     try:
@@ -246,9 +256,10 @@ def migrate():
             os.unlink(backupname)
         os.rename(configFilenameold, backupname)
 
-    # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
-    os.rename(configFilenamenew, configFilenameold)
-    return
+    if os.path.isfile(configFilenamenew):
+        # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
+        os.rename(configFilenamenew, configFilenameold)
+        return
 
 def addnzbget():
     confignew = ConfigParser.ConfigParser()

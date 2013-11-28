@@ -149,6 +149,11 @@ delay = 120
 #Set convert =1 if you want to convert any "foreign" characters to ASCII before passing to SB/CP etc. Default is disabled (0).
 convert = 0
 
+[passwords]
+#Set a list of passwords to be used for extraction attempts. e.g
+#password1 = password
+#password2 = secret
+
 # Logging configuration
 [loggers]
 keys = root
