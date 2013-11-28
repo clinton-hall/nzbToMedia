@@ -7,6 +7,7 @@ Moved delete to end of routine, only when succesful process occurs.
 Don't flatten hp category (in case multi cd album)
 Added UserScript to be called for un-categorized downloads and other defined categories.
 Added Torrent Hash to Deluge to assist with movie ID.
+Added passwords option to attempt extraction od passworded archives.
 
 Impacts All
 Added TPB version of SickBeard processing. This now uses a fork pass-in instead of failed_fork.
