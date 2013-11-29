@@ -299,13 +299,14 @@ def external_script(outputDestination):
                     res = p.wait()
                     if str(res) in user_script_successCodes: # Linux returns 0 for successful.
                         Logger.info("UserScript %s was successfull", command[0])
+                        result = int(0)
                     else:
-                       Logger.error("UserScript %s has failed with return code: %s", command[0], res)
-                       Logger.info("If the UserScript completed successfully you should add %s to the user_script_successCodes", res)
-                       result = 1
+                        Logger.error("UserScript %s has failed with return code: %s", command[0], res)
+                        Logger.info("If the UserScript completed successfully you should add %s to the user_script_successCodes", res)
+                        result = int(1)
                 except:
                     Logger.exception("UserScript %s has failed", command[0])
-                    result = 1
+                    result = int(1)
                 final_result = final_result + result
 
     time.sleep(user_delay)
