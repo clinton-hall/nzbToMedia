@@ -54,30 +54,32 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     
     categorySearch = [os.path.normpath(inputDirectory), ""]  # initializie
     notfound = 0
+    unique = int(0)
     for x in range(10):  # loop up through 10 directories looking for category.
         try:
             categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
         except:  # this might happen when we can't go higher.
-            if inputCategory and inputName:  # if these exists, we are ok to proceed, but assume we are in a root/common directory.
-                Logger.info("SEARCH: Could not find a category in the directory structure")
-                Logger.info("SEARCH: We will try and determine which files to process, individually")
-                root = 1
-                break  # we are done
-            elif inputCategory:  # if this exists, we are ok to proceed, but assume we are in a root/common directory and we have to check file dates.
-                Logger.info("SEARCH: Could not find a torrent name or category in the directory structure")
-                Logger.info("SEARCH: We will try and determine which files to process, individually")
-                root = 2
-                break  # we are done
-            elif inputName:  # we didn't find category after 10 loops. This is a problem.
-                Logger.info("SEARCH: Could not find a category in the directory structure")
-                Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
-                root = 1
-                break  # we are done
-            else:  # we didn't find this after 10 loops. This is a problem.
-                Logger.info("SEARCH: Could not identify category or torrent name from the directory structure.")
-                Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
-                root = 2
-                break  # we are done
+            if unique = int(0)
+                if inputCategory and inputName:  # if these exists, we are ok to proceed, but assume we are in a root/common directory.
+                    Logger.info("SEARCH: Could not find a category in the directory structure")
+                    Logger.info("SEARCH: We will try and determine which files to process, individually")
+                    root = 1
+                    break  # we are done
+                elif inputCategory:  # if this exists, we are ok to proceed, but assume we are in a root/common directory and we have to check file dates.
+                    Logger.info("SEARCH: Could not find a torrent name or category in the directory structure")
+                    Logger.info("SEARCH: We will try and determine which files to process, individually")
+                    root = 2
+                    break  # we are done
+                elif inputName:  # we didn't find category after 10 loops. This is a problem.
+                    Logger.info("SEARCH: Could not find a category in the directory structure")
+                    Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
+                    root = 1
+                    break  # we are done
+                else:  # we didn't find this after 10 loops. This is a problem.
+                    Logger.info("SEARCH: Could not identify category or torrent name from the directory structure.")
+                    Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
+                    root = 2
+                    break  # we are done
 
         if categorySearch2[1] in categories:
             Logger.debug("SEARCH: Found Category: %s in directory structure", categorySearch2[1])
@@ -123,6 +125,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 break
         elif inputName and safeName(categorySearch2[1]) == safeName(inputName):  # we have identified a unique directory.
             Logger.info("SEARCH: Files appear to be in their own directory")
+            unique = int(1)
             if inputCategory:  # we are ok to proceed.
                 break  # we are done
             else:
@@ -137,7 +140,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 categorySearch = categorySearch2  # ready for next loop
                 continue   # keep going
 
-    if notfound == 1:
+    if notfound == 1 and not unique = int(1):
         if inputCategory and inputName:  # if these exists, we are ok to proceed, but assume we are in a root/common directory.
             Logger.info("SEARCH: Could not find a category in the directory structure")
             Logger.info("SEARCH: We will try and determine which files to process, individually")
