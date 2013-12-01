@@ -59,7 +59,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         try:
             categorySearch2 = os.path.split(os.path.normpath(categorySearch[0]))
         except:  # this might happen when we can't go higher.
-            if unique = int(0)
+            if unique == int(0)
                 if inputCategory and inputName:  # if these exists, we are ok to proceed, but assume we are in a root/common directory.
                     Logger.info("SEARCH: Could not find a category in the directory structure")
                     Logger.info("SEARCH: We will try and determine which files to process, individually")
@@ -140,7 +140,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 categorySearch = categorySearch2  # ready for next loop
                 continue   # keep going
 
-    if notfound == 1 and not unique = int(1):
+    if notfound == 1 and not unique == int(1):
         if inputCategory and inputName:  # if these exists, we are ok to proceed, but assume we are in a root/common directory.
             Logger.info("SEARCH: Could not find a category in the directory structure")
             Logger.info("SEARCH: We will try and determine which files to process, individually")
