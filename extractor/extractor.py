@@ -118,9 +118,11 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
         cmd.append(filePath) # add filePath to final cmd arg.
-        p = Popen(cmd) # should extract files fine.
+        cmd2 = cmd
+        cmd2.append("-p-") # don't prompt for password.
+        p = Popen(cmd2) # should extract files fine.
         res = p.wait()
-        if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+        if (res >= 0 and os.name == 'nt') or res == 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         else:
             Logger.info("EXTRACTOR: Attempting to extract with passwords")
