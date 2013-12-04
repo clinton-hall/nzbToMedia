@@ -49,6 +49,8 @@ def Transcode_directory(dirName):
     outputAudioCodec = config.get("Transcoder", "outputAudioCodec").strip()
     outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate").strip()
     outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec").strip()
+    outputFastStart = int(config.get("Transcoder", "outputFastStart"))
+    outputQualityPercent = int(config.get("Transcoder", "outputQualityPercent"))
     if useNiceness:
         niceness = int(config.get("Transcoder", "niceness"))
 
@@ -104,6 +106,12 @@ def Transcode_directory(dirName):
                 if len(outputSubtitleCodec) > 0:
                     command.append('-c:s')
                     command.append(outputSubtitleCodec)
+                if outputFastStart > 0:
+                    command.append('-movflags')
+                    command.append('+faststart')
+                if outputQualityPercent > 0:
+                    command.append('-q:a')
+                    command.append(outputQualityPercent)
                 else:
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
