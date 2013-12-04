@@ -103,15 +103,15 @@ def Transcode_directory(dirName):
                 if len(outputAudioBitrate) > 0:
                     command.append('-b:a')
                     command.append(outputAudioBitrate)
-                if len(outputSubtitleCodec) > 0:
-                    command.append('-c:s')
-                    command.append(outputSubtitleCodec)
                 if outputFastStart > 0:
                     command.append('-movflags')
                     command.append('+faststart')
                 if outputQualityPercent > 0:
                     command.append('-q:a')
                     command.append(outputQualityPercent)
+                if len(outputSubtitleCodec) > 0:
+                    command.append('-c:s')
+                    command.append(outputSubtitleCodec)
                 else:
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
