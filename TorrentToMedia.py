@@ -159,7 +159,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.debug("MAIN: Found media file: %s", filePath)
                     video2 = video2 + 1
             else:
-                Logger.debug("MAIN: File %s is not a media file", filepath)
+                Logger.debug("MAIN: File %s is not a media file", filePath)
     if video2 >= video and video2 > int(0):  # Check that all video files were moved
         Logger.debug("MAIN: Found %s media files", str(video2))
         status = int(0)
