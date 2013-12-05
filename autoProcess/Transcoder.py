@@ -125,6 +125,10 @@ def Transcode_directory(dirName):
                     Logger.debug("Error when removing transcoding target: %s", e)
 
                 Logger.info("Transcoding video: %s", file)
+                cmd = ""
+                for item in command:
+                    cmd = cmd + " " + item
+                Logger.debug("calling command:%s", cmd)
                 result = 1 # set result to failed in case call fails.
                 try:
                     result = call(command)
