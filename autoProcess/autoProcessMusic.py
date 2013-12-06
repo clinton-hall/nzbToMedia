@@ -71,7 +71,7 @@ def process(dirName, nzbName=None, status=0):
             return 1 # failure
 
         result = urlObj.readlines()
-        Logger.info("HeaPhones returned %s", result)
+        Logger.info("HeadPhones returned %s", result)
         if result[0] == "OK":
             Logger.info("%s started on HeadPhones for %s", command, nzbName)
         else:
