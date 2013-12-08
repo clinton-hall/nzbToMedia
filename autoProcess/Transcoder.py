@@ -87,10 +87,10 @@ def Transcode_directory(dirName):
                     command.append('copy')
                 if len(outputVideoFramerate) > 0:
                     command.append('-r')
-                    command.append(outputVideoFramerate)
+                    command.append(str(outputVideoFramerate))
                 if len(outputVideoBitrate) > 0:
                     command.append('-b:v')
-                    command.append(outputVideoBitrate)
+                    command.append(str(outputVideoBitrate))
                 if len(outputAudioCodec) > 0:
                     command.append('-c:a')
                     command.append(outputAudioCodec)
@@ -102,13 +102,13 @@ def Transcode_directory(dirName):
                     command.append('copy')
                 if len(outputAudioBitrate) > 0:
                     command.append('-b:a')
-                    command.append(outputAudioBitrate)
+                    command.append(str(outputAudioBitrate))
                 if outputFastStart > 0:
                     command.append('-movflags')
                     command.append('+faststart')
                 if outputQualityPercent > 0:
                     command.append('-q:a')
-                    command.append(outputQualityPercent)
+                    command.append(str(outputQualityPercent))
                 if len(outputSubtitleCodec) > 0:
                     command.append('-c:s')
                     command.append(outputSubtitleCodec)
