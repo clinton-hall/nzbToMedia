@@ -253,14 +253,14 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         # we need to move the output dir files back...
         Logger.debug("MAIN: Moving temporary HeadPhones files back to allow seeding.")
         for item in copy_list:
-            if os.path.isfile(item[1]): # check to ensure temp files still exist.
-                if os.path.isfile(item[0]): # both exist, remove temp version
-                    Logger.debug("MAIN: File %s still present. Removing tempoary file %s", str(item[0]), str(item[1])
-                    os.unlink(item[1])
+            if os.path.isfile(os.path.normpath(item[1])): # check to ensure temp files still exist.
+                if os.path.isfile(os.path.normpath(item[0])): # both exist, remove temp version
+                    Logger.debug("MAIN: File %s still present. Removing tempoary file %s", str(item[0]), str(item[1]))
+                    os.unlink(os.path.normpath(item[1]))
                     continue
                 else: # move temp version back to allow seeding or Torrent removal.
-                    Logger.debug("MAIN: Moving %s to %s", str(item[1]), str(item[0])
-                    shutil.move(item[1], item[0])
+                    Logger.debug("MAIN: Moving %s to %s", str(item[1]), str(item[0]))
+                    shutil.move(os.path.normpath(item[1]), os.path.normpath(item[0]))
                     continue
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
