@@ -112,6 +112,16 @@ def extract(filePath, outputDestination):
     # Create outputDestination folder
     create_destination(outputDestination)
 
+    config = ConfigParser.ConfigParser()
+    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
+    Logger.info("MAIN: Loading config from %s", configFilename)
+    config.read(configFilename)                         
+    passwordsfile = config.get("passwords", "PassWordFile")
+    if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
+        passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
+    else:
+        passwords = []
+
     Logger.info("Extracting %s to %s", filePath, outputDestination)
     Logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
@@ -124,23 +134,20 @@ def extract(filePath, outputDestination):
         res = p.wait()
         if (res >= 0 and os.name == 'nt') or res == 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
-        else:
+        elif len(passwords) > 0:
             Logger.info("EXTRACTOR: Attempting to extract with passwords")
             pass_success = int(0)
-            passwords = ConfigParser.ConfigParser()
-            passwordsfile = os.path.join(os.path.dirname(sys.argv[0]), 'autoProcessMedia.cfg')
-            passwords.read(passwordsfile)
-            passwordslist = passwords.items('passwords')
-            for item in passwordslist:
-                option, password = item
+            for password in passwords:
+                if password == "": # if edited in windows or otherwise if blank lines.
+                    continue
                 cmd2 = cmd
                 #append password here.
                 passcmd = "-p" + password
                 cmd2.append(passcmd)
                 p = Popen(cmd2) # should extract files fine.
                 res = p.wait()
-                if res >= 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
-                    Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
+                if (res >= 0 and os.name == 'nt') or res == 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+                    Logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s", filePath, outputDestination, password)
                     pass_success = int(1)
                     break
                 else:
