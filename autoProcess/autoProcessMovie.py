@@ -268,7 +268,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                 if remoteCPS == 1:
                     command = command + "/?downloader=" + clientAgent + "&download_id=" + download_id
                 else:
-                    command = command + "/?media_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
+                    command = command + "/?movie_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
 
         url = baseURL + command
 
