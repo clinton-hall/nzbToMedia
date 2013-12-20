@@ -2,6 +2,7 @@ import sys
 import os
 import ConfigParser
 import logging
+import errno
 from subprocess import call
 
 Logger = logging.getLogger()
