@@ -198,7 +198,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     # All checks done, now launching the script.
     Logger.info("Script triggered from NZBGet, starting autoProcessTV...")
     result = autoProcessTV.processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status)
-# SABnzbd
+# SABnzbd Pre 0.7.17
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
     # 1 The final directory of the job (full path)
@@ -209,6 +209,19 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("Script triggered from SABnzbd, starting autoProcessTV...")
+    result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
+# SABnzbd 0.7.17+
+elif len(sys.argv) == SABNZB_0717_NO_OF_ARGUMENTS:
+    # SABnzbd argv:
+    # 1 The final directory of the job (full path)
+    # 2 The original name of the NZB file
+    # 3 Clean version of the job name (no path info and ".nzb" removed)
+    # 4 Indexer's report number (if supported)
+    # 5 User-defined category
+    # 6 Group that the NZB was posted in e.g. alt.binaries.x
+    # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
+    # 8 Failure URL
+    Logger.info("Script triggered from SABnzbd 0.7.17+, starting autoProcessTV...")
     result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7])
 else:
     Logger.debug("Invalid number of arguments received from client.")

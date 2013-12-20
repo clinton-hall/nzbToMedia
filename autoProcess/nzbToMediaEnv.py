@@ -5,6 +5,7 @@ VERSION = 'V8.6'
 
 # Constants pertinant to SabNzb
 SABNZB_NO_OF_ARGUMENTS = 8
+SABNZB_0717_NO_OF_ARGUMENTS = 9
 
 # Constants pertaining to SickBeard Branches: 
 # extend this list to include all branches/forks that use "failed" to handle failed downloads.
