@@ -53,7 +53,7 @@ def get_movie_info(baseURL, imdbid, download_id):
     library = []
     offset = int(0)
     while True:
-        url = baseURL + "movie.list/?status=active" + "&limit_offset=50," + str(offset)
+        url = baseURL + "media.list/?status=active" + "&limit_offset=50," + str(offset)
 
         Logger.debug("Opening URL: %s", url)
 
@@ -81,7 +81,7 @@ def get_movie_info(baseURL, imdbid, download_id):
 
     for index in range(len(movieid)):
         if not imdbid:
-            url = baseURL + "movie.get/?id=" + str(movieid[index])
+            url = baseURL + "media.get/?id=" + str(movieid[index])
             Logger.debug("Opening URL: %s", url)
             try:
                 urlObj = urllib.urlopen(url)
@@ -90,7 +90,7 @@ def get_movie_info(baseURL, imdbid, download_id):
                 return ""
             try:
                 result = json.load(urlObj)
-                releaselist = [item["info"]["download_id"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]  
+                releaselist = [item["info"]["download_id"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]  
             except:
                 Logger.exception("Unable to parse json data for releases")
                 return ""
@@ -116,7 +116,7 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
     
     if not movie_id:
         return "", clientAgent, "none", "none"
-    url = baseURL + "movie.get/?id=" + str(movie_id)
+    url = baseURL + "media.get/?id=" + str(movie_id)
     Logger.debug("Looking for status of movie: %s - with release sent to clientAgent: %s and download_id: %s", movie_id, clientAgent, download_id)
     Logger.debug("Opening URL: %s", url)
 
@@ -127,7 +127,7 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
         return "", clientAgent, "none", "none"
     result = json.load(urlObj)
     try:
-        movie_status = result["movie"]["status"]["identifier"]
+        movie_status = result["media"]["status"]["identifier"]
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
     except: # index out of range/doesn't exist?
         Logger.exception("Could not find a status for this movie")
@@ -135,8 +135,8 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
     try:
         release_status = "none"
         if download_id != "" and download_id != "none": # we have the download id from the downloader. Let's see if it's valid.
-            release_statuslist = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
-            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
+            release_statuslist = [item["status"]["identifier"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]
             if len(release_statuslist) == 1: # we have found a release by this id. :)
                 release_status = release_statuslist[0]
                 clientAgent = clientAgentlist[0]
@@ -146,7 +146,7 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
                 clients = [item for item in clientAgentlist if item.lower() == clientAgent.lower()]
                 clientAgent = clients[0]
                 if len(clients) == 1: # ok.. a unique entry for download_id and clientAgent ;)
-                    release_status = [item["status"]["identifier"] for item in result["movie"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower() and item["info"]["download_downloader"] == clientAgent][0]
+                    release_status = [item["status"]["identifier"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower() and item["info"]["download_downloader"] == clientAgent][0]
                     Logger.debug("Found a single release for download_id: %s and clientAgent: %s. Release status is: %s", download_id, clientAgent, release_status)
                 else: # doesn't matter. only really used as secondary confirmation of movie status change. Let's continue.                
                     Logger.debug("Found several releases for download_id: %s and clientAgent: %s. Cannot determine the release status", download_id, clientAgent)
@@ -156,8 +156,8 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
         if download_id == "none": # if we couldn't find this initially, there is no need to check next time around.
             return movie_status, clientAgent, download_id, release_status
         elif download_id == "": # in case we didn't get this from the downloader.
-            download_idlist = [item["info"]["download_id"] for item in result["movie"]["releases"] if item["status"]["identifier"] == "snatched"]
-            clientAgentlist = [item["info"]["download_downloader"] for item in result["movie"]["releases"] if item["status"]["identifier"] == "snatched"]
+            download_idlist = [item["info"]["download_id"] for item in result["media"]["releases"] if item["status"]["identifier"] == "snatched"]
+            clientAgentlist = [item["info"]["download_downloader"] for item in result["media"]["releases"] if item["status"]["identifier"] == "snatched"]
             if len(clientAgentlist) == 1:
                 if clientAgent == "manual":
                     clientAgent = clientAgentlist[0]
