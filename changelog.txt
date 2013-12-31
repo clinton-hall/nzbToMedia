@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V8.6 xx/xx/2013
+V9.0 xx/01/2014
 
 Impacts NZBs
 SABnzbd 0.7.17+ now uses 8 arguments, not 7. These scripts now support the extra argument.
