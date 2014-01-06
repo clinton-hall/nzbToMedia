@@ -219,7 +219,7 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     clientAgent = "sabnzbd"
     result = autoProcessMovie.process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent)
 # SABnzbd 0.7.17+
-elif len(sys.argv) == SABNZB_0717_NO_OF_ARGUMENTS:
+elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     # SABnzbd argv:
     # 1 The final directory of the job (full path)
     # 2 The original name of the NZB file
