@@ -279,11 +279,11 @@ if not os.path.isfile(configFilename):
 Logger.info("MAIN: Loading config from %s", configFilename)
 config.read(configFilename)
 
-cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
-sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
-hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
-mlCategory = config.get("Mylar", "mlCategory")                                      # comics
-gzCategory = config.get("Gamez", "gzCategory")                                      # games
+cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
+sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
+hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
+mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics
+gzCategory = (config.get("Gamez", "gzCategory")).split(',')                         # games
 
 # NZBGet V11+
 # Check if the script is called from nzbget 11.0 or later
@@ -386,23 +386,23 @@ else: # only CPS supports this manual run for now.
     clientAgent = "manual"
     nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory, '')
 
-if inputCategory == cpsCategory:
+if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id)
-elif inputCategory == sbCategory:
+    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
+elif inputCategory in sbCategory:
     Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-    result = autoProcessTV.processEpisode(nzbDir, inputName, status)
-elif inputCategory == hpCategory:
+    result = autoProcessTV.processEpisode(nzbDir, inputName, status, inputCategory)
+elif inputCategory in hpCategory:
     Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-    result = autoProcessMusic.process(nzbDir, inputName, status)
-elif inputCategory == mlCategory:
+    result = autoProcessMusic.process(nzbDir, inputName, status, inputCategory)
+elif inputCategory in mlCategory:
     Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
-    result = autoProcessComics.processEpisode(nzbDir, inputName, status)
-elif inputCategory == gzCategory:
+    result = autoProcessComics.processEpisode(nzbDir, inputName, status, inputCategory)
+elif inputCategory in gzCategory:
     Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
-    result = autoProcessGames.process(nzbDir, inputName, status)
+    result = autoProcessGames.process(nzbDir, inputName, status, inputCategory)
 else:
-    Logger.warning("MAIN: The download category %s does not match any category defines in autoProcessMedia.cfg. Exiting.", inputCategory)
+    Logger.warning("MAIN: The download category %s does not match any category defined in autoProcessMedia.cfg. Exiting.", inputCategory)
     sys.exit(POSTPROCESS_ERROR)
 
 if result == 0:

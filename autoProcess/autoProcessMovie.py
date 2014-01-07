@@ -190,7 +190,7 @@ def get_status(baseURL, movie_id, clientAgent, download_id):
         download_id = "none"
     return movie_status, clientAgent, download_id, release_status
 
-def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id = ""):
+def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id = "", inputCategory=None):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -203,21 +203,25 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     config.read(configFilename)
 
-    host = config.get("CouchPotato", "host")
-    port = config.get("CouchPotato", "port")
-    apikey = config.get("CouchPotato", "apikey")
-    delay = float(config.get("CouchPotato", "delay"))
-    method = config.get("CouchPotato", "method")
-    delete_failed = int(config.get("CouchPotato", "delete_failed"))
-    wait_for = int(config.get("CouchPotato", "wait_for"))
+    section = "CouchPotato"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
+    host = config.get(section., "host")
+    port = config.get(section., "port")
+    apikey = config.get(section., "apikey")
+    delay = float(config.get(section., "delay"))
+    method = config.get(section., "method")
+    delete_failed = int(config.get(section., "delete_failed"))
+    wait_for = int(config.get(section., "wait_for"))
 
     try:
-        ssl = int(config.get("CouchPotato", "ssl"))
+        ssl = int(config.get(section., "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("CouchPotato", "web_root")
+        web_root = config.get(section., "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
         
@@ -227,7 +231,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         transcode = 0
 
     try:
-        remoteCPS = int(config.get("CouchPotato", "remoteCPS"))
+        remoteCPS = int(config.get(section., "remoteCPS"))
     except (ConfigParser.NoOptionError, ValueError):
         remoteCPS = 0
 

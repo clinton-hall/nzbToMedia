@@ -41,7 +41,7 @@ def delete(dirName):
         Logger.exception("Unable to delete folder %s", dirName)
 
 
-def processEpisode(dirName, nzbName=None, failed=False):
+def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
 
     status = int(failed)
     config = ConfigParser.ConfigParser()
@@ -54,28 +54,32 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     config.read(configFilename)
 
+    section = "SickBeard"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
     watch_dir = ""
-    host = config.get("SickBeard", "host")
-    port = config.get("SickBeard", "port")
-    username = config.get("SickBeard", "username")
-    password = config.get("SickBeard", "password")
+    host = config.get(section., "host")
+    port = config.get(section., "port")
+    username = config.get(section., "username")
+    password = config.get(section., "password")
     try:
-        ssl = int(config.get("SickBeard", "ssl"))
+        ssl = int(config.get(section., "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("SickBeard", "web_root")
+        web_root = config.get(section., "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
     try:
-        watch_dir = config.get("SickBeard", "watch_dir")
+        watch_dir = config.get(section., "watch_dir")
     except ConfigParser.NoOptionError:
         watch_dir = ""
 
     try:
-        fork = config.get("SickBeard", "fork")
+        fork = config.get(section., "fork")
     except ConfigParser.NoOptionError:
         fork = "default"
 
@@ -85,11 +89,11 @@ def processEpisode(dirName, nzbName=None, failed=False):
         transcode = 0
 
     try:
-        delete_failed = int(config.get("SickBeard", "delete_failed"))
+        delete_failed = int(config.get(section., "delete_failed"))
     except (ConfigParser.NoOptionError, ValueError):
         delete_failed = 0
     try:
-        delay = float(config.get("SickBeard", "delay"))
+        delay = float(config.get(section., "delay"))
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
 

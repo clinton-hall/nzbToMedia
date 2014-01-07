@@ -13,7 +13,7 @@ from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
 
-def process(dirName, nzbName=None, status=0):
+def process(dirName, nzbName=None, status=0, inputCategory=None):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -26,18 +26,22 @@ def process(dirName, nzbName=None, status=0):
 
     config.read(configFilename)
 
-    host = config.get("HeadPhones", "host")
-    port = config.get("HeadPhones", "port")
-    apikey = config.get("HeadPhones", "apikey")
-    delay = float(config.get("HeadPhones", "delay"))
+    section = "HeadPhones"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
+    host = config.get(section., "host")
+    port = config.get(section., "port")
+    apikey = config.get(section., "apikey")
+    delay = float(config.get(section., "delay"))
 
     try:
-        ssl = int(config.get("HeadPhones", "ssl"))
+        ssl = int(config.get(section., "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("HeadPhones", "web_root")
+        web_root = config.get(section., "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
