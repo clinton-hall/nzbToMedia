@@ -121,6 +121,10 @@ def migrate():
             original = configold.items(section)
         except:
             continue
+        try:
+            confignew.add_section(section)
+        except:
+            pass
         for item in original:
             option, value = item
             confignew.set(section, option, value) 
