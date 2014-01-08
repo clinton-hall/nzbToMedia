@@ -207,21 +207,21 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     if inputCategory != None and config.has_section(inputCategory):
         section = inputCategory
 
-    host = config.get(section., "host")
-    port = config.get(section., "port")
-    apikey = config.get(section., "apikey")
-    delay = float(config.get(section., "delay"))
-    method = config.get(section., "method")
-    delete_failed = int(config.get(section., "delete_failed"))
-    wait_for = int(config.get(section., "wait_for"))
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    apikey = config.get(section, "apikey")
+    delay = float(config.get(section, "delay"))
+    method = config.get(section, "method")
+    delete_failed = int(config.get(section, "delete_failed"))
+    wait_for = int(config.get(section, "wait_for"))
 
     try:
-        ssl = int(config.get(section., "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get(section., "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
         
@@ -231,7 +231,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
         transcode = 0
 
     try:
-        remoteCPS = int(config.get(section., "remoteCPS"))
+        remoteCPS = int(config.get(section, "remoteCPS"))
     except (ConfigParser.NoOptionError, ValueError):
         remoteCPS = 0
 

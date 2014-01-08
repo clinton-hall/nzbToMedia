@@ -59,27 +59,27 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         section = inputCategory
 
     watch_dir = ""
-    host = config.get(section., "host")
-    port = config.get(section., "port")
-    username = config.get(section., "username")
-    password = config.get(section., "password")
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    username = config.get(section, "username")
+    password = config.get(section, "password")
     try:
-        ssl = int(config.get(section., "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get(section., "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
     try:
-        watch_dir = config.get(section., "watch_dir")
+        watch_dir = config.get(section, "watch_dir")
     except ConfigParser.NoOptionError:
         watch_dir = ""
 
     try:
-        fork = config.get(section., "fork")
+        fork = config.get(section, "fork")
     except ConfigParser.NoOptionError:
         fork = "default"
 
@@ -89,11 +89,11 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         transcode = 0
 
     try:
-        delete_failed = int(config.get(section., "delete_failed"))
+        delete_failed = int(config.get(section, "delete_failed"))
     except (ConfigParser.NoOptionError, ValueError):
         delete_failed = 0
     try:
-        delay = float(config.get(section., "delay"))
+        delay = float(config.get(section, "delay"))
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
 

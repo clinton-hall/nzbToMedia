@@ -30,18 +30,18 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     if inputCategory != None and config.has_section(inputCategory):
         section = inputCategory
 
-    host = config.get(section., "host")
-    port = config.get(section., "port")
-    apikey = config.get(section., "apikey")
-    delay = float(config.get(section., "delay"))
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    apikey = config.get(section, "apikey")
+    delay = float(config.get(section, "delay"))
 
     try:
-        ssl = int(config.get(section., "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get(section., "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
