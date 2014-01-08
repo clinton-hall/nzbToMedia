@@ -6,6 +6,7 @@ Impacts NZBs
 SABnzbd 0.7.17+ now uses 8 arguments, not 7. These scripts now support the extra argument.
 
 Impacts Torrents
+Always pause before processing.
 Moved delete to end of routine, only when succesful process occurs.
 Don't flatten hp category (in case multi cd album)
 Added UserScript to be called for un-categorized downloads and other defined categories.

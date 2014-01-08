@@ -82,7 +82,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit()
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission'] and inputHash and useLink != "no":
+    if clientAgent in ['utorrent', 'transmission'] and inputHash:
         if clientAgent == 'utorrent':
             try:
                 Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
@@ -263,7 +263,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission']  and inputHash and useLink != "no":
+    if clientAgent in ['utorrent', 'transmission']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
         if deleteOriginal == 1 and result != 1:
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
