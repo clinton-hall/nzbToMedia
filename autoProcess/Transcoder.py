@@ -69,7 +69,7 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
 
-                command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0']
+                command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0'] # -map 0 takes all input streams
 
                 if useNiceness:
                     command = ['nice', '-%d' % niceness] + command
@@ -101,9 +101,9 @@ def Transcode_directory(dirName):
                 if len(outputAudioBitrate) > 0:
                     command.append('-b:a')
                     command.append(outputAudioBitrate)
-                if len(outputSubtitleCodec) > 0:
+                if len(outputSubtitleCodec) > 0: # Not every subtitle codec can be used for every video container format!
                     command.append('-c:s')
-                    command.append(outputSubtitleCodec)
+                    command.append(outputSubtitleCodec) # http://en.wikibooks.org/wiki/FFMPEG_An_Intermediate_Guide/subtitle_options
                 else:
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
@@ -123,11 +123,11 @@ def Transcode_directory(dirName):
                 except:
                     Logger.exception("Transcoding of video %s has failed", filePath)
                 if result == 0:
-                    Logger.info("Transcoding of video %s to %s succeded", filePath, newfilePath)
+                    Logger.info("Transcoding of video %s to %s succeeded", filePath, newfilePath)
                     if duplicate == 0: # we get rid of the original file
                         os.unlink(filePath)
                 else:
                     Logger.error("Transcoding of video %s to %s failed", filePath, newfilePath)
-                # this will be 0 (successful) it all are sucessful, else will return a positive integer for failure.
+                # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
                 final_result = final_result + result 
     return final_result
