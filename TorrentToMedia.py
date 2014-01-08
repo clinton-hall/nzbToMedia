@@ -9,7 +9,6 @@ import logging
 import datetime
 import time
 import re
-from sets import Set
 from subprocess import call, Popen
 
 # Custom imports
@@ -37,7 +36,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     copy_list = []
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
-    if  inputCategory == sbCategory and sbFork in SICKBEARD_TORRENT:
+    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT:
         Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
         result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
         if result == 1:
@@ -71,7 +70,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, os.path.splitext(safeName(inputName))[0]))
         Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
-    processOnly = [cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory]
+    processOnly = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
     if not "NONE" in user_script_categories: # if None, we only process the 5 listed.
         if "ALL" in user_script_categories: # All defined categories
             processOnly = categories
@@ -139,7 +138,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize) and not inputCategory == hpCategory:  # Ignore samples
+                if is_sample(filePath, inputName, minSampleSize) and not inputCategory in hpCategory:  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
@@ -159,7 +158,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.exception("MAIN: Failed to link file: %s", file)
                 continue
             elif fileExtension in compressedContainer:
-                if inputCategory in [hpCategory]: # We need to link all files for HP in order to move these back to support seeding.
+                if inputCategory in hpCategory: # We need to link all files for HP in order to move these back to support seeding.
                     Logger.info("MAIN: Linking compressed archive file %s for file %s", fileExtension, filePath)
                     try:
                         copy_link(filePath, targetDirectory, useLink, outputDestination)
@@ -176,7 +175,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                         continue
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
-                    if inputCategory == hpCategory: # HP needs to scan the same dir as passed to downloader. 
+                    if inputCategory in hpCategory: # HP needs to scan the same dir as passed to downloader. 
                         extractor.extract(filePath, inputDirectory)
                     else:
                         extractor.extract(filePath, outputDestination)
@@ -185,7 +184,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
                 continue
-            elif not inputCategory in [cpsCategory, sbCategory]: #process all for non-video categories.
+            elif not inputCategory in cpsCategory + sbCategory: #process all for non-video categories.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
@@ -193,11 +192,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
-    if not inputCategory in [hpCategory]: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
+    if not inputCategory in hpCategory: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in [cpsCategory, sbCategory]: 
+    if inputCategory in cpsCategory + sbCategory: 
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -217,39 +216,39 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         else:
             Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
 
-    processCategories = Set([cpsCategory, sbCategory, hpCategory, mlCategory, gzCategory])
+    processCategories = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination)
-    elif status == int(0) or (inputCategory in [hpCategory, mlCategory, gzCategory]): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (inputCategory in hpCategory + mlCategory + gzCategory): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
         Logger.error("MAIN: Something failed! Please check logs. Exiting")
         sys.exit(-1)
 
-    if inputCategory == cpsCategory:
+    if inputCategory in cpsCategory:
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
         download_id = inputHash
-        result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, download_id)
-    elif inputCategory == sbCategory:
+        result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
+    elif inputCategory in sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-        result = autoProcessTV.processEpisode(outputDestination, inputName, status)
-    elif inputCategory == hpCategory:
+        result = autoProcessTV.processEpisode(outputDestination, inputName, status, inputCategory)
+    elif inputCategory in hpCategory:
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-        result = autoProcessMusic.process(inputDirectory, inputName, status)
-    elif inputCategory == mlCategory:
+        result = autoProcessMusic.process(inputDirectory, inputName, status, inputCategory)
+    elif inputCategory in mlCategory:
         Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
-        result = autoProcessComics.processEpisode(outputDestination, inputName, status)
-    elif inputCategory == gzCategory:
+        result = autoProcessComics.processEpisode(outputDestination, inputName, status, inputCategory)
+    elif inputCategory in gzCategory:
         Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
-        result = autoProcessGames.process(outputDestination, inputName, status)
+        result = autoProcessGames.process(outputDestination, inputName, status, inputCategory)
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
-    if inputCategory == hpCategory:
+    if inputCategory in hpCategory:
         # we need to move the output dir files back...
         Logger.debug("MAIN: Moving temporary HeadPhones files back to allow seeding.")
         for item in copy_list:
@@ -270,10 +269,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
             if clientAgent == 'utorrent' and utorrentClass != "":
                 utorrentClass.removedata(inputHash)
-                if not inputCategory == hpCategory:
+                if not inputCategory in hpCategory:
                     utorrentClass.remove(inputHash)
             if clientAgent == 'transmission' and TransmissionClass !="":
-                if inputCategory == hpCategory: #don't delete actual files for hp category, just remove torrent.
+                if inputCategory in hpCategory: #don't delete actual files for hp category, just remove torrent.
                     TransmissionClass.remove_torrent(inputID, False)
                 else:
                     TransmissionClass.remove_torrent(inputID, True)
@@ -412,17 +411,17 @@ if __name__ == "__main__":
     metaContainer = (config.get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
     minSampleSize = int(config.get("Extensions", "minSampleSize"))                      # 200 (in MB)
     
-    cpsCategory = config.get("CouchPotato", "cpsCategory")                              # movie
-    sbCategory = config.get("SickBeard", "sbCategory")                                  # tv
+    cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
+    sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
     sbFork = config.get("SickBeard", "fork")                                            # tv
-    hpCategory = config.get("HeadPhones", "hpCategory")                                 # music
-    mlCategory = config.get("Mylar", "mlCategory")                                      # comics
-    gzCategory = config.get("Gamez", "gzCategory")                                      # games
-    categories.append(cpsCategory)
-    categories.append(sbCategory)
-    categories.append(hpCategory)
-    categories.append(mlCategory)
-    categories.append(gzCategory)
+    hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
+    mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics
+    gzCategory = (config.get("Gamez", "gzCategory")).split(',')                         # games
+    categories.extend(cpsCategory)
+    categories.extend(sbCategory)
+    categories.extend(hpCategory)
+    categories.extend(mlCategory)
+    categories.extend(gzCategory)
 
     user_script_categories = config.get("UserScript", "user_script_categories").split(',')         # NONE
     if not "NONE" in user_script_categories: 

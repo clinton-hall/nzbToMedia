@@ -12,6 +12,8 @@ def migrate():
     configold = ConfigParser.ConfigParser()
     configold.optionxform = str
 
+    categories = []
+
     section = "CouchPotato"
     original = []
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -35,6 +37,8 @@ def migrate():
             continue
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
+        if option == "cpsCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
 
     section = "SickBeard"
@@ -64,6 +68,8 @@ def migrate():
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
+        if option == "sbCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value) 
 
     section = "HeadPhones"
@@ -79,6 +85,8 @@ def migrate():
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
         option, value = item
+        if option == "hpCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value) 
 
     section = "Mylar"
@@ -89,6 +97,8 @@ def migrate():
         pass
     for item in original:
         option, value = item
+        if option == "mlCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
 
     section = "Gamez"
@@ -98,10 +108,26 @@ def migrate():
     except:
         pass
     for item in original:
+        option, value = item
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
-        option, value = item
+        if option == "gzCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
+
+    for section in categories:
+        original = []
+        try:
+            original = configold.items(section)
+        except:
+            continue
+        try:
+            confignew.add_section(section)
+        except:
+            pass
+        for item in original:
+            option, value = item
+            confignew.set(section, option, value) 
 
     section = "Torrent"
     original = []

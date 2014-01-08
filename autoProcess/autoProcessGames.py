@@ -13,7 +13,7 @@ from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
 
-def process(dirName, nzbName=None, status=0):
+def process(dirName, nzbName=None, status=0, inputCategory=None):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -26,17 +26,21 @@ def process(dirName, nzbName=None, status=0):
 
     config.read(configFilename)
 
-    host = config.get("Gamez", "host")
-    port = config.get("Gamez", "port")
-    apikey = config.get("Gamez", "apikey")
+    section = "Gamez"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    apikey = config.get(section, "apikey")
 
     try:
-        ssl = int(config.get("Gamez", "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("Gamez", "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
