@@ -325,12 +325,12 @@ def converto_to_ascii(nzbName, dirName):
         return nzbName, dirName
     config.read(configFilename)
     ascii_convert = int(config.get("ASCII", "convert"))
-    if ascii_convert == 0: # just return if we don't need to wake anything.
+    if ascii_convert == 0 or os.name == 'nt': # just return if we don't want to convert or on windows os and "\" is replaced!.
         return nzbName, dirName
     
     nzbName2 = str(nzbName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
-    if dirName != nzbName2:
+    if dirName != dirName2:
         Logger.info("Renaming directory:%s  to: %s.", dirName, nzbName2)
         shutil.move(dirName, nzbName2)
     for dirpath, dirnames, filesnames in os.walk(dirName2):
