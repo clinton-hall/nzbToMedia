@@ -7,11 +7,13 @@ import datetime
 import time
 import json
 import logging
+import socket
 
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 def process(dirName, nzbName=None, status=0, inputCategory=None):
 

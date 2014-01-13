@@ -2,6 +2,7 @@
 
 # Global Constants
 VERSION = 'V9.0'
+TimeOut = 60
 
 # Constants pertinant to SabNzb
 SABNZB_NO_OF_ARGUMENTS = 8

@@ -4,12 +4,14 @@ import os.path
 import time
 import ConfigParser
 import logging
+import socket
 
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):

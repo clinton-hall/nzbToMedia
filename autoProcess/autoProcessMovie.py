@@ -7,6 +7,7 @@ import datetime
 import time
 import json
 import logging
+import socket
 
 import Transcoder
 from nzbToMediaEnv import *
@@ -14,6 +15,7 @@ from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 def get_imdb(nzbName, dirName):
  

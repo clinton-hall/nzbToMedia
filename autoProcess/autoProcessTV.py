@@ -5,6 +5,7 @@ import ConfigParser
 import logging
 import shutil
 import time
+import socket
 
 import Transcoder
 from nzbToMediaEnv import *
@@ -12,6 +13,8 @@ from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
+TimeOut = 4 * int(TimeOut) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 
 class AuthURLOpener(urllib.FancyURLopener):

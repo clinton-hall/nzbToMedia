@@ -14,6 +14,7 @@ Added Torrent Hash to Deluge to assist with movie ID.
 Added passwords option to attempt extraction od passworded archives.
 
 Impacts All
+Added default socket timeout to prevent script hanging when the destination servers don't respond to http requests.
 Made processing Category Centric as an option for people running multiple versions of SickBeard and CouchPotato etc.
 Added TPB version of SickBeard processing. This now uses a fork pass-in instead of failed_fork.
 Added new option to convert files, directories, and parameters to ASCII. To be used if you regularly download "foreign" titles and have problems with CP/SB.
