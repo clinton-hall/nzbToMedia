@@ -7,12 +7,15 @@ import datetime
 import time
 import json
 import logging
+import socket
 
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
-def process(dirName, nzbName=None, status=0):
+def process(dirName, nzbName=None, status=0, inputCategory=None):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -25,17 +28,21 @@ def process(dirName, nzbName=None, status=0):
 
     config.read(configFilename)
 
-    host = config.get("Gamez", "host")
-    port = config.get("Gamez", "port")
-    apikey = config.get("Gamez", "apikey")
+    section = "Gamez"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    apikey = config.get(section, "apikey")
 
     try:
-        ssl = int(config.get("Gamez", "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("Gamez", "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
@@ -43,6 +50,8 @@ def process(dirName, nzbName=None, status=0):
         protocol = "https://"
     else:
         protocol = "http://"
+
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
     baseURL = protocol + host + ":" + port + web_root + "/api?api_key=" + apikey + "&mode="
 

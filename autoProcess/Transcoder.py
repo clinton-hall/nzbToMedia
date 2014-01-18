@@ -2,6 +2,7 @@ import sys
 import os
 import ConfigParser
 import logging
+import errno
 from subprocess import call
 
 Logger = logging.getLogger()
@@ -49,6 +50,8 @@ def Transcode_directory(dirName):
     outputAudioCodec = config.get("Transcoder", "outputAudioCodec").strip()
     outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate").strip()
     outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec").strip()
+    outputFastStart = int(config.get("Transcoder", "outputFastStart"))
+    outputQualityPercent = int(config.get("Transcoder", "outputQualityPercent"))
     if useNiceness:
         niceness = int(config.get("Transcoder", "niceness"))
 
@@ -69,7 +72,7 @@ def Transcode_directory(dirName):
                     outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
                 newfilePath = os.path.normpath(name + outputVideoExtension)
 
-                command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0']
+                command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0'] # -map 0 takes all input streams
 
                 if useNiceness:
                     command = ['nice', '-%d' % niceness] + command
@@ -85,10 +88,10 @@ def Transcode_directory(dirName):
                     command.append('copy')
                 if len(outputVideoFramerate) > 0:
                     command.append('-r')
-                    command.append(outputVideoFramerate)
+                    command.append(str(outputVideoFramerate))
                 if len(outputVideoBitrate) > 0:
                     command.append('-b:v')
-                    command.append(outputVideoBitrate)
+                    command.append(str(outputVideoBitrate))
                 if len(outputAudioCodec) > 0:
                     command.append('-c:a')
                     command.append(outputAudioCodec)
@@ -100,16 +103,22 @@ def Transcode_directory(dirName):
                     command.append('copy')
                 if len(outputAudioBitrate) > 0:
                     command.append('-b:a')
-                    command.append(outputAudioBitrate)
-                if len(outputSubtitleCodec) > 0:
+                    command.append(str(outputAudioBitrate))
+                if outputFastStart > 0:
+                    command.append('-movflags')
+                    command.append('+faststart')
+                if outputQualityPercent > 0:
+                    command.append('-q:a')
+                    command.append(str(outputQualityPercent))
+                if len(outputSubtitleCodec) > 0: # Not every subtitle codec can be used for every video container format!
                     command.append('-c:s')
-                    command.append(outputSubtitleCodec)
+                    command.append(outputSubtitleCodec) # http://en.wikibooks.org/wiki/FFMPEG_An_Intermediate_Guide/subtitle_options
                 else:
                     command.append('-sn')  # Don't copy the subtitles over
                 command.append(newfilePath)
                 
                 try: # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
-                    os.remove(newFilePath)
+                    os.remove(newfilePath)
                 except OSError, e:
                     if e.errno != errno.ENOENT: # Ignore the error if it's just telling us that the file doesn't exist
                         Logger.debug("Error when removing transcoding target: %s", e)
@@ -117,17 +126,21 @@ def Transcode_directory(dirName):
                     Logger.debug("Error when removing transcoding target: %s", e)
 
                 Logger.info("Transcoding video: %s", file)
+                cmd = ""
+                for item in command:
+                    cmd = cmd + " " + item
+                Logger.debug("calling command:%s", cmd)
                 result = 1 # set result to failed in case call fails.
                 try:
                     result = call(command)
                 except:
                     Logger.exception("Transcoding of video %s has failed", filePath)
                 if result == 0:
-                    Logger.info("Transcoding of video %s to %s succeded", filePath, newfilePath)
+                    Logger.info("Transcoding of video %s to %s succeeded", filePath, newfilePath)
                     if duplicate == 0: # we get rid of the original file
                         os.unlink(filePath)
                 else:
                     Logger.error("Transcoding of video %s to %s failed", filePath, newfilePath)
-                # this will be 0 (successful) it all are sucessful, else will return a positive integer for failure.
+                # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
                 final_result = final_result + result 
     return final_result

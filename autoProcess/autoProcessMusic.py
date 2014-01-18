@@ -7,12 +7,15 @@ import datetime
 import time
 import json
 import logging
+import socket
 
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
-def process(dirName, nzbName=None, status=0):
+def process(dirName, nzbName=None, status=0, inputCategory=None):
 
     status = int(status)
     config = ConfigParser.ConfigParser()
@@ -25,18 +28,22 @@ def process(dirName, nzbName=None, status=0):
 
     config.read(configFilename)
 
-    host = config.get("HeadPhones", "host")
-    port = config.get("HeadPhones", "port")
-    apikey = config.get("HeadPhones", "apikey")
-    delay = float(config.get("HeadPhones", "delay"))
+    section = "HeadPhones"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    apikey = config.get(section, "apikey")
+    delay = float(config.get(section, "delay"))
 
     try:
-        ssl = int(config.get("HeadPhones", "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("HeadPhones", "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
@@ -47,6 +54,8 @@ def process(dirName, nzbName=None, status=0):
     # don't delay when we are calling this script manually.
     if nzbName == "Manual Run":
         delay = 0
+
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
     baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
 
@@ -68,7 +77,7 @@ def process(dirName, nzbName=None, status=0):
             return 1 # failure
 
         result = urlObj.readlines()
-        Logger.info("HeaPhones returned %s", result)
+        Logger.info("HeadPhones returned %s", result)
         if result[0] == "OK":
             Logger.info("%s started on HeadPhones for %s", command, nzbName)
         else:

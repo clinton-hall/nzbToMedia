@@ -1,22 +1,3 @@
-# Author: Nic Wolfe <nic@wolfeden.ca>
-# URL: http://code.google.com/p/sickbeard/
-#
-# This file is part of Sick Beard.
-#
-# Sick Beard is free software: you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation, either version 3 of the License, or
-# (at your option) any later version.
-#
-# Sick Beard is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with Sick Beard.  If not, see <http://www.gnu.org/licenses/>.
-
-
 import sys
 import urllib
 import os
@@ -24,6 +5,7 @@ import ConfigParser
 import logging
 import shutil
 import time
+import socket
 
 import Transcoder
 from nzbToMediaEnv import *
@@ -31,6 +13,8 @@ from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
+TimeOut = 4 * int(TimeOut) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 
 class AuthURLOpener(urllib.FancyURLopener):
@@ -60,7 +44,7 @@ def delete(dirName):
         Logger.exception("Unable to delete folder %s", dirName)
 
 
-def processEpisode(dirName, nzbName=None, failed=False):
+def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
 
     status = int(failed)
     config = ConfigParser.ConfigParser()
@@ -73,30 +57,34 @@ def processEpisode(dirName, nzbName=None, failed=False):
 
     config.read(configFilename)
 
+    section = "SickBeard"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+
     watch_dir = ""
-    host = config.get("SickBeard", "host")
-    port = config.get("SickBeard", "port")
-    username = config.get("SickBeard", "username")
-    password = config.get("SickBeard", "password")
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    username = config.get(section, "username")
+    password = config.get(section, "password")
     try:
-        ssl = int(config.get("SickBeard", "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get("SickBeard", "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
     try:
-        watch_dir = config.get("SickBeard", "watch_dir")
+        watch_dir = config.get(section, "watch_dir")
     except ConfigParser.NoOptionError:
         watch_dir = ""
 
     try:
-        failed_fork = int(config.get("SickBeard", "failed_fork"))
-    except (ConfigParser.NoOptionError, ValueError):
-        failed_fork = 0
+        fork = config.get(section, "fork")
+    except ConfigParser.NoOptionError:
+        fork = "default"
 
     try:    
         transcode = int(config.get("Transcoder", "transcode"))
@@ -104,21 +92,22 @@ def processEpisode(dirName, nzbName=None, failed=False):
         transcode = 0
 
     try:
-        delete_failed = int(config.get("SickBeard", "delete_failed"))
+        delete_failed = int(config.get(section, "delete_failed"))
     except (ConfigParser.NoOptionError, ValueError):
         delete_failed = 0
     try:
-        delay = float(config.get("SickBeard", "delay"))
+        delay = float(config.get(section, "delay"))
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
-
 
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
-    process_all_exceptions(nzbName.lower(), dirName)
+    if not fork in SICKBEARD_TORRENT:
+        process_all_exceptions(nzbName.lower(), dirName)
+        nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
-    if nzbName != "Manual Run":
+    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -144,32 +133,27 @@ def processEpisode(dirName, nzbName=None, failed=False):
     params = {}
 
     params['quiet'] = 1
-
-    # if you have specified you are using development branch from fork https://github.com/Tolstyak/Sick-Beard.git
-    if failed_fork:
+    if fork in SICKBEARD_DIRNAME:
         params['dirName'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        params['failed'] = failed
-        if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard's failed branch")
-        else:
-            Logger.info("The download failed. Sending 'failed' process request to SickBeard's failed branch")
-            
-
-    # this is our default behaviour to work with the standard Master branch of SickBeard
     else:
         params['dir'] = dirName
-        if nzbName != None:
-            params['nzbName'] = nzbName
-        # the standard Master bamch of SickBeard cannot process failed downloads. So Exit here.
-        if status == 0:
-            Logger.info("The download succeeded. Sending process request to SickBeard")
-        else:
-            Logger.info("The download failed. Nothing to process")
-            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
-                delete(dirName)
-            return 0 # Success (as far as this script is concerned)
+
+    if nzbName != None:
+        params['nzbName'] = nzbName
+
+    if fork in SICKBEARD_FAILED:
+        params['failed'] = failed
+
+    if status == 0:
+        Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
+    elif fork in SICKBEARD_FAILED:
+        Logger.info("The download failed. Sending 'failed' process request to SickBeard's %s branch", fork)
+    else:
+        Logger.info("The download failed. SickBeard's %s branch does not handle failed downloads. Nothing to process", fork)
+        if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
+            Logger.info("Deleting directory: %s", dirName)
+            delete(dirName)
+        return 0 # Success (as far as this script is concerned)
     
     if status == 0 and transcode == 1: # only transcode successful downlaods
         result = Transcoder.Transcode_directory(dirName)

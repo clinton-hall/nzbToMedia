@@ -32,7 +32,7 @@ web_root =
 ssl = 0
 delay = 0
 watch_dir =
-failed_fork = 0
+fork = default
 delete_failed = 0
 
 
@@ -83,7 +83,7 @@ useLink = hard
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/
 ###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
-categories = music_videos,pictures,software
+categories = music_videos,pictures,software,
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username
@@ -118,6 +118,10 @@ outputVideoBitrate = 800k
 outputAudioCodec = libmp3lame
 outputAudioBitrate = 128k
 outputSubtitleCodec = 
+# outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
+outputFastStart = 0
+# outputQualityPercent. used as -q:a value. 0 will disable this from being used.
+outputQualityPercent = 0
 
 [WakeOnLan]
 ###### set wake = 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) the host and port specified.
@@ -126,6 +130,33 @@ host = 192.168.1.37
 port = 80
 mac = 00:01:2e:2D:64:e1
 
+[UserScript]
+#Use user_script for uncategorized download?
+#Set the categories to use external script, comma separated. 
+#Use "UNCAT" to process non-category downloads, and "ALL" for all. Set to "NONE" to disable external script.
+user_script_categories = NONE
+#What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
+user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
+#Specify the path of the script
+user_script_path = /media/test/script/script.sh
+#Specify the argument(s) passed to script, comma separated in order.
+#for example FP,FN,DN for file path (absolute file name with path), file name, absolute directory name (with path).
+#So the result is /media/test/script/script.sh FP FN DN. Add other arguments as needed eg -f, -r
+user_script_param = FN
+#Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
+user_script_successCodes = 0
+#Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
+user_script_clean = 1
+delay = 120
+
+[ASCII]
+#Set convert =1 if you want to convert any "foreign" characters to ASCII before passing to SB/CP etc. Default is disabled (0).
+convert = 0
+
+[passwords]
+# enter the full path to a text file containing passwords to be used for extraction attempts. 
+# In the passwords file, every password should be on a new line
+PassWordFile = 
 
 # Logging configuration
 [loggers]

@@ -4,11 +4,14 @@ import os.path
 import time
 import ConfigParser
 import logging
+import socket
 
 from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
+socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):
@@ -29,7 +32,7 @@ class AuthURLOpener(urllib.FancyURLopener):
         return urllib.FancyURLopener.open(self, url)
 
 
-def processEpisode(dirName, nzbName=None, status=0):
+def processEpisode(dirName, nzbName=None, status=0, inputCategory=None):
 
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -40,26 +43,31 @@ def processEpisode(dirName, nzbName=None, status=0):
         return 1 # failure
     
     config.read(configFilename)
-  
-    host = config.get("Mylar", "host")
-    port = config.get("Mylar", "port")
-    username = config.get("Mylar", "username")
-    password = config.get("Mylar", "password")
+
+    section = "Mylar"
+    if inputCategory != None and config.has_section(inputCategory):
+        section = inputCategory
+    host = config.get(section, "host")
+    port = config.get(section, "port")
+    username = config.get(section, "username")
+    password = config.get(section, "password")
     try:
-        ssl = int(config.get("Mylar", "ssl"))
+        ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
     
     try:
-        web_root = config.get("Mylar", "web_root")
+        web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
 
     try:
-        watch_dir = config.get("Mylar", "watch_dir")
+        watch_dir = config.get(section, "watch_dir")
     except ConfigParser.NoOptionError:
         watch_dir = ""
     params = {}
+
+    nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
     if dirName == "Manual Run" and watch_dir != "":
         dirName = watch_dir

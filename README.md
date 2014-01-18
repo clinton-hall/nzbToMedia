@@ -2,7 +2,7 @@ nzbToMedia
 ================
 
 Provides an efficient way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") and [SickBeard](http://sickbeard.com/ "SickBeard")
-when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/) and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
+when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/ "SABnzbd") and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
 This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli") and further contributions by [schumi2004](https://github.com/schumi2004 "schumi2004") and [hugbug](https://sourceforge.net/apps/phpbb/nzbget/memberlist.php?mode=viewprofile&u=67 "hugbug").
 Torrent suport added by [jkaberg](https://github.com/jkaberg "jkaberg") and [berkona](https://github.com/berkona "berkona")
 
@@ -12,12 +12,9 @@ Originally this was modifed from the SickBeard version to allow for "on-demand" 
 Later, a few failed downloads prompted me to incorporate "failed download" handling.
 Failed download handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (e.g. small NAS systems) this can be un-reliable.
 
-thorli's Synology DS211j was too weak to provide decent download rates with SABnzbd and CouchPotatoServer even by using sabToCouchPotato; His only alternative (as with many many QNAP and Synology users) was to switch to NZBGet which uses far less resources and helps to reach the full download speed. 
-
-The renamer of CouchPotatoServer caused broken downloads by interfering with NZBGet while it was still unpacking the files. Hence the solution was thorli's version of sabToCouchPotato which has now been named "nzbToCouchPotato".
-
 Failed download handling for SickBeard is available by using the development branch from fork [SickBeard-failed](https://github.com/Tolstyak/Sick-Beard.git "SickBeard-failed")
-To use this feature, in autoProcessTV.cfg set the parameter "failed_fork=1". Default is 0 and will work with standard version of SickBeard and just ignores failed downloads.
+To use this feature, in autoProcessTV.cfg set the parameter "fork=failed". Default is "fork=default" and will work with standard version of SickBeard and just ignores failed downloads. 
+Additional forks exist for ThePirateBay (does its own extraction and linking). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/sickbeard-branches "SickBeard Forks") for a lit of known forks.
 
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmissions, Deluge and possibly more.
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.

@@ -12,6 +12,8 @@ def migrate():
     configold = ConfigParser.ConfigParser()
     configold.optionxform = str
 
+    categories = []
+
     section = "CouchPotato"
     original = []
     configFilenameold = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
@@ -35,6 +37,8 @@ def migrate():
             continue
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
+        if option == "cpsCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
 
     section = "SickBeard"
@@ -54,10 +58,18 @@ def migrate():
         option, value = item
         if option == "category": # change this old format
             option = "sbCategory"
+        if option == "failed_fork": # change this old format
+            option = "fork"
+            if int(value) == 1:
+                value = "failed"
+            else:
+                value = "default"
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
+        if option == "sbCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value) 
 
     section = "HeadPhones"
@@ -73,6 +85,8 @@ def migrate():
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
         option, value = item
+        if option == "hpCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value) 
 
     section = "Mylar"
@@ -83,6 +97,8 @@ def migrate():
         pass
     for item in original:
         option, value = item
+        if option == "mlCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
 
     section = "Gamez"
@@ -92,10 +108,26 @@ def migrate():
     except:
         pass
     for item in original:
+        option, value = item
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
-        option, value = item
+        if option == "gzCategory":
+            categories.extend(value.split(','))
         confignew.set(section, option, value)
+
+    for section in categories:
+        original = []
+        try:
+            original = configold.items(section)
+        except:
+            continue
+        try:
+            confignew.add_section(section)
+        except:
+            pass
+        for item in original:
+            option, value = item
+            confignew.set(section, option, value) 
 
     section = "Torrent"
     original = []
@@ -140,6 +172,36 @@ def migrate():
         confignew.set(section, option, value)
 
     section = "WakeOnLan"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
+    section = "UserScript"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
+    section = "ASCII"
+    original = []
+    try:
+        original = configold.items(section)
+    except:
+        pass
+    for item in original:
+        option, value = item
+        confignew.set(section, option, value)
+
+    section = "passwords"
     original = []
     try:
         original = configold.items(section)
@@ -220,9 +282,10 @@ def migrate():
             os.unlink(backupname)
         os.rename(configFilenameold, backupname)
 
-    # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
-    os.rename(configFilenamenew, configFilenameold)
-    return
+    if os.path.isfile(configFilenamenew):
+        # rename our newly edited autoProcessMedia.cfg.sample to autoProcessMedia.cfg
+        os.rename(configFilenamenew, configFilenameold)
+        return
 
 def addnzbget():
     confignew = ConfigParser.ConfigParser()
@@ -242,8 +305,8 @@ def addnzbget():
 
 
     section = "SickBeard"
-    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FAILED_FORK']
-    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'failed_fork']
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork']
     for index in range(len(envKeys)):
         key = 'NZBPO_SB' + envKeys[index]
         if os.environ.has_key(key):
