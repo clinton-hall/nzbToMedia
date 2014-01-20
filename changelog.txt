@@ -1,5 +1,11 @@
 Change_LOG / History
 
+V9.1 XX/01/2014
+
+Impacts All
+Don't wait to verify status change in CouchPotato when no initial status (manual run)
+Now use "wait_for" timing as socket timeout on the renamer.scan. It appears to now be delayed in confirming success.
+
 V9.0 19/01/2014
 
 Impacts NZBs
