@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V9.1 XX/01/2014
+V9.1 24/01/2014
 
 Impacts All
 Don't wait to verify status change in CouchPotato when no initial status (manual run)
