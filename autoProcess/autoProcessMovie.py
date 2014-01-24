@@ -258,6 +258,9 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     process_all_exceptions(nzbName.lower(), dirName)
     nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
+    TimeOut2 = int(wait_for) * 60 # If transfering files across directories, it now appears CouchPotato can take a while to confirm this url request... Try using wait_for timing.
+    socket.setdefaulttimeout(int(TimeOut2)) #initialize socket timeout. We may now be able to remove the delays from the wait_for section below?
+
     if status == 0:
         if transcode == 1:
             result = Transcoder.Transcode_directory(dirName)
@@ -331,12 +334,14 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                 Logger.exception("Unable to delete folder %s", dirName)
         return 0 # success
     
-    if nzbName == "Manual Run":
+    if nzbName == "Manual Run" or download_id == "none":
         return 0 # success
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
+
     start = datetime.datetime.now()  # set time for timeout
-    pause_for = wait_for * 10 # keep this so we only ever have 6 complete loops.
+    pause_for = int(wait_for) * 10 # keep this so we only ever have 6 complete loops. This may not be necessary now?
     while (datetime.datetime.now() - start) < datetime.timedelta(minutes=wait_for):  # only wait 2 (default) minutes, then return.
         movie_status, clientAgent, download_id, release_status = get_status(baseURL, movie_id, clientAgent, download_id) # get the current status fo this movie.
         if movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
