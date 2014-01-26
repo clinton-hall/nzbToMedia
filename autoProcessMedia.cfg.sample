@@ -14,7 +14,7 @@ web_root =
 delay = 65
 method = renamer
 delete_failed = 0
-wait_for = 2
+wait_for = 5
 #### Set to 1 if CouchPotatoServer is running on a different server to your NZB client
 remoteCPS = 0
 
