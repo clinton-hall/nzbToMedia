@@ -13,9 +13,6 @@ from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
-TimeOut = 4 * int(TimeOut) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
-socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
-
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):
@@ -99,6 +96,13 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         delay = float(config.get(section, "delay"))
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
+    try:
+        wait_for = int(config.get(section, "wait_for"))
+    except (ConfigParser.NoOptionError, ValueError):
+        waitfor = 5
+
+    TimeOut = 60 * int(waitfor) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))

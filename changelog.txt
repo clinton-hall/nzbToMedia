@@ -4,6 +4,7 @@ V9.2 XX/02/2014
 
 Impacts All
 Change default "wait_for" to 5 mins. CouchPotato can take more than 2 minutes to return on renamer.scan request.
+Added SickBeard "wait_for" to bw customizable to prevent unwanted timeouts.
 
 V9.1 24/01/2014
 
