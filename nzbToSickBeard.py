@@ -41,6 +41,16 @@
 # set this if using a reverse proxy.
 #sbweb_root=
 
+# SickBeard delay
+#
+# Set the number of seconds to wait before calling post-process in SickBeard.
+#sbdelay=0
+
+# SickBeard wait_for
+#
+# Set the number of minutes to wait before timing out. If transfering files across drives or network, increase this to longer than the time it takes to copy an episode.
+#sbwait_for=5
+
 # SickBeard watch directory.
 #
 # set this if SickBeard and nzbGet are on different systems.

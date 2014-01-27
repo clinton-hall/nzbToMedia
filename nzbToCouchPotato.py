@@ -53,6 +53,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
 
+# CouchPotato wait_for
+#
+# Set the number of minutes to wait before timing out. If transfering files across drives or network, increase this to longer than the time it takes to copy a movie.
+#cpswait_for=5
+
 # CouchPotatoServer and NZBGet are a different system (0, 1).
 #
 # set to 1 if CouchPotato and NZBGet are on a different system, or 0 if on the same system.
