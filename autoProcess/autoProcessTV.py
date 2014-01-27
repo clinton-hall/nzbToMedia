@@ -99,9 +99,9 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
     try:
         wait_for = int(config.get(section, "wait_for"))
     except (ConfigParser.NoOptionError, ValueError):
-        waitfor = 5
+        wait_for = 5
 
-    TimeOut = 60 * int(waitfor) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+    TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
