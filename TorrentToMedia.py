@@ -23,6 +23,7 @@ from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 from utorrent.client import UTorrentClient
 from transmissionrpc.client import Client as TransmissionClient
+from synchronousdeluge.client import DelugeClient
 
 def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
@@ -82,7 +83,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit()
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission'] and inputHash:
+    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
         if clientAgent == 'utorrent':
             try:
                 Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
@@ -97,6 +98,14 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             except:
                 Logger.exception("MAIN: Failed to connect to Transmission")
                 TransmissionClass = ""
+        if clientAgent == 'deluge':
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, DelugeHost, DelugePort)
+                delugeClient = DelugeClient()
+                delugeClient.connect(host = DelugeHost, port = DelugePort, username = DelugeUSR, password = DelugePWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to deluge")
+                delugeClient = ""
 
         # if we are using links with uTorrent it means we need to pause it in order to access the files
         Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
@@ -104,6 +113,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             utorrentClass.stop(inputHash)
         if clientAgent == 'transmission' and TransmissionClass !="":
             TransmissionClass.stop_torrent(inputID)
+        if clientAgent == 'deluge' and delugeClient != "":
+            delugeClient.core.pause_torrent([inputID])
         time.sleep(5)  # Give Torrent client some time to catch up with the change      
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)      
@@ -263,7 +274,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission']  and inputHash:
+    if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
         if deleteOriginal == 1 and result != 1:
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
@@ -276,6 +287,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     TransmissionClass.remove_torrent(inputID, False)
                 else:
                     TransmissionClass.remove_torrent(inputID, True)
+            if clientAgent == 'deluge' and delugeClient != "":
+                delugeClient.core.remove_torrent(inputID, True)
         # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         else:
             Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
@@ -283,6 +296,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 utorrentClass.start(inputHash)
             if clientAgent == 'transmission' and TransmissionClass !="":
                 TransmissionClass.start_torrent(inputID)
+            if clientAgent == 'deluge' and delugeClient != "":
+                delugeClient.core.resume_torrent([inputID])
         time.sleep(5)        
     #cleanup
     if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
@@ -403,6 +418,11 @@ if __name__ == "__main__":
     TransmissionPort = config.get("Torrent", "TransmissionPort")                        # 8084
     TransmissionUSR = config.get("Torrent", "TransmissionUSR")                          # mysecretusr
     TransmissionPWD = config.get("Torrent", "TransmissionPWD")                          # mysecretpwr
+
+    DelugeHost = config.get("Torrent", "DelugeHost")                                    # localhost
+    DelugePort = config.get("Torrent", "DelugePort")                                    # 8084
+    DelugeUSR = config.get("Torrent", "DelugeUSR")                                      # mysecretusr
+    DelugePWD = config.get("Torrent", "DelugePWD")                                      # mysecretpwr
     
     deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
     
