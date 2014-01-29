@@ -138,7 +138,7 @@ class Client(object):
         urlo = urlparse(address)
         if urlo.scheme == '':
             base_url = 'http://' + address + ':' + str(port)
-            self.url = base_url + '/transmission/rpc'
+            self.url = base_url + '/transmission/rpc/'
         else:
             if urlo.port:
                 self.url = urlo.scheme + '://' + urlo.hostname + ':' + str(urlo.port) + urlo.path
