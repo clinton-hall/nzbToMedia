@@ -399,7 +399,7 @@ else: # only CPS supports this manual run for now.
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
     clientAgent = "manual"
-    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory, '')
+    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
