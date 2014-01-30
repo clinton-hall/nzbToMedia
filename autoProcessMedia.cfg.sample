@@ -94,6 +94,11 @@ TransmissionHost = localhost
 TransmissionPort = 8084
 TransmissionUSR = your username
 TransmissionPWD = your password
+#### Deluge (You must edit this if your using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
+DelugeHost = localhost
+DelugePort = 58846
+DelugeUSR = your username
+DelugePWD = your password
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
 deleteOriginal = 0
 
