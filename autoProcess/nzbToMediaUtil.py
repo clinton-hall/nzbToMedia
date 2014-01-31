@@ -331,8 +331,8 @@ def converto_to_ascii(nzbName, dirName):
     nzbName2 = str(nzbName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     if dirName != dirName2:
-        Logger.info("Renaming directory:%s  to: %s.", dirName, nzbName2)
-        shutil.move(dirName, nzbName2)
+        Logger.info("Renaming directory:%s  to: %s.", dirName, dirName2)
+        shutil.move(dirName, dirName2)
     for dirpath, dirnames, filesnames in os.walk(dirName2):
         for filename in filesnames:
             filename2 = str(filename.decode('ascii', 'replace').replace(u'\ufffd', '_'))
@@ -340,7 +340,7 @@ def converto_to_ascii(nzbName, dirName):
                 Logger.info("Renaming file:%s  to: %s.", filename, filename2)
                 shutil.move(filename, filename2)
     nzbName = nzbName2
-    dirName = nzbName2
+    dirName = dirName2
     return nzbName, dirName
 
 def parse_other(args):
