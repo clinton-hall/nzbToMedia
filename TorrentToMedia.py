@@ -345,7 +345,10 @@ def external_script(outputDestination):
                     else:
                         command.append(param)
                         continue
-                Logger.info("Running script %s on file %s.", command, filePath)
+                cmd = ""
+                for item in command:
+                    cmd = cmd + " " + item
+                Logger.info("Running script %s on file %s.", cmd, filePath)
                 try:
                     p = Popen(command)
                     res = p.wait()
