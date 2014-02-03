@@ -321,7 +321,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
 def external_script(outputDestination):
 
-    result_final = int(0) # start at 0.
+    final_result = int(0) # start at 0.
     num_files = int(0)
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
@@ -329,7 +329,7 @@ def external_script(outputDestination):
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
-            if fileExtension in user_script_mediaExtensions or user_script_mediaExtensions == "ALL":
+            if fileExtension in user_script_mediaExtensions or "ALL" in user_script_mediaExtensions:
                 num_files = num_files + 1
                 command = [user_script]
                 for param in user_script_param:
