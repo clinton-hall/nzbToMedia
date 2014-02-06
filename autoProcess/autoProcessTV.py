@@ -107,6 +107,13 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
+    SpecificPath = os.path.join(dirName, nzbName)
+    cleanName = os.path.splitext(SpecificPath)
+    if cleanName[1] == ".nzb":
+        SpecificPath = cleanName[0]
+    if os.path.isdir(SpecificPath):
+        dirName = SpecificPath
+
     if not fork in SICKBEARD_TORRENT:
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = converto_to_ascii(nzbName, dirName)

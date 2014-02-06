@@ -9,6 +9,7 @@ Fixed ascii conversion of directory name.
 
 Impacts NZBs
 Fix Error with manual run of nzbToMedia
+Make sure SickBeard receives the individula download dir.
 
 V9.1 24/01/2014
 
