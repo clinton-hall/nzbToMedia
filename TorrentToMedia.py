@@ -149,7 +149,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize) and not inputCategory in hpCategory:  # Ignore samples
+                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in hpCategory:  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
@@ -213,7 +213,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 filePath = os.path.join(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in mediaContainer:  # If the file is a video file
-                    if is_sample(filePath, inputName, minSampleSize):
+                    if is_sample(filePath, inputName, minSampleSize, SampleIDs):
                         Logger.debug("MAIN: Removing sample file: %s", filePath)
                         os.unlink(filePath)  # remove samples
                     else:
@@ -433,6 +433,7 @@ if __name__ == "__main__":
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
     metaContainer = (config.get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
     minSampleSize = int(config.get("Extensions", "minSampleSize"))                      # 200 (in MB)
+    SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
     
     cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv

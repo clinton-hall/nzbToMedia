@@ -161,11 +161,18 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     return inputDirectory, inputName, inputCategory, root
 
 
-def is_sample(filePath, inputName, minSampleSize):
+def is_sample(filePath, inputName, minSampleSize, SampleIDs):
     # 200 MB in bytes
     SIZE_CUTOFF = minSampleSize * 1024 * 1024
-    # Ignore 'sample' in files unless 'sample' in Torrent Name
-    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
+    if os.path.getsize(filePath) < SIZE_CUTOFF:
+        if 'SizeOnly' in SampleIDs:
+            return True
+        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        for ident in SampleIDs:
+            if ident.lower() in filePath.lower() and not ident.lower() in inputName.lower(): 
+            return True
+    # Return False if none of these were met.
+    return False
 
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):

@@ -6,6 +6,7 @@ Impacts All
 Change default "wait_for" to 5 mins. CouchPotato can take more than 2 minutes to return on renamer.scan request.
 Added SickBeard "wait_for" to bw customizable to prevent unwanted timeouts.
 Fixed ascii conversion of directory name.
+Added list of common sample ids and a way to set deletion of All media files less than the sample file size limit.
 
 Impacts NZBs
 Fix Error with manual run of nzbToMedia

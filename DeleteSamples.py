@@ -14,7 +14,7 @@
 
 # Media Extensions
 #
-# This is a list of media extensions that may be deleted if ".sample" is in the filename.
+# This is a list of media extensions that may be deleted if a Sample_id is in the filename.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
 # maxSampleSize
@@ -22,17 +22,30 @@
 # This is the maximum size (in MiB) to be be considered as sample file.
 #maxSampleSize=200
 
+# SampleIDs
+#
+# This is a list of identifiers used for samples. e.g sample,-s. Use 'SizeOnly' to delete all media files less than maxSampleSize.
+#SampleIDs=sample,-s. 
+
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
 import os
 import sys
 
-def is_sample(filePath, inputName, maxSampleSize):
+
+def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
     # 200 MB in bytes
     SIZE_CUTOFF = int(maxSampleSize) * 1024 * 1024
-    # Ignore 'sample' in files unless 'sample' in Torrent Name
-    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
+    if os.path.getsize(filePath) < SIZE_CUTOFF:
+        if 'SizeOnly' in SampleIDs:
+            return True
+        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        for ident in SampleIDs:
+            if ident.lower() in filePath.lower() and not ident.lower() in inputName.lower(): 
+            return True
+    # Return False if none of these were met.
+    return False
 
 
 # NZBGet V11+
@@ -101,6 +114,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     # All checks done, now launching the script.
 
     mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
+    SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
     for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
         for file in filenames:
 
@@ -108,7 +122,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE']):  # Ignore samples
+                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE'], SampleIDs):  # Ignore samples
                     print "Deleting sample file: ", filePath
                     try:
                         os.unlink(filePath)

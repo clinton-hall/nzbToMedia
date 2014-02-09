@@ -100,6 +100,10 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         wait_for = int(config.get(section, "wait_for"))
     except (ConfigParser.NoOptionError, ValueError):
         wait_for = 5
+    try:
+        SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')
+    except (ConfigParser.NoOptionError, ValueError):
+        SampleIDs = ['sample','-s.']
 
     TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
@@ -126,7 +130,7 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
                 filePath = os.path.join(dirpath, file)
                 fileExtension = os.path.splitext(file)[1]
                 if fileExtension in mediaContainer:  # If the file is a video file
-                    if is_sample(filePath, nzbName, minSampleSize):
+                    if is_sample(filePath, nzbName, minSampleSize, SampleIDs):
                         Logger.debug("Removing sample file: %s", filePath)
                         os.unlink(filePath)  # remove samples
                     else:

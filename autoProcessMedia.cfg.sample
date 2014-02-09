@@ -108,6 +108,8 @@ mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v
 metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 ###### minSampleSize - Minimum required size to consider a media file not a sample file (in MB, eg 200mb)
 minSampleSize = 200
+###### SampleIDs - a list of common sample identifiers. Use SizeOnly to ignore this and delete all media files less than minSampleSize
+SampleIDs = sample,-s.
 
 [Transcoder]
 transcode = 0
