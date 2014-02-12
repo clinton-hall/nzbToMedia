@@ -245,7 +245,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         result = autoProcessMovie.process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
     elif inputCategory in sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-        result = autoProcessTV.processEpisode(outputDestination, inputName, status, inputCategory)
+        result = autoProcessTV.processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif inputCategory in hpCategory:
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
         result = autoProcessMusic.process(inputDirectory, inputName, status, inputCategory)

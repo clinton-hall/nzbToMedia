@@ -406,7 +406,7 @@ if inputCategory in cpsCategory:
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
     Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-    result = autoProcessTV.processEpisode(nzbDir, inputName, status, inputCategory)
+    result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
 elif inputCategory in hpCategory:
     Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
     result = autoProcessMusic.process(nzbDir, inputName, status, inputCategory)

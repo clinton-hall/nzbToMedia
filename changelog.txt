@@ -11,6 +11,7 @@ Added list of common sample ids and a way to set deletion of All media files les
 Impacts NZBs
 Fix Error with manual run of nzbToMedia
 Make sure SickBeard receives the individula download dir.
+Disabled SickBeard Torrent handling for NZBs. Fixes failed handling of nzbs that fail to extract.
 
 V9.1 24/01/2014
 

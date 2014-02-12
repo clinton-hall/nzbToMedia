@@ -41,7 +41,7 @@ def delete(dirName):
         Logger.exception("Unable to delete folder %s", dirName)
 
 
-def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
+def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputCategory=None):
 
     status = int(failed)
     config = ConfigParser.ConfigParser()
@@ -117,6 +117,9 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         SpecificPath = cleanName[0]
     if os.path.isdir(SpecificPath):
         dirName = SpecificPath
+
+    if clientAgent in ['nzbget','sabnzbd']: #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
+        SICKBEARD_TORRENT = []
 
     if not fork in SICKBEARD_TORRENT:
         process_all_exceptions(nzbName.lower(), dirName)
