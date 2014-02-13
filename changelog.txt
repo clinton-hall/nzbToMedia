@@ -14,8 +14,10 @@ Make sure SickBeard receives the individula download dir.
 Disabled SickBeard Torrent handling for NZBs. Fixes failed handling of nzbs that fail to extract.
 
 Impacts Torrents
-Added option to run userscript once only (on directory)
+Added option to run userscript once only (on directory).
 Added Option to not flatten specific categories.
+Added rtorrent integration.
+Fixes for HeadPhones use (no flatten), no move/sym, and fix move back to original.
 
 V9.1 24/01/2014
 

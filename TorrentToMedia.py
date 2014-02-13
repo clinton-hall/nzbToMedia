@@ -118,6 +118,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         time.sleep(5)  # Give Torrent client some time to catch up with the change      
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
+
+    if inputCategory in hpCategory:
+        noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
+        if useLink in ['sym','move']: # These don't work for HeadPhones.
+            useLink = 'no' # default to copy.
       
     outputDestinationMaster = outputDestination # Save the original, so we can cahnge this within the lopp below, and reset afterwards.
     now = datetime.datetime.now()
@@ -214,7 +219,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 continue
 
     outputDestination = outputDestinationMaster # Reset here.
-    if not inputCategory in hpCategory and not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
+    if not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
@@ -281,7 +286,11 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue
                 else: # move temp version back to allow seeding or Torrent removal.
                     Logger.debug("MAIN: Moving %s to %s", str(item[1]), str(item[0]))
-                    shutil.move(os.path.normpath(item[1]), os.path.normpath(item[0]))
+                    newDestination = os.path.split(os.path.normpath(item[0]))
+                    try:
+                        copy_link(os.path.normpath(item[1]), os.path.normpath(item[0]), 'move', newDestination[0])
+                    except:
+                        Logger.exception("MAIN: Failed to move file: %s", file)
                     continue
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
@@ -421,7 +430,7 @@ if __name__ == "__main__":
     Logger.info("MAIN: Loading config from %s", configFilename)
     config.read(configFilename)
                                                                                         # EXAMPLE VALUES:
-    clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | other
+    clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | rtorrent | other
     useLink = config.get("Torrent", "useLink")                                          # no | hard | sym
     outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
     categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software

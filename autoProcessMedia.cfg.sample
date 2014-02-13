@@ -77,7 +77,7 @@ web_root =
 
 
 [Torrent]
-###### clientAgent - Supported clients: utorrent, transmission, deluge, other
+###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, other
 clientAgent = other
 ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, and no to not use links (copy)
 useLink = hard

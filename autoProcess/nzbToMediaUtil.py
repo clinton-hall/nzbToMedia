@@ -363,8 +363,30 @@ def converto_to_ascii(nzbName, dirName):
     return nzbName, dirName
 
 def parse_other(args):
-    return os.path.normpath(sys.argv[1]), '', '', '', ''
+    return os.path.normpath(args[1]), '', '', '', ''
 
+def parse_rtorrent(args):
+    # rtorrent usage: system.method.set_key = event.download.finished,TorrentToMedia,
+    # "execute={/path/to/nzbToMedia/TorrentToMedia.py,\"$d.get_base_path=\",\"$d.get_name=\",\"$d.get_custom1=\",\"$d.get_hash=\"}"
+    inputDirectory = os.path.normpath(args[1])
+    try:
+        inputName = args[2]
+    except:
+        inputName = ''
+    try:
+        inputCategory = args[3]
+    except:
+        inputCategory = ''
+    try:
+        inputHash = args[4]
+    except:
+        inputHash = ''
+    try:
+        inputID = args[4]
+    except:
+        inputID = ''
+
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 def parse_utorrent(args):
     # uTorrent usage: call TorrentToMedia.py "%D" "%N" "%L" "%I"
@@ -408,6 +430,7 @@ def parse_transmission(args):
 
 __ARG_PARSERS__ = {
     'other': parse_other,
+    'rtorrent': parse_rtorrent,
     'utorrent': parse_utorrent,
     'deluge': parse_deluge,
     'transmission': parse_transmission,
