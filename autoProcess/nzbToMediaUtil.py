@@ -104,7 +104,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                     inputDirectory = os.path.normpath(categorySearch[0])
                 else: # The inputdirectory given can't have been valid. Start at the category directory and search for date modified.
                     Logger.info("SEARCH: Input Directory %s doesn't exist as a directory or file", inputDirectory)
-                    Logger.info("SEARCH: Setting input directory to %s" and checking for files by date modified., categorySearch[0])
+                    Logger.info("SEARCH: Setting input directory to %s and checking for files by date modified.", categorySearch[0])
                     root = 2
                     inputDirectory = os.path.normpath(categorySearch[0])
                 break  # we are done

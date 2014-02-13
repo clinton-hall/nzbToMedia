@@ -340,7 +340,7 @@ def external_script(outputDestination):
 
             if fileExtension in user_script_mediaExtensions or "ALL" in user_script_mediaExtensions:
                 num_files = num_files + 1
-                if user_script_runOnce == 1 and num_files > 1: we have already run once, so just continue to get number of files.
+                if user_script_runOnce == 1 and num_files > 1: # we have already run once, so just continue to get number of files.
                     continue
                 command = [user_script]
                 for param in user_script_param:
