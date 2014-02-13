@@ -101,12 +101,12 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                     Logger.info("SEARCH: %s is a file, not a directory.", os.path.join(categorySearch[0], categorySearch[1]))
                     Logger.info("SEARCH: Setting input directory to %s", categorySearch[0])
                     root = 1
-                    inputDirectory = os.path.normpath(categorySearch[0]):
+                    inputDirectory = os.path.normpath(categorySearch[0])
                 else: # The inputdirectory given can't have been valid. Start at the category directory and search for date modified.
                     Logger.info("SEARCH: Input Directory %s doesn't exist as a directory or file", inputDirectory)
                     Logger.info("SEARCH: Setting input directory to %s" and checking for files by date modified., categorySearch[0])
                     root = 2
-                    inputDirectory = os.path.normpath(categorySearch[0]):
+                    inputDirectory = os.path.normpath(categorySearch[0])
                 break  # we are done
             elif ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName):  # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
                 Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
