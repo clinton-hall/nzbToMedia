@@ -13,6 +13,10 @@ Fix Error with manual run of nzbToMedia
 Make sure SickBeard receives the individula download dir.
 Disabled SickBeard Torrent handling for NZBs. Fixes failed handling of nzbs that fail to extract.
 
+Impacts Torrents
+Added option to run userscript once only (on directory)
+Added Option to not flatten specific categories.
+
 V9.1 24/01/2014
 
 Impacts All
