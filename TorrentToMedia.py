@@ -117,14 +117,21 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             delugeClient.core.pause_torrent([inputID])
         time.sleep(5)  # Give Torrent client some time to catch up with the change      
 
-    Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)      
-
+    Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
+      
+    outputDestinationMaster = outputDestination # Save the original, so we can cahnge this within the lopp below, and reset afterwards.
     now = datetime.datetime.now()
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
         for file in filenames:
 
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
+            if inputCategory in noFlatten:
+                newDir = dirpath # find the full path
+                newDir = newDir.replace(inputDirectory, "") #find the extra-depth directory
+                outputDestination = os.path.join(outputDestinationMaster, newDir) # join this extra directory to output.
+                Logger.debug("MAIN: Setting outputDestination to %s to preserve folder structure", outputDestination)
+
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
@@ -203,7 +210,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             else:
                 Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
                 continue
-    if not inputCategory in hpCategory: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
+
+    outputDestination = outputDestinationMaster # Reset here.
+    if not inputCategory in hpCategory and not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later. 
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
@@ -331,6 +340,8 @@ def external_script(outputDestination):
 
             if fileExtension in user_script_mediaExtensions or "ALL" in user_script_mediaExtensions:
                 num_files = num_files + 1
+                if user_script_runOnce == 1 and num_files > 1: we have already run once, so just continue to get number of files.
+                    continue
                 command = [user_script]
                 for param in user_script_param:
                     if param == "FN":
@@ -412,6 +423,7 @@ if __name__ == "__main__":
     useLink = config.get("Torrent", "useLink")                                          # no | hard | sym
     outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
     categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
+    noFlatten = (config.get("Torrent", "noFlatten")).split(',')
 
     uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
     uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
@@ -455,6 +467,7 @@ if __name__ == "__main__":
         user_script_successCodes = (config.get("UserScript", "user_script_successCodes")).split(',')
         user_script_clean = int(config.get("UserScript", "user_script_clean"))
         user_delay = int(config.get("UserScript", "delay"))
+        user_script_runOnce = int(config.get("UserScript", "user_script_runOnce"))
     
     transcode = int(config.get("Transcoder", "transcode"))
 

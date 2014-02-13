@@ -84,7 +84,9 @@ useLink = hard
 ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
 outputDirectory = /abs/path/to/complete/
 ###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
-categories = music_videos,pictures,software,
+categories = music_videos,pictures,software,manual
+###### A list of categories that you don't want to be flattened (i.e preserve the directory structure when copying/linking.
+noFlatten = pictures,manual
 ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
 uTorrentWEBui = http://localhost:8090/gui/
 uTorrentUSR = your username
@@ -151,6 +153,8 @@ user_script_path = /media/test/script/script.sh
 #for example FP,FN,DN for file path (absolute file name with path), file name, absolute directory name (with path).
 #So the result is /media/test/script/script.sh FP FN DN. Add other arguments as needed eg -f, -r
 user_script_param = FN
+#Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
+user_script_runOnce = 0
 #Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
 user_script_successCodes = 0
 #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
