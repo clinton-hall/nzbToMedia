@@ -93,8 +93,20 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                     Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
                 break  # we are done
             elif categorySearch[1] and not inputName:  # assume the the next directory deep is the torrent name.
-                Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
                 inputName = categorySearch[1]
+                Logger.info("SEARCH: Found torrent name: %s", categorySearch[1])
+                if os.path.isdir(os.path.join(categorySearch[0], categorySearch[1])):
+                    Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
+                elif os.path.isfile(os.path.join(categorySearch[0], categorySearch[1])): # Our inputdirectory is actually the full file path for single file download.
+                    Logger.info("SEARCH: %s is a file, not a directory.", os.path.join(categorySearch[0], categorySearch[1]))
+                    Logger.info("SEARCH: Setting input directory to %s", categorySearch[0])
+                    root = 1
+                    inputDirectory = os.path.normpath(categorySearch[0]):
+                else: # The inputdirectory given can't have been valid. Start at the category directory and search for date modified.
+                    Logger.info("SEARCH: Input Directory %s doesn't exist as a directory or file", inputDirectory)
+                    Logger.info("SEARCH: Setting input directory to %s" and checking for files by date modified., categorySearch[0])
+                    root = 2
+                    inputDirectory = os.path.normpath(categorySearch[0]):
                 break  # we are done
             elif ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName):  # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
                 Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
