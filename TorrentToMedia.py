@@ -51,7 +51,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     outputDestination = ""
     for category in categories:
         if category == inputCategory:
-            if os.path.basename(inputDirectory) == inputName:
+            if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
                 Logger.info("MAIN: Download is a directory")
                 outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
             else:
@@ -64,7 +64,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if outputDestination == "":
         if inputCategory == "":
             inputCategory = "UNCAT" 
-        if os.path.basename(inputDirectory) == inputName:
+        if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
             Logger.info("MAIN: Download is a directory")
             outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
         else:
