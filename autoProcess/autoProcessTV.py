@@ -118,14 +118,16 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if os.path.isdir(SpecificPath):
         dirName = SpecificPath
 
-    if clientAgent in ['nzbget','sabnzbd']: #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
-        SICKBEARD_TORRENT = []
+    SICKBEARD_TORRENT_USE = SICKBEARD_TORRENT
 
-    if not fork in SICKBEARD_TORRENT:
+    if clientAgent in ['nzbget','sabnzbd']: #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
+        SICKBEARD_TORRENT_USE = []
+
+    if not fork in SICKBEARD_TORRENT_USE:
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
-    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
+    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT_USE:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
