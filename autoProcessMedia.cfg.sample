@@ -35,6 +35,7 @@ wait_for = 5
 watch_dir =
 fork = default
 delete_failed = 0
+nzbExtractionBy = Downloader
 
 
 [HeadPhones]

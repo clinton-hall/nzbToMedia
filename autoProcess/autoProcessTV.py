@@ -104,6 +104,10 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')
     except (ConfigParser.NoOptionError, ValueError):
         SampleIDs = ['sample','-s.']
+    try:
+        nzbExtractionBy = config.get("section", "nzbExtractionBy")
+    except (ConfigParser.NoOptionError, ValueError):
+        nzbExtractionBy = "Downloader"
 
     TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
@@ -120,7 +124,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
 
     SICKBEARD_TORRENT_USE = SICKBEARD_TORRENT
 
-    if clientAgent in ['nzbget','sabnzbd']: #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
+    if clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination": #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
         SICKBEARD_TORRENT_USE = []
 
     if not fork in SICKBEARD_TORRENT_USE:
