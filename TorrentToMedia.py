@@ -35,6 +35,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     extracted_folder = []
     extractionSuccess = False
     copy_list = []
+    useLink = useLink_in
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
     if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT:
@@ -431,7 +432,7 @@ if __name__ == "__main__":
     config.read(configFilename)
                                                                                         # EXAMPLE VALUES:
     clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | rtorrent | other
-    useLink = config.get("Torrent", "useLink")                                          # no | hard | sym
+    useLink_in = config.get("Torrent", "useLink")                                          # no | hard | sym
     outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
     categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
     noFlatten = (config.get("Torrent", "noFlatten")).split(',')
