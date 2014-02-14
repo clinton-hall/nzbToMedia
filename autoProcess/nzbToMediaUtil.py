@@ -135,7 +135,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                 root = 2
                 break
-        elif inputName and safeName(categorySearch2[1]) == safeName(inputName):  # we have identified a unique directory.
+        elif inputName and safeName(categorySearch2[1]) == safeName(inputName) and os.path.isdir(categorySearch[0]):  # we have identified a unique directory.
             Logger.info("SEARCH: Files appear to be in their own directory")
             unique = int(1)
             if inputCategory:  # we are ok to proceed.
