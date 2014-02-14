@@ -363,7 +363,10 @@ def external_script(outputDestination):
                         command.append(filePath)
                         continue
                     elif param == "DN":
-                        command.append(dirpath)
+                        if user_script_runOnce == 1:
+                            command.append(outputDestination)
+                        else:
+                            command.append(dirpath)
                         continue
                     else:
                         command.append(param)
