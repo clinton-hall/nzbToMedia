@@ -134,7 +134,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             if inputCategory in noFlatten:
                 newDir = dirpath # find the full path
                 newDir = newDir.replace(inputDirectory, "") #find the extra-depth directory
-                if newDir[0] == "/":
+                if len(newDir) > 0 and newDir[0] == "/":
                     newDir = newDir[1:] # remove leading "/" to enable join to work.
                 outputDestination = os.path.join(outputDestinationMaster, newDir) # join this extra directory to output.
                 Logger.debug("MAIN: Setting outputDestination to %s to preserve folder structure", outputDestination)
