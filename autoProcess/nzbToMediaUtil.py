@@ -87,6 +87,9 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: Determined Category to be: %s", categorySearch2[1])
                 inputCategory = categorySearch2[1]
             if inputName and categorySearch[0] != os.path.normpath(inputDirectory):  # if we are not in the root directory and we have inputName we can continue.
+                if not os.path.isdir(inputDirectory):
+                    inputDirectory = categorySearch[0]
+                    root = 1
                 if ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName):  # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
                     Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
                     inputName = categorySearch[1]
@@ -97,6 +100,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: Found torrent name: %s", categorySearch[1])
                 if os.path.isdir(os.path.join(categorySearch[0], categorySearch[1])):
                     Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
+                    inputDirectory = os.path.normpath(os.path.join(categorySearch[0], categorySearch[1]))
                 elif os.path.isfile(os.path.join(categorySearch[0], categorySearch[1])): # Our inputdirectory is actually the full file path for single file download.
                     Logger.info("SEARCH: %s is a file, not a directory.", os.path.join(categorySearch[0], categorySearch[1]))
                     Logger.info("SEARCH: Setting input directory to %s", categorySearch[0])
@@ -127,12 +131,16 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: The directory passed is the root directory for category %s", categorySearch2[1])
                 Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
+                if not os.path.isdir(inputDirectory) and os.path.isdir(categorySearch[0]):
+                    inputDirectory = categorySearch[0]
                 root = 1
                 break  # we are done
             else:  # this is a problem! if we don't have Torrent name and are in the root category dir, we can't proceed.
                 Logger.warn("SEARCH: Could not identify a torrent name and the directory passed is common to all downloads for category %s.", categorySearch[1])
                 Logger.warn("SEARCH: You should change settings to download torrents to their own directory if possible")
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
+                if not os.path.isdir(inputDirectory) and os.path.isdir(categorySearch[0]):
+                    inputDirectory = categorySearch[0]
                 root = 2
                 break
         elif inputName and safeName(categorySearch2[1]) == safeName(inputName) and os.path.isdir(categorySearch[0]):  # we have identified a unique directory.
@@ -169,6 +177,10 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             Logger.info("SEARCH: Could not identify category or torrent name from the directory structure.")
             Logger.info("SEARCH: Files will be linked and will only be processed by the userscript if enabled for UNCAT or ALL")
             root = 2
+
+    if not os.path.isdir(inputDirectory): #add last check here.
+        if os.path.isdir(os.path.split(os.path.normpath(inputDirectory))[0]):
+            inputDirectory = os.path.split(os.path.normpath(inputDirectory))[0]
 
     return inputDirectory, inputName, inputCategory, root
 
