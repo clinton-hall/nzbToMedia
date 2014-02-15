@@ -38,17 +38,18 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     useLink = useLink_in
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
-    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT:
-        Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
-        result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
-        if result == 1:
-            Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was pasued we will resume seeding")
-        Logger.info("MAIN: All done.")
-        sys.exit()
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+
+    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT:
+        Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
+        result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
+        if result == 1:
+            Logger.info("MAIN: A problem was reported in the autoProcess* script.")
+        Logger.info("MAIN: All done.")
+        sys.exit()
 
     outputDestination = ""
     for category in categories:
