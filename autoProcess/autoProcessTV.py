@@ -115,6 +115,9 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
+    if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        dirName = os.path.split(os.path.normpath(dirName))[0]
+
     SpecificPath = os.path.join(dirName, nzbName)
     cleanName = os.path.splitext(SpecificPath)
     if cleanName[1] == ".nzb":
