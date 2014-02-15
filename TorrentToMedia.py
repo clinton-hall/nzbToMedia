@@ -251,7 +251,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
-        result = external_script(outputDestination)
+        result = external_script(outputDestination,inputName)
     elif status == int(0) or (inputCategory in hpCategory + mlCategory + gzCategory): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
@@ -343,7 +343,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 Logger.debug("media/meta file found: %s", item)
     Logger.info("MAIN: All done.")
 
-def external_script(outputDestination):
+def external_script(outputDestination,torrentName):
 
     final_result = int(0) # start at 0.
     num_files = int(0)
@@ -364,6 +364,9 @@ def external_script(outputDestination):
                         continue
                     elif param == "FP":
                         command.append(filePath)
+                        continue
+                    elif param == "TN":
+                        command.append(torrentName)
                         continue
                     elif param == "DN":
                         if user_script_runOnce == 1:
