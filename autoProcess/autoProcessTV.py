@@ -105,7 +105,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     except (ConfigParser.NoOptionError, ValueError):
         SampleIDs = ['sample','-s.']
     try:
-        nzbExtractionBy = config.get("section", "nzbExtractionBy")
+        nzbExtractionBy = config.get(section, "nzbExtractionBy")
     except (ConfigParser.NoOptionError, ValueError):
         nzbExtractionBy = "Downloader"
 
