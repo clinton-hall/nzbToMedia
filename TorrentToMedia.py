@@ -48,6 +48,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
+    Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+
     outputDestination = ""
     for category in categories:
         if category == inputCategory:

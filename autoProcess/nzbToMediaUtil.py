@@ -40,8 +40,7 @@ def create_destination(outputDestination):
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory): # If the input directory is a file, assume single file downlaod and split dir/name.
-        inputDirectory = os.path.split(os.path.normpath(inputDirectory))[0]
-        inputName = os.path.split(os.path.normpath(inputDirectory))[1]
+        inputDirectory,inputName = os.path.split(os.path.normpath(inputDirectory))
 
     if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
         Logger.info("SEARCH: Found category directory %s in input directory directory %s", inputCategory, inputDirectory)
