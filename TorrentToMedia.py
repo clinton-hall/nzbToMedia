@@ -129,7 +129,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             useLink = 'no' # default to copy.
 
     if inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT: # Don't flatten when sending to SICKBEARD_TORRENT
-        noFlatten.extend(inputCategory)
+        noFlatten.extend(sbCategory)
       
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
