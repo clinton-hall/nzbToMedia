@@ -151,8 +151,8 @@ user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
 #Specify the path of the script
 user_script_path = /media/test/script/script.sh
 #Specify the argument(s) passed to script, comma separated in order.
-#for example FP,FN,DN, TN for file path (absolute file name with path), file name, absolute directory name (with path), TorrentName.
-#So the result is /media/test/script/script.sh FP FN DN TN. Add other arguments as needed eg -f, -r
+#for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
+#So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
 user_script_param = FN
 #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
 user_script_runOnce = 0
