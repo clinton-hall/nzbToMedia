@@ -36,6 +36,7 @@ watch_dir =
 fork = default
 delete_failed = 0
 nzbExtractionBy = Downloader
+Torrent_ForceLink = 1
 
 
 [HeadPhones]
