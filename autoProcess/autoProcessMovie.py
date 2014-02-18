@@ -80,7 +80,7 @@ def get_movie_info(baseURL, imdbid, download_id):
             break
         offset = offset + 50
 
-    result = "" # reset
+    result = None # reset
     for index in range(len(movieid)):
         if not imdbid:
             url = baseURL + "media.get/?id=" + str(movieid[index])
@@ -115,7 +115,7 @@ def get_movie_info(baseURL, imdbid, download_id):
 
     return movie_id, result, imdbid 
 
-def get_status(baseURL, movie_id, clientAgent, download_id, result):
+def get_status(baseURL, movie_id, clientAgent, download_id, result=None):
     
     if not movie_id:
         return "", clientAgent, "none", "none"
