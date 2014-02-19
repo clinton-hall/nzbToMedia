@@ -134,6 +134,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
+        Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)
         for file in filenames:
 
             filePath = os.path.join(dirpath, file)
