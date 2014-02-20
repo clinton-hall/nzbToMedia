@@ -46,7 +46,7 @@ def get_imdb(nzbName, dirName):
 def get_movie_info(baseURL, imdbid, download_id):
     
     if not imdbid and not download_id:
-        return ""
+        return "", None, imdbid
 
     movie_id = ""
     releaselist = []
@@ -89,13 +89,13 @@ def get_movie_info(baseURL, imdbid, download_id):
                 urlObj = urllib.urlopen(url)
             except:
                 Logger.exception("Unable to open URL")
-                return ""
+                return "", None, imdbid
             try:
                 result = json.load(urlObj)
                 releaselist = [item["info"]["download_id"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]  
             except:
                 Logger.exception("Unable to parse json data for releases")
-                return ""
+                return "", None, imdbid
 
             if len(releaselist) > 0:
                 movie_id = str(movieid[index])
