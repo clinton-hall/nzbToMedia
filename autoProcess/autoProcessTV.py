@@ -154,7 +154,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
             status = int(1)
             failed = True
 
-    if watch_dir != "":
+    if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
     params = {}
