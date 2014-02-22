@@ -102,54 +102,43 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     status = 0
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
-        Logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
+        Logger.error("MAIN: Please enable option \"Unpack\" in nzbget configuration file, exiting")
         sys.exit(POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
-        Logger.warning("Par-check successful, but Par-repair disabled, exiting")
+        Logger.warning("MAIN: Par-check successful, but Par-repair disabled, exiting")
+        Logger.info("MAIN: Please check your Par-repair settings for future downloads.")
         sys.exit(POSTPROCESS_NONE)
 
-    if os.environ['NZBPP_PARSTATUS'] == '1':
-        Logger.warning("Par-check failed, setting status \"failed\"")
+    if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
+        Logger.warning("MAIN: Par-repair failed, setting status \"failed\"")
         status = 1
 
     # Check unpack status
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        Logger.warning("Unpack failed, setting status \"failed\"")
+        Logger.warning("MAIN: Unpack failed, setting status \"failed\"")
         status = 1
 
-    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] != '2':
-        # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
+    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
+        # Unpack was skipped due to nzb-file properties or due to errors during par-check
 
-        for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
-            for file in filenames:
-                fileExtension = os.path.splitext(file)[1]
-
-                if fileExtension in ['.rar', '.7z'] or os.path.splitext(fileExtension)[1] in ['.rar', '.7z']:
-                    Logger.warning("Post-Process: Archive files exist but unpack skipped, setting status \"failed\"")
-                    status = 1
-                    break
-
-                if fileExtension in ['.par2']:
-                    Logger.warning("Post-Process: Unpack skipped and par-check skipped (although par2-files exist), setting status \"failed\"g")
-                    status = 1
-                    break
-
-        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")) and not status == 1:
-            Logger.warning("Post-Process: _brokenlog.txt exists, download is probably damaged, exiting")
+        if os.environ['NZBPP_HEALTH'] < 1000:
+            Logger.warning("MAIN: Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
+            Logger.info("MAIN: Please check your Par-check/repair settings for future downloads.")
             status = 1
 
-        if not status == 1:
-            Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
+        else:
+            Logger.info("MAIN: Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
+            Logger.info("MAIN: Please check your Par-check/repair settings for future downloads.")
 
     # Check if destination directory exists (important for reprocessing of history items)
     if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        Logger.error("Post-Process: Nothing to post-process: destination directory %s doesn't exist", os.environ['NZBPP_DIRECTORY'])
+        Logger.error("MAIN: Nothing to post-process: destination directory %s doesn't exist. Setting status \"failed\"", os.environ['NZBPP_DIRECTORY'])
         status = 1
 
-    # All checks done, now launching the script
-    Logger.info("Script triggered from NZBGet, starting autoProcessMusic...")
+    # All checks done, now launching the script.
+    Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessMusic...")
     result = autoProcessMusic.process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
 # SABnzbd Pre 0.7.17
 elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
@@ -161,7 +150,7 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 5 User-defined category
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    Logger.info("Script triggered from SABnzbd, starting autoProcessMusic...")
+    Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessMusic...")
     result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[7])
 # SABnzbd 0.7.17+
 elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
@@ -174,11 +163,11 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     # 8 Failue URL
-    Logger.info("Script triggered from SABnzbd 0.7.17+, starting autoProcessMusic...")
+    Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessMusic...")
     result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[7])
 else:
-    Logger.warn("Invalid number of arguments received from client.")
-    Logger.info("Running autoProcessMusic as a manual run...")
+    Logger.warn("MAIN: Invalid number of arguments received from client.")
+    Logger.info("MAIN: Running autoProcessMusic as a manual run...")
     result = autoProcessMusic.process('Manual Run', 'Manual Run', 0)
 
 if result == 0:
