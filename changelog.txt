@@ -11,7 +11,8 @@ Added list of common sample ids and a way to set deletion of All media files les
 Impacts NZBs
 Fix Error with manual run of nzbToMedia
 Make sure SickBeard receives the individula download dir.
-Added option to set SickBeard extraction as either Downlaoder or Destination (SickBEard).
+Added option to set SickBeard extraction as either Downlaoder or Destination (SickBeard).
+Fixed Health Check handling for NZBGet.
 
 Impacts Torrents
 Added option to run userscript once only (on directory).
