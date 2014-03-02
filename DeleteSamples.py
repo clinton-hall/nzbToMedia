@@ -64,42 +64,45 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     status = 0
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
-        Logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
+        print "Please enable option \"Unpack\" in nzbget configuration file, exiting."
         sys.exit(POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
-        Logger.warning("Par-check successful, but Par-repair disabled, exiting")
-        Logger.info("Please check your Par-repair settings for future downloads.")
+        print "Par-check successful, but Par-repair disabled, exiting".
+        print "Please check your Par-repair settings for future downloads."
         sys.exit(POSTPROCESS_NONE)
 
     if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
-        Logger.warning("Par-repair failed, setting status \"failed\"")
+        print "Par-repair failed, setting status \"failed\"."
         status = 1
 
     # Check unpack status
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        Logger.warning("Unpack failed, setting status \"failed\"")
+        print "Unpack failed, setting status \"failed\"."
         status = 1
 
     if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
         # Unpack was skipped due to nzb-file properties or due to errors during par-check
 
         if os.environ['NZBPP_HEALTH'] < 1000:
-            Logger.warning("Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
-            Logger.info("Please check your Par-check/repair settings for future downloads.")
+            print "Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"."
+            print "Please check your Par-check/repair settings for future downloads."
             status = 1
 
         else:
-            Logger.info("Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
-            Logger.info("Please check your Par-check/repair settings for future downloads.")
+            print "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful".
+            print "Please check your Par-check/repair settings for future downloads."
 
     # Check if destination directory exists (important for reprocessing of history items)
     if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        Logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status \"failed\"", os.environ['NZBPP_DIRECTORY'])
+        print "Nothing to post-process: destination directory", os.environ['NZBPP_DIRECTORY'], "doesn't exist. Setting status \"failed\"."
         status = 1
 
     # All checks done, now launching the script.
+
+    if status == 1:
+        sys.exit(POSTPROCESS_NONE)
 
     mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
     SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
