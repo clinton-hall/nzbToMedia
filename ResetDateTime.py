@@ -37,7 +37,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
-        print "Par-check successful, but Par-repair disabled, exiting".
+        print "Par-check successful, but Par-repair disabled, exiting."
         print "Please check your Par-repair settings for future downloads."
         sys.exit(POSTPROCESS_NONE)
 
@@ -59,7 +59,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
             status = 1
 
         else:
-            print "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful".
+            print "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful."
             print "Please check your Par-check/repair settings for future downloads."
 
     # Check if destination directory exists (important for reprocessing of history items)
