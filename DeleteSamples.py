@@ -14,7 +14,7 @@
 
 # Media Extensions
 #
-# This is a list of media extensions that may be deleted if ".sample" is in the filename.
+# This is a list of media extensions that may be deleted if a Sample_id is in the filename.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
 # maxSampleSize
@@ -22,17 +22,30 @@
 # This is the maximum size (in MiB) to be be considered as sample file.
 #maxSampleSize=200
 
+# SampleIDs
+#
+# This is a list of identifiers used for samples. e.g sample,-s. Use 'SizeOnly' to delete all media files less than maxSampleSize.
+#SampleIDs=sample,-s. 
+
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
 import os
 import sys
 
-def is_sample(filePath, inputName, maxSampleSize):
+
+def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
     # 200 MB in bytes
     SIZE_CUTOFF = int(maxSampleSize) * 1024 * 1024
-    # Ignore 'sample' in files unless 'sample' in Torrent Name
-    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
+    if os.path.getsize(filePath) < SIZE_CUTOFF:
+        if 'SizeOnly' in SampleIDs:
+            return True
+        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        for ident in SampleIDs:
+            if ident.lower() in filePath.lower() and not ident.lower() in inputName.lower(): 
+                return True
+    # Return False if none of these were met.
+    return False
 
 
 # NZBGet V11+
@@ -41,7 +54,6 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     print "Script triggered from NZBGet (11.0 or later)."
 
     # NZBGet argv: all passed as environment variables.
-    clientAgent = "nzbget"
     # Exit codes used by NZBGet
     POSTPROCESS_PARCHECK=92
     POSTPROCESS_SUCCESS=93
@@ -52,55 +64,48 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     status = 0
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
-        print "Please enable option \"Unpack\" in nzbget configuration file, exiting"
+        print "Please enable option \"Unpack\" in nzbget configuration file, exiting."
         sys.exit(POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
-        print "Par-check successful, but Par-repair disabled, exiting"
+        print "Par-check successful, but Par-repair disabled, exiting."
+        print "Please check your Par-repair settings for future downloads."
         sys.exit(POSTPROCESS_NONE)
 
-    if os.environ['NZBPP_PARSTATUS'] == '1':
-        print "Par-check failed, setting status \"failed\""
+    if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
+        print "Par-repair failed, setting status \"failed\"."
         status = 1
 
     # Check unpack status
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        print "Unpack failed, setting status \"failed\""
+        print "Unpack failed, setting status \"failed\"."
         status = 1
 
-    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] != '2':
-        # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
+    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
+        # Unpack was skipped due to nzb-file properties or due to errors during par-check
 
-        for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
-            for file in filenames:
-                fileExtension = os.path.splitext(file)[1]
-
-                if fileExtension in ['.rar', '.7z'] or os.path.splitext(fileExtension)[1] in ['.rar', '.7z']:
-                    print "Post-Process: Archive files exist but unpack skipped, setting status \"failed\""
-                    status = 1
-                    break
-
-                if fileExtension in ['.par2']:
-                    print "Post-Process: Unpack skipped and par-check skipped (although par2-files exist), setting status \"failed\"g"
-                    status = 1
-                    break
-
-        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")) and not status == 1:
-            print "Post-Process: _brokenlog.txt exists, download is probably damaged, exiting"
+        if os.environ['NZBPP_HEALTH'] < 1000:
+            print "Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"."
+            print "Please check your Par-check/repair settings for future downloads."
             status = 1
 
-        if not status == 1:
-            print "Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful"
+        else:
+            print "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful."
+            print "Please check your Par-check/repair settings for future downloads."
 
     # Check if destination directory exists (important for reprocessing of history items)
     if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        print "Post-Process: Nothing to post-process: destination directory ", os.environ['NZBPP_DIRECTORY'], "doesn't exist"
+        print "Nothing to post-process: destination directory", os.environ['NZBPP_DIRECTORY'], "doesn't exist. Setting status \"failed\"."
         status = 1
 
     # All checks done, now launching the script.
 
+    if status == 1:
+        sys.exit(POSTPROCESS_NONE)
+
     mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
+    SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
     for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
         for file in filenames:
 
@@ -108,7 +113,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE']):  # Ignore samples
+                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE'], SampleIDs):  # Ignore samples
                     print "Deleting sample file: ", filePath
                     try:
                         os.unlink(filePath)

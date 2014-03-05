@@ -53,6 +53,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
 
+# CouchPotato wait_for
+#
+# Set the number of minutes to wait before timing out. If transfering files across drives or network, increase this to longer than the time it takes to copy a movie.
+#cpswait_for=5
+
 # CouchPotatoServer and NZBGet are a different system (0, 1).
 #
 # set to 1 if CouchPotato and NZBGet are on a different system, or 0 if on the same system.
@@ -86,6 +91,16 @@
 #
 # set this if using a reverse proxy.
 #sbweb_root=
+
+# SickBeard delay
+#
+# Set the number of seconds to wait before calling post-process in SickBeard.
+#sbdelay=0
+
+# SickBeard wait_for
+#
+# Set the number of minutes to wait before timing out. If transferring files across drives or network, increase this to longer than the time it takes to copy an episode.
+#sbwait_for=5
 
 # SickBeard watch directory.
 #
@@ -273,7 +288,7 @@ WakeUp()
 config = ConfigParser.ConfigParser()
 configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
 if not os.path.isfile(configFilename):
-    Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+    Logger.error("MAIN: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
     sys.exit(-1)
 # CONFIG FILE
 Logger.info("MAIN: Loading config from %s", configFilename)
@@ -302,50 +317,39 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     status = 0
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
-        Logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
+        Logger.error("MAIN: Please enable option \"Unpack\" in nzbget configuration file, exiting")
         sys.exit(POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
-        Logger.warning("Par-check successful, but Par-repair disabled, exiting")
+        Logger.warning("MAIN: Par-check successful, but Par-repair disabled, exiting")
+        Logger.info("MAIN: Please check your Par-repair settings for future downloads.")
         sys.exit(POSTPROCESS_NONE)
 
-    if os.environ['NZBPP_PARSTATUS'] == '1':
-        Logger.warning("Par-check failed, setting status \"failed\"")
+    if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
+        Logger.warning("MAIN: Par-repair failed, setting status \"failed\"")
         status = 1
 
     # Check unpack status
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        Logger.warning("Unpack failed, setting status \"failed\"")
+        Logger.warning("MAIN: Unpack failed, setting status \"failed\"")
         status = 1
 
-    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] != '2':
-        # Unpack is disabled or was skipped due to nzb-file properties or due to errors during par-check
+    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
+        # Unpack was skipped due to nzb-file properties or due to errors during par-check
 
-        for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
-            for file in filenames:
-                fileExtension = os.path.splitext(file)[1]
-
-                if fileExtension in ['.rar', '.7z'] or os.path.splitext(fileExtension)[1] in ['.rar', '.7z']:
-                    Logger.warning("Post-Process: Archive files exist but unpack skipped, setting status \"failed\"")
-                    status = 1
-                    break
-
-                if fileExtension in ['.par2']:
-                    Logger.warning("Post-Process: Unpack skipped and par-check skipped (although par2-files exist), setting status \"failed\"g")
-                    status = 1
-                    break
-
-        if os.path.isfile(os.path.join(os.environ['NZBPP_DIRECTORY'], "_brokenlog.txt")) and not status == 1:
-            Logger.warning("Post-Process: _brokenlog.txt exists, download is probably damaged, exiting")
+        if os.environ['NZBPP_HEALTH'] < 1000:
+            Logger.warning("MAIN: Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
+            Logger.info("MAIN: Please check your Par-check/repair settings for future downloads.")
             status = 1
 
-        if not status == 1:
-            Logger.info("Neither archive- nor par2-files found, _brokenlog.txt doesn't exist, considering download successful")
+        else:
+            Logger.info("MAIN: Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
+            Logger.info("MAIN: Please check your Par-check/repair settings for future downloads.")
 
     # Check if destination directory exists (important for reprocessing of history items)
     if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        Logger.error("Post-Process: Nothing to post-process: destination directory %s doesn't exist", os.environ['NZBPP_DIRECTORY'])
+        Logger.error("MAIN: Nothing to post-process: destination directory %s doesn't exist. Setting status \"failed\"", os.environ['NZBPP_DIRECTORY'])
         status = 1
 
     # All checks done, now launching the script.
@@ -384,14 +388,14 @@ else: # only CPS supports this manual run for now.
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
     clientAgent = "manual"
-    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory, '')
+    nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
     Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-    result = autoProcessTV.processEpisode(nzbDir, inputName, status, inputCategory)
+    result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
 elif inputCategory in hpCategory:
     Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
     result = autoProcessMusic.process(nzbDir, inputName, status, inputCategory)

@@ -13,9 +13,6 @@ from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 
 Logger = logging.getLogger()
-TimeOut = 4 * int(TimeOut) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
-socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
-
 
 class AuthURLOpener(urllib.FancyURLopener):
     def __init__(self, user, pw):
@@ -44,7 +41,7 @@ def delete(dirName):
         Logger.exception("Unable to delete folder %s", dirName)
 
 
-def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
+def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputCategory=None):
 
     status = int(failed)
     config = ConfigParser.ConfigParser()
@@ -99,15 +96,45 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
         delay = float(config.get(section, "delay"))
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
+    try:
+        wait_for = int(config.get(section, "wait_for"))
+    except (ConfigParser.NoOptionError, ValueError):
+        wait_for = 5
+    try:
+        SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')
+    except (ConfigParser.NoOptionError, ValueError):
+        SampleIDs = ['sample','-s.']
+    try:
+        nzbExtractionBy = config.get(section, "nzbExtractionBy")
+    except (ConfigParser.NoOptionError, ValueError):
+        nzbExtractionBy = "Downloader"
+
+    TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
-    if not fork in SICKBEARD_TORRENT:
+    if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        dirName = os.path.split(os.path.normpath(dirName))[0]
+
+    SpecificPath = os.path.join(dirName, nzbName)
+    cleanName = os.path.splitext(SpecificPath)
+    if cleanName[1] == ".nzb":
+        SpecificPath = cleanName[0]
+    if os.path.isdir(SpecificPath):
+        dirName = SpecificPath
+
+    SICKBEARD_TORRENT_USE = SICKBEARD_TORRENT
+
+    if clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination": #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
+        SICKBEARD_TORRENT_USE = []
+
+    if not fork in SICKBEARD_TORRENT_USE:
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
-    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
+    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT_USE:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -115,7 +142,7 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
                 filePath = os.path.join(dirpath, file)
                 fileExtension = os.path.splitext(file)[1]
                 if fileExtension in mediaContainer:  # If the file is a video file
-                    if is_sample(filePath, nzbName, minSampleSize):
+                    if is_sample(filePath, nzbName, minSampleSize, SampleIDs):
                         Logger.debug("Removing sample file: %s", filePath)
                         os.unlink(filePath)  # remove samples
                     else:
@@ -127,7 +154,7 @@ def processEpisode(dirName, nzbName=None, failed=False, inputCategory=None):
             status = int(1)
             failed = True
 
-    if watch_dir != "":
+    if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
     params = {}

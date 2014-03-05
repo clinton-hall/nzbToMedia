@@ -1,7 +1,7 @@
 # Make things easy and less error prone by centralising all common values
 
 # Global Constants
-VERSION = 'V9.1'
+VERSION = 'V9.2'
 TimeOut = 60
 
 # Constants pertinant to SabNzb

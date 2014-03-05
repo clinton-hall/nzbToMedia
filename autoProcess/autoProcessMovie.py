@@ -40,14 +40,13 @@ def get_imdb(nzbName, dirName):
         return imdbid
 
     else:
-        Logger.warning("Could not find an imdb id in directory or name")
-        Logger.info("Postprocessing will continue, but the movie may not be identified correctly by CouchPotato")
+        Logger.debug("Could not find an imdb id in directory or name")
         return ""
 
 def get_movie_info(baseURL, imdbid, download_id):
     
     if not imdbid and not download_id:
-        return ""
+        return "", None, imdbid
 
     movie_id = ""
     releaselist = []
@@ -55,7 +54,7 @@ def get_movie_info(baseURL, imdbid, download_id):
     library = []
     offset = int(0)
     while True:
-        url = baseURL + "media.list/?status=active" + "&limit_offset=50," + str(offset)
+        url = baseURL + "media.list/?status=active&release_status=snatched&limit_offset=50," + str(offset)
 
         Logger.debug("Opening URL: %s", url)
 
@@ -81,6 +80,7 @@ def get_movie_info(baseURL, imdbid, download_id):
             break
         offset = offset + 50
 
+    result = None # reset
     for index in range(len(movieid)):
         if not imdbid:
             url = baseURL + "media.get/?id=" + str(movieid[index])
@@ -89,17 +89,18 @@ def get_movie_info(baseURL, imdbid, download_id):
                 urlObj = urllib.urlopen(url)
             except:
                 Logger.exception("Unable to open URL")
-                return ""
+                return "", None, imdbid
             try:
                 result = json.load(urlObj)
                 releaselist = [item["info"]["download_id"] for item in result["media"]["releases"] if "download_id" in item["info"] and item["info"]["download_id"].lower() == download_id.lower()]  
             except:
                 Logger.exception("Unable to parse json data for releases")
-                return ""
+                return "", None, imdbid
 
             if len(releaselist) > 0:
                 movie_id = str(movieid[index])
-                Logger.info("Found movie id %s in database via download_id %s", movie_id, download_id)
+                imdbid = str(library[index])
+                Logger.info("Found movie id %s and imdb %s in database via download_id %s", movie_id, imdbid, download_id)
                 break
             else:
                 continue
@@ -112,22 +113,24 @@ def get_movie_info(baseURL, imdbid, download_id):
     if not movie_id:
         Logger.exception("Could not parse database results to determine imdbid or movie id")
 
-    return movie_id
+    return movie_id, result, imdbid 
 
-def get_status(baseURL, movie_id, clientAgent, download_id):
+def get_status(baseURL, movie_id, clientAgent, download_id, result=None):
     
     if not movie_id:
         return "", clientAgent, "none", "none"
-    url = baseURL + "media.get/?id=" + str(movie_id)
-    Logger.debug("Looking for status of movie: %s - with release sent to clientAgent: %s and download_id: %s", movie_id, clientAgent, download_id)
-    Logger.debug("Opening URL: %s", url)
 
-    try:
-        urlObj = urllib.urlopen(url)
-    except:
-        Logger.exception("Unable to open URL")
-        return "", clientAgent, "none", "none"
-    result = json.load(urlObj)
+    Logger.debug("Looking for status of movie: %s - with release sent to clientAgent: %s and download_id: %s", movie_id, clientAgent, download_id)
+    if not result: # we haven't already called media.get
+        url = baseURL + "media.get/?id=" + str(movie_id)
+        Logger.debug("Opening URL: %s", url)
+
+        try:
+            urlObj = urllib.urlopen(url)
+        except:
+            Logger.exception("Unable to open URL")
+            return "", clientAgent, "none", "none"
+        result = json.load(urlObj)
     try:
         movie_status = result["media"]["status"]["identifier"]
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
@@ -251,9 +254,9 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
 
     baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
     
-    movie_id = get_movie_info(baseURL, imdbid, download_id) # get the CPS database movie id this movie.
+    movie_id, result, imdbid = get_movie_info(baseURL, imdbid, download_id) # get the CPS database movie id for this movie.
    
-    initial_status, clientAgent, download_id, initial_release_status = get_status(baseURL, movie_id, clientAgent, download_id)
+    initial_status, clientAgent, download_id, initial_release_status = get_status(baseURL, movie_id, clientAgent, download_id, result)
     
     process_all_exceptions(nzbName.lower(), dirName)
     nzbName, dirName = converto_to_ascii(nzbName, dirName)
@@ -277,7 +280,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                 if remoteCPS == 1:
                     command = command + "/?downloader=" + clientAgent + "&download_id=" + download_id
                 else:
-                    command = command + "/?media_folder=" + dirName + "&downloader=" + clientAgent + "&download_id=" + download_id
+                    command = command + "/?media_folder=" + urllib.quote(dirName) + "&downloader=" + clientAgent + "&download_id=" + download_id
 
         url = baseURL + command
 

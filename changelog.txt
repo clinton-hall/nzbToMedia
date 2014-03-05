@@ -1,5 +1,26 @@
 Change_LOG / History
 
+V9.2 05/03/2014
+
+Impacts All
+Change default "wait_for" to 5 mins. CouchPotato can take more than 2 minutes to return on renamer.scan request.
+Added SickBeard "wait_for" to bw customizable to prevent unwanted timeouts.
+Fixed ascii conversion of directory name.
+Added list of common sample ids and a way to set deletion of All media files less than the sample file size limit.
+Added urlquote to dirName for CouchPotato (allows special characters in directory name)
+
+Impacts NZBs
+Fix Error with manual run of nzbToMedia
+Make sure SickBeard receives the individula download dir.
+Added option to set SickBeard extraction as either Downlaoder or Destination (SickBeard).
+Fixed Health Check handling for NZBGet.
+
+Impacts Torrents
+Added option to run userscript once only (on directory).
+Added Option to not flatten specific categories.
+Added rtorrent integration.
+Fixes for HeadPhones use (no flatten), no move/sym, and fix move back to original.
+
 V9.1 24/01/2014
 
 Impacts All

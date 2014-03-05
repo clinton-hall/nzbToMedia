@@ -39,6 +39,9 @@ def create_destination(outputDestination):
         sys.exit(-1)
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
+    if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory): # If the input directory is a file, assume single file downlaod and split dir/name.
+        inputDirectory,inputName = os.path.split(os.path.normpath(inputDirectory))
+
     if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
         Logger.info("SEARCH: Found category directory %s in input directory directory %s", inputCategory, inputDirectory)
         inputDirectory = os.path.join(inputDirectory, inputCategory)
@@ -93,8 +96,21 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                     Logger.info("SEARCH: Identified Category: %s and Torrent Name: %s. We are in a unique directory, so we can proceed.", inputCategory, inputName)
                 break  # we are done
             elif categorySearch[1] and not inputName:  # assume the the next directory deep is the torrent name.
-                Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
                 inputName = categorySearch[1]
+                Logger.info("SEARCH: Found torrent name: %s", categorySearch[1])
+                if os.path.isdir(os.path.join(categorySearch[0], categorySearch[1])):
+                    Logger.info("SEARCH: Found torrent directory %s in category directory %s", os.path.join(categorySearch[0], categorySearch[1]), categorySearch[0])
+                    inputDirectory = os.path.normpath(os.path.join(categorySearch[0], categorySearch[1]))
+                elif os.path.isfile(os.path.join(categorySearch[0], categorySearch[1])): # Our inputdirectory is actually the full file path for single file download.
+                    Logger.info("SEARCH: %s is a file, not a directory.", os.path.join(categorySearch[0], categorySearch[1]))
+                    Logger.info("SEARCH: Setting input directory to %s", categorySearch[0])
+                    root = 1
+                    inputDirectory = os.path.normpath(categorySearch[0])
+                else: # The inputdirectory given can't have been valid. Start at the category directory and search for date modified.
+                    Logger.info("SEARCH: Input Directory %s doesn't exist as a directory or file", inputDirectory)
+                    Logger.info("SEARCH: Setting input directory to %s and checking for files by date modified.", categorySearch[0])
+                    root = 2
+                    inputDirectory = os.path.normpath(categorySearch[0])
                 break  # we are done
             elif ('.cp(tt' in categorySearch[1]) and (not '.cp(tt' in inputName):  # if the directory was created by CouchPotato, and this tag is not in Torrent name, we want to add it.
                 Logger.info("SEARCH: Changing Torrent Name to %s to preserve imdb id.", categorySearch[1])
@@ -110,6 +126,11 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 if categorySearch[0] == os.path.normpath(inputDirectory):  # only true on first pass, x =0
                     inputDirectory = os.path.join(categorySearch[0], safeName(inputName))  # we only want to search this next dir up.
                 break  # we are done
+            elif inputName and os.path.isfile(os.path.join(categorySearch[0], inputName)) or os.path.isfile(os.path.join(categorySearch[0], safeName(inputName))):  # testing for torrent name name as file inside category directory
+                Logger.info("SEARCH: Found torrent file %s in category directory %s", os.path.join(categorySearch[0], safeName(inputName)), categorySearch[0])
+                root = 1
+                inputDirectory = os.path.normpath(categorySearch[0])
+                break  # we are done
             elif inputName:  # if these exists, we are ok to proceed, but we are in a root/common directory.
                 Logger.info("SEARCH: Could not find a unique torrent folder in the directory structure")
                 Logger.info("SEARCH: The directory passed is the root directory for category %s", categorySearch2[1])
@@ -123,7 +144,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
                 Logger.info("SEARCH: We will try and determine which files to process, individually")
                 root = 2
                 break
-        elif inputName and safeName(categorySearch2[1]) == safeName(inputName):  # we have identified a unique directory.
+        elif inputName and safeName(categorySearch2[1]) == safeName(inputName) and os.path.isdir(categorySearch[0]):  # we have identified a unique directory.
             Logger.info("SEARCH: Files appear to be in their own directory")
             unique = int(1)
             if inputCategory:  # we are ok to proceed.
@@ -161,11 +182,18 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     return inputDirectory, inputName, inputCategory, root
 
 
-def is_sample(filePath, inputName, minSampleSize):
+def is_sample(filePath, inputName, minSampleSize, SampleIDs):
     # 200 MB in bytes
     SIZE_CUTOFF = minSampleSize * 1024 * 1024
-    # Ignore 'sample' in files unless 'sample' in Torrent Name
-    return ('sample' in filePath.lower()) and (not 'sample' in inputName) and (os.path.getsize(filePath) < SIZE_CUTOFF)
+    if os.path.getsize(filePath) < SIZE_CUTOFF:
+        if 'SizeOnly' in SampleIDs:
+            return True
+        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        for ident in SampleIDs:
+            if ident.lower() in filePath.lower() and not ident.lower() in inputName.lower(): 
+                return True
+    # Return False if none of these were met.
+    return False
 
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
@@ -331,8 +359,8 @@ def converto_to_ascii(nzbName, dirName):
     nzbName2 = str(nzbName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     if dirName != dirName2:
-        Logger.info("Renaming directory:%s  to: %s.", dirName, nzbName2)
-        shutil.move(dirName, nzbName2)
+        Logger.info("Renaming directory:%s  to: %s.", dirName, dirName2)
+        shutil.move(dirName, dirName2)
     for dirpath, dirnames, filesnames in os.walk(dirName2):
         for filename in filesnames:
             filename2 = str(filename.decode('ascii', 'replace').replace(u'\ufffd', '_'))
@@ -340,12 +368,34 @@ def converto_to_ascii(nzbName, dirName):
                 Logger.info("Renaming file:%s  to: %s.", filename, filename2)
                 shutil.move(filename, filename2)
     nzbName = nzbName2
-    dirName = nzbName2
+    dirName = dirName2
     return nzbName, dirName
 
 def parse_other(args):
-    return os.path.normpath(sys.argv[1]), '', '', '', ''
+    return os.path.normpath(args[1]), '', '', '', ''
 
+def parse_rtorrent(args):
+    # rtorrent usage: system.method.set_key = event.download.finished,TorrentToMedia,
+    # "execute={/path/to/nzbToMedia/TorrentToMedia.py,\"$d.get_base_path=\",\"$d.get_name=\",\"$d.get_custom1=\",\"$d.get_hash=\"}"
+    inputDirectory = os.path.normpath(args[1])
+    try:
+        inputName = args[2]
+    except:
+        inputName = ''
+    try:
+        inputCategory = args[3]
+    except:
+        inputCategory = ''
+    try:
+        inputHash = args[4]
+    except:
+        inputHash = ''
+    try:
+        inputID = args[4]
+    except:
+        inputID = ''
+
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 def parse_utorrent(args):
     # uTorrent usage: call TorrentToMedia.py "%D" "%N" "%L" "%I"
@@ -389,6 +439,7 @@ def parse_transmission(args):
 
 __ARG_PARSERS__ = {
     'other': parse_other,
+    'rtorrent': parse_rtorrent,
     'utorrent': parse_utorrent,
     'deluge': parse_deluge,
     'transmission': parse_transmission,
