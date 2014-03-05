@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V9.2 XX/02/2014
+V9.2 05/03/2014
 
 Impacts All
 Change default "wait_for" to 5 mins. CouchPotato can take more than 2 minutes to return on renamer.scan request.
