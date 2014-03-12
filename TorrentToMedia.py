@@ -319,7 +319,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if deleteOriginal == 1 and result != 1:
+        if (deleteOriginal == 1 and result != 1) or useLink == 'move': # added uselink = move, if we move files, nothing to resume seeding.
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
             if clientAgent == 'utorrent' and utorrentClass != "":
                 utorrentClass.removedata(inputHash)
