@@ -314,6 +314,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     except:
                         Logger.exception("MAIN: Failed to move file: %s", file)
                     continue
+        shutil.rmtree(outputDestination)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
@@ -322,13 +323,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
             if clientAgent == 'utorrent' and utorrentClass != "":
                 utorrentClass.removedata(inputHash)
-                if not inputCategory in hpCategory:
-                    utorrentClass.remove(inputHash)
+                utorrentClass.remove(inputHash)
             if clientAgent == 'transmission' and TransmissionClass !="":
-                if inputCategory in hpCategory: #don't delete actual files for hp category, just remove torrent.
-                    TransmissionClass.remove_torrent(inputID, False)
-                else:
-                    TransmissionClass.remove_torrent(inputID, True)
+                TransmissionClass.remove_torrent(inputID, True)
             if clientAgent == 'deluge' and delugeClient != "":
                 delugeClient.core.remove_torrent(inputID, True)
         # we always want to resume seeding, for now manually find out what is wrong when extraction fails
