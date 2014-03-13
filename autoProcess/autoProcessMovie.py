@@ -337,8 +337,10 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                 Logger.exception("Unable to delete folder %s", dirName)
         return 0 # success
     
-    if nzbName == "Manual Run" or download_id == "none":
+    if nzbName == "Manual Run":
         return 0 # success
+    if download_id == "none":
+        return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.

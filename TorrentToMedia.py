@@ -349,7 +349,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 if fileExtension in mediaContainer or fileExtension in metaContainer:
                     num_files_new = num_files_new + 1
                     file_list.append(file)
-        if num_files_new == int(0): 
+        if num_files_new == int(0) or forceClean == 1: 
             Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
             shutil.rmtree(outputDestination)
         else:
@@ -479,6 +479,7 @@ if __name__ == "__main__":
     DelugePWD = config.get("Torrent", "DelugePWD")                                      # mysecretpwr
     
     deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
+    forceClean = int(config.get("Torrent", "forceClean"))                               # 0
     
     compressedContainer = (config.get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
