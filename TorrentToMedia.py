@@ -208,7 +208,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     except:
                         Logger.exception("MAIN: Failed to link file: %s", file)
                 # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not (os.path.splitext(fileName)[1] in ['.720p','.1080p']):
+                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
                     if part == 1: # we only want to extract the primary part.
                         Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       

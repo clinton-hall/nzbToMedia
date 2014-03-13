@@ -6,6 +6,7 @@ Impacts Torrents
 Allow Headphones to remove torrents and data after processing.
 Delete torrent if uselink = move
 Added forceClean for outputDir. Works in file permissions prevent CP/SB from moving files.
+Ignore .x264 from archive "part" checks.
 
 V9.2 05/03/2014
 
