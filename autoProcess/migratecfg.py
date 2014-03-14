@@ -328,7 +328,7 @@ def addnzbget():
     envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
     cfgKeys = ['mlCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
     for index in range(len(envKeys)):
-        key = 'NZBPO_ML' + envKeys[index]
+        key = 'NZBPO_MY' + envKeys[index]
         if os.environ.has_key(key):
             option = cfgKeys[index]
             value = os.environ[key]
