@@ -115,8 +115,8 @@ def get_movie_info(baseURL, imdbid, download_id):
             continue
 
         if len(releaselist) == 1:
-            Logger.debug("Found a single release with download_id: %s. Release status is: %s", download_id, release_status)
             release_status = releaselist[0]["status"]
+            Logger.debug("Found a single release with download_id: %s. Release status is: %s", download_id, release_status)
 
         break
            
@@ -130,7 +130,7 @@ def get_status(baseURL, movie_id, download_id):
     if not movie_id:
         return None, None
 
-    Logger.debug("Looking for status of movie: %s - with release sent to clientAgent: %s and download_id: %s", movie_id, clientAgent, download_id)
+    Logger.debug("Looking for status of movie: %s", movie_id)
     if not result: # we haven't already called media.get
         url = baseURL + "media.get/?id=" + str(movie_id)
         Logger.debug("Opening URL: %s", url)
