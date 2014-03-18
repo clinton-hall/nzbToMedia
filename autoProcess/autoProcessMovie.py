@@ -131,15 +131,14 @@ def get_status(baseURL, movie_id, download_id):
         return None, None
 
     Logger.debug("Looking for status of movie: %s", movie_id)
-    if not result: # we haven't already called media.get
-        url = baseURL + "media.get/?id=" + str(movie_id)
-        Logger.debug("Opening URL: %s", url)
+    url = baseURL + "media.get/?id=" + str(movie_id)
+    Logger.debug("Opening URL: %s", url)
 
-        try:
-            urlObj = urllib.urlopen(url)
-        except:
-            Logger.exception("Unable to open URL")
-            return None, None  
+    try:
+        urlObj = urllib.urlopen(url)
+    except:
+        Logger.exception("Unable to open URL")
+        return None, None  
     try:
         result = json.load(urlObj)
         movie_status = str(result["media"]["status"])
