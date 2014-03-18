@@ -1,4 +1,4 @@
-uimport sys
+import sys
 import urllib
 import os
 import shutil
@@ -46,17 +46,16 @@ def get_imdb(nzbName, dirName):
 def get_movie_info(baseURL, imdbid, download_id):
 
     movie_id = ""
-    
+    movie_status = None
+    release_status = None    
     if not imdbid and not download_id:
-        return movie_id, imdbid, download_id, None, None 
+        return movie_id, imdbid, download_id, movie_status, release_status 
 
     releaselist = []
     movieid = []
     moviestatus = []
     library = []
     release = []
-    movie_status = None
-    release_status = None
     offset = int(0)
     while True:
         url = baseURL + "media.list/?status=active&release_status=snatched&limit_offset=50," + str(offset)
@@ -293,8 +292,10 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                 Logger.exception("Unable to delete folder %s", dirName)
         return 0 # success
     
-    if nzbName == "Manual Run" or download_id == "none":
+    if nzbName == "Manual Run":
         return 0 # success
+    if not download_id:
+        return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
