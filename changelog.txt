@@ -11,6 +11,9 @@ Ignore .x264 from archive "part" checks.
 Impacts NZBs
 Fix setting of Mylar config from NZBGet.
 
+Impacts All
+Changes to Couchpotato API for [nosql] added. Keeps aligned with current CouchPotato develop branch.
+
 V9.2 05/03/2014
 
 Impacts All
