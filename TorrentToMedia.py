@@ -17,10 +17,11 @@ import extractor.extractor as extractor
 import autoProcess.autoProcessComics as autoProcessComics
 import autoProcess.autoProcessGames as autoProcessGames 
 import autoProcess.autoProcessMusic as autoProcessMusic
-import autoProcess.autoProcessTV as autoProcessTV
 import autoProcess.autoProcessMovie as autoProcessMovie
+import autoProcess.autoProcessTV as autoProcessTV
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
+from autoSickBeardFork import autoFork
 from utorrent.client import UTorrentClient
 from transmissionrpc.client import Client as TransmissionClient
 from synchronousdeluge.client import DelugeClient
@@ -489,7 +490,7 @@ if __name__ == "__main__":
     
     cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
-    sbFork = config.get("SickBeard", "fork")                                            # default
+    sbFork, sbParams = autoFork(config.get("SickBeard", "fork"))                        # default
     Torrent_ForceLink = int(config.get("SickBeard", "Torrent_ForceLink"))               # 1
     hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics

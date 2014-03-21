@@ -8,12 +8,16 @@ TimeOut = 60
 SABNZB_NO_OF_ARGUMENTS = 8
 SABNZB_0717_NO_OF_ARGUMENTS = 9
 
-# Constants pertaining to SickBeard Branches: 
-# extend this list to include all branches/forks that use "failed" to handle failed downloads.
-SICKBEARD_FAILED = ["failed", "TPB-failed", "Pistachitos", "TPB"]
-# extend this list to include all branches/forks that use "dirName" not "dir"
-SICKBEARD_DIRNAME = ["failed"] 
-# extend this list to include all branches/forks that process rar and link files for torrents and therefore skip extraction and linking in TorrentToMedia.
-SICKBEARD_TORRENT = ["TPB", "TPB-failed", "Pistachitos"]
+# Constants pertaining to SickBeard Branches:
+fork_default = "default"
+fork_failed = "failed"
+fork_failed_torrent = "failed-torrent"
 
+forks = {}
+forks[fork_default] = {"dir": None, "process": None}
+forks[fork_failed] = {"dir": None, "failed": None}
+forks[fork_failed_torrent] = {"dir": None, "failed": None, "process_method": None}
+
+SICKBEARD_FAILED = [fork_failed, fork_failed_torrent]
+SICKBEARD_TORRENT = [fork_failed_torrent]
 
