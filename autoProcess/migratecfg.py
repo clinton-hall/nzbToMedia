@@ -60,6 +60,9 @@ def migrate():
             option = "sbCategory"
         if option == "failed_fork": # change this old format
             option = "fork"
+            if "default", "failed", "failed-torrent", "auto" not in value:
+                value = "auto"
+        if option == "fork" and "default", "failed", "failed-torrent", "auto" not in value:
             value = "auto"
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
