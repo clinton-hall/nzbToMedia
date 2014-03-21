@@ -13,6 +13,7 @@ Fix setting of Mylar config from NZBGet.
 
 Impacts All
 Changes to Couchpotato API for [nosql] added. Keeps aligned with current CouchPotato develop branch.
+Add Auto Detection of SickBeard Fork.
 
 V9.2 05/03/2014
 
