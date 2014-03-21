@@ -61,6 +61,8 @@ def migrate():
         if option == "failed_fork": # change this old format
             option = "fork"
             value = "auto"
+        if option == "fork" and value in ["TPB", "TPB-failed", "Pistachitos"]: # Merge all these to "auto"
+            value = "auto"
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)

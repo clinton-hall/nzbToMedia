@@ -21,7 +21,7 @@ import autoProcess.autoProcessMovie as autoProcessMovie
 import autoProcess.autoProcessTV as autoProcessTV
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
-from autoSickBeardFork import autoFork
+from autoProcess.autoSickBeardFork import autoFork
 from utorrent.client import UTorrentClient
 from transmissionrpc.client import Client as TransmissionClient
 from synchronousdeluge.client import DelugeClient
@@ -43,6 +43,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+
+    sbFork, sbParams = autoFork()
 
     if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT and Torrent_ForceLink != 1:
         Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
@@ -490,7 +492,6 @@ if __name__ == "__main__":
     
     cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
-    sbFork, sbParams = autoFork(config.get("SickBeard", "fork"))                        # default
     Torrent_ForceLink = int(config.get("SickBeard", "Torrent_ForceLink"))               # 1
     hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics

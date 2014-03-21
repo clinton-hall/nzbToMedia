@@ -51,10 +51,10 @@ def autoFork(fork=None):
     try:
         fork = config.get(section, "fork")
         if not fork in "auto":
-            fork = forks[fork] \
-                if fork in SICKBEARD_FAILED or SICKBEARD_TORRENT else forks[fork_default]
+            fork = fork if fork in SICKBEARD_FAILED or fork in SICKBEARD_TORRENT else fork_default
+            fork = [f for f in forks.iteritems() if f[0] == fork][0]
     except ConfigParser.NoOptionError:
-        fork = forks[fork_default]
+        fork = [f for f in forks.iteritems() if f[0] == fork_default][0]
 
     myOpener = AuthURLOpener(username, password)
 

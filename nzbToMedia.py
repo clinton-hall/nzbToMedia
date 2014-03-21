@@ -109,7 +109,7 @@
 
 # SickBeard fork.
 #
-# set to default or auto to auto-detect the custom failed fork type".
+# set to default or auto to auto-detect the custom fork type.
 #sbfork=auto
 
 # SickBeard Delete Failed Downloads (0, 1)
