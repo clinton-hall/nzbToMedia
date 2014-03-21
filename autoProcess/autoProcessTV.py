@@ -11,6 +11,7 @@ import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
+from autoSickBeardFork import autoFork
 
 Logger = logging.getLogger()
 
@@ -31,7 +32,6 @@ class AuthURLOpener(urllib.FancyURLopener):
     def openit(self, url):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
-
 
 def delete(dirName):
     Logger.info("Deleting failed files and folder %s", dirName)
@@ -63,6 +63,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     port = config.get(section, "port")
     username = config.get(section, "username")
     password = config.get(section, "password")
+
     try:
         ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
@@ -79,11 +80,6 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         watch_dir = ""
 
     try:
-        fork = config.get(section, "fork")
-    except ConfigParser.NoOptionError:
-        fork = "default"
-
-    try:    
         transcode = int(config.get("Transcoder", "transcode"))
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
@@ -125,16 +121,14 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if os.path.isdir(SpecificPath):
         dirName = SpecificPath
 
-    SICKBEARD_TORRENT_USE = SICKBEARD_TORRENT
+    # auto-detect fork type
+    fork, params = autoFork()
 
-    if clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination": #Assume Torrent actions (unrar and link) don't happen. We need to check for valid media here.
-        SICKBEARD_TORRENT_USE = []
-
-    if not fork in SICKBEARD_TORRENT_USE:
+    if (not fork in SICKBEARD_TORRENT) or (clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination"):
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
-    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT_USE:
+    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
         # Now check if movie files exist in destination:
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
@@ -157,19 +151,18 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
-    params = {}
-
     params['quiet'] = 1
-    if fork in SICKBEARD_DIRNAME:
+
+    if hasattr(params, "failed"):
+        params['failed'] = failed
+
+    if hasattr(params, "dirName"):
         params['dirName'] = dirName
     else:
         params['dir'] = dirName
 
     if nzbName != None:
         params['nzbName'] = nzbName
-
-    if fork in SICKBEARD_FAILED:
-        params['failed'] = failed
 
     if status == 0:
         Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
@@ -181,7 +174,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
             Logger.info("Deleting directory: %s", dirName)
             delete(dirName)
         return 0 # Success (as far as this script is concerned)
-    
+
     if status == 0 and transcode == 1: # only transcode successful downlaods
         result = Transcoder.Transcode_directory(dirName)
         if result == 0:

@@ -109,8 +109,8 @@
 
 # SickBeard fork.
 #
-# set to default or TPB or failed if using the custom "TPB" or "failed fork".
-#sbfork=default
+# set to default or auto to auto-detect the custom failed fork type".
+#sbfork=auto
 
 # SickBeard Delete Failed Downloads (0, 1)
 #
@@ -265,8 +265,8 @@ import autoProcess.migratecfg as migratecfg
 import autoProcess.autoProcessComics as autoProcessComics
 import autoProcess.autoProcessGames as autoProcessGames
 import autoProcess.autoProcessMusic as autoProcessMusic
-import autoProcess.autoProcessTV as autoProcessTV
 import autoProcess.autoProcessMovie as autoProcessMovie
+import autoProcess.autoProcessTV as autoProcessTV
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 

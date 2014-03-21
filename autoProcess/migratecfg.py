@@ -60,10 +60,7 @@ def migrate():
             option = "sbCategory"
         if option == "failed_fork": # change this old format
             option = "fork"
-            if int(value) == 1:
-                value = "failed"
-            else:
-                value = "default"
+            value = "auto"
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
