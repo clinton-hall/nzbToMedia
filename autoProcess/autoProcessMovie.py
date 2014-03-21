@@ -142,8 +142,8 @@ def get_status(baseURL, movie_id, download_id):
     try:
         result = json.load(urlObj)
         movie_status = str(result["media"]["status"])
-        release_status = None # for now... keep this as a place holder.
-        Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
+        release_status = [item["status"] for item in result["media"]["releases"] if "download_info" in item and item["download_info"]["id"].lower() == download_id.lower()][0]
+        Logger.debug("This movie is marked as status %s, with release status %s, in CouchPotatoServer", movie_status, release_status)
     except: # index out of range/doesn't exist?
         Logger.exception("Could not find a status for this movie")
         movie_status = None
