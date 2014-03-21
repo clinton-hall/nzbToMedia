@@ -60,6 +60,9 @@ def migrate():
             option = "sbCategory"
         if option == "failed_fork": # change this old format
             option = "fork"
+            if value not in ["default", "failed", "failed-torrent", "auto"]:
+                value = "auto"
+        if option == "fork" and value not in ["default", "failed", "failed-torrent", "auto"]:
             value = "auto"
         if option == "fork" and value in ["TPB", "TPB-failed", "Pistachitos"]: # Merge all these to "auto"
             value = "auto"

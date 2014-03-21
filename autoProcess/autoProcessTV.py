@@ -6,6 +6,7 @@ import logging
 import shutil
 import time
 import socket
+import copy
 
 import Transcoder
 from nzbToMediaEnv import *
@@ -153,13 +154,15 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
 
     params['quiet'] = 1
 
-    if hasattr(params, "failed"):
-        params['failed'] = failed
+    for param in copy.copy(params):
+        if param is "failed":
+            params["failed"] = failed
 
-    if hasattr(params, "dirName"):
-        params['dirName'] = dirName
-    else:
-        params['dir'] = dirName
+        if param is "dirName":
+            params["dirName"] = dirName
+
+        if param is "dir":
+            params["dir"] = dirName
 
     if nzbName != None:
         params['nzbName'] = nzbName
