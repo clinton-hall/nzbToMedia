@@ -161,7 +161,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         if param is "dirName":
             params["dirName"] = dirName
 
-        if params is "dir":
+        if param is "dir":
             params["dir"] = dirName
 
     if nzbName != None:
