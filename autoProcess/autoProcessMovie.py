@@ -268,7 +268,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
             Logger.error("Exiting autoProcessMovie script")
             return 1 # failure
 
-        url = baseURL + "movie.searcher.try_next/?id=" + movie_id
+        url = baseURL + "movie.searcher.try_next/?media_id=" + movie_id
 
         Logger.debug("Opening URL: %s", url)
 
