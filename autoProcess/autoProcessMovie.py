@@ -75,7 +75,11 @@ def get_movie_info(baseURL, imdbid, download_id):
         try:
             result = json.load(urlObj)
             movieid2 = [item["_id"] for item in result["movies"]]
-            library2 = [item["identifier"] for item in result["movies"] if "identifier" in item else item["identifiers"]["imdb"]]
+            for item in result["movies"]:
+                if "identifier" in item:
+                    library2.append(item["identifier"])
+                else:
+                    library2.append(item["identifiers"]["imdb"])
             release2 = [item["releases"] for item in result["movies"]]
             moviestatus2 = [item["status"] for item in result["movies"]]
         except:
