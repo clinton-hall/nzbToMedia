@@ -130,9 +130,11 @@ def get_movie_info(baseURL, imdbid, download_id):
     return movie_id, imdbid, download_id, movie_status, release_status 
 
 def get_status(baseURL, movie_id, download_id):
-    
+
+    movie_status = None
+    release_status = None    
     if not movie_id:
-        return None, None
+        return movie_status, release_status
 
     Logger.debug("Looking for status of movie: %s", movie_id)
     url = baseURL + "media.get/?id=" + str(movie_id)
@@ -146,12 +148,19 @@ def get_status(baseURL, movie_id, download_id):
     try:
         result = json.load(urlObj)
         movie_status = str(result["media"]["status"])
-        release_status = [item["status"] for item in result["media"]["releases"] if "download_info" in item and item["download_info"]["id"].lower() == download_id.lower()][0]
-        Logger.debug("This movie is marked as status %s, with release status %s, in CouchPotatoServer", movie_status, release_status)
-    except: # index out of range/doesn't exist?
+        Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
+    except:
         Logger.exception("Could not find a status for this movie")
-        movie_status = None
-        release_status = None
+    try:
+        if len(result["media"]["releases"]) == 1 and result["media"]["releases"][0]["status"] == "done":
+            release_status = result["media"]["releases"][0]["status"]
+        else:
+            release_status_list = [item["status"] for item in result["media"]["releases"] if "download_info" in item and item["download_info"]["id"].lower() == download_id.lower()]
+            if len(release_status_list) == 1:
+                release_status = release_status_list[0]
+        Logger.debug("This release is marked as status %s in CouchPotatoServer", release_status)
+    except: # index out of range/doesn't exist?
+        Logger.exception("Could not find a status for this release")
 
     return movie_status, release_status
 
