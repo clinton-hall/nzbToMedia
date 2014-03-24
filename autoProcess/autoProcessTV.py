@@ -164,6 +164,12 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         if param is "dir":
             params["dir"] = dirName
 
+        if param is "process":
+            params["process"] = None
+
+        if param is "process_method":
+            params["process_method"] = None
+
     if nzbName != None:
         params['nzbName'] = nzbName
 
