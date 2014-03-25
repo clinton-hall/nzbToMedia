@@ -63,14 +63,14 @@ def autoFork(fork=None):
 
         Logger.info("Attempting to auto-detect SickBeard fork")
         for f in forks.iteritems():
-            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(f[1])
+            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(f[1]['params'])
 
             # attempting to auto-detect fork
             urlObj = myOpener.openit(url)
 
             if urlObj.getcode() == 200:
-                Logger.info("SickBeard fork auto-detection successful. Fork set to %s", f[0])
-                return f[0], f[1]
+                Logger.info("SickBeard fork auto-detection successful. Fork set to %s", f[1]['name'])
+                return f[1]['name'], f[1]['params']
 
         # failed to auto-detect fork
         Logger.info("SickBeard fork auto-detection failed")
@@ -78,9 +78,9 @@ def autoFork(fork=None):
     else: #if not fork in "auto"
         try:
             fork = fork if fork in SICKBEARD_FAILED or fork in SICKBEARD_TORRENT else fork_default
-            fork = [f for f in forks.iteritems() if f[0] == fork][0]
+            fork = [f for f in forks.iteritems() if f[1]['name'] == fork][0]
         except:
-            fork = [f for f in forks.iteritems() if f[0] == fork_default][0]
+            fork = [f for f in forks.iteritems() if f[1]['name'] == fork_default][0]
 
-    Logger.info("SickBeard fork set to %s", fork[0])
-    return fork[0], fork[1]
+    Logger.info("SickBeard fork set to %s", fork[1]['name'])
+    return fork[1]['name'], fork[1]['params']
