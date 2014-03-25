@@ -125,12 +125,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     # auto-detect fork type
     fork, params = autoFork()
 
-    if (not fork in SICKBEARD_TORRENT) or (clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination"):
+    if nzbName != "Manual Run" and (not fork in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination")):
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = converto_to_ascii(nzbName, dirName)
 
-    if nzbName != "Manual Run" and not fork in SICKBEARD_TORRENT:
-        # Now check if movie files exist in destination:
+        # Now check if movie files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
             for file in filenames:
