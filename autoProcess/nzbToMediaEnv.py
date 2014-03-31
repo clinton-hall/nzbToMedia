@@ -15,7 +15,7 @@ fork_failed_torrent = "failed-torrent"
 
 forks = {}
 forks[fork_default] = {"dir": None, "process": None}
-forks[fork_failed] = {"dir": None, "failed": None}
+forks[fork_failed] = {"dirName": None, "failed": None}
 forks[fork_failed_torrent] = {"dir": None, "failed": None, "process_method": None}
 
 SICKBEARD_FAILED = [fork_failed, fork_failed_torrent]

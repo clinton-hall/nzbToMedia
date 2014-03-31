@@ -305,8 +305,8 @@ def addnzbget():
 
 
     section = "SickBeard"
-    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'WAIT_FOR']
-    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'wait_for']
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'WAIT_FOR', 'PROCESS_METHOD']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'wait_for', 'process_method']
     for index in range(len(envKeys)):
         key = 'NZBPO_SB' + envKeys[index]
         if os.environ.has_key(key):

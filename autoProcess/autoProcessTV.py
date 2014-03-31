@@ -106,6 +106,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     except (ConfigParser.NoOptionError, ValueError):
         nzbExtractionBy = "Downloader"
 
+    try:
+        process_method = config.get(section, "process_method")
+    except ConfigParser.NoOptionError:
+        process_method = None
+
     TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
@@ -152,17 +157,24 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
+    # don't have sickbeard display any output
     params['quiet'] = 1
 
     for param in copy.copy(params):
         if param is "failed":
-            params["failed"] = failed
+            params[param] = failed
 
         if param is "dirName":
-            params["dirName"] = dirName
+            params[param] = dirName
 
         if param is "dir":
-            params["dir"] = dirName
+            params[param] = dirName
+
+        if param is "process_method":
+            if process_method:
+                params[param] = process_method
+            else:
+                del params[param]
 
     if nzbName != None:
         params['nzbName'] = nzbName
