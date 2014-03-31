@@ -117,6 +117,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0
 
+# SickBeard process method.
+#
+# set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
+#sbprocess_method=
+
 ## HeadPhones
 
 # HeadPhones script category.

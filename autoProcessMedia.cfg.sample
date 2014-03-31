@@ -37,6 +37,7 @@ fork = auto
 delete_failed = 0
 nzbExtractionBy = Downloader
 Torrent_ForceLink = 1
+process_method =
 
 
 [HeadPhones]
