@@ -51,7 +51,7 @@ def autoFork(fork=None):
     try:
         fork = forks.items()[forks.keys().index(config.get(section, "fork"))]
     except:
-        fork = forks.items()[forks.keys().index(fork_default)]
+        fork = "auto"
 
     myOpener = AuthURLOpener(username, password)
 
