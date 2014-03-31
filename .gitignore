@@ -4,3 +4,4 @@ autoProcessMedia.cfg
 *.pyo
 
 postprocess.log
+/.idea/

@@ -1,18 +1,13 @@
-import sys
 import urllib
-import os
-import ConfigParser
 import logging
-import shutil
-import time
-import socket
 import copy
 
 import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
-from autoSickBeardFork import autoFork
+from autoProcess.autoSickBeardFork import autoFork
+
 
 Logger = logging.getLogger()
 
@@ -69,22 +64,18 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
-
     try:
         web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
-
     try:
         watch_dir = config.get(section, "watch_dir")
     except ConfigParser.NoOptionError:
         watch_dir = ""
-
     try:
         transcode = int(config.get("Transcoder", "transcode"))
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
-
     try:
         delete_failed = int(config.get(section, "delete_failed"))
     except (ConfigParser.NoOptionError, ValueError):
@@ -105,7 +96,6 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         nzbExtractionBy = config.get(section, "nzbExtractionBy")
     except (ConfigParser.NoOptionError, ValueError):
         nzbExtractionBy = "Downloader"
-
     try:
         process_method = config.get(section, "process_method")
     except ConfigParser.NoOptionError:
@@ -163,10 +153,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         if param is "failed":
             params[param] = failed
 
-        if param is "dirName":
-            params[param] = dirName
-
-        if param is "dir":
+        if param is "dirName" or param is "dir":
             params[param] = dirName
 
         if param is "process_method":
@@ -174,12 +161,6 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
                 params[param] = process_method
             else:
                 del params[param]
-
-        if param is "process":
-            params["process"] = None
-
-        if param is "process_method":
-            params["process_method"] = None
 
     if nzbName != None:
         params['nzbName'] = nzbName

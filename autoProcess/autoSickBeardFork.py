@@ -49,12 +49,9 @@ def autoFork(fork=None):
         web_root = ""
 
     try:
-        fork = config.get(section, "fork")
-        if not fork in "auto":
-            fork = forks[fork] \
-                if fork in SICKBEARD_FAILED or SICKBEARD_TORRENT else forks[fork_default]
-    except ConfigParser.NoOptionError:
-        fork = forks[fork_default]
+        fork = forks.items()[forks.keys().index(config.get(section, "fork"))]
+    except:
+        fork = forks.items()[forks.keys().index(fork_default)]
 
     myOpener = AuthURLOpener(username, password)
 
@@ -63,20 +60,24 @@ def autoFork(fork=None):
     else:
         protocol = "http://"
 
-    if fork in "auto":
+    detected = False
+    if fork is "auto":
         Logger.info("Attempting to auto-detect SickBeard fork")
-        for f in forks.iteritems():
-            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(f[1])
+        for fork in sorted(forks.iteritems()):
+            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
 
             # attempting to auto-detect fork
             urlObj = myOpener.openit(url)
 
             if urlObj.getcode() == 200:
-                Logger.info("SickBeard fork auto-detection successful. Fork set to %s", f[0])
-                return f[0], f[1]
+                detected = True
+                break
 
-        # failed to auto-detect fork
-        Logger.info("SickBeard fork auto-detection failed")
+        if detected:
+            Logger.info("SickBeard fork auto-detection successful ...")
+        else:
+            Logger.info("SickBeard fork auto-detection failed")
+            fork = forks.items()[forks.keys().index(fork_default)]
 
     Logger.info("SickBeard fork set to %s", fork[0])
     return fork[0], fork[1]
