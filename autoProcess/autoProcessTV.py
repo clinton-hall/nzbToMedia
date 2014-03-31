@@ -146,8 +146,10 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
-    # don't have sickbeard display any output
+    # configure SB params to pass
     params['quiet'] = 1
+    if nzbName is not None:
+        params['nzbName'] = nzbName
 
     for param in copy.copy(params):
         if param is "failed":
@@ -162,8 +164,8 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
             else:
                 del params[param]
 
-    if nzbName != None:
-        params['nzbName'] = nzbName
+    # delete any unused params so we don't pass them to SB by mistake
+    [params.pop(k) for k,v in params.iteritems() if v is None]
 
     if status == 0:
         Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
