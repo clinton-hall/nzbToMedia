@@ -58,8 +58,8 @@
 
 # SickBeard fork.
 #
-# set to default or TPB or failed if using the custom "TPB" or "failed fork".
-#sbfork=default
+# set to default or auto to auto-detect the custom fork type.
+#sbfork=auto
 
 # SickBeard Delete Failed Downloads (0, 1).
 #

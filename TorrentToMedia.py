@@ -21,7 +21,7 @@ import autoProcess.autoProcessMovie as autoProcessMovie
 import autoProcess.autoProcessTV as autoProcessTV
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
-from autoSickBeardFork import autoFork
+from autoProcess.autoSickBeardFork import autoFork
 from utorrent.client import UTorrentClient
 from transmissionrpc.client import Client as TransmissionClient
 from synchronousdeluge.client import DelugeClient
@@ -43,6 +43,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+
+    sbFork, sbParams = autoFork()
 
     if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT and Torrent_ForceLink != 1:
         Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
@@ -209,7 +211,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     except:
                         Logger.exception("MAIN: Failed to link file: %s", file)
                 # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not (os.path.splitext(fileName)[1] in ['.720p','.1080p']):
+                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
                     if part == 1: # we only want to extract the primary part.
                         Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)                       
@@ -315,21 +317,18 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     except:
                         Logger.exception("MAIN: Failed to move file: %s", file)
                     continue
+        shutil.rmtree(outputDestination)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if deleteOriginal == 1 and result != 1:
+        if (deleteOriginal == 1 and result != 1) or useLink == 'move': # added uselink = move, if we move files, nothing to resume seeding.
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
             if clientAgent == 'utorrent' and utorrentClass != "":
                 utorrentClass.removedata(inputHash)
-                if not inputCategory in hpCategory:
-                    utorrentClass.remove(inputHash)
+                utorrentClass.remove(inputHash)
             if clientAgent == 'transmission' and TransmissionClass !="":
-                if inputCategory in hpCategory: #don't delete actual files for hp category, just remove torrent.
-                    TransmissionClass.remove_torrent(inputID, False)
-                else:
-                    TransmissionClass.remove_torrent(inputID, True)
+                TransmissionClass.remove_torrent(inputID, True)
             if clientAgent == 'deluge' and delugeClient != "":
                 delugeClient.core.remove_torrent(inputID, True)
         # we always want to resume seeding, for now manually find out what is wrong when extraction fails
@@ -353,7 +352,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 if fileExtension in mediaContainer or fileExtension in metaContainer:
                     num_files_new = num_files_new + 1
                     file_list.append(file)
-        if num_files_new == int(0): 
+        if num_files_new == int(0) or forceClean == 1: 
             Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
             shutil.rmtree(outputDestination)
         else:
@@ -483,6 +482,7 @@ if __name__ == "__main__":
     DelugePWD = config.get("Torrent", "DelugePWD")                                      # mysecretpwr
     
     deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
+    forceClean = int(config.get("Torrent", "forceClean"))                               # 0
     
     compressedContainer = (config.get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
@@ -492,7 +492,6 @@ if __name__ == "__main__":
     
     cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
-    sbFork, sbParams = autoFork(config.get("SickBeard", "fork"))                        # default
     Torrent_ForceLink = int(config.get("SickBeard", "Torrent_ForceLink"))               # 1
     hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics

@@ -1,5 +1,20 @@
 Change_LOG / History
 
+V9.3 XX/XX/2014
+
+Impacts Torrents
+Allow Headphones to remove torrents and data after processing.
+Delete torrent if uselink = move
+Added forceClean for outputDir. Works in file permissions prevent CP/SB from moving files.
+Ignore .x264 from archive "part" checks.
+
+Impacts NZBs
+Fix setting of Mylar config from NZBGet.
+
+Impacts All
+Changes to Couchpotato API for [nosql] added. Keeps aligned with current CouchPotato develop branch.
+Add Auto Detection of SickBeard Fork.
+
 V9.2 05/03/2014
 
 Impacts All
