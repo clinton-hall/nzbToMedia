@@ -19,7 +19,7 @@ def getDirectorySize(directory):
         for file in files:
             filename = os.path.join(path, file)
             dir_size += os.path.getsize(filename)
-    dir_size = dir_size / (1024.0 * 1024.0 * 1024.0) # convert to GB
+    dir_size = dir_size / (1024.0 * 1024.0 * 1024.0) # convert to GiB
     return dir_size
 
 
