@@ -100,7 +100,7 @@
 # SickBeard process Time Per GiB
 #
 # Set the number of minutes to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
-#sbTimePerGiB=5
+#sbTimePerGiB=1
 
 # SickBeard watch directory.
 #
