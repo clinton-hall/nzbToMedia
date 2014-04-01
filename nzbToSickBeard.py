@@ -46,10 +46,10 @@
 # Set the number of seconds to wait before calling post-process in SickBeard.
 #sbdelay=0
 
-# SickBeard wait_for
+# SickBeard process Time Per GiB
 #
-# Set the number of minutes to wait before timing out. If transfering files across drives or network, increase this to longer than the time it takes to copy an episode.
-#sbwait_for=5
+# Set the number of minutes to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
+#sbTimePerGiB=5
 
 # SickBeard watch directory.
 #

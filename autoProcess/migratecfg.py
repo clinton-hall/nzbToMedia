@@ -58,6 +58,8 @@ def migrate():
         option, value = item
         if option == "category": # change this old format
             option = "sbCategory"
+        if option == "wait_for": # remove old format
+            continue
         if option == "failed_fork": # change this old format
             option = "fork"
             if value not in ["default", "failed", "failed-torrent", "auto"]:
@@ -305,8 +307,8 @@ def addnzbget():
 
 
     section = "SickBeard"
-    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'WAIT_FOR', 'PROCESS_METHOD']
-    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'wait_for', 'process_method']
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
     for index in range(len(envKeys)):
         key = 'NZBPO_SB' + envKeys[index]
         if os.environ.has_key(key):

@@ -13,6 +13,15 @@ import linktastic.linktastic as linktastic
 
 Logger = logging.getLogger()
 
+def getDirectorySize(directory):
+    dir_size = 0
+    for (path, dirs, files) in os.walk(directory):
+        for file in files:
+            filename = os.path.join(path, file)
+            dir_size += os.path.getsize(filename)
+    dir_size = dir_size / (1024.0 * 1024.0 * 1024.0) # convert to GB
+    return dir_size
+
 
 def safeName(name):
     safename = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", name) #make this name safe for use in directories for windows etc.

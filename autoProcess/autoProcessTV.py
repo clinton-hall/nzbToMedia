@@ -85,9 +85,9 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     except (ConfigParser.NoOptionError, ValueError):
         delay = 0
     try:
-        wait_for = int(config.get(section, "wait_for"))
+        TimePerGiB = int(config.get(section, "TimePerGiB"))
     except (ConfigParser.NoOptionError, ValueError):
-        wait_for = 5
+        TimePerGiB = 1 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     try:
         SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')
     except (ConfigParser.NoOptionError, ValueError):
@@ -100,10 +100,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         process_method = config.get(section, "process_method")
     except ConfigParser.NoOptionError:
         process_method = None
-
-    TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
-    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
-
+    
     mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config.get("Extensions", "minSampleSize"))
 
@@ -145,6 +142,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
 
     if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
+
+    dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
+    TimeOut = 60 * int(TimePerGiB) * dirSize # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+    TimeOut += 60 # Add an extra minute for over-head/processing/metadata.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
     # configure SB params to pass
     params['quiet'] = 1
