@@ -167,7 +167,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
                 del params[param]
 
     # delete any unused params so we don't pass them to SB by mistake
-    [params.pop(k) for k,v in params.iteritems() if v is None]
+    [params.pop(k) for k,v in params.items() if v is None]
 
     if status == 0:
         Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
