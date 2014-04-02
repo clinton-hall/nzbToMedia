@@ -4,7 +4,6 @@ import logging
 from nzbToMediaConfig import *
 from autoProcess.nzbToMediaEnv import *
 
-
 Logger = logging.getLogger()
 
 class AuthURLOpener(urllib.FancyURLopener):
@@ -57,7 +56,7 @@ def autoFork(fork=None):
         protocol = "http://"
 
     detected = False
-    if fork is "auto":
+    if fork == "auto":
         Logger.info("Attempting to auto-detect SickBeard fork")
         for fork in sorted(forks.iteritems()):
             url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
