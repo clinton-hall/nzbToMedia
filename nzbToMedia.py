@@ -407,7 +407,7 @@ else: # only CPS and SB supports this manual run for now.
     nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
 
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
-    nzbDir, status, inputCategory = ('Manual Run', 0, sbCategory[0])
+    nzbDir, inputName, status, inputCategory = ('Manual Run', None, 0, sbCategory[0])
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
