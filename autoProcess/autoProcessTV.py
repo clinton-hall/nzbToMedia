@@ -127,7 +127,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
     # auto-detect fork type
     fork, params = autoFork()
 
-    if fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+    if nzbName and fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
