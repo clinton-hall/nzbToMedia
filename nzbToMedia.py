@@ -399,11 +399,15 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+")
     clientAgent = "sabnzbd"
     nzbDir, inputName, status, inputCategory, download_id = (sys.argv[1], sys.argv[2], sys.argv[7], sys.argv[5], '')
-else: # only CPS supports this manual run for now.
-    Logger.warn("MAIN: Invalid number of arguments received from client.")
-    Logger.info("MAIN: Running autoProcessMovie as a manual run...")
+else: # only CPS and SB supports this manual run for now.
     clientAgent = "manual"
+    Logger.warn("MAIN: Invalid number of arguments received from client.")
+
+    Logger.info("MAIN: Running autoProcessMovie as a manual run...")
     nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
+
+    Logger.info("MAIN: Running autoProcessTV as a manual run...")
+    nzbDir, status, inputCategory = ('Manual Run', 0, sbCategory[0])
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)

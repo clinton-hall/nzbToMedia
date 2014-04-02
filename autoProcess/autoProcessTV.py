@@ -37,10 +37,9 @@ def delete(dirName):
         Logger.exception("Unable to delete folder %s", dirName)
 
 
-def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputCategory=None):
+def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
 
     status = int(failed)
-
 
     Logger.info("Loading config from %s", CONFIG_FILE)
 
@@ -48,13 +47,10 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
 
-
-
     section = "SickBeard"
     if inputCategory != None and config().has_section(inputCategory):
         section = inputCategory
 
-    watch_dir = ""
     host = config().get(section, "host")
     port = config().get(section, "port")
     username = config().get(section, "username")
@@ -100,7 +96,22 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         process_method = config().get(section, "process_method")
     except config.NoOptionError:
         process_method = None
-    
+
+    # configure dirName for manual run
+    try:
+        if dirName == 'Manual Run':
+            delay = 0
+            if watch_dir != "" and (not host in ['localhost', '127.0.0.1']):
+                dirName = watch_dir
+            else:
+                dirName = config().get("Torrent", "outputDirectory")
+
+            # check if path is valid
+            if not os.path.exists(dirName):
+                return 1  # failure
+    except config.NoOptionError:
+        return 1  # failure
+
     mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config().get("Extensions", "minSampleSize"))
 
@@ -117,11 +128,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     # auto-detect fork type
     fork, params = autoFork()
 
-    if nzbName != "Manual Run" and (not fork in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination")):
+    if fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        # Now check if movie files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
+        # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
         video = int(0)
         for dirpath, dirnames, filenames in os.walk(dirName):
             for file in filenames:
@@ -140,9 +151,6 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
             status = int(1)
             failed = True
 
-    if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
-        dirName = watch_dir
-
     dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
     TimeOut = int(TimePerGiB) * dirSize # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
     TimeOut += 60 # Add an extra minute for over-head/processing/metadata.
@@ -154,13 +162,13 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         params['nzbName'] = nzbName
 
     for param in copy.copy(params):
-        if param is "failed":
+        if param == "failed":
             params[param] = failed
 
-        if param is "dirName" or param is "dir":
+        if param in ["dirName", "dir"]:
             params[param] = dirName
 
-        if param is "process_method":
+        if param == "process_method":
             if process_method:
                 params[param] = process_method
             else:

@@ -5,3 +5,4 @@ autoProcessMedia.cfg
 
 postprocess.log
 /.idea/
+*.cfg.old

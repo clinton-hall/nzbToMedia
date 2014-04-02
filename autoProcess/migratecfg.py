@@ -7,21 +7,21 @@ def migrate():
 
     section = "CouchPotato"
     for option, value in configold.items(section) or config(MOVIE_CONFIG_FILE).items(section):
-        if option is "category": # change this old format
+        if option == "category": # change this old format
             option = "cpsCategory"
-        if option is "outputDirectory": # move this to new location format
+        if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
         if option in ["username", "password" ]: # these are no-longer needed.
             continue
-        if option is "cpsCategory":
+        if option == "cpsCategory":
             categories.extend(value.split(','))
         confignew.set(section, option, value)
 
     section = "SickBeard"
     for option, value in configold.items(section) or config(TV_CONFIG_FILE).items(section):
-        if option is "category": # change this old format
+        if option == "category": # change this old format
             option = "sbCategory"
         if option == "wait_for": # remove old format
             continue
@@ -29,81 +29,81 @@ def migrate():
             option = "fork"
             if value not in ["default", "failed", "failed-torrent", "auto"]:
                 value = "auto"
-        if option is "fork" and value not in ["default", "failed", "failed-torrent", "auto"]:
+        if option == "fork" and value not in ["default", "failed", "failed-torrent", "auto"]:
             value = "auto"
-        if option is "outputDirectory": # move this to new location format
+        if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)
             continue
-        if option is "sbCategory":
+        if option == "sbCategory":
             categories.extend(value.split(','))
         confignew.set(section, option, value) 
 
     for section in configold.sections():
-        if section is "HeadPhones":
+        if section == "HeadPhones":
             if option in ["username", "password" ]:
                 continue
-            if option is "hpCategory":
+            if option == "hpCategory":
                 categories.extend(value.split(','))
             confignew.set(section, option, value)
 
-        if section is "Mylar":
+        if section == "Mylar":
             if option in "mlCategory":
                 categories.extend(value.split(','))
             confignew.set(section, option, value)
 
-        if section is "Gamez":
+        if section == "Gamez":
             if option in ["username", "password" ]: # these are no-longer needed.
                 continue
             if option == "gzCategory":
                 categories.extend(value.split(','))
             confignew.set(section, option, value)
 
-        if section is "Torrent":
+        if section == "Torrent":
             if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
                 section = "Extensions" # these were moved
-            if option is "useLink": # Sym links supported now as well.
+            if option == "useLink": # Sym links supported now as well.
                 num_value = int(value or 0)
-                if num_value is 1:
+                if num_value == 1:
                     value = "hard"
                 else:
                     value = "no"
             confignew.set(section, option, value)
 
-        if section is "Extensions":
+        if section == "Extensions":
             confignew.set(section, option, value)
 
-        if section is "Transcoder":
+        if section == "Transcoder":
             confignew.set(section, option, value)
 
-        if section is "WakeOnLan":
+        if section == "WakeOnLan":
             confignew.set(section, option, value)
 
-        if section is "UserScript":
+        if section == "UserScript":
             confignew.set(section, option, value)
 
-        if section is "ASCII":
+        if section == "ASCII":
             confignew.set(section, option, value)
 
-        if section is "passwords":
+        if section == "passwords":
             confignew.set(section, option, value)
 
-        if section is "loggers":
+        if section == "loggers":
             confignew.set(section, option, value)
 
-        if section is "handlers":
+        if section == "handlers":
             confignew.set(section, option, value)
 
-        if section is "formatters":
+        if section == "formatters":
             confignew.set(section, option, value)
 
-        if section is "logger_root":
+        if section == "logger_root":
             confignew.set(section, option, value)
 
-        if section is "handler_console":
+        if section == "handler_console":
             confignew.set(section, option, value)
 
-        if section is "formatter_generic":
+        if section == "formatter_generic":
             confignew.set(section, option, value)
 
     for section in categories:
