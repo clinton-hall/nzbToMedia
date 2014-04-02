@@ -297,10 +297,10 @@ elif config():
     migratecfg.migrate()
 
 # check to write settings from nzbGet UI to autoProcessMedia.cfg.
-if os.environ.has_key('NZBOP_SCRIPTDIR'):
+if config() and os.environ.has_key('NZBOP_SCRIPTDIR'):
     migratecfg.addnzbget()
 
-nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+nzbtomedia_configure_logging(LOG_FILE)
 Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log

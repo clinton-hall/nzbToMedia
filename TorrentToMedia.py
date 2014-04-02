@@ -436,7 +436,7 @@ if __name__ == "__main__":
         migratecfg.migrate()
     
     # Logging
-    nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+    nzbtomedia_configure_logging(LOG_FILE)
     Logger = logging.getLogger(__name__)
 
     Logger.info("====================") # Seperate old from new log
