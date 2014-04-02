@@ -43,6 +43,11 @@
 # set as required to ensure correct processing.
 #hpdelay=65
 
+# HeadPhones process Time Per GiB
+#
+# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
+#hpTimePerGiB=60
+
 ## WakeOnLan
 
 # use WOL (0, 1).

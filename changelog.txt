@@ -7,6 +7,7 @@ Allow Headphones to remove torrents and data after processing.
 Delete torrent if uselink = move
 Added forceClean for outputDir. Works in file permissions prevent CP/SB from moving files.
 Ignore .x264 from archive "part" checks.
+Added dynamic timeout based on directory size.
 
 Impacts NZBs
 Fix setting of Mylar config from NZBGet.

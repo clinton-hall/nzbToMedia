@@ -23,7 +23,9 @@ def migrate():
     for option, value in configold.items(section) or config(TV_CONFIG_FILE).items(section):
         if option is "category": # change this old format
             option = "sbCategory"
-        if option is "failed_fork": # change this old format
+        if option == "wait_for": # remove old format
+            continue
+        if option == "failed_fork": # change this old format
             option = "fork"
             if value not in ["default", "failed", "failed-torrent", "auto"]:
                 value = "auto"
@@ -118,15 +120,15 @@ def migrate():
             os.unlink(cfgbak_name)
         os.rename(CONFIG_FILE, cfgbak_name)
 
-    # writing our configuration file to 'autoProcessMedia.cfg.sample'
+    # writing our configuration file to 'autoProcessMedia.cfg'
     with open(CONFIG_FILE, 'wb') as configFile:
         confignew.write(configFile)
 
 def addnzbget():
     confignew = config()
     section = "CouchPotato"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR']
-    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
+    cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
     for index in range(len(envKeys)):
         key = 'NZBPO_CPS' + envKeys[index]
         if os.environ.has_key(key):
@@ -136,8 +138,8 @@ def addnzbget():
 
 
     section = "SickBeard"
-    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'WAIT_FOR', 'PROCESS_METHOD']
-    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'wait_for', 'process_method']
+    envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
+    cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
     for index in range(len(envKeys)):
         key = 'NZBPO_SB' + envKeys[index]
         if os.environ.has_key(key):
@@ -146,8 +148,8 @@ def addnzbget():
             confignew.set(section, option, value)
 
     section = "HeadPhones"
-    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY']
-    cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay']
+    envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
+    cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
     for index in range(len(envKeys)):
         key = 'NZBPO_HP' + envKeys[index]
         if os.environ.has_key(key):
@@ -204,6 +206,13 @@ def addnzbget():
             option = cfgKeys[index]
             value = os.environ[key]
             confignew.set(section, option, value)
+
+    # create a backup of our old config
+    if os.path.isfile(CONFIG_FILE):
+        cfgbak_name = CONFIG_FILE + ".old"
+        if os.path.isfile(cfgbak_name):  # remove older backups
+            os.unlink(cfgbak_name)
+        os.rename(CONFIG_FILE, cfgbak_name)
 
     # writing our configuration file to 'autoProcessMedia.cfg'
     with open(CONFIG_FILE, 'wb') as configFile:

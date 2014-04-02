@@ -12,9 +12,10 @@ port = 5050
 ssl = 0
 web_root =
 delay = 65
+TimePerGiB = 60
 method = renamer
 delete_failed = 0
-wait_for = 5
+wait_for = 2
 #### Set to 1 if CouchPotatoServer is running on a different server to your NZB client
 remoteCPS = 0
 
@@ -31,7 +32,7 @@ password =
 web_root =
 ssl = 0
 delay = 0
-wait_for = 5
+TimePerGiB = 60
 watch_dir =
 fork = auto
 delete_failed = 0
@@ -51,6 +52,7 @@ port = 8181
 ssl = 0
 web_root =
 delay = 65
+TimePerGiB = 60
 
 
 [Mylar]

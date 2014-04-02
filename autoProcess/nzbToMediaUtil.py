@@ -13,6 +13,16 @@ from nzbToMediaConfig import *
 
 Logger = logging.getLogger()
 
+def getDirectorySize(directory):
+    dir_size = 0
+    for (path, dirs, files) in os.walk(directory):
+        for file in files:
+            filename = os.path.join(path, file)
+            dir_size += os.path.getsize(filename)
+    dir_size = dir_size / (1024.0 * 1024.0 * 1024.0) # convert to GiB
+    return dir_size
+
+
 def safeName(name):
     safename = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", name) #make this name safe for use in directories for windows etc.
     return safename
@@ -339,7 +349,7 @@ def WakeUp():
     else:
         Logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
 
-def converto_to_ascii(nzbName, dirName):
+def convert_to_ascii(nzbName, dirName):
     if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return nzbName, dirName

@@ -85,9 +85,9 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     except (config.NoOptionError, ValueError):
         delay = 0
     try:
-        wait_for = int(config().get(section, "wait_for"))
+        TimePerGiB = int(config().get(section, "TimePerGiB"))
     except (config.NoOptionError, ValueError):
-        wait_for = 5
+        TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     try:
         SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')
     except (config.NoOptionError, ValueError):
@@ -100,10 +100,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
         process_method = config().get(section, "process_method")
     except config.NoOptionError:
         process_method = None
-
-    TimeOut = 60 * int(wait_for) # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
-    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
-
+    
     mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config().get("Extensions", "minSampleSize"))
 
@@ -122,7 +119,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
 
     if nzbName != "Manual Run" and (not fork in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and not nzbExtractionBy == "Destination")):
         process_all_exceptions(nzbName.lower(), dirName)
-        nzbName, dirName = converto_to_ascii(nzbName, dirName)
+        nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
         # Now check if movie files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
         video = int(0)
@@ -146,6 +143,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
     if watch_dir != "" and (not host in ['localhost', '127.0.0.1'] or nzbName == "Manual Run"):
         dirName = watch_dir
 
+    dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
+    TimeOut = int(TimePerGiB) * dirSize # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
+    TimeOut += 60 # Add an extra minute for over-head/processing/metadata.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
+
     # configure SB params to pass
     params['quiet'] = 1
     if nzbName is not None:
@@ -165,7 +167,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputC
                 del params[param]
 
     # delete any unused params so we don't pass them to SB by mistake
-    [params.pop(k) for k,v in params.iteritems() if v is None]
+    [params.pop(k) for k,v in params.items() if v is None]
 
     if status == 0:
         Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
