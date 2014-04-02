@@ -24,7 +24,7 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
-def autoFork(fork=None):
+def autoFork():
 
     # config settings
     section = "SickBeard"
@@ -62,7 +62,11 @@ def autoFork(fork=None):
             url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
 
             # attempting to auto-detect fork
-            urlObj = myOpener.openit(url)
+            try:
+                urlObj = myOpener.openit(url)
+            except IOError, e:
+                Logger.info("Could not connect to SickBeard to perform auto-fork detection!")
+                break
 
             if urlObj.getcode() == 200:
                 detected = True

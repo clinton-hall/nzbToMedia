@@ -28,7 +28,9 @@ def safeName(name):
     return safename
 
 
-def nzbtomedia_configure_logging(logfile):
+def nzbtomedia_configure_logging(logfile=None):
+    if not logfile:
+        logfile = LOG_FILE
     logging.config.fileConfig(CONFIG_FILE)
     fileHandler = logging.handlers.RotatingFileHandler(logfile, mode='a', maxBytes=1048576, backupCount=1, encoding='utf-8', delay=True)
     fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')

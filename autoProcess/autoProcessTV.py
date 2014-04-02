@@ -8,7 +8,6 @@ from autoProcess.autoSickBeardFork import autoFork
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 
-
 Logger = logging.getLogger()
 
 class AuthURLOpener(urllib.FancyURLopener):
