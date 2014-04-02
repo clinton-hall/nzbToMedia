@@ -413,6 +413,7 @@ if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
+    result = 0
     if clientAgent == "manual":
         section = "SickBeard"
         try:
@@ -427,18 +428,17 @@ elif inputCategory in sbCategory:
         # set dirName
         dirNames = None
         if watch_dir != "":
-            dirNames = [os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if os.path.isdir(os.path.join(watch_dir, o))]
+            if os.path.exists(watch_dir):
+                dirNames = [os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if os.path.isdir(os.path.join(watch_dir, o))]
         elif outputDirectory != "":
-            dirNames = [os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if os.path.isdir(os.path.join(outputDirectory, o))]
+            if os.path.exists(outputDirectory):
+                dirNames = [os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if os.path.isdir(os.path.join(outputDirectory, o))]
 
         for dirName in dirNames:
-            if os.path.exists(dirName):
-                nzbDir = inputName = dirName
-
-                Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-                result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-                if result != 0:
-                    break
+            Logger.info("MAIN: Calling Sick-Beard to post-process: %s", dirName)
+            result = autoProcessTV.processEpisode(dirName, dirName, status, clientAgent, inputCategory)
+            if result != 0:
+                break
     else:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
