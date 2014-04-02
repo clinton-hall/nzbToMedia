@@ -13,9 +13,9 @@ MOVIE_CONFIG_FILE = os.path.join(PROG_DIR, "autoProcessMovie.cfg")
 TV_CONFIG_FILE = os.path.join(PROG_DIR, "autoProcessTv.cfg")
 LOG_FILE = os.path.join(PROG_DIR, "postprocess.log")
 
-class configParser(object):
+class config(object):
 
-    # link error handlers
+    # link error handling classes
     Error = ConfigParser.Error
     NoSectionError = ConfigParser.NoSectionError
     NoOptionError = ConfigParser.NoOptionError
@@ -27,14 +27,12 @@ class configParser(object):
     ParsingError = ConfigParser.ParsingError
     MissingSectionHeaderError = ConfigParser.MissingSectionHeaderError
 
-    @staticmethod
-    def config(*file):
-        # if no file specified then load our default config
-        if not file:file = CONFIG_FILE
+    def __new__(cls, *file):
+        if not file:
+            file = CONFIG_FILE
 
         # load config
-        parser = ConfigParser.ConfigParser()
-        parser.optionxform = str
-        if parser.read(file):return parser
-
-config = configParser.config
+        config = ConfigParser.ConfigParser()
+        config.optionxform = str
+        if config.read(file):
+            return config
