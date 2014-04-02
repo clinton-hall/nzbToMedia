@@ -37,74 +37,79 @@ def migrate():
             continue
         if option == "sbCategory":
             categories.extend(value.split(','))
-        confignew.set(section, option, value) 
+        confignew.set(section, option, value)
 
     for section in configold.sections():
-        if section == "HeadPhones":
-            if option in ["username", "password" ]:
-                continue
-            if option == "hpCategory":
-                categories.extend(value.split(','))
-            confignew.set(section, option, value)
+        try:
+            for option, value in configold.items(section):
+                if section == "HeadPhones":
+                    if option in ["username", "password" ]:
+                        continue
+                    if option == "hpCategory":
+                        categories.extend(value.split(','))
+                    confignew.set(section, option, value)
 
-        if section == "Mylar":
-            if option in "mlCategory":
-                categories.extend(value.split(','))
-            confignew.set(section, option, value)
+                if section == "Mylar":
+                    if option in "mlCategory":
+                        categories.extend(value.split(','))
+                    confignew.set(section, option, value)
 
-        if section == "Gamez":
-            if option in ["username", "password" ]: # these are no-longer needed.
-                continue
-            if option == "gzCategory":
-                categories.extend(value.split(','))
-            confignew.set(section, option, value)
+                if section == "Gamez":
+                    if option in ["username", "password" ]: # these are no-longer needed.
+                        continue
+                    if option == "gzCategory":
+                        categories.extend(value.split(','))
+                    confignew.set(section, option, value)
 
-        if section == "Torrent":
-            if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
-                section = "Extensions" # these were moved
-            if option == "useLink": # Sym links supported now as well.
-                num_value = int(value or 0)
-                if num_value == 1:
-                    value = "hard"
-                else:
-                    value = "no"
-            confignew.set(section, option, value)
+                if section == "Torrent":
+                    if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
+                        section = "Extensions" # these were moved
+                    if option == "useLink": # Sym links supported now as well.
+                        if isinstance(value, int):
+                            num_value = int(value)
+                            if num_value == 1:
+                                value = "hard"
+                            else:
+                                value = "no"
+                    confignew.set(section, option, value)
 
-        if section == "Extensions":
-            confignew.set(section, option, value)
+                if section == "Extensions":
+                    confignew.set(section, option, value)
 
-        if section == "Transcoder":
-            confignew.set(section, option, value)
+                if section == "Transcoder":
+                    confignew.set(section, option, value)
 
-        if section == "WakeOnLan":
-            confignew.set(section, option, value)
+                if section == "WakeOnLan":
+                    confignew.set(section, option, value)
 
-        if section == "UserScript":
-            confignew.set(section, option, value)
+                if section == "UserScript":
+                    confignew.set(section, option, value)
 
-        if section == "ASCII":
-            confignew.set(section, option, value)
+                if section == "ASCII":
+                    confignew.set(section, option, value)
 
-        if section == "passwords":
-            confignew.set(section, option, value)
+                if section == "passwords":
+                    confignew.set(section, option, value)
 
-        if section == "loggers":
-            confignew.set(section, option, value)
+                if section == "loggers":
+                    confignew.set(section, option, value)
 
-        if section == "handlers":
-            confignew.set(section, option, value)
+                if section == "handlers":
+                    confignew.set(section, option, value)
 
-        if section == "formatters":
-            confignew.set(section, option, value)
+                if section == "formatters":
+                    confignew.set(section, option, value)
 
-        if section == "logger_root":
-            confignew.set(section, option, value)
+                if section == "logger_root":
+                    confignew.set(section, option, value)
 
-        if section == "handler_console":
-            confignew.set(section, option, value)
+                if section == "handler_console":
+                    confignew.set(section, option, value)
 
-        if section == "formatter_generic":
-            confignew.set(section, option, value)
+                if section == "formatter_generic":
+                    confignew.set(section, option, value)
+        except config.InterpolationMissingOptionError:
+            pass
 
     for section in categories:
         try:
