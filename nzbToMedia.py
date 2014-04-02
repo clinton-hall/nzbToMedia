@@ -53,10 +53,15 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
 
+# CouchPotato process Time Per GiB
+#
+# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
+#cpsTimePerGiB=60
+
 # CouchPotato wait_for
 #
-# Set the number of minutes to wait before timing out. If transfering files across drives or network, increase this to longer than the time it takes to copy a movie.
-#cpswait_for=5
+# Set the number of minutes to wait after calling the renamer, to check the movie has changed status.
+#cpswait_for=2
 
 # CouchPotatoServer and NZBGet are a different system (0, 1).
 #
@@ -99,8 +104,8 @@
 
 # SickBeard process Time Per GiB
 #
-# Set the number of minutes to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
-#sbTimePerGiB=1
+# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
+#sbTimePerGiB=60
 
 # SickBeard watch directory.
 #
@@ -152,6 +157,11 @@
 #
 # set as required to ensure correct processing.
 #hpdelay=65
+
+# HeadPhones process Time Per GiB
+#
+# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
+#hpTimePerGiB=60
 
 ## Mylar
 

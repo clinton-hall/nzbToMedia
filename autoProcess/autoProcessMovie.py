@@ -188,22 +188,22 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     method = config.get(section, "method")
     delete_failed = int(config.get(section, "delete_failed"))
     wait_for = int(config.get(section, "wait_for"))
-
+    try:
+        TimePerGiB = int(config.get(section, "TimePerGiB"))
+    except (ConfigParser.NoOptionError, ValueError):
+        TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     try:
         ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
-
     try:
         web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
-        
     try:    
         transcode = int(config.get("Transcoder", "transcode"))
     except (ConfigParser.NoOptionError, ValueError):
         transcode = 0
-
     try:
         remoteCPS = int(config.get(section, "remoteCPS"))
     except (ConfigParser.NoOptionError, ValueError):
@@ -226,10 +226,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     movie_id, imdbid, download_id, initial_status, initial_release_status = get_movie_info(baseURL, imdbid, download_id) # get the CPS database movie id for this movie.
     
     process_all_exceptions(nzbName.lower(), dirName)
-    nzbName, dirName = converto_to_ascii(nzbName, dirName)
-
-    TimeOut2 = int(wait_for) * 60 # If transfering files across directories, it now appears CouchPotato can take a while to confirm this url request... Try using wait_for timing.
-    socket.setdefaulttimeout(int(TimeOut2)) #initialize socket timeout. We may now be able to remove the delays from the wait_for section below?
+    nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
     if status == 0:
         if transcode == 1:
@@ -248,6 +245,11 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
                     command = command + "/?downloader=" + clientAgent + "&download_id=" + download_id
                 else:
                     command = command + "/?media_folder=" + urllib.quote(dirName) + "&downloader=" + clientAgent + "&download_id=" + download_id
+
+        dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
+        TimeOut2 = int(TimePerGiB) * dirSize # Couchpotato needs to complete all moving and renaming before returning the status.
+        TimeOut2 += 60 # Add an extra minute for over-head/processing/metadata.
+        socket.setdefaulttimeout(int(TimeOut2)) #initialize socket timeout. We may now be able to remove the delays from the wait_for section below? If true, this should exit on first loop.
 
         url = baseURL + command
 

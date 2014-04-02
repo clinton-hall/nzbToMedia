@@ -354,7 +354,7 @@ def WakeUp():
     else:
         Logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
 
-def converto_to_ascii(nzbName, dirName):
+def convert_to_ascii(nzbName, dirName):
     config = ConfigParser.ConfigParser()
     configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
     if not os.path.isfile(configFilename):

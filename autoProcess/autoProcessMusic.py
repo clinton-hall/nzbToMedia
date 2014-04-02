@@ -13,7 +13,6 @@ from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
-socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
 def process(dirName, nzbName=None, status=0, inputCategory=None):
 
@@ -36,17 +35,18 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     port = config.get(section, "port")
     apikey = config.get(section, "apikey")
     delay = float(config.get(section, "delay"))
-
     try:
         ssl = int(config.get(section, "ssl"))
     except (ConfigParser.NoOptionError, ValueError):
         ssl = 0
-
     try:
         web_root = config.get(section, "web_root")
     except ConfigParser.NoOptionError:
         web_root = ""
-
+    try:
+        TimePerGiB = int(config.get(section, "TimePerGiB"))
+    except (ConfigParser.NoOptionError, ValueError):
+        TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     if ssl:
         protocol = "https://"
     else:
@@ -55,7 +55,12 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     if nzbName == "Manual Run":
         delay = 0
 
-    nzbName, dirName = converto_to_ascii(nzbName, dirName)
+    nzbName, dirName = convert_to_ascii(nzbName, dirName)
+
+    dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
+    TimeOut = int(TimePerGiB) * dirSize # HeadPhones needs to complete all moving/transcoding and renaming before returning the status.
+    TimeOut += 60 # Add an extra minute for over-head/processing/metadata.
+    socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
     baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
 
