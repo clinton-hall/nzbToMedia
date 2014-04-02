@@ -28,8 +28,14 @@ class config(ConfigParser.ConfigParser):
     MissingSectionHeaderError = ConfigParser.MissingSectionHeaderError
 
     def __init__(self, *file):
-        ConfigParser.ConfigParser.__init__(self)
-        self.optionxform = str
-        if not file:
-            file = CONFIG_FILE
-        self.read(file)
+        try:
+            ConfigParser.ConfigParser.__init__(self)
+            self.optionxform = str
+            if not file:
+                file = CONFIG_FILE
+            if self.read(file):
+                pass
+            else:
+                raise self.Error('Cannot open configuration file')
+        except IOError, error:
+            exit(error)
