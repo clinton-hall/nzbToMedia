@@ -455,3 +455,26 @@ def parse_args(clientAgent):
     if not parseFunc:
         raise RuntimeError("Could not find client-agent")
     return parseFunc(sys.argv)
+
+def get_dirnames(section, category):
+    try:
+        watch_dir = config().get(section, "watch_dir")
+    except config.NoOptionError:
+        watch_dir = ""
+    try:
+        outputDirectory = os.path.join(config().get("Torrent", "outputDirectory"), category)
+    except config.NoOptionError:
+        outputDirectory = ""
+
+    # set dirName
+    dirNames = None
+    if watch_dir != "":
+        if os.path.exists(watch_dir):
+            dirNames = [os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
+                        os.path.isdir(os.path.join(watch_dir, o))]
+    elif outputDirectory != "":
+        if os.path.exists(outputDirectory):
+            dirNames = [os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
+                        os.path.isdir(os.path.join(outputDirectory, o))]
+
+    return dirNames
