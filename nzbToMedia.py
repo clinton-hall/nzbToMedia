@@ -261,6 +261,7 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
+import shutil
 import logging
 
 import autoProcess.autoProcessComics as autoProcessComics
@@ -278,9 +279,13 @@ POSTPROCESS_SUCCESS = 93
 POSTPROCESS_ERROR = 94
 POSTPROCESS_NONE = 95
 
-# check to migrate old cfg before trying to load.
+# run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
 if config(SAMPLE_CONFIG_FILE):
     migratecfg.migrate()
+elif config():
+    shutil.copyfile(CONFIG_FILE, SAMPLE_CONFIG_FILE)
+    migratecfg.migrate()
+
 # check to write settings from nzbGet UI to autoProcessMedia.cfg.
 if os.environ.has_key('NZBOP_SCRIPTDIR'):
     migratecfg.addnzbget()
