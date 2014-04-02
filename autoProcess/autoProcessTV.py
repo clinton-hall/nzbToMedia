@@ -103,7 +103,8 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
             if watch_dir != "" and (not host in ['localhost', '127.0.0.1']):
                 dirName = watch_dir
             else:
-                dirName = config().get("Torrent", "outputDirectory")
+                sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
+                dirName = os.path.join(config().get("Torrent", "outputDirectory"), sbCategory[0])
 
             # check if path is valid
             if not os.path.exists(dirName):
@@ -117,7 +118,11 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
     if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
         dirName = os.path.split(os.path.normpath(dirName))[0]
 
-    SpecificPath = os.path.join(dirName, nzbName)
+    if nzbName:
+        SpecificPath = os.path.join(dirName, str(nzbName))
+    else:
+        SpecificPath = dirName
+
     cleanName = os.path.splitext(SpecificPath)
     if cleanName[1] == ".nzb":
         SpecificPath = cleanName[0]
@@ -127,9 +132,10 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
     # auto-detect fork type
     fork, params = autoFork()
 
-    if nzbName and fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
-        process_all_exceptions(nzbName.lower(), dirName)
-        nzbName, dirName = convert_to_ascii(nzbName, dirName)
+    if fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+        if nzbName:
+            process_all_exceptions(nzbName.lower(), dirName)
+            nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
         # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
         video = int(0)
@@ -145,6 +151,9 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
                         video = video + 1
         if video > 0:  # Check that a video exists. if not, assume failed.
             flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
+        elif clientAgent == "manual":
+            Logger.warning("No media files found in directory %s to manually process.", dirName)
+            return 0  # Success (as far as this script is concerned)
         else:
             Logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
             status = int(1)
