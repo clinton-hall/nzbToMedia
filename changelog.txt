@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V9.3 XX/XX/2014
+V9.3 XX/04/2014
 
 Impacts Torrents
 Allow Headphones to remove torrents and data after processing.
@@ -14,7 +14,8 @@ Fix setting of Mylar config from NZBGet.
 
 Impacts All
 Changes to Couchpotato API for [nosql] added. Keeps aligned with current CouchPotato develop branch.
-Add Auto Detection of SickBeard Fork.
+Add Auto Detection of SickBeard Fork. Thanks @echel0n
+Added config class, re-coded migratecfg, misc bugfixes and code cleanup. Thanks @echel0n
 
 V9.2 05/03/2014
 
