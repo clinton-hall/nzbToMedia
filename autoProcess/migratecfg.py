@@ -107,11 +107,14 @@ def migrate():
             confignew.set(section, option, value)
 
     for section in categories:
-        if configold.items(section):
-            confignew.add_section(section)
+        try:
+            if configold.items(section):
+                confignew.add_section(section)
 
-            for option, value in configold.items(section):
-                confignew.set(section, option, value)
+                for option, value in configold.items(section):
+                    confignew.set(section, option, value)
+        except config.NoSectionError:
+            continue
 
     # create a backup of our old config
     if os.path.isfile(CONFIG_FILE):
