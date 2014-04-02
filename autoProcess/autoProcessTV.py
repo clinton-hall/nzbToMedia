@@ -26,7 +26,10 @@ class AuthURLOpener(urllib.FancyURLopener):
 
     def openit(self, url):
         self.numTries = 0
-        return urllib.FancyURLopener.open(self, url)
+        try:
+            return urllib.FancyURLopener.open(self, url)
+        except:
+            raise IOError("Unable to open URL")
 
 def delete(dirName):
     Logger.info("Deleting failed files and folder %s", dirName)
@@ -96,33 +99,13 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
     except config.NoOptionError:
         process_method = None
 
-    # configure dirName for manual run
-    try:
-        if dirName == 'Manual Run':
-            delay = 0
-            if watch_dir != "" and (not host in ['localhost', '127.0.0.1']):
-                dirName = watch_dir
-            else:
-                sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
-                dirName = os.path.join(config().get("Torrent", "outputDirectory"), sbCategory[0])
-
-            # check if path is valid
-            if not os.path.exists(dirName):
-                return 1  # failure
-    except config.NoOptionError:
-        return 1  # failure
-
     mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config().get("Extensions", "minSampleSize"))
 
     if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
         dirName = os.path.split(os.path.normpath(dirName))[0]
 
-    if nzbName:
-        SpecificPath = os.path.join(dirName, str(nzbName))
-    else:
-        SpecificPath = dirName
-
+    SpecificPath = os.path.join(dirName, str(nzbName))
     cleanName = os.path.splitext(SpecificPath)
     if cleanName[1] == ".nzb":
         SpecificPath = cleanName[0]
@@ -212,6 +195,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
 
     url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(params)
 
+    if clientAgent == "manual":delay = 0
     Logger.info("Waiting for %s seconds to allow SB to process newly extracted files", str(delay))
 
     time.sleep(delay)

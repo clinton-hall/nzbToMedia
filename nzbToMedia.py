@@ -407,14 +407,41 @@ else: # only CPS and SB supports this manual run for now.
     nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
 
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
-    nzbDir, inputName, status, inputCategory = ('Manual Run', None, 0, sbCategory[0])
+    inputCategory = sbCategory[0]
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
-    Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-    result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+    if clientAgent == "manual":
+        section = "SickBeard"
+        try:
+            watch_dir = config().get(section, "watch_dir")
+        except config.NoOptionError:
+            watch_dir = ""
+        try:
+            outputDirectory = os.path.join(config().get("Torrent", "outputDirectory"), sbCategory[0])
+        except config.NoOptionError:
+            outputDirectory = ""
+
+        # set dirName
+        dirNames = None
+        if watch_dir != "":
+            dirNames = [os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if os.path.isdir(os.path.join(watch_dir, o))]
+        elif outputDirectory != "":
+            dirNames = [os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if os.path.isdir(os.path.join(outputDirectory, o))]
+
+        for dirName in dirNames:
+            if os.path.exists(dirName):
+                nzbDir = inputName = dirName
+
+                Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+                result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+                if result != 0:
+                    break
+    else:
+        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+        result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
 elif inputCategory in hpCategory:
     Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
     result = autoProcessMusic.process(nzbDir, inputName, status, inputCategory)
