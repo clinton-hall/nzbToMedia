@@ -2,11 +2,11 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import sys, datetime
+import sys
+import datetime
 
 from transmissionrpc.constants import PRIORITY, RATIO_LIMIT, IDLE_LIMIT
 from transmissionrpc.utils import Field, format_timedelta
-
 from six import integer_types, string_types, text_type, iteritems
 
 

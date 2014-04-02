@@ -261,22 +261,25 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-import os
-import sys
-import ConfigParser
 import logging
 
-import autoProcess.migratecfg as migratecfg
 import autoProcess.autoProcessComics as autoProcessComics
 import autoProcess.autoProcessGames as autoProcessGames
 import autoProcess.autoProcessMusic as autoProcessMusic
 import autoProcess.autoProcessMovie as autoProcessMovie
 import autoProcess.autoProcessTV as autoProcessTV
+import autoProcess.migratecfg as migratecfg
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 
+# Exit codes used by NZBGet
+POSTPROCESS_PARCHECK = 92
+POSTPROCESS_SUCCESS = 93
+POSTPROCESS_ERROR = 94
+POSTPROCESS_NONE = 95
+
 # check to migrate old cfg before trying to load.
-if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
+if config(SAMPLE_CONFIG_FILE):
     migratecfg.migrate()
 # check to write settings from nzbGet UI to autoProcessMedia.cfg.
 if os.environ.has_key('NZBOP_SCRIPTDIR'):
@@ -290,20 +293,17 @@ Logger.info("nzbToMedia %s", VERSION)
 
 WakeUp()
 
-config = ConfigParser.ConfigParser()
-configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-if not os.path.isfile(configFilename):
+if not config():
     Logger.error("MAIN: You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
     sys.exit(-1)
-# CONFIG FILE
-Logger.info("MAIN: Loading config from %s", configFilename)
-config.read(configFilename)
 
-cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
-sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
-hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
-mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics
-gzCategory = (config.get("Gamez", "gzCategory")).split(',')                         # games
+Logger.info("MAIN: Loading config from %s", CONFIG_FILE)
+
+cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
+sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
+hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
+mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
+gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games
 
 # NZBGet V11+
 # Check if the script is called from nzbget 11.0 or later
@@ -312,11 +312,6 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # NZBGet argv: all passed as environment variables.
     clientAgent = "nzbget"
-    # Exit codes used by NZBGet
-    POSTPROCESS_PARCHECK=92
-    POSTPROCESS_SUCCESS=93
-    POSTPROCESS_ERROR=94
-    POSTPROCESS_NONE=95
 
     # Check nzbget.conf options
     status = 0

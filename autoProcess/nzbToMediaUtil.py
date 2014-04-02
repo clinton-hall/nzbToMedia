@@ -1,18 +1,17 @@
 import logging
 import logging.config
-import os
 import re
 import sys
 import shutil
 import struct
 import socket
 import time
-import ConfigParser
 
 import linktastic.linktastic as linktastic
+from nzbToMediaConfig import *
+
 
 Logger = logging.getLogger()
-
 
 def safeName(name):
     safename = re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", name) #make this name safe for use in directories for windows etc.
@@ -20,9 +19,8 @@ def safeName(name):
 
 
 def nzbtomedia_configure_logging(dirname):
-    logFile = os.path.join(dirname, "postprocess.log")
-    logging.config.fileConfig(os.path.join(dirname, "autoProcessMedia.cfg"))
-    fileHandler = logging.handlers.RotatingFileHandler(logFile, mode='a', maxBytes=1048576, backupCount=1, encoding='utf-8', delay=True)
+    logging.config.fileConfig(CONFIG_FILE)
+    fileHandler = logging.handlers.RotatingFileHandler(LOG_FILE, mode='a', maxBytes=1048576, backupCount=1, encoding='utf-8', delay=True)
     fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
     fileHandler.level = logging.DEBUG
     logging.getLogger().addHandler(fileHandler)
@@ -316,22 +314,18 @@ def TestCon(host, port):
 
 
 def WakeUp():
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-
-    if not os.path.isfile(configFilename):
-        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
+    if not config():
+        Logger.error("You need an autoProcessMedia.config() file - did you rename and edit the .sample?")
         return
 
-    config.read(configFilename)
-    wake = int(config.get("WakeOnLan", "wake"))
+    wake = int(config().get("WakeOnLan", "wake"))
     if wake == 0: # just return if we don't need to wake anything.
         return
-    Logger.info("Loading WakeOnLan config from %s", configFilename)
-    config.get("WakeOnLan", "host")
-    host = config.get("WakeOnLan", "host")
-    port = int(config.get("WakeOnLan", "port"))
-    mac = config.get("WakeOnLan", "mac")
+    Logger.info("Loading WakeOnLan config from %s", CONFIG_FILE)
+    config().get("WakeOnLan", "host")
+    host = config().get("WakeOnLan", "host")
+    port = int(config().get("WakeOnLan", "port"))
+    mac = config().get("WakeOnLan", "mac")
 
     i=1
     while TestCon(host, port) == "Down" and i < 4:
@@ -346,13 +340,11 @@ def WakeUp():
         Logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
 
 def converto_to_ascii(nzbName, dirName):
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    if not os.path.isfile(configFilename):
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return nzbName, dirName
-    config.read(configFilename)
-    ascii_convert = int(config.get("ASCII", "convert"))
+
+    ascii_convert = int(config().get("ASCII", "convert"))
     if ascii_convert == 0 or os.name == 'nt': # just return if we don't want to convert or on windows os and "\" is replaced!.
         return nzbName, dirName
     

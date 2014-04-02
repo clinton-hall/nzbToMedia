@@ -2,7 +2,11 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import re, time, operator, warnings, os
+import re
+import time
+import operator
+import warnings
+import os
 import base64
 import json
 
@@ -12,8 +16,8 @@ from transmissionrpc.utils import LOGGER, get_arguments, make_rpc_name, argument
 from transmissionrpc.httphandler import DefaultHTTPHandler
 from transmissionrpc.torrent import Torrent
 from transmissionrpc.session import Session
-
 from six import PY3, integer_types, string_types, iteritems
+
 
 if PY3:
     from urllib.parse import urlparse

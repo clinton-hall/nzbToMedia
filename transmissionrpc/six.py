@@ -151,7 +151,7 @@ _moved_attributes = [
     MovedAttribute("zip_longest", "itertools", "itertools", "izip_longest", "zip_longest"),
 
     MovedModule("builtins", "__builtin__"),
-    MovedModule("configparser", "ConfigParser"),
+    MovedModule("config", "config"),
     MovedModule("copyreg", "copy_reg"),
     MovedModule("http_cookiejar", "cookielib", "http.cookiejar"),
     MovedModule("http_cookies", "Cookie", "http.cookies"),

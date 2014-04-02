@@ -1,9 +1,8 @@
-import os
 import sys
-import ConfigParser
-sys.path.insert(0, os.path.join(os.path.dirname(sys.argv[0]),'autoProcess/'))
 import logging
-from subprocess import call, Popen, PIPE
+
+from nzbToMediaConfig import *
+from subprocess import call, Popen
 from autoProcess.nzbToMediaUtil import create_destination
 
 
@@ -112,11 +111,9 @@ def extract(filePath, outputDestination):
     # Create outputDestination folder
     create_destination(outputDestination)
 
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    Logger.info("MAIN: Loading config from %s", configFilename)
-    config.read(configFilename)                         
-    passwordsfile = config.get("passwords", "PassWordFile")
+    Logger.info("MAIN: Loading config from %s", CONFIG_FILE)
+
+    passwordsfile = config().get("passwords", "PassWordFile")
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
         passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
     else:

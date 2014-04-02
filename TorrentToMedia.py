@@ -1,15 +1,9 @@
 #!/usr/bin/env python
 
 #System imports
-import os
-import sys
-import ConfigParser
-import shutil
 import logging
 import datetime
-import time
-import re
-from subprocess import call, Popen
+from subprocess import Popen
 
 # Custom imports
 import autoProcess.migratecfg as migratecfg
@@ -450,69 +444,65 @@ if __name__ == "__main__":
 
     WakeUp()
 
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-
-    if not os.path.isfile(configFilename):
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         sys.exit(-1)
 
     # CONFIG FILE
-    Logger.info("MAIN: Loading config from %s", configFilename)
-    config.read(configFilename)
+    Logger.info("MAIN: Loading config from %s", CONFIG_FILE)
                                                                                         # EXAMPLE VALUES:
-    clientAgent = config.get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | rtorrent | other
-    useLink_in = config.get("Torrent", "useLink")                                          # no | hard | sym
-    outputDirectory = config.get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
-    categories = (config.get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
-    noFlatten = (config.get("Torrent", "noFlatten")).split(',')
+    clientAgent = config().get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | rtorrent | other
+    useLink_in = config().get("Torrent", "useLink")                                          # no | hard | sym
+    outputDirectory = config().get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
+    categories = (config().get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
+    noFlatten = (config().get("Torrent", "noFlatten")).split(',')
 
-    uTorrentWEBui = config.get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
-    uTorrentUSR = config.get("Torrent", "uTorrentUSR")                                  # mysecretusr
-    uTorrentPWD = config.get("Torrent", "uTorrentPWD")                                  # mysecretpwr
+    uTorrentWEBui = config().get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
+    uTorrentUSR = config().get("Torrent", "uTorrentUSR")                                  # mysecretusr
+    uTorrentPWD = config().get("Torrent", "uTorrentPWD")                                  # mysecretpwr
 
-    TransmissionHost = config.get("Torrent", "TransmissionHost")                        # localhost
-    TransmissionPort = config.get("Torrent", "TransmissionPort")                        # 8084
-    TransmissionUSR = config.get("Torrent", "TransmissionUSR")                          # mysecretusr
-    TransmissionPWD = config.get("Torrent", "TransmissionPWD")                          # mysecretpwr
+    TransmissionHost = config().get("Torrent", "TransmissionHost")                        # localhost
+    TransmissionPort = config().get("Torrent", "TransmissionPort")                        # 8084
+    TransmissionUSR = config().get("Torrent", "TransmissionUSR")                          # mysecretusr
+    TransmissionPWD = config().get("Torrent", "TransmissionPWD")                          # mysecretpwr
 
-    DelugeHost = config.get("Torrent", "DelugeHost")                                    # localhost
-    DelugePort = config.get("Torrent", "DelugePort")                                    # 8084
-    DelugeUSR = config.get("Torrent", "DelugeUSR")                                      # mysecretusr
-    DelugePWD = config.get("Torrent", "DelugePWD")                                      # mysecretpwr
+    DelugeHost = config().get("Torrent", "DelugeHost")                                    # localhost
+    DelugePort = config().get("Torrent", "DelugePort")                                    # 8084
+    DelugeUSR = config().get("Torrent", "DelugeUSR")                                      # mysecretusr
+    DelugePWD = config().get("Torrent", "DelugePWD")                                      # mysecretpwr
     
-    deleteOriginal = int(config.get("Torrent", "deleteOriginal"))                       # 0
-    forceClean = int(config.get("Torrent", "forceClean"))                               # 0
+    deleteOriginal = int(config().get("Torrent", "deleteOriginal"))                       # 0
+    forceClean = int(config().get("Torrent", "forceClean"))                               # 0
     
-    compressedContainer = (config.get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
-    mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
-    metaContainer = (config.get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
-    minSampleSize = int(config.get("Extensions", "minSampleSize"))                      # 200 (in MB)
-    SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
+    compressedContainer = (config().get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
+    mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
+    metaContainer = (config().get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
+    minSampleSize = int(config().get("Extensions", "minSampleSize"))                      # 200 (in MB)
+    SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
     
-    cpsCategory = (config.get("CouchPotato", "cpsCategory")).split(',')                 # movie
-    sbCategory = (config.get("SickBeard", "sbCategory")).split(',')                     # tv
-    Torrent_ForceLink = int(config.get("SickBeard", "Torrent_ForceLink"))               # 1
-    hpCategory = (config.get("HeadPhones", "hpCategory")).split(',')                    # music
-    mlCategory = (config.get("Mylar", "mlCategory")).split(',')                         # comics
-    gzCategory = (config.get("Gamez", "gzCategory")).split(',')                         # games
+    cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
+    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
+    Torrent_ForceLink = int(config().get("SickBeard", "Torrent_ForceLink"))               # 1
+    hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
+    mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
+    gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games
     categories.extend(cpsCategory)
     categories.extend(sbCategory)
     categories.extend(hpCategory)
     categories.extend(mlCategory)
     categories.extend(gzCategory)
 
-    user_script_categories = config.get("UserScript", "user_script_categories").split(',')         # NONE
+    user_script_categories = config().get("UserScript", "user_script_categories").split(',')         # NONE
     if not "NONE" in user_script_categories: 
-        user_script_mediaExtensions = (config.get("UserScript", "user_script_mediaExtensions")).split(',')
-        user_script = config.get("UserScript", "user_script_path")
-        user_script_param = (config.get("UserScript", "user_script_param")).split(',')
-        user_script_successCodes = (config.get("UserScript", "user_script_successCodes")).split(',')
-        user_script_clean = int(config.get("UserScript", "user_script_clean"))
-        user_delay = int(config.get("UserScript", "delay"))
-        user_script_runOnce = int(config.get("UserScript", "user_script_runOnce"))
+        user_script_mediaExtensions = (config().get("UserScript", "user_script_mediaExtensions")).split(',')
+        user_script = config().get("UserScript", "user_script_path")
+        user_script_param = (config().get("UserScript", "user_script_param")).split(',')
+        user_script_successCodes = (config().get("UserScript", "user_script_successCodes")).split(',')
+        user_script_clean = int(config().get("UserScript", "user_script_clean"))
+        user_delay = int(config().get("UserScript", "delay"))
+        user_script_runOnce = int(config().get("UserScript", "user_script_runOnce"))
     
-    transcode = int(config.get("Transcoder", "transcode"))
+    transcode = int(config().get("Transcoder", "transcode"))
 
     n = 0    
     for arg in sys.argv:

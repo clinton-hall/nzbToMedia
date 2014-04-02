@@ -116,8 +116,6 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-import os
-import sys
 import logging
 
 import autoProcess.migratecfg as migratecfg

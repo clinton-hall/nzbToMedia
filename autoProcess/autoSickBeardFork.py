@@ -1,10 +1,9 @@
-import sys
 import urllib
-import os
-import ConfigParser
 import logging
 
+from nzbToMediaConfig import *
 from autoProcess.nzbToMediaEnv import *
+
 
 Logger = logging.getLogger()
 
@@ -27,29 +26,26 @@ class AuthURLOpener(urllib.FancyURLopener):
         return urllib.FancyURLopener.open(self, url)
 
 def autoFork(fork=None):
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    config.read(configFilename)
 
     # config settings
     section = "SickBeard"
-    host = config.get(section, "host")
-    port = config.get(section, "port")
-    username = config.get(section, "username")
-    password = config.get(section, "password")
+    host = config().get(section, "host")
+    port = config().get(section, "port")
+    username = config().get(section, "username")
+    password = config().get(section, "password")
 
     try:
-        ssl = int(config.get(section, "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
+        ssl = int(config().get(section, "ssl"))
+    except (config.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get(section, "web_root")
-    except ConfigParser.NoOptionError:
+        web_root = config().get(section, "web_root")
+    except config.NoOptionError:
         web_root = ""
 
     try:
-        fork = forks.items()[forks.keys().index(config.get(section, "fork"))]
+        fork = forks.items()[forks.keys().index(config().get(section, "fork"))]
     except:
         fork = "auto"
 

@@ -1,16 +1,10 @@
-import sys
 import urllib
-import os
-import shutil
-import ConfigParser
-import datetime
-import time
 import json
 import logging
-import socket
 
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
+
 
 Logger = logging.getLogger()
 socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
@@ -18,32 +12,32 @@ socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 def process(dirName, nzbName=None, status=0, inputCategory=None):
 
     status = int(status)
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    Logger.info("Loading config from %s", configFilename)
 
-    if not os.path.isfile(configFilename):
+
+    Logger.info("Loading config from %s", CONFIG_FILE)
+
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
 
-    config.read(configFilename)
+
 
     section = "Gamez"
-    if inputCategory != None and config.has_section(inputCategory):
+    if inputCategory != None and config().has_section(inputCategory):
         section = inputCategory
 
-    host = config.get(section, "host")
-    port = config.get(section, "port")
-    apikey = config.get(section, "apikey")
+    host = config().get(section, "host")
+    port = config().get(section, "port")
+    apikey = config().get(section, "apikey")
 
     try:
-        ssl = int(config.get(section, "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
+        ssl = int(config().get(section, "ssl"))
+    except (config.NoOptionError, ValueError):
         ssl = 0
 
     try:
-        web_root = config.get(section, "web_root")
-    except ConfigParser.NoOptionError:
+        web_root = config().get(section, "web_root")
+    except config.NoOptionError:
         web_root = ""
 
     if ssl:
