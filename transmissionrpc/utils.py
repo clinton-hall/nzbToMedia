@@ -2,12 +2,15 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import socket, datetime, logging
+import socket
+import datetime
+import logging
 from collections import namedtuple
+
 import transmissionrpc.constants as constants
 from transmissionrpc.constants import LOGGER
-
 from six import string_types, iteritems
+
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB']
 

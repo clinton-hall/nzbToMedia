@@ -81,7 +81,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                 os.utime(filepath, None)
                 continue
             except:
-                print "Error: unable to reset time for file", filePath
+                print "Error: unable to reset time for file", file
                 sys.exit(POSTPROCESS_ERROR)
     sys.exit(POSTPROCESS_SUCCESS)
 

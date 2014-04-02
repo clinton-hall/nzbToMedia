@@ -1,18 +1,13 @@
-import sys
 import urllib
-import os
-import shutil
-import ConfigParser
 import datetime
-import time
 import json
 import logging
-import socket
 
 import Transcoder
 from nzbToMediaEnv import *
 from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
+
 
 Logger = logging.getLogger()
 socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
@@ -130,7 +125,7 @@ def get_movie_info(baseURL, imdbid, download_id):
     return movie_id, imdbid, download_id, movie_status, release_status 
 
 def get_status(baseURL, movie_id, download_id):
-
+    result = None
     movie_status = None
     release_status = None    
     if not movie_id:
@@ -151,6 +146,7 @@ def get_status(baseURL, movie_id, download_id):
         Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
     except:
         Logger.exception("Could not find a status for this movie")
+
     try:
         if len(result["media"]["releases"]) == 1 and result["media"]["releases"][0]["status"] == "done":
             release_status = result["media"]["releases"][0]["status"]
@@ -167,46 +163,43 @@ def get_status(baseURL, movie_id, download_id):
 def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id = "", inputCategory=None):
 
     status = int(status)
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    Logger.info("Loading config from %s", configFilename)
 
-    if not os.path.isfile(configFilename):
+    Logger.info("Loading config from %s", CONFIG_FILE)
+
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
 
-    config.read(configFilename)
-
     section = "CouchPotato"
-    if inputCategory != None and config.has_section(inputCategory):
+    if inputCategory != None and config().has_section(inputCategory):
         section = inputCategory
 
-    host = config.get(section, "host")
-    port = config.get(section, "port")
-    apikey = config.get(section, "apikey")
-    delay = float(config.get(section, "delay"))
-    method = config.get(section, "method")
-    delete_failed = int(config.get(section, "delete_failed"))
-    wait_for = int(config.get(section, "wait_for"))
+    host = config().get(section, "host")
+    port = config().get(section, "port")
+    apikey = config().get(section, "apikey")
+    delay = float(config().get(section, "delay"))
+    method = config().get(section, "method")
+    delete_failed = int(config().get(section, "delete_failed"))
+    wait_for = int(config().get(section, "wait_for"))
     try:
-        TimePerGiB = int(config.get(section, "TimePerGiB"))
-    except (ConfigParser.NoOptionError, ValueError):
+        TimePerGiB = int(config().get(section, "TimePerGiB"))
+    except (config.NoOptionError, ValueError):
         TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     try:
-        ssl = int(config.get(section, "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
+        ssl = int(config().get(section, "ssl"))
+    except (config.NoOptionError, ValueError):
         ssl = 0
     try:
-        web_root = config.get(section, "web_root")
-    except ConfigParser.NoOptionError:
+        web_root = config().get(section, "web_root")
+    except config.NoOptionError:
         web_root = ""
     try:    
-        transcode = int(config.get("Transcoder", "transcode"))
-    except (ConfigParser.NoOptionError, ValueError):
+        transcode = int(config().get("Transcoder", "transcode"))
+    except (config.NoOptionError, ValueError):
         transcode = 0
     try:
-        remoteCPS = int(config.get(section, "remoteCPS"))
-    except (ConfigParser.NoOptionError, ValueError):
+        remoteCPS = int(config().get(section, "remoteCPS"))
+    except (config.NoOptionError, ValueError):
         remoteCPS = 0
 
     nzbName = str(nzbName) # make sure it is a string
@@ -314,6 +307,7 @@ def process(dirName, nzbName=None, status=0, clientAgent = "manual", download_id
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
+    release_status = None
     start = datetime.datetime.now()  # set time for timeout
     pause_for = int(wait_for) * 10 # keep this so we only ever have 6 complete loops. This may not be necessary now?
     while (datetime.datetime.now() - start) < datetime.timedelta(minutes=wait_for):  # only wait 2 (default) minutes, then return.

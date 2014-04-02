@@ -1,9 +1,10 @@
 import sys
-import os
-import ConfigParser
 import logging
 import errno
 from subprocess import call
+
+from nzbToMediaConfig import *
+
 
 Logger = logging.getLogger()
 
@@ -28,32 +29,28 @@ def Transcode_directory(dirName):
         else:
             ffmpeg = 'ffmpeg'
         useNiceness = True
-    
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    Logger.info("Loading config from %s", configFilename)
 
-    if not os.path.isfile(configFilename):
+    Logger.info("Loading config from %s", CONFIG_FILE)
+
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
-
-    config.read(configFilename)
     
-    mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
-    duplicate = int(config.get("Transcoder", "duplicate"))
-    ignoreExtensions = (config.get("Transcoder", "ignoreExtensions")).split(',')
-    outputVideoExtension = config.get("Transcoder", "outputVideoExtension").strip()
-    outputVideoCodec = config.get("Transcoder", "outputVideoCodec").strip()
-    outputVideoPreset = config.get("Transcoder", "outputVideoPreset").strip()
-    outputVideoFramerate = config.get("Transcoder", "outputVideoFramerate").strip()
-    outputVideoBitrate = config.get("Transcoder", "outputVideoBitrate").strip()
-    outputAudioCodec = config.get("Transcoder", "outputAudioCodec").strip()
-    outputAudioBitrate = config.get("Transcoder", "outputAudioBitrate").strip()
-    outputSubtitleCodec = config.get("Transcoder", "outputSubtitleCodec").strip()
-    outputFastStart = int(config.get("Transcoder", "outputFastStart"))
-    outputQualityPercent = int(config.get("Transcoder", "outputQualityPercent"))
+    mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
+    duplicate = int(config().get("Transcoder", "duplicate"))
+    ignoreExtensions = (config().get("Transcoder", "ignoreExtensions")).split(',')
+    outputVideoExtension = config().get("Transcoder", "outputVideoExtension").strip()
+    outputVideoCodec = config().get("Transcoder", "outputVideoCodec").strip()
+    outputVideoPreset = config().get("Transcoder", "outputVideoPreset").strip()
+    outputVideoFramerate = config().get("Transcoder", "outputVideoFramerate").strip()
+    outputVideoBitrate = config().get("Transcoder", "outputVideoBitrate").strip()
+    outputAudioCodec = config().get("Transcoder", "outputAudioCodec").strip()
+    outputAudioBitrate = config().get("Transcoder", "outputAudioBitrate").strip()
+    outputSubtitleCodec = config().get("Transcoder", "outputSubtitleCodec").strip()
+    outputFastStart = int(config().get("Transcoder", "outputFastStart"))
+    outputQualityPercent = int(config().get("Transcoder", "outputQualityPercent"))
     if useNiceness:
-        niceness = int(config.get("Transcoder", "niceness"))
+        niceness = int(config().get("Transcoder", "niceness"))
 
     map(lambda ext: ext.strip(), mediaContainer)
     map(lambda ext: ext.strip(), ignoreExtensions)

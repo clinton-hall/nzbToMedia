@@ -57,8 +57,6 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-import os
-import sys
 import logging
 
 import autoProcess.migratecfg as migratecfg
@@ -73,7 +71,7 @@ if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.c
 if os.environ.has_key('NZBOP_SCRIPTDIR'):
     migratecfg.addnzbget()
 
-nzbtomedia_configure_logging(os.path.dirname(sys.argv[0]))
+nzbtomedia_configure_logging(LOG_FILE)
 Logger = logging.getLogger(__name__)
 
 Logger.info("====================") # Seperate old from new log

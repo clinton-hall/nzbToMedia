@@ -5,7 +5,6 @@
 import sys
 
 from transmissionrpc.error import HTTPHandlerError
-
 from six import PY3
 
 if PY3:

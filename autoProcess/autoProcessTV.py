@@ -3,10 +3,10 @@ import logging
 import copy
 
 import Transcoder
-from nzbToMediaEnv import *
-from nzbToMediaUtil import *
 from nzbToMediaSceneExceptions import process_all_exceptions
 from autoProcess.autoSickBeardFork import autoFork
+from nzbToMediaEnv import *
+from nzbToMediaUtil import *
 
 
 Logger = logging.getLogger()
@@ -40,69 +40,69 @@ def delete(dirName):
 def processEpisode(dirName, nzbName=None, failed=False, clientAgent=None, inputCategory=None):
 
     status = int(failed)
-    config = ConfigParser.ConfigParser()
-    configFilename = os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg")
-    Logger.info("Loading config from %s", configFilename)
 
-    if not os.path.isfile(configFilename):
+
+    Logger.info("Loading config from %s", CONFIG_FILE)
+
+    if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
 
-    config.read(configFilename)
+
 
     section = "SickBeard"
-    if inputCategory != None and config.has_section(inputCategory):
+    if inputCategory != None and config().has_section(inputCategory):
         section = inputCategory
 
     watch_dir = ""
-    host = config.get(section, "host")
-    port = config.get(section, "port")
-    username = config.get(section, "username")
-    password = config.get(section, "password")
+    host = config().get(section, "host")
+    port = config().get(section, "port")
+    username = config().get(section, "username")
+    password = config().get(section, "password")
 
     try:
-        ssl = int(config.get(section, "ssl"))
-    except (ConfigParser.NoOptionError, ValueError):
+        ssl = int(config().get(section, "ssl"))
+    except (config.NoOptionError, ValueError):
         ssl = 0
     try:
-        web_root = config.get(section, "web_root")
-    except ConfigParser.NoOptionError:
+        web_root = config().get(section, "web_root")
+    except config.NoOptionError:
         web_root = ""
     try:
-        watch_dir = config.get(section, "watch_dir")
-    except ConfigParser.NoOptionError:
+        watch_dir = config().get(section, "watch_dir")
+    except config.NoOptionError:
         watch_dir = ""
     try:
-        transcode = int(config.get("Transcoder", "transcode"))
-    except (ConfigParser.NoOptionError, ValueError):
+        transcode = int(config().get("Transcoder", "transcode"))
+    except (config.NoOptionError, ValueError):
         transcode = 0
     try:
-        delete_failed = int(config.get(section, "delete_failed"))
-    except (ConfigParser.NoOptionError, ValueError):
+        delete_failed = int(config().get(section, "delete_failed"))
+    except (config.NoOptionError, ValueError):
         delete_failed = 0
     try:
-        delay = float(config.get(section, "delay"))
-    except (ConfigParser.NoOptionError, ValueError):
+        delay = float(config().get(section, "delay"))
+    except (config.NoOptionError, ValueError):
         delay = 0
     try:
-        TimePerGiB = int(config.get(section, "TimePerGiB"))
-    except (ConfigParser.NoOptionError, ValueError):
+        TimePerGiB = int(config().get(section, "TimePerGiB"))
+    except (config.NoOptionError, ValueError):
         TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
     try:
-        SampleIDs = (config.get("Extensions", "SampleIDs")).split(',')
-    except (ConfigParser.NoOptionError, ValueError):
+        SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')
+    except (config.NoOptionError, ValueError):
         SampleIDs = ['sample','-s.']
     try:
-        nzbExtractionBy = config.get(section, "nzbExtractionBy")
-    except (ConfigParser.NoOptionError, ValueError):
+        nzbExtractionBy = config().get(section, "nzbExtractionBy")
+    except (config.NoOptionError, ValueError):
         nzbExtractionBy = "Downloader"
     try:
-        process_method = config.get(section, "process_method")
-    except ConfigParser.NoOptionError:
+        process_method = config().get(section, "process_method")
+    except config.NoOptionError:
         process_method = None
     
-    mediaContainer = (config.get("Extensions", "mediaExtensions")).split(',')
-    minSampleSize = int(config.get("Extensions", "minSampleSize"))
+    mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
+    minSampleSize = int(config().get("Extensions", "minSampleSize"))
 
     if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
         dirName = os.path.split(os.path.normpath(dirName))[0]

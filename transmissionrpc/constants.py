@@ -3,7 +3,9 @@
 # Licensed under the MIT license.
 
 import logging
+
 from six import iteritems
+
 
 LOGGER = logging.getLogger('transmissionrpc')
 LOGGER.setLevel(logging.ERROR)
