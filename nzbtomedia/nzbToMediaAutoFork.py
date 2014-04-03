@@ -1,33 +1,13 @@
-import urllib
 import logging
+import urllib
+import requests
 
-from nzbToMediaConfig import *
-from autoProcess.nzbToMediaEnv import *
+from nzbToMediaConfig import config
 
-Logger = logging.getLogger()
-
-class AuthURLOpener(urllib.FancyURLopener):
-    def __init__(self, user, pw):
-        self.username = user
-        self.password = pw
-        self.numTries = 0
-        urllib.FancyURLopener.__init__(self)
-
-    def prompt_user_passwd(self, host, realm):
-        if self.numTries == 0:
-            self.numTries = 1
-            return (self.username, self.password)
-        else:
-            return ('', '')
-
-    def openit(self, url):
-        self.numTries = 0
-        return urllib.FancyURLopener.open(self, url)
-
-def autoFork():
+def autoFork(section):
+    Logger = logging.getLogger()
 
     # config settings
-    section = "SickBeard"
     host = config().get(section, "host")
     port = config().get(section, "port")
     username = config().get(section, "username")
@@ -44,11 +24,9 @@ def autoFork():
         web_root = ""
 
     try:
-        fork = forks.items()[forks.keys().index(config().get(section, "fork"))]
+        fork = config.FORKS.items()[config.FORKS.keys().index(config().get(section, "fork"))]
     except:
         fork = "auto"
-
-    myOpener = AuthURLOpener(username, password)
 
     if ssl:
         protocol = "https://"
@@ -58,17 +36,17 @@ def autoFork():
     detected = False
     if fork == "auto":
         Logger.info("Attempting to auto-detect SickBeard fork")
-        for fork in sorted(forks.iteritems()):
+        for fork in sorted(config.FORKS.iteritems()):
             url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
 
             # attempting to auto-detect fork
             try:
-                urlObj = myOpener.openit(url)
-            except IOError, e:
+                r = requests.get(url, auth=(username, password))
+            except requests.ConnectionError:
                 Logger.info("Could not connect to SickBeard to perform auto-fork detection!")
                 break
 
-            if urlObj.getcode() == 200:
+            if r.ok:
                 detected = True
                 break
 
@@ -76,7 +54,7 @@ def autoFork():
             Logger.info("SickBeard fork auto-detection successful ...")
         else:
             Logger.info("SickBeard fork auto-detection failed")
-            fork = forks.items()[forks.keys().index(fork_default)]
+            fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)]
 
     Logger.info("SickBeard fork set to %s", fork[0])
     return fork[0], fork[1]

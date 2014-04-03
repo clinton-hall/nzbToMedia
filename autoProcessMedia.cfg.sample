@@ -13,12 +13,12 @@ ssl = 0
 web_root =
 delay = 65
 TimePerGiB = 60
+watch_dir =
 method = renamer
 delete_failed = 0
 wait_for = 2
 #### Set to 1 if CouchPotatoServer is running on a different server to your NZB client
 remoteCPS = 0
-
 
 [SickBeard]
 #### autoProcessing for TV Series
@@ -40,7 +40,6 @@ nzbExtractionBy = Downloader
 Torrent_ForceLink = 1
 process_method =
 
-
 [HeadPhones]
 #### autoProcessing for Music
 #### hpCategory - category that gets called for post-processing with HP
@@ -53,7 +52,7 @@ ssl = 0
 web_root =
 delay = 65
 TimePerGiB = 60
-
+watch_dir =
 
 [Mylar]
 #### autoProcessing for Comics
@@ -68,7 +67,6 @@ web_root=
 ssl=0
 watch_dir = 
 
-
 [Gamez]
 #### autoProcessing for Games
 #### gzCategory - category that gets called for post-processing with Gamez
@@ -79,7 +77,7 @@ port = 8085
 ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ###### 
 ssl = 0
 web_root =
-
+watch_dir =
 
 [Torrent]
 ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, other

@@ -3,7 +3,7 @@ import struct
 import socket
 import ssl
 
-from synchronousdeluge import rencode
+from nzbtomedia.synchronousdeluge import rencode
 
 
 __all__ = ["DelugeTransfer"]

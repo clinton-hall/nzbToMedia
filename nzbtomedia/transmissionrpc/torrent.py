@@ -5,8 +5,8 @@
 import sys
 import datetime
 
-from transmissionrpc.constants import PRIORITY, RATIO_LIMIT, IDLE_LIMIT
-from transmissionrpc.utils import Field, format_timedelta
+from nzbtomedia.transmissionrpc.constants import PRIORITY, RATIO_LIMIT, IDLE_LIMIT
+from nzbtomedia.transmissionrpc.utils import Field, format_timedelta
 from six import integer_types, string_types, text_type, iteritems
 
 

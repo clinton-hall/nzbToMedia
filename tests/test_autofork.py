@@ -1,6 +1,3 @@
-from autoProcess.nzbToMediaUtil import *
-from autoProcess.autoSickBeardFork import autoFork
-nzbtomedia_configure_logging(LOG_FILE)
-
+from nzbtomedia import *
 fork, params = autoFork()
 print fork, params

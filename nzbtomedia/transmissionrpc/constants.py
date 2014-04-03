@@ -4,7 +4,7 @@
 
 import logging
 
-from six import iteritems
+from nzbtomedia.transmissionrpc.six import iteritems
 
 
 LOGGER = logging.getLogger('transmissionrpc')

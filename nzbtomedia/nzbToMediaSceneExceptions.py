@@ -1,13 +1,8 @@
-# System imports
 import os
 import logging
-
-# Custom imports
-from nzbToMediaUtil import iterate_media_files
-
+from nzbtomedia.nzbToMediaUtil import iterate_media_files
 
 Logger = logging.getLogger()
-
 
 def process_all_exceptions(name, dirname):
     for group, exception in __customgroups__.items():
@@ -15,11 +10,9 @@ def process_all_exceptions(name, dirname):
             continue
         process_exception(exception, name, dirname)
 
-
 def process_exception(exception, name, dirname):
     for parentDir, filename in iterate_media_files(dirname):
         exception(filename, parentDir)
-
 
 def process_qoq(filename, dirname):
     Logger.debug("Reversing the file name for a QoQ release %s", filename)
