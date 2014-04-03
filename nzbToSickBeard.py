@@ -131,6 +131,13 @@ import autoProcess.autoProcessTV as autoProcessTV
 from autoProcess.nzbToMediaEnv import *
 from autoProcess.nzbToMediaUtil import *
 
+# NZBGet argv: all passed as environment variables.
+# Exit codes used by NZBGet
+POSTPROCESS_PARCHECK = 92
+POSTPROCESS_SUCCESS = 93
+POSTPROCESS_ERROR = 94
+POSTPROCESS_NONE = 95
+
 #check to migrate old cfg before trying to load.
 if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
     migratecfg.migrate()
@@ -150,13 +157,6 @@ WakeUp()
 # Check if the script is called from nzbget 11.0 or later
 if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
     Logger.info("MAIN: Script triggered from NZBGet (11.0 or later).")
-
-    # NZBGet argv: all passed as environment variables.
-    # Exit codes used by NZBGet
-    POSTPROCESS_PARCHECK=92
-    POSTPROCESS_SUCCESS=93
-    POSTPROCESS_ERROR=94
-    POSTPROCESS_NONE=95
 
     # Check nzbget.conf options
     status = 0
@@ -229,10 +229,17 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     clientAgent = "sabnzbd"
     result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
+    result = 0
+    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
+    dirNames = get_dirnames("SickBeard", sbCategory[0])
+
     Logger.debug("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
-    result = autoProcessTV.processEpisode('Manual Run', 'Manual Run', 0)
 
+    for dirName in dirNames:
+        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", dirName)
+        result = autoProcessTV.processEpisode(dirName, dirName, 0)
+        if result != 0: break
 if result == 0:
     Logger.info("MAIN: The autoProcessTV script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
