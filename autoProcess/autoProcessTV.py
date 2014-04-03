@@ -98,6 +98,10 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
         process_method = config().get(section, "process_method")
     except config.NoOptionError:
         process_method = None
+    try:
+        Torrent_NoLink = int(config().get(section, "Torrent_NoLink"))
+    except (config.NoOptionError, ValueError):
+        Torrent_NoLink = 0
 
     mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
     minSampleSize = int(config().get("Extensions", "minSampleSize"))
@@ -160,7 +164,9 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
             params[param] = dirName
 
         if param == "process_method":
-            if process_method:
+            if fork in SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
+                del params[param]
+            elif process_method:
                 params[param] = process_method
             else:
                 del params[param]

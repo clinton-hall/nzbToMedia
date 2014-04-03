@@ -31,6 +31,8 @@ def migrate():
                 value = "auto"
         if option == "fork" and value not in ["default", "failed", "failed-torrent", "auto"]:
             value = "auto"
+        if option == "Torrent_ForceLink":
+            continue
         if option == "outputDirectory": # move this to new location format
             value = os.path.split(os.path.normpath(value))[0]
             confignew.set("Torrent", option, value)

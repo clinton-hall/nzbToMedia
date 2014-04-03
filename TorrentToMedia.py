@@ -40,7 +40,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     sbFork, sbParams = autoFork()
 
-    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT and Torrent_ForceLink != 1:
+    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT and Torrent_NoLink == 1:
         Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
         result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
         if result == 1:
@@ -121,8 +121,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
     noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
-    if inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT: # Don't flatten when sending to SICKBEARD_TORRENT
-        noFlatten.extend(sbCategory)
       
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
@@ -162,15 +160,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.debug("MAIN: Found file %s with date modifed/created less than 5 minutes ago.", file)
                 else:
                     continue  # This file has not been recently moved or created, skip it
-
-            if inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT: # We want to link every file.
-                Logger.info("MAIN: Found file %s in %s", fileExtension, filePath)
-                try:
-                    copy_link(filePath, targetDirectory, useLink, outputDestination)
-                    copy_list.append([filePath, os.path.join(outputDestination, file)])
-                except:
-                    Logger.exception("MAIN: Failed to link file: %s", file)
-                continue
 
             if fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in hpCategory:  # Ignore samples
@@ -223,7 +212,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in cpsCategory + sbCategory and not (inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT): 
+    if inputCategory in cpsCategory + sbCategory: 
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -243,10 +232,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         else:
             Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
 
-    if inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT:
-        if len(copy_list) > 0:
-            Logger.debug("MAIN: Found and linked %s files", str(len(copy_list)))
-            status = int(0)
 
     processCategories = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
 
@@ -449,7 +434,7 @@ if __name__ == "__main__":
     
     cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
-    Torrent_ForceLink = int(config().get("SickBeard", "Torrent_ForceLink"))               # 1
+    Torrent_NoLink = int(config().get("SickBeard", "Torrent_NoLink"))                     # 0
     hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
     gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games
