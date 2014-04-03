@@ -62,7 +62,7 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     params['cmd'] = "forceProcess"
     params['dir'] = dirName
 
-    baseURL = protocol + host + ":" + port + web_root + "/api?" + + urllib.urlencode(params)
+    baseURL = protocol + host + ":" + port + web_root + "/api?" + urllib.urlencode(params)
 
     if status == 0:
 
