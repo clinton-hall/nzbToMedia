@@ -120,11 +120,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    if inputCategory in hpCategory:
-        noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
-        if useLink in ['sym','move']: # These don't work for HeadPhones.
-            useLink = 'no' # default to copy.
-
+    noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
     if inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT: # Don't flatten when sending to SICKBEARD_TORRENT
         noFlatten.extend(sbCategory)
       
@@ -197,13 +193,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.exception("MAIN: Failed to link file: %s", file)
                 continue
             elif fileExtension in compressedContainer:
-                if inputCategory in hpCategory: # We need to link all files for HP in order to move these back to support seeding.
-                    Logger.info("MAIN: Linking compressed archive file %s for file %s", fileExtension, filePath)
-                    try:
-                        copy_link(filePath, targetDirectory, useLink, outputDestination)
-                        copy_list.append([filePath, os.path.join(outputDestination, file)])
-                    except:
-                        Logger.exception("MAIN: Failed to link file: %s", file)
                 # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
                 if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
@@ -214,10 +203,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                         continue
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
-                    if inputCategory in hpCategory: # HP needs to scan the same dir as passed to downloader. 
-                        extractor.extract(filePath, inputDirectory)
-                    else:
-                        extractor.extract(filePath, outputDestination)
+                    extractor.extract(filePath, outputDestination)
                     extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
                     extracted_folder.append(os.path.dirname(filePath))
                 except:
@@ -283,7 +269,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         result = autoProcessTV.processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif inputCategory in hpCategory:
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-        result = autoProcessMusic.process(inputDirectory, inputName, status, inputCategory)
+        result = autoProcessMusic.process(outputDestination, inputName, status, inputCategory)
     elif inputCategory in mlCategory:
         Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
         result = autoProcessComics.processEpisode(outputDestination, inputName, status, inputCategory)
@@ -293,25 +279,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-
-    if inputCategory in hpCategory:
-        # we need to move the output dir files back...
-        Logger.debug("MAIN: Moving temporary HeadPhones files back to allow seeding.")
-        for item in copy_list:
-            if os.path.isfile(os.path.normpath(item[1])): # check to ensure temp files still exist.
-                if os.path.isfile(os.path.normpath(item[0])): # both exist, remove temp version
-                    Logger.debug("MAIN: File %s still present. Removing tempoary file %s", str(item[0]), str(item[1]))
-                    os.unlink(os.path.normpath(item[1]))
-                    continue
-                else: # move temp version back to allow seeding or Torrent removal.
-                    Logger.debug("MAIN: Moving %s to %s", str(item[1]), str(item[0]))
-                    newDestination = os.path.split(os.path.normpath(item[0]))
-                    try:
-                        copy_link(os.path.normpath(item[1]), os.path.normpath(item[0]), 'move', newDestination[0])
-                    except:
-                        Logger.exception("MAIN: Failed to move file: %s", file)
-                    continue
-        shutil.rmtree(outputDestination)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
