@@ -57,12 +57,16 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     TimeOut += 60 # Add an extra minute for over-head/processing/metadata.
     socket.setdefaulttimeout(int(TimeOut)) #initialize socket timeout.
 
-    baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
+    params = {}
+    params['apikey'] = apikey
+    params['cmd'] = "forceProcess"
+    params['dir'] = dirName
+
+    baseURL = protocol + host + ":" + port + web_root + "/api?" + + urllib.urlencode(params)
 
     if status == 0:
-        command = "forceProcess"
 
-        url = baseURL + command
+        url = baseURL
 
         Logger.info("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
 
@@ -79,11 +83,10 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
         result = urlObj.readlines()
         Logger.info("HeadPhones returned %s", result)
         if result[0] == "OK":
-            Logger.info("%s started on HeadPhones for %s", command, nzbName)
+            Logger.info("Post-processing started on HeadPhones for %s", nzbName)
         else:
-            Logger.error("%s has NOT started on HeadPhones for %s. Exiting", command, nzbName)
+            Logger.error("Post-processing has NOT started on HeadPhones for %s. Exiting", nzbName)
             return 1 # failure
-            
     else:
         Logger.info("The download failed. Nothing to process")
         return 0 # Success (as far as this script is concerned)
