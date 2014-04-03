@@ -8,18 +8,15 @@ from nzbToMediaUtil import *
 
 Logger = logging.getLogger()
 
-def process(dirName, nzbName=None, status=0, inputCategory=None):
+def process(dirName, nzbName=None, status=0, clientAgent="manual", inputCategory=None):
 
     status = int(status)
-
 
     Logger.info("Loading config from %s", CONFIG_FILE)
 
     if not config():
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return 1 # failure
-
-
 
     section = "HeadPhones"
     if inputCategory != None and config().has_section(inputCategory):
@@ -47,7 +44,7 @@ def process(dirName, nzbName=None, status=0, inputCategory=None):
     else:
         protocol = "http://"
     # don't delay when we are calling this script manually.
-    if nzbName == "Manual Run":
+    if clientAgent == "manual":
         delay = 0
 
     nzbName, dirName = convert_to_ascii(nzbName, dirName)

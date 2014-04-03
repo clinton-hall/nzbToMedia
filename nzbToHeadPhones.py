@@ -170,10 +170,17 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessMusic...")
     result = autoProcessMusic.process(sys.argv[1], sys.argv[2], sys.argv[7])
 else:
+    result = 0
+    hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')  # music
+    dirNames = get_dirnames("SickBeard", hpCategory[0])
+
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMusic as a manual run...")
-    result = autoProcessMusic.process('Manual Run', 'Manual Run', 0)
 
+    for dirName in dirNames:
+        Logger.info("MAIN: Calling Headphones to post-process: %s", dirName)
+        result = result = autoProcessMusic.process(dirName, dirName, 0)
+        if result != 0: break
 if result == 0:
     Logger.info("MAIN: The autoProcessMusic script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11

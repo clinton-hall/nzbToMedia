@@ -408,7 +408,11 @@ else: # only CPS and SB supports this manual run for now.
 
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
     dirNames = get_dirnames("SickBeard", sbCategory[0])
-    nzbDir, inputName, status, inputCategory, download_id = (dirNames, dirNames, 0, sbCategory[0], '')
+    nzbDir, inputName, status, inputCategory, = (dirNames, dirNames, 0, sbCategory[0])
+
+    Logger.info("MAIN: Running autoProcessMusic as a manual run...")
+    dirNames = get_dirnames("HeadPhones", hpCategory[0])
+    nzbDir, inputName, status, inputCategory = (dirNames, dirNames, 0, sbCategory[0])
 
 if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
@@ -424,8 +428,15 @@ elif inputCategory in sbCategory:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
 elif inputCategory in hpCategory:
-    Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-    result = autoProcessMusic.process(nzbDir, inputName, status, inputCategory)
+    result = 0
+    if isinstance(nzbDir, list):
+        for dirName in nzbDir:
+            Logger.info("MAIN: Calling Headphones to post-process: %s", dirName)
+            result = autoProcessMusic.process(dirName, dirName, status, clientAgent, inputCategory)
+            if result != 0: break
+    else:
+        Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
+        result = autoProcessMusic.process(nzbDir, inputName, status, clientAgent, inputCategory)
 elif inputCategory in mlCategory:
     Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
     result = autoProcessComics.processEpisode(nzbDir, inputName, status, inputCategory)
