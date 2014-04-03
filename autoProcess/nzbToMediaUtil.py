@@ -467,14 +467,17 @@ def get_dirnames(section, category):
         outputDirectory = ""
 
     # set dirName
-    dirNames = None
+    dirNames = []
     if watch_dir != "":
         if os.path.exists(watch_dir):
-            dirNames = [os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
-                        os.path.isdir(os.path.join(watch_dir, o))]
-    elif outputDirectory != "":
+            dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
+                        os.path.isdir(os.path.join(watch_dir, o))])
+    if outputDirectory != "":
         if os.path.exists(outputDirectory):
-            dirNames = [os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
-                        os.path.isdir(os.path.join(outputDirectory, o))]
+            dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
+                        os.path.isdir(os.path.join(outputDirectory, o))])
+
+    if not dirNames:
+        Logger.warn("No Directories identified to Scan.")
 
     return dirNames

@@ -229,12 +229,12 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     clientAgent = "sabnzbd"
     result = autoProcessTV.processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
-    result = 0
-    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
-    dirNames = get_dirnames("SickBeard", sbCategory[0])
-
     Logger.debug("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
+
+    result = 1
+    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
+    dirNames = get_dirnames("SickBeard", sbCategory[0])
 
     for dirName in dirNames:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", dirName)

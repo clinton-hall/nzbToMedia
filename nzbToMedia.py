@@ -414,7 +414,7 @@ if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
-    result = 0
+    result = 1
     if isinstance(nzbDir, list):
         for dirName in nzbDir:
             Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
