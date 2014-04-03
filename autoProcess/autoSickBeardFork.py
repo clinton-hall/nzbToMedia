@@ -24,10 +24,13 @@ class AuthURLOpener(urllib.FancyURLopener):
         self.numTries = 0
         return urllib.FancyURLopener.open(self, url)
 
-def autoFork():
+def autoFork(inputCategory = None):
 
     # config settings
     section = "SickBeard"
+    if inputCategory != None and config().has_section(inputCategory):
+        section = inputCategory
+
     host = config().get(section, "host")
     port = config().get(section, "port")
     username = config().get(section, "username")

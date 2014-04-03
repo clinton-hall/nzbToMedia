@@ -117,7 +117,7 @@ def processEpisode(dirName, nzbName=None, failed=False, clientAgent = "manual", 
         dirName = SpecificPath
 
     # auto-detect fork type
-    fork, params = autoFork()
+    fork, params = autoFork(inputCategory)
 
     if fork not in SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
         if nzbName:

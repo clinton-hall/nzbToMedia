@@ -38,15 +38,15 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    sbFork, sbParams = autoFork()
-
-    if  inputCategory in sbCategory and sbFork in SICKBEARD_TORRENT and Torrent_NoLink == 1:
-        Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
-        result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
-        if result == 1:
-            Logger.info("MAIN: A problem was reported in the autoProcess* script.")
-        Logger.info("MAIN: All done.")
-        sys.exit()
+    if  inputCategory in sbCategory:
+        sbFork, sbParams = autoFork(inputCategory)
+        if sbFork in SICKBEARD_TORRENT and Torrent_NoLink == 1:
+            Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",sbFork ,inputName)
+            result = autoProcessTV.processEpisode(inputDirectory, inputName, int(0))
+            if result == 1:
+                Logger.info("MAIN: A problem was reported in the autoProcess* script.")
+            Logger.info("MAIN: All done.")
+            sys.exit()
 
     outputDestination = ""
     for category in categories:
