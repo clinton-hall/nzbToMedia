@@ -405,6 +405,8 @@ else: # only CPS and SB supports this manual run for now.
 
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
     nzbDir, inputName, status, inputCategory, download_id = ('Manual Run', 'Manual Run', 0, cpsCategory[0], '')
+    Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
+    result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
     dirNames = get_dirnames("SickBeard", sbCategory[0])
@@ -414,12 +416,13 @@ if inputCategory in cpsCategory:
     Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
     result = autoProcessMovie.process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
 elif inputCategory in sbCategory:
-    result = 1
     if isinstance(nzbDir, list):
+        result1 = 1
         for dirName in nzbDir:
             Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
             result = autoProcessTV.processEpisode(dirName, dirName, status, clientAgent, inputCategory)
-            if result !=0:break
+            if result1 !=0:break
+        result += result1
     else:
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV.processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
