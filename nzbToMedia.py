@@ -340,6 +340,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         return -1
 
 ########################################################################################################################
+
 # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
 if migratecfg().migrate():
     # check to write settings from nzbGet UI to autoProcessMedia.cfg.
@@ -347,12 +348,14 @@ if migratecfg().migrate():
         migratecfg().addnzbget()
 
     nzbtomedia_configure_logging(config.LOG_FILE)
-    Logger = logging.getLogger(__name__)
+
+    Logger = logging.getLogger()
     Logger.info("====================")  # Seperate old from new log
     Logger.info("nzbToMedia %s", config.NZBTOMEDIA_VERSION)
 
     Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
 else:
+    print("Unable to find " + config.CONFIG_FILE + " or " + config.SAMPLE_CONFIG_FILE)
     sys.exit(-1)
 
 # setup categories
