@@ -177,12 +177,14 @@ class autoProcessTV:
         Logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url, auth=(username, password))
+            r = requests.get(url, auth=(username, password), stream=True)
         except requests.ConnectionError:
             Logger.exception("Unable to open URL")
             return 1 # failure
 
-        Logger.info("%s", r.text)
+        for line in r.iter_lines():
+            if line: Logger.info("%s", line)
+
         if status != 0 and delete_failed and not dirName in ['sys.argv[0]','/','']:
             delete(dirName)
         return 0 # Success

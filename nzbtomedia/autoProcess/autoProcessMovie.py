@@ -69,7 +69,7 @@ class autoProcessMovie:
             release2 = []
             moviestatus2 = []
             try:
-                result = json.load(r.text)
+                result = r.json()
                 movieid2 = [item["_id"] for item in result["movies"]]
                 for item in result["movies"]:
                     if "identifier" in item:
@@ -143,7 +143,7 @@ class autoProcessMovie:
             return None, None
 
         try:
-            result = json.load(r.text)
+            result = r.json()
             movie_status = str(result["media"]["status"])
             Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
         except:
@@ -260,7 +260,7 @@ class autoProcessMovie:
                 Logger.exception("Unable to open URL")
                 return 1 # failure
 
-            result = json.load(r.text)
+            result = r.json()
             Logger.info("CouchPotatoServer returned %s", result)
             if result['success']:
                 Logger.info("%s scan started on CouchPotatoServer for %s", method, nzbName)
@@ -283,12 +283,13 @@ class autoProcessMovie:
             Logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url)
+                r = requests.get(url, stream=True)
             except requests.ConnectionError:
                 Logger.exception("Unable to open URL")
                 return 1  # failure
 
-            Logger.info("%s", r.text)
+            for line in r.iter_lines():
+                if line: Logger.info("%s", line)
             Logger.info("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
             if delete_failed and not dirName in ['sys.argv[0]','/','']:
                 Logger.info("Deleting failed files and folder %s", dirName)

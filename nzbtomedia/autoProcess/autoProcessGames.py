@@ -57,13 +57,17 @@ class autoProcessGames:
         Logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url)
+            r = requests.get(url, stream=True)
         except requests.ConnectionError:
             Logger.exception("Unable to open URL")
             return 1  # failure
 
-        result = json.load(r.text)
-        Logger.info("Gamez returned %s", result)
+        result = {}
+        for line in r.iter_lines():
+            if line:
+                Logger.info("%s", line)
+                result.update(json.load(line))
+
         if result['success']:
             Logger.info("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)
             return 0 # Success

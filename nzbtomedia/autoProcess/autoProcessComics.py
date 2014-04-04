@@ -60,13 +60,13 @@ class autoProcessComics:
         Logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url, auth=(username, password))
+            r = requests.get(url, auth=(username, password), stream=True)
         except requests.ConnectionError:
             Logger.exception("Unable to open URL")
             return 1 # failure
 
-        if r.ok:
-            Logger.info("%s", r.text)
+        for line in r.iter_lines():
+            if line: Logger.info("%s", line)
 
         time.sleep(60) #wait 1 minute for now... need to see just what gets logged and how long it takes to process
         return 0 # Success
