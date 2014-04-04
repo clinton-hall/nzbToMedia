@@ -95,8 +95,9 @@ if migratecfg().migrate():
     Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
 else:
     sys.exit(-1)
+
 # headphones category
-hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')  # music
+categories = config.get_categories(["HeadPhones"])
 
 WakeUp()
 
@@ -178,10 +179,13 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMusic as a manual run...")
 
-    for dirName in get_dirnames("HeadPhones", hpCategory[0]):
-        Logger.info("MAIN: Calling Headphones to post-process: %s", dirName)
-        result = result = autoProcessMusic().process(dirName, dirName, 0)
-        if result != 0: break
+    for section, category in categories.items():
+        for dirName in get_dirnames(section, category):
+            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+            results =  autoProcessMusic().process(dirName, dirName, 0)
+            if results != 0:
+                result = 1
+                Logger.info("MAIN: A problem was reported in the autoProcessMusic script.")
 
 if result == 0:
     Logger.info("MAIN: The autoProcessMusic script completed successfully.")

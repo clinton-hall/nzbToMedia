@@ -1,10 +1,11 @@
 import os
 import shutil
 from nzbtomedia.nzbToMediaConfig import config
+from itertools import chain
 
 class migratecfg:
     def migrate(self):
-        categories = []
+        categories = {}
         confignew = None
         configold = None
 
@@ -26,123 +27,93 @@ class migratecfg:
         if not config() and not config(config.SAMPLE_CONFIG_FILE) or not confignew or not configold:
             return False
 
-        section = "CouchPotato"
-        for option, value in configold.items(section) or config(config.MOVIE_CONFIG_FILE).items(section):
-            if option == "category": # change this old format
-                option = "cpsCategory"
-            if option == "outputDirectory": # move this to new location format
-                value = os.path.split(os.path.normpath(value))[0]
-                confignew.set("Torrent", option, value)
-                continue
-            if option in ["username", "password" ]: # these are no-longer needed.
-                continue
-            if option == "cpsCategory":
-                categories.extend(value.split(','))
-            confignew.set(section, option, value)
+        for section in configold.sections:
+            for option, value in configold[section].items():
+                if section == "CouchPotato":
+                    if option == "category":  # change this old format
+                        option = "cpsCategory"
+                if section == "SickBeard":
+                    if option == "category":  # change this old format
+                        option = "sbCategory"
+                if option in ["cpsCategory","sbCategory","hpCategory","mlCategory","gzCategory"]:
+                    if not isinstance(value, list):
+                        value = [value]
 
-        section = "SickBeard"
-        for option, value in configold.items(section) or config(config.TV_CONFIG_FILE).items(section):
-            if option == "category": # change this old format
-                option = "sbCategory"
-            if option == "wait_for": # remove old format
-                continue
-            if option == "failed_fork": # change this old format
-                option = "fork"
-                if value not in ["default", "failed", "failed-torrent", "auto"]:
-                    value = "auto"
-            if option == "fork" and value not in ["default", "failed", "failed-torrent", "auto"]:
-                value = "auto"
-            if option == "Torrent_ForceLink":
-                continue
-            if option == "outputDirectory": # move this to new location format
-                value = os.path.split(os.path.normpath(value))[0]
-                confignew.set("Torrent", option, value)
-                continue
-            if option == "sbCategory":
-                categories.extend(value.split(','))
-            confignew.set(section, option, value)
+                    categories.update({section: value})
+                    continue
 
-        for section in configold.sections():
-            try:
-                for option, value in configold.items(section):
+        try:
+            for section in configold.sections:
+                subsection = None
+                if section in list(chain.from_iterable(categories.values())):
+                    subsection = section
+                    section = ''.join([k for k, v in categories.iteritems() if subsection in v])
+                elif section in categories.keys():
+                    subsection = categories[section][0]
+
+                # create subsection if it does not exist
+                if subsection and subsection not in confignew[section].sections:
+                    confignew[section][subsection] = {}
+
+                for option, value in configold[section].items():
+                    if section == "CouchPotato":
+                        if option == "outputDirectory":  # move this to new location format
+                            value = os.path.split(os.path.normpath(value))[0]
+                            confignew['Torrent'][option] = value
+                            continue
+                        if option in ["username", "password"]:  # these are no-longer needed.
+                            continue
+                        if option in ["category","cpsCategory"]:
+                            continue
+
+                    if section == "SickBeard":
+                        if option == "wait_for":  # remove old format
+                            continue
+                        if option == "failed_fork":  # change this old format
+                            option = "fork"
+                            value = "auto"
+                        if option == "Torrent_ForceLink":
+                            continue
+                        if option == "outputDirectory":  # move this to new location format
+                            value = os.path.split(os.path.normpath(value))[0]
+                            confignew['Torrent'][option] = value
+                            continue
+                        if option in ["category", "sbCategory"]:
+                            continue
+
                     if section == "HeadPhones":
                         if option in ["username", "password" ]:
                             continue
                         if option == "hpCategory":
-                            categories.extend(value.split(','))
-                        confignew.set(section, option, value)
+                            continue
 
                     if section == "Mylar":
                         if option in "mlCategory":
-                            categories.extend(value.split(','))
-                        confignew.set(section, option, value)
+                            continue
 
                     if section == "Gamez":
-                        if option in ["username", "password" ]: # these are no-longer needed.
+                        if option in ["username", "password"]:  # these are no-longer needed.
                             continue
                         if option == "gzCategory":
-                            categories.extend(value.split(','))
-                        confignew.set(section, option, value)
+                            continue
 
                     if section == "Torrent":
                         if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
-                            section = "Extensions" # these were moved
-                        if option == "useLink": # Sym links supported now as well.
+                            section = "Extensions"  # these were moved
+                        if option == "useLink":  # Sym links supported now as well.
                             if isinstance(value, int):
                                 num_value = int(value)
                                 if num_value == 1:
                                     value = "hard"
                                 else:
                                     value = "no"
-                        confignew.set(section, option, value)
 
-                    if section == "Extensions":
-                        confignew.set(section, option, value)
-
-                    if section == "Transcoder":
-                        confignew.set(section, option, value)
-
-                    if section == "WakeOnLan":
-                        confignew.set(section, option, value)
-
-                    if section == "UserScript":
-                        confignew.set(section, option, value)
-
-                    if section == "ASCII":
-                        confignew.set(section, option, value)
-
-                    if section == "passwords":
-                        confignew.set(section, option, value)
-
-                    if section == "loggers":
-                        confignew.set(section, option, value)
-
-                    if section == "handlers":
-                        confignew.set(section, option, value)
-
-                    if section == "formatters":
-                        confignew.set(section, option, value)
-
-                    if section == "logger_root":
-                        confignew.set(section, option, value)
-
-                    if section == "handler_console":
-                        confignew.set(section, option, value)
-
-                    if section == "formatter_generic":
-                        confignew.set(section, option, value)
-            except config.InterpolationMissingOptionError:
-                pass
-
-        for section in categories:
-            try:
-                if configold.items(section):
-                    confignew.add_section(section)
-
-                    for option, value in configold.items(section):
-                        confignew.set(section, option, value)
-            except config.NoSectionError:
-                continue
+                    if subsection:
+                        confignew[section][subsection][option] = value
+                    else:
+                        confignew[section][option] = value
+        except:
+            return False
 
         # create a backup of our old config
         if os.path.isfile(config.CONFIG_FILE):
@@ -160,55 +131,65 @@ class migratecfg:
     def addnzbget(self):
         confignew = config()
         section = "CouchPotato"
-        envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
-        cfgKeys = ['cpsCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
+        envCatKey = 'NZBPO_CPSCATEGORY'
+        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
+        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
         for index in range(len(envKeys)):
             key = 'NZBPO_CPS' + envKeys[index]
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                    confignew[section][envCatKey][option] = value
 
 
         section = "SickBeard"
-        envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
-        cfgKeys = ['sbCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
+        envCatKey = 'NZBPO_SBCATEGORY'
+        envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
+        cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
         for index in range(len(envKeys)):
             key = 'NZBPO_SB' + envKeys[index]
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                    confignew[section][envCatKey][option] = value
 
         section = "HeadPhones"
-        envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
-        cfgKeys = ['hpCategory', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
+        envCatKey = 'NZBPO_HPCATEGORY'
+        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
+        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
         for index in range(len(envKeys)):
             key = 'NZBPO_HP' + envKeys[index]
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                    confignew[section][envCatKey][option] = value
 
         section = "Mylar"
-        envKeys = ['CATEGORY', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
-        cfgKeys = ['mlCategory', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
+        envCatKey = 'NZBPO_MYCATEGORY'
+        envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
+        cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root']
         for index in range(len(envKeys)):
             key = 'NZBPO_MY' + envKeys[index]
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                    confignew[section][envCatKey][option] = value
 
         section = "Gamez"
-        envKeys = ['CATEGORY', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
-        cfgKeys = ['gzCategory', 'apikey', 'host', 'port', 'ssl', 'web_root']
+        envCatKey = 'NZBPO_GZCATEGORY'
+        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
+        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root']
         for index in range(len(envKeys)):
             key = 'NZBPO_GZ' + envKeys[index]
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                    confignew[section][envCatKey][option] = value
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
@@ -218,7 +199,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                confignew[section][option] = value
 
         section = "Transcoder"
         envKeys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'OUTPUTAUDIOBITRATE', 'OUTPUTSUBTITLECODEC']
@@ -228,7 +209,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                confignew[section][option] = value
 
         section = "WakeOnLan"
         envKeys = ['WAKE', 'HOST', 'PORT', 'MAC']
@@ -238,7 +219,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew.set(section, option, value)
+                confignew[section][option] = value
 
         # create a backup of our old config
         if os.path.isfile(config.CONFIG_FILE):

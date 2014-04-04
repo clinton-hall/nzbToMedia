@@ -10,6 +10,7 @@ import logging
 import re
 import shutil
 from subprocess import Popen
+from itertools import chain
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
@@ -48,21 +49,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    # init autoFork
-    if inputCategory in sbCategory:
-        fork, fork_params = autoFork("SickBeard")
-    elif inputCategory in cpsCategory:
-        fork, fork_params = autoFork("CouchPotato")
-    elif inputCategory in hpCategory:
-        fork, fork_params = autoFork("HeadPhones")
-    elif inputCategory in gzCategory:
-        fork, fork_params = autoFork("Gamez")
-    elif inputCategory in mlCategory:
-        fork, fork_params = autoFork("Mylar")
-    else:
-        fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)][0]
-
-    if inputCategory in sbCategory:
+    if inputCategory in sections["SickBeard"]:
+        fork, fork_params = autoFork("SickBeard", inputCategory)
+        Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
         if fork in config.SICKBEARD_TORRENT and Torrent_NoLink != 1:
             Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",fork ,inputName)
             result = autoProcessTV().processEpisode(inputDirectory, inputName, 0)
@@ -72,7 +61,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             sys.exit()
 
     outputDestination = ""
-    for category in categories:
+    for section, category in sections.items():
         if category == inputCategory:
             if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
                 Logger.info("MAIN: Download is a directory")
@@ -95,7 +84,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, os.path.splitext(safeName(inputName))[0]))
         Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
-    processOnly = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
+    processOnly = list(chain.from_iterable(sections.values()))
     if not "NONE" in user_script_categories: # if None, we only process the 5 listed.
         if "ALL" in user_script_categories: # All defined categories
             processOnly = categories
@@ -142,7 +131,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
+    noFlatten.extend(config.get_categories(["HeadPhones"]).values()) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
@@ -184,7 +173,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in hpCategory:  # Ignore samples
+                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in config.get_categories(["HeadPhones"]).values():  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
@@ -220,7 +209,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
                 continue
-            elif not inputCategory in cpsCategory + sbCategory: #process all for non-video categories.
+            elif not inputCategory in list(chain.from_iterable(config.get_categories(['CouchPotato','SickBeard']).values())): #process all for non-video categories.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
@@ -234,7 +223,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in cpsCategory + sbCategory:
+    if inputCategory in list(chain.from_iterable(config.get_categories(['CouchPotato','SickBeard']).values())):
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -254,12 +243,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         else:
             Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
 
-    processCategories = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
+    processCategories = list(chain.from_iterable(sections.values()))
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (inputCategory in hpCategory + mlCategory + gzCategory): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (inputCategory in list(chain.from_iterable(config.get_categories(['HeadPhones','Mylar','Gamez']).values()))): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
@@ -267,20 +256,20 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit(-1)
 
     result = 0
-    if inputCategory in cpsCategory:
+    if inputCategory in sections['CouchPotato'].values():
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
         download_id = inputHash
         result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
-    elif inputCategory in sbCategory:
+    elif inputCategory in sections['SickBeard'].values():
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in hpCategory:
+    elif inputCategory in sections['HeadPhones'].values():
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
         result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in mlCategory:
+    elif inputCategory in sections['Mylar'].values():
         Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in gzCategory:
+    elif inputCategory in sections['Gamez'].values():
         Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
         result = autoProcessGames().process(outputDestination, inputName, status, clientAgent, inputCategory)
 
@@ -417,58 +406,49 @@ if __name__ == "__main__":
     WakeUp()
 
     # EXAMPLE VALUES:
-    clientAgent = config().get("Torrent", "clientAgent")                                  # utorrent | deluge | transmission | rtorrent | other
-    useLink_in = config().get("Torrent", "useLink")                                          # no | hard | sym
-    outputDirectory = config().get("Torrent", "outputDirectory")                          # /abs/path/to/complete/
-    categories = (config().get("Torrent", "categories")).split(',')                       # music,music_videos,pictures,software
-    noFlatten = (config().get("Torrent", "noFlatten")).split(',')
+    clientAgent = config()["Torrent"]["clientAgent"]                                  # utorrent | deluge | transmission | rtorrent | other
+    useLink_in = config()["Torrent"]["useLink"]                                       # no | hard | sym
+    outputDirectory = config()["Torrent"]["outputDirectory"]                          # /abs/path/to/complete/
+    categories = (config()["Torrent"]["categories"])                                  # music,music_videos,pictures,software
+    noFlatten = (config()["Torrent"]["noFlatten"])
 
-    uTorrentWEBui = config().get("Torrent", "uTorrentWEBui")                              # http://localhost:8090/gui/
-    uTorrentUSR = config().get("Torrent", "uTorrentUSR")                                  # mysecretusr
-    uTorrentPWD = config().get("Torrent", "uTorrentPWD")                                  # mysecretpwr
+    uTorrentWEBui = config()["Torrent"]["uTorrentWEBui"]                              # http://localhost:8090/gui/
+    uTorrentUSR = config()["Torrent"]["uTorrentUSR"]                                  # mysecretusr
+    uTorrentPWD = config()["Torrent"]["uTorrentPWD"]                                  # mysecretpwr
 
-    TransmissionHost = config().get("Torrent", "TransmissionHost")                        # localhost
-    TransmissionPort = config().get("Torrent", "TransmissionPort")                        # 8084
-    TransmissionUSR = config().get("Torrent", "TransmissionUSR")                          # mysecretusr
-    TransmissionPWD = config().get("Torrent", "TransmissionPWD")                          # mysecretpwr
+    TransmissionHost = config()["Torrent"]["TransmissionHost"]                        # localhost
+    TransmissionPort = config()["Torrent"]["TransmissionPort"]                        # 8084
+    TransmissionUSR = config()["Torrent"]["TransmissionUSR"]                          # mysecretusr
+    TransmissionPWD = config()["Torrent"]["TransmissionPWD"]                          # mysecretpwr
 
-    DelugeHost = config().get("Torrent", "DelugeHost")                                    # localhost
-    DelugePort = config().get("Torrent", "DelugePort")                                    # 8084
-    DelugeUSR = config().get("Torrent", "DelugeUSR")                                      # mysecretusr
-    DelugePWD = config().get("Torrent", "DelugePWD")                                      # mysecretpwr
+    DelugeHost = config()["Torrent"]["DelugeHost"]                                    # localhost
+    DelugePort = config()["Torrent"]["DelugePort"]                                    # 8084
+    DelugeUSR = config()["Torrent"]["DelugeUSR"]                                      # mysecretusr
+    DelugePWD = config()["Torrent"]["DelugePWD"]                                      # mysecretpwr
 
-    deleteOriginal = int(config().get("Torrent", "deleteOriginal"))                       # 0
-    forceClean = int(config().get("Torrent", "forceClean"))                               # 0
+    deleteOriginal = int(config()["Torrent"]["deleteOriginal"])                       # 0
+    forceClean = int(config()["Torrent"]["forceClean"])                               # 0
 
-    compressedContainer = (config().get("Extensions", "compressedExtensions")).split(',') # .zip,.rar,.7z
-    mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')           # .mkv,.avi,.divx
-    metaContainer = (config().get("Extensions", "metaExtensions")).split(',')             # .nfo,.sub,.srt
-    minSampleSize = int(config().get("Extensions", "minSampleSize"))                      # 200 (in MB)
-    SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
+    compressedContainer = (config()["Extensions"]["compressedExtensions"]) # .zip,.rar,.7z
+    mediaContainer = (config()["Extensions"]["mediaExtensions"])           # .mkv,.avi,.divx
+    metaContainer = (config()["Extensions"]["metaExtensions"])             # .nfo,.sub,.srt
+    minSampleSize = int(config()["Extensions"]["minSampleSize"])                      # 200 (in MB)
+    SampleIDs = (config()["Extensions"]["SampleIDs"])                      # sample,-s.
 
-    Torrent_NoLink = int(config().get("SickBeard", "Torrent_NoLink"))                     # 0
-    cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
-    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
-    hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
-    mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
-    gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games
-    categories.extend(cpsCategory)
-    categories.extend(sbCategory)
-    categories.extend(hpCategory)
-    categories.extend(mlCategory)
-    categories.extend(gzCategory)
+    sections = config.get_categories(["CouchPotato", "SickBeard", "HeadPhones", "Mylar", "Gamez"])
+    categories += list(chain.from_iterable(sections.values()))
 
-    user_script_categories = config().get("UserScript", "user_script_categories").split(',')         # NONE
+    user_script_categories = config()["UserScript"]["user_script_categories"]         # NONE
     if not "NONE" in user_script_categories:
-        user_script_mediaExtensions = (config().get("UserScript", "user_script_mediaExtensions")).split(',')
-        user_script = config().get("UserScript", "user_script_path")
-        user_script_param = (config().get("UserScript", "user_script_param")).split(',')
-        user_script_successCodes = (config().get("UserScript", "user_script_successCodes")).split(',')
-        user_script_clean = int(config().get("UserScript", "user_script_clean"))
-        user_delay = int(config().get("UserScript", "delay"))
-        user_script_runOnce = int(config().get("UserScript", "user_script_runOnce"))
+        user_script_mediaExtensions = (config()["UserScript"]["user_script_mediaExtensions"])
+        user_script = config()["UserScript"]["user_script_path"]
+        user_script_param = (config()["UserScript"]["user_script_param"])
+        user_script_successCodes = (config()["UserScript"]["user_script_successCodes"])
+        user_script_clean = int(config()["UserScript"]["user_script_clean"])
+        user_delay = int(config()["UserScript"]["delay"])
+        user_script_runOnce = int(config()["UserScript"]["user_script_runOnce"])
 
-    transcode = int(config().get("Transcoder", "transcode"))
+    transcode = int(config()["Transcoder"]["transcode"])
 
     n = 0
     for arg in sys.argv:

@@ -19,25 +19,23 @@ class autoProcessComics:
         Logger.info("Loading config from %s", config.CONFIG_FILE)
 
         section = "Mylar"
-        if inputCategory != None and config().has_section(inputCategory):
-            section = inputCategory
-        host = config().get(section, "host")
-        port = config().get(section, "port")
-        username = config().get(section, "username")
-        password = config().get(section, "password")
+        host = config()[section][inputCategory]["host"]
+        port = config()[section][inputCategory]["port"]
+        username = config()[section][inputCategory]["username"]
+        password = config()[section][inputCategory]["password"]
         try:
-            ssl = int(config().get(section, "ssl"))
-        except (config.NoOptionError, ValueError):
+            ssl = int(config()[section][inputCategory]["ssl"])
+        except:
             ssl = 0
 
         try:
-            web_root = config().get(section, "web_root")
-        except config.NoOptionError:
+            web_root = config()[section][inputCategory]["web_root"]
+        except:
             web_root = ""
 
         try:
-            watch_dir = config().get(section, "watch_dir")
-        except config.NoOptionError:
+            watch_dir = config()[section][inputCategory]["watch_dir"]
+        except:
             watch_dir = ""
         params = {}
 

@@ -20,21 +20,18 @@ class autoProcessGames:
         status = int(status)
 
         section = "Gamez"
-        if inputCategory != None and config().has_section(inputCategory):
-            section = inputCategory
-
-        host = config().get(section, "host")
-        port = config().get(section, "port")
-        apikey = config().get(section, "apikey")
+        host = config()[section][inputCategory]["host"]
+        port = config()[section][inputCategory]["port"]
+        apikey = config()[section][inputCategory]["apikey"]
 
         try:
-            ssl = int(config().get(section, "ssl"))
-        except (config.NoOptionError, ValueError):
+            ssl = int(config()[section][inputCategory]["ssl"])
+        except:
             ssl = 0
 
         try:
-            web_root = config().get(section, "web_root")
-        except config.NoOptionError:
+            web_root = config()[section][inputCategory]["web_root"]
+        except:
             web_root = ""
 
         if ssl:

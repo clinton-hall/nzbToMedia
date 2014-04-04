@@ -26,62 +26,59 @@ class autoProcessTV:
         status = int(failed)
 
         section = "SickBeard"
-        if inputCategory != None and config().has_section(inputCategory):
-            section = inputCategory
-
-        host = config().get(section, "host")
-        port = config().get(section, "port")
-        username = config().get(section, "username")
-        password = config().get(section, "password")
+        host = config()[section][inputCategory]["host"]
+        port = config()[section][inputCategory]["port"]
+        username = config()[section][inputCategory]["username"]
+        password = config()[section][inputCategory]["password"]
 
         try:
-            ssl = int(config().get(section, "ssl"))
-        except (config.NoOptionError, ValueError):
+            ssl = int(config()[section][inputCategory]["ssl"])
+        except:
             ssl = 0
         try:
-            web_root = config().get(section, "web_root")
-        except config.NoOptionError:
+            web_root = config()[section][inputCategory]["web_root"]
+        except:
             web_root = ""
         try:
-            watch_dir = config().get(section, "watch_dir")
-        except config.NoOptionError:
+            watch_dir = config()[section][inputCategory]["watch_dir"]
+        except:
             watch_dir = ""
         try:
-            transcode = int(config().get("Transcoder", "transcode"))
-        except (config.NoOptionError, ValueError):
+            transcode = int(config()["Transcoder"]["transcode"])
+        except:
             transcode = 0
         try:
-            delete_failed = int(config().get(section, "delete_failed"))
-        except (config.NoOptionError, ValueError):
+            delete_failed = int(config()[section][inputCategory]["delete_failed"])
+        except:
             delete_failed = 0
         try:
-            delay = float(config().get(section, "delay"))
-        except (config.NoOptionError, ValueError):
+            delay = float(config()[section][inputCategory]["delay"])
+        except:
             delay = 0
         try:
-            TimePerGiB = int(config().get(section, "TimePerGiB"))
-        except (config.NoOptionError, ValueError):
+            TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
+        except:
             TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
         try:
-            SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')
-        except (config.NoOptionError, ValueError):
+            SampleIDs = (config()["Extensions"]["SampleIDs"])
+        except:
             SampleIDs = ['sample','-s.']
         try:
-            nzbExtractionBy = config().get(section, "nzbExtractionBy")
-        except (config.NoOptionError, ValueError):
+            nzbExtractionBy = config()[section][inputCategory]["nzbExtractionBy"]
+        except:
             nzbExtractionBy = "Downloader"
         try:
-            process_method = config().get(section, "process_method")
-        except config.NoOptionError:
+            process_method = config()[section][inputCategory]["process_method"]
+        except:
             process_method = None
         try:
-            Torrent_NoLink = int(config().get(section, "Torrent_NoLink"))
-        except (config.NoOptionError, ValueError):
+            Torrent_NoLink = int(config()[section][inputCategory]["Torrent_NoLink"])
+        except:
             Torrent_NoLink = 0
 
 
-        mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
-        minSampleSize = int(config().get("Extensions", "minSampleSize"))
+        mediaContainer = (config()["Extensions"]["mediaExtensions"])
+        minSampleSize = int(config()["Extensions"]["minSampleSize"])
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -94,7 +91,7 @@ class autoProcessTV:
             dirName = SpecificPath
 
         # auto-detect fork type
-        fork, params = autoFork(section)
+        fork, params = autoFork(section, inputCategory)
 
         if fork not in config.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if nzbName:
@@ -141,7 +138,7 @@ class autoProcessTV:
                 params[param] = dirName
 
             if param == "process_method":
-                if fork in SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
+                if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
                     del params[param]
                 if process_method:
                     params[param] = process_method

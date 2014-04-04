@@ -173,35 +173,32 @@ class autoProcessMovie:
         status = int(status)
 
         section = "CouchPotato"
-        if inputCategory != None and config().has_section(inputCategory):
-            section = inputCategory
-
-        host = config().get(section, "host")
-        port = config().get(section, "port")
-        apikey = config().get(section, "apikey")
-        delay = float(config().get(section, "delay"))
-        method = config().get(section, "method")
-        delete_failed = int(config().get(section, "delete_failed"))
-        wait_for = int(config().get(section, "wait_for"))
+        host = config()[section][inputCategory]["host"]
+        port = config()[section][inputCategory]["port"]
+        apikey = config()[section][inputCategory]["apikey"]
+        delay = float(config()[section][inputCategory]["delay"])
+        method = config()[section][inputCategory]["method"]
+        delete_failed = int(config()[section][inputCategory]["delete_failed"])
+        wait_for = int(config()[section][inputCategory]["wait_for"])
         try:
-            TimePerGiB = int(config().get(section, "TimePerGiB"))
-        except (config.NoOptionError, ValueError):
+            TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
+        except:
             TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
         try:
-            ssl = int(config().get(section, "ssl"))
-        except (config.NoOptionError, ValueError):
+            ssl = int(config()[section][inputCategory]["ssl"])
+        except:
             ssl = 0
         try:
-            web_root = config().get(section, "web_root")
-        except config.NoOptionError:
+            web_root = config()[section][inputCategory]["web_root"]
+        except:
             web_root = ""
         try:
-            transcode = int(config().get("Transcoder", "transcode"))
-        except (config.NoOptionError, ValueError):
+            transcode = int(config()["Transcoder"]["transcode"])
+        except:
             transcode = 0
         try:
-            remoteCPS = int(config().get(section, "remoteCPS"))
-        except (config.NoOptionError, ValueError):
+            remoteCPS = int(config()[section][inputCategory]["remoteCPS"])
+        except:
             remoteCPS = 0
 
         nzbName = str(nzbName) # make sure it is a string

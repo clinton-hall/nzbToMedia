@@ -21,25 +21,22 @@ class autoProcessMusic:
         status = int(status)
 
         section = "HeadPhones"
-        if inputCategory != None and config().has_section(inputCategory):
-            section = inputCategory
-
-        host = config().get(section, "host")
-        port = config().get(section, "port")
-        apikey = config().get(section, "apikey")
-        delay = float(config().get(section, "delay"))
+        host = config()[section][inputCategory]["host"]
+        port = config()[section][inputCategory]["port"]
+        apikey = config()[section][inputCategory]["apikey"]
+        delay = float(config()[section][inputCategory]["delay"])
 
         try:
-            ssl = int(config().get(section, "ssl"))
-        except (config.NoOptionError, ValueError):
+            ssl = int(config()[section][inputCategory]["ssl"])
+        except:
             ssl = 0
         try:
-            web_root = config().get(section, "web_root")
-        except config.NoOptionError:
+            web_root = config()[section][inputCategory]["web_root"]
+        except:
             web_root = ""
         try:
-            TimePerGiB = int(config().get(section, "TimePerGiB"))
-        except (config.NoOptionError, ValueError):
+            TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
+        except:
             TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
         if ssl:
             protocol = "https://"

@@ -148,8 +148,8 @@ if migratecfg().migrate():
 else:
     sys.exit(-1)
 
-# couchpotato category
-cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')  # movie
+# setup sections and categories
+categories = config.get_categories(["CouchPotato"])
 
 WakeUp()
 
@@ -239,10 +239,13 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
 
-    for dirName in get_dirnames("CouchPotato", cpsCategory[0]):
-        Logger.info("MAIN: Calling CouchPotato to post-process: %s", dirName)
-        result = autoProcessMovie().process(dirName, dirName, 0)
-        if result != 0: break
+    for section, category in categories.items():
+        for dirName in get_dirnames(section, category):
+            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+            results = autoProcessMovie().process(dirName, dirName, 0)
+            if results != 0:
+                result = 1
+                Logger.info("MAIN: A problem was reported in the autoProcessMovie script.")
 
 if result == 0:
     Logger.info("MAIN: The autoProcessMovie script completed successfully.")

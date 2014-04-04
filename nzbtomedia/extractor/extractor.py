@@ -113,7 +113,7 @@ def extract(filePath, outputDestination):
 
     Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
 
-    passwordsfile = config().get("passwords", "PassWordFile")
+    passwordsfile = config()["passwords"]["PassWordFile"]
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
         passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
     else:

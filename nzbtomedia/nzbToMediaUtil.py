@@ -32,7 +32,8 @@ def safeName(name):
 def nzbtomedia_configure_logging(logfile=None):
     if not logfile:
         logfile = config.LOG_FILE
-    logging.config.fileConfig(config.CONFIG_FILE)
+
+    logging.config.fileConfig(config.LOG_CONFIG)
     fileHandler = logging.handlers.RotatingFileHandler(logfile, mode='a', maxBytes=1048576, backupCount=1, encoding='utf-8', delay=True)
     fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
     fileHandler.level = logging.DEBUG
@@ -329,14 +330,14 @@ def WakeUp():
         Logger.error("You need an autoProcessMedia.config() file - did you rename and edit the .sample?")
         return
 
-    wake = int(config().get("WakeOnLan", "wake"))
+    wake = int(config()["WakeOnLan"]["wake"])
     if wake == 0: # just return if we don't need to wake anything.
         return
     Logger.info("Loading WakeOnLan config from %s", config.CONFIG_FILE)
-    config().get("WakeOnLan", "host")
-    host = config().get("WakeOnLan", "host")
-    port = int(config().get("WakeOnLan", "port"))
-    mac = config().get("WakeOnLan", "mac")
+    config()["WakeOnLan"]["host"]
+    host = config()["WakeOnLan"]["host"]
+    port = int(config()["WakeOnLan"]["port"])
+    mac = config()["WakeOnLan"]["mac"]
 
     i=1
     while TestCon(host, port) == "Down" and i < 4:
@@ -355,7 +356,7 @@ def convert_to_ascii(nzbName, dirName):
         Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return nzbName, dirName
 
-    ascii_convert = int(config().get("ASCII", "convert"))
+    ascii_convert = int(config()["ASCII"]["convert"])
     if ascii_convert == 0 or os.name == 'nt': # just return if we don't want to convert or on windows os and "\" is replaced!.
         return nzbName, dirName
     
@@ -452,12 +453,12 @@ def parse_args(clientAgent):
 
 def get_dirnames(section, category):
     try:
-        watch_dir = config().get(section, "watch_dir")
-    except config.NoOptionError:
+        watch_dir = config()[section][inputCategory]["watch_dir"]
+    except:
         watch_dir = ""
     try:
-        outputDirectory = os.path.join(config().get("Torrent", "outputDirectory"), category)
-    except config.NoOptionError:
+        outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], category)
+    except:
         outputDirectory = ""
 
     # set dirName

@@ -151,7 +151,7 @@ else:
     sys.exit(-1)
 
 # sickbeard category
-sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
+categories = config.get_categories(["SickBeard"])
 
 WakeUp()
 
@@ -231,15 +231,18 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     clientAgent = "sabnzbd"
     result = autoProcessTV().processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
+    result = 0
+
     Logger.debug("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
 
-    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
-    result = 1
-    for dirName in get_dirnames("SickBeard", sbCategory[0]):
-        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", dirName)
-        result = autoProcessTV().processEpisode(dirName, dirName, 0)
-        if result != 0: break
+    for section, category in categories.items():
+        for dirName in get_dirnames(section, category):
+            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+            results = autoProcessTV().processEpisode(dirName, dirName, 0)
+            if results != 0:
+                result = 1
+                Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
 
 if result == 0:
     Logger.info("MAIN: The autoProcessTV script completed successfully.")

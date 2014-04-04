@@ -84,7 +84,7 @@ else:
     sys.exit(-1)
 
 # gamez category
-gzCategory = (config().get("Gamez", "gzCategory")).split(',')  # gamez
+categories = config.get_categories(['Gamez'])
 
 WakeUp()
 
@@ -162,13 +162,17 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     result = autoProcessGames().process(sys.argv[1], sys.argv[3], sys.argv[7])
 else:
     result = 0
+
     Logger.warn("MAIN: Invalid number of arguments received from client. Exiting")
     Logger.info("MAIN: Running autoProcessGames as a manual run...")
 
-    for dirName in get_dirnames("Gamez", gzCategory[0]):
-        Logger.info("MAIN: Calling Gamez to post-process: %s", dirName)
-        result = autoProcessGames().process(dirName, dirName, 0)
-        if result != 0: break
+    for section, category in categories.items():
+        for dirName in get_dirnames(section, category):
+            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+            results = autoProcessGames().process(dirName, dirName, 0)
+            if results != 0:
+                result = 1
+                Logger.info("MAIN: A problem was reported in the autoProcessGames script.")
 
 if result == 0:
     Logger.info("MAIN: The autoProcessGames script completed successfully.")

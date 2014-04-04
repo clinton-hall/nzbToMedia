@@ -288,7 +288,7 @@ from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_
 
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
-    if inputCategory in cpsCategory:
+    if inputCategory in sections["CouchPotato"]:
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
@@ -298,7 +298,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         else:
             Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
             return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif inputCategory in sbCategory:
+    elif inputCategory in sections["SickBeard"]:
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
@@ -308,7 +308,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         else:
             Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
             return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in hpCategory:
+    elif inputCategory in sections["HeadPhones"]:
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling Headphones to post-process: %s", dirName)
@@ -318,7 +318,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         else:
             Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
             return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in mlCategory:
+    elif inputCategory in sections["Mylar"]:
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling Mylar to post-process: %s", dirName)
@@ -328,7 +328,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         else:
             Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
             return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in gzCategory:
+    elif inputCategory in sections["Gamez"]:
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling Gamez to post-process: %s", dirName)
@@ -361,12 +361,8 @@ else:
     print("Unable to find " + config.CONFIG_FILE + " or " + config.SAMPLE_CONFIG_FILE)
     sys.exit(-1)
 
-# setup categories
-cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',') or []
-sbCategory = (config().get("SickBeard", "sbCategory")).split(',') or []
-hpCategory = (config().get("HeadPhones", "hpCategory")).split(',') or []
-mlCategory = (config().get("Mylar", "mlCategory")).split(',') or []
-gzCategory = (config().get("Gamez", "gzCategory")).split(',') or []
+# setup sections and categories
+sections = config.get_categories(["CouchPotato","SickBeard","HeadPhones","Mylar","Gamez"])
 
 WakeUp()
 
@@ -453,30 +449,15 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
     if result != 0:Logger.info("MAIN: A problem was reported in the autoProcess* script.")
 else:
-    # only CPS and SB supports this manual run for now.
-    Logger.warn("MAIN: Invalid number of arguments received from client.")
-
-    Logger.info("MAIN: Running autoProcessMovie as a manual run...")
-    if process(get_dirnames("CouchPotato", cpsCategory[0]), inputName=get_dirnames("CouchPotato", cpsCategory[0]), status=0, inputCategory=cpsCategory[0], clientAgent = "manual", download_id='') != 0:
-        Logger.info("MAIN: A problem was reported in the autoProcessMovie script.")
-
-    Logger.info("MAIN: Running autoProcessTV as a manual run...")
-    if process(get_dirnames("SickBeard", sbCategory[0]), inputName=get_dirnames("SickBeard", sbCategory[0]), status=0, clientAgent = "manual", inputCategory=sbCategory[0]) != 0:
-        Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
-
-    Logger.info("MAIN: Running autoProcessMusic as a manual run...")
-    if process(get_dirnames("HeadPhones", hpCategory[0]), inputName=get_dirnames("HeadPhones", hpCategory[0]), status=0, clientAgent = "manual", inputCategory=hpCategory[0]) != 0:
-        Logger.info("MAIN: A problem was reported in the autoProcessMusic script.")
-
-    Logger.info("MAIN: Running autoProcessComics as a manual run...")
-    if process(get_dirnames("Mylar", mlCategory[0]), inputName=get_dirnames("Mylar", mlCategory[0]), status=0,clientAgent="manual", inputCategory=mlCategory[0]) != 0:
-        Logger.info("MAIN: A problem was reported in the autoProcessComics script.")
-
-    Logger.info("MAIN: Running autoProcessGames as a manual run...")
-    if process(get_dirnames("Gamez", gzCategory[0]), inputName=get_dirnames("Gamez", gzCategory[0]), status=0,clientAgent="manual", inputCategory=gzCategory[0]) != 0:
-        Logger.info("MAIN: A problem was reported in the autoProcessGames script.")
-
     result = 0
+
+    Logger.warn("MAIN: Invalid number of arguments received from client.")
+    for section, categories in sections.items():
+        for category in categories:
+            dirnames = get_dirnames(section, category)
+            Logger.info("MAIN: Running " + section + ":" + category + " as a manual run...")
+            if process(dirnames, inputName=dirnames, status=0, inputCategory=category, clientAgent = "manual") != 0:
+                Logger.info("MAIN: A problem was reported when trying to manually run " + section + ":" + category + ".")
 
 if result == 0:
     Logger.info("MAIN: The nzbToMedia script completed successfully.")

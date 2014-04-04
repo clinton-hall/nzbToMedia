@@ -5,33 +5,37 @@ from lib import requests
 
 from nzbToMediaConfig import config
 
-def autoFork(section):
+def autoFork(section, category):
 
     Logger = logging.getLogger()
 
     # config settings
-    host = config().get(section, "host")
-    port = config().get(section, "port")
+    try:
+        host = config()[section][category]["host"]
+        port = config()[section][category]["port"]
+    except:
+        host = None
+        port = None
 
     try:
-        username = config().get(section, "username")
-        password = config().get(section, "password")
+        username = config()[section][category]["username"]
+        password = config()[section][category]["password"]
     except:
         username = None
         password = None
 
     try:
-        ssl = int(config().get(section, "ssl"))
-    except (config.NoOptionError, ValueError):
+        ssl = int(config()[section][category]["ssl"])
+    except (config, ValueError):
         ssl = 0
 
     try:
-        web_root = config().get(section, "web_root")
-    except config.NoOptionError:
+        web_root = config()[section][category]["web_root"]
+    except config:
         web_root = ""
 
     try:
-        fork = config.FORKS.items()[config.FORKS.keys().index(config().get(section, "fork"))]
+        fork = config.FORKS.items()[config.FORKS.keys().index(config()[section][category]["fork"])]
     except:
         fork = "auto"
 
@@ -53,7 +57,7 @@ def autoFork(section):
                 else:
                     r = requests.get(url)
             except requests.ConnectionError:
-                Logger.info("Could not connect to " + section + " to perform auto-fork detection!")
+                Logger.info("Could not connect to " + section + ":" + category + " to perform auto-fork detection!")
                 break
 
             if r.ok:
@@ -61,10 +65,10 @@ def autoFork(section):
                 break
 
         if detected:
-            Logger.info("" + section + " fork auto-detection successful ...")
+            Logger.info("" + section + ":" + category + " fork auto-detection successful ...")
         else:
-            Logger.info("" + section + " fork auto-detection failed")
+            Logger.info("" + section + ":" + category + " fork auto-detection failed")
             fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)]
 
-    Logger.info("" + section + " fork set to %s", fork[0])
+    Logger.info("" + section + ":" + category + " fork set to %s", fork[0])
     return fork[0], fork[1]

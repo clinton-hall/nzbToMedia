@@ -1,5 +1,5 @@
 import os
-import ConfigParser
+from lib import configobj
 
 class config(object):
     # constants for nzbtomedia
@@ -34,28 +34,32 @@ class config(object):
     MOVIE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
     TV_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
     LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
+    LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
 
-    # config error handling classes
-    Error = ConfigParser.Error
-    NoSectionError = ConfigParser.NoSectionError
-    NoOptionError = ConfigParser.NoOptionError
-    DuplicateSectionError = ConfigParser.DuplicateSectionError
-    InterpolationError = ConfigParser.InterpolationError
-    InterpolationMissingOptionError = ConfigParser.InterpolationMissingOptionError
-    InterpolationSyntaxError = ConfigParser.InterpolationSyntaxError
-    InterpolationDepthError = ConfigParser.InterpolationDepthError
-    ParsingError = ConfigParser.ParsingError
-    MissingSectionHeaderError = ConfigParser.MissingSectionHeaderError
-
-    def __new__(cls, *file):
-        if not file:
-            file = cls.CONFIG_FILE
-        return cls.loadConfig(file)
+    def __new__(cls, *config_file):
+        try:
+            # load config
+            if not config_file:
+                return configobj.ConfigObj(cls.CONFIG_FILE)
+            else:
+                return configobj.ConfigObj(*config_file)
+        except Exception, e:
+            return
 
     @staticmethod
-    def loadConfig(file):
-        # load config
-        config = ConfigParser.ConfigParser()
-        config.optionxform = str
-        if config.read(file):
-            return config
+    def get_categories(section):
+        sections = {}
+
+        # check and return categories if section does exist
+        if not isinstance(section, list):
+            section = [section]
+
+        for x in section:
+            if config().has_key(x):
+                sections.update({x: config()[x].sections})
+        return sections
+
+    @staticmethod
+    def gather_subsection(section, key):
+        if section.depth > 1:
+            return section.name
