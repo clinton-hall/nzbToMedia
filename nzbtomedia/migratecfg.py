@@ -5,6 +5,8 @@ from nzbtomedia.nzbToMediaConfig import config
 class migratecfg:
     def migrate(self):
         categories = []
+        confignew = None
+        configold = None
 
         try:
             # check for autoProcessMedia.cfg and create if it does not exist
@@ -19,12 +21,12 @@ class migratecfg:
                 shutil.copyfile(config.CONFIG_FILE, config.SAMPLE_CONFIG_FILE)
             confignew = config(config.SAMPLE_CONFIG_FILE)
         except:pass
-        
+
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.sample and if they don't exist return and fail
-        if not config() and not config(config.SAMPLE_CONFIG_FILE):
+        if not config() and not config(config.SAMPLE_CONFIG_FILE) or not confignew or not configold:
             return False
 
-    section = "CouchPotato"
+        section = "CouchPotato"
         for option, value in configold.items(section) or config(config.MOVIE_CONFIG_FILE).items(section):
             if option == "category": # change this old format
                 option = "cpsCategory"
