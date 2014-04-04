@@ -42,7 +42,7 @@ def autoFork(section):
 
     detected = False
     if fork == "auto":
-        Logger.info("Attempting to auto-detect SickBeard fork")
+        Logger.info("Attempting to auto-detect " + section + " fork")
         for fork in sorted(config.FORKS.iteritems()):
             url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
 
@@ -53,7 +53,7 @@ def autoFork(section):
                 else:
                     r = requests.get(url)
             except requests.ConnectionError:
-                Logger.info("Could not connect to SickBeard to perform auto-fork detection!")
+                Logger.info("Could not connect to " + section + " to perform auto-fork detection!")
                 break
 
             if r.ok:
@@ -61,10 +61,10 @@ def autoFork(section):
                 break
 
         if detected:
-            Logger.info("SickBeard fork auto-detection successful ...")
+            Logger.info("" + section + " fork auto-detection successful ...")
         else:
-            Logger.info("SickBeard fork auto-detection failed")
+            Logger.info("" + section + " fork auto-detection failed")
             fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)]
 
-    Logger.info("SickBeard fork set to %s", fork[0])
+    Logger.info("" + section + " fork set to %s", fork[0])
     return fork[0], fork[1]
