@@ -5,7 +5,6 @@ import struct
 import shutil
 import sys
 import time
-import requests
 import logging
 import logging.config
 import logging.handlers
@@ -483,8 +482,3 @@ def delete(dirName):
         shutil.rmtree(dirName, True)
     except:
         Logger.exception("Unable to delete folder %s", dirName)
-
-def getURL(url, username, password):
-    r = requests.get(url, auth=(username, password))
-    return r
-

@@ -3,8 +3,8 @@ import logging
 import os
 import socket
 import urllib
-import requests
 import time
+from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaConfig import config

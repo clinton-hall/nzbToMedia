@@ -1,7 +1,7 @@
 import json
 import logging
 import socket
-import requests
+from lib import requests
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 

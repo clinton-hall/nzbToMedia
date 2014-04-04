@@ -3,9 +3,9 @@ import datetime
 import logging
 import socket
 import urllib
-import requests
 import shutil
 import json
+from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions

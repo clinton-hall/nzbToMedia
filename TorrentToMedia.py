@@ -1,6 +1,10 @@
 #!/usr/bin/env python
-import time
+
+# adds lib directory to system path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
+
 import datetime
+import time
 import logging
 import os
 import re
@@ -21,6 +25,7 @@ from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
+
 
 def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
@@ -58,10 +63,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         fork, fork_params = autoFork("Mylar")
     else:
         fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)][0]
-        fork_params = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)][0]
 
     if inputCategory in sbCategory:
-        if fork in config.SICKBEARD_TORRENT and Torrent_ForceLink != 1:
+        if fork in config.SICKBEARD_TORRENT and Torrent_NoLink != 1:
             Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",fork ,inputName)
             result = autoProcessTV().processEpisode(inputDirectory, inputName, 0)
             if result != 0:
@@ -444,9 +448,9 @@ if __name__ == "__main__":
     minSampleSize = int(config().get("Extensions", "minSampleSize"))                      # 200 (in MB)
     SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
 
+    Torrent_NoLink = int(config().get("SickBeard", "Torrent_NoLink"))                     # 0
     cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
-    Torrent_NoLink = int(config().get("SickBeard", "Torrent_NoLink"))                     # 0
     hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
     gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games

@@ -1,8 +1,8 @@
 import logging
 import urllib
-import requests
 import socket
 import time
+from lib import requests
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 

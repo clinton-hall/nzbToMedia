@@ -1,4 +1,8 @@
 #!/usr/bin/env python
+
+# adds lib directory to system path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
+
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -121,7 +125,6 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-# Exit codes used by NZBGet
 import logging
 import os
 import sys

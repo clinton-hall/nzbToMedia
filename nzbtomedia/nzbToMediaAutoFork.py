@@ -1,13 +1,14 @@
 import logging
 import urllib
-import requests
+
+from lib import requests
 
 from nzbToMediaConfig import config
 
 def autoFork(section):
+
     Logger = logging.getLogger()
-    if not config().has_section(section):
-        section = "SickBeard"
+
     # config settings
     host = config().get(section, "host")
     port = config().get(section, "port")
