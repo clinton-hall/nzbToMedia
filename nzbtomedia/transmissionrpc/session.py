@@ -2,9 +2,9 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-from transmissionrpc.utils import Field
+from nzbtomedia.transmissionrpc.utils import Field
 
-from six import iteritems, integer_types
+from nzbtomedia.transmissionrpc.six import iteritems, integer_types
 
 class Session(object):
     """

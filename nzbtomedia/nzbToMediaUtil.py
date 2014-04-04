@@ -1,15 +1,17 @@
+import os
+import re
+import socket
+import struct
+import shutil
+import sys
+import time
+import requests
 import logging
 import logging.config
-import re
-import sys
-import shutil
-import struct
-import socket
-import time
+import logging.handlers
 
-import linktastic.linktastic as linktastic
-from nzbToMediaConfig import *
-
+from nzbtomedia.linktastic import linktastic
+from nzbtomedia.nzbToMediaConfig import config
 
 Logger = logging.getLogger()
 
@@ -30,8 +32,8 @@ def safeName(name):
 
 def nzbtomedia_configure_logging(logfile=None):
     if not logfile:
-        logfile = LOG_FILE
-    logging.config.fileConfig(CONFIG_FILE)
+        logfile = config.LOG_FILE
+    logging.config.fileConfig(config.CONFIG_FILE)
     fileHandler = logging.handlers.RotatingFileHandler(logfile, mode='a', maxBytes=1048576, backupCount=1, encoding='utf-8', delay=True)
     fileHandler.formatter = logging.Formatter('%(asctime)s|%(levelname)-7.7s %(message)s', '%H:%M:%S')
     fileHandler.level = logging.DEBUG
@@ -315,7 +317,6 @@ def WakeOnLan(ethernet_address):
     ss.sendto(msg, ('<broadcast>', 9))
     ss.close()
 
-
 #Test Connection function
 def TestCon(host, port):
     try:
@@ -323,7 +324,6 @@ def TestCon(host, port):
         return "Up"
     except:
         return "Down"
-
 
 def WakeUp():
     if not config():
@@ -333,7 +333,7 @@ def WakeUp():
     wake = int(config().get("WakeOnLan", "wake"))
     if wake == 0: # just return if we don't need to wake anything.
         return
-    Logger.info("Loading WakeOnLan config from %s", CONFIG_FILE)
+    Logger.info("Loading WakeOnLan config from %s", config.CONFIG_FILE)
     config().get("WakeOnLan", "host")
     host = config().get("WakeOnLan", "host")
     port = int(config().get("WakeOnLan", "port"))
@@ -440,21 +440,16 @@ def parse_transmission(args):
     inputID = os.getenv('TR_TORRENT_ID')
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
-
-__ARG_PARSERS__ = {
+def parse_args(clientAgent):
+    clients = {
     'other': parse_other,
     'rtorrent': parse_rtorrent,
     'utorrent': parse_utorrent,
     'deluge': parse_deluge,
     'transmission': parse_transmission,
-}
+    }
 
-
-def parse_args(clientAgent):
-    parseFunc = __ARG_PARSERS__.get(clientAgent, None)
-    if not parseFunc:
-        raise RuntimeError("Could not find client-agent")
-    return parseFunc(sys.argv)
+    return clients[clientAgent](sys.argv)
 
 def get_dirnames(section, category):
     try:
@@ -481,3 +476,15 @@ def get_dirnames(section, category):
         Logger.warn("No Directories identified to Scan.")
 
     return dirNames
+
+def delete(dirName):
+    Logger.info("Deleting failed files and folder %s", dirName)
+    try:
+        shutil.rmtree(dirName, True)
+    except:
+        Logger.exception("Unable to delete folder %s", dirName)
+
+def getURL(url, username, password):
+    r = requests.get(url, auth=(username, password))
+    return r
+

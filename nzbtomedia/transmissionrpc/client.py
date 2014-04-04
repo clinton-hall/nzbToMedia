@@ -10,12 +10,12 @@ import os
 import base64
 import json
 
-from transmissionrpc.constants import DEFAULT_PORT, DEFAULT_TIMEOUT
-from transmissionrpc.error import TransmissionError, HTTPHandlerError
-from transmissionrpc.utils import LOGGER, get_arguments, make_rpc_name, argument_value_convert, rpc_bool
-from transmissionrpc.httphandler import DefaultHTTPHandler
-from transmissionrpc.torrent import Torrent
-from transmissionrpc.session import Session
+from nzbtomedia.transmissionrpc.constants import DEFAULT_PORT, DEFAULT_TIMEOUT
+from nzbtomedia.transmissionrpc.error import TransmissionError, HTTPHandlerError
+from nzbtomedia.transmissionrpc.utils import LOGGER, get_arguments, make_rpc_name, argument_value_convert, rpc_bool
+from nzbtomedia.transmissionrpc.httphandler import DefaultHTTPHandler
+from nzbtomedia.transmissionrpc.torrent import Torrent
+from nzbtomedia.transmissionrpc.session import Session
 from six import PY3, integer_types, string_types, iteritems
 
 

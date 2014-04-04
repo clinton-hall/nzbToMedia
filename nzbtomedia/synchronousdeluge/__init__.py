@@ -19,6 +19,5 @@ __title__ = "synchronous-deluge"
 __version__ = "0.1"
 __author__ = "Christian Dale"
 
-from synchronousdeluge.client import DelugeClient
-from synchronousdeluge.exceptions import DelugeRPCError
+from nzbtomedia.synchronousdeluge.exceptions import DelugeRPCError
 

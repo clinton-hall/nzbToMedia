@@ -57,25 +57,33 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
+
+# Exit codes used by NZBGet
 import logging
+import os
+import sys
+from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
+from nzbtomedia.migratecfg import migratecfg
+from nzbtomedia.nzbToMediaConfig import config
+from nzbtomedia.nzbToMediaUtil import WakeUp, nzbtomedia_configure_logging, get_dirnames
 
-import autoProcess.migratecfg as migratecfg
-import autoProcess.autoProcessGames as autoProcessGames
-from autoProcess.nzbToMediaEnv import *
-from autoProcess.nzbToMediaUtil import *
+# run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
+if migratecfg().migrate():
+    # check to write settings from nzbGet UI to autoProcessMedia.cfg.
+    if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        migratecfg().addnzbget()
 
-#check to migrate old cfg before trying to load.
-if os.path.isfile(os.path.join(os.path.dirname(sys.argv[0]), "autoProcessMedia.cfg.sample")):
-    migratecfg.migrate()
-# check to write settings from nzbGet UI to autoProcessMedia.cfg.
-if os.environ.has_key('NZBOP_SCRIPTDIR'):
-    migratecfg.addnzbget()
+    nzbtomedia_configure_logging(config.LOG_FILE)
+    Logger = logging.getLogger(__name__)
+    Logger.info("====================")  # Seperate old from new log
+    Logger.info("nzbToGamez %s", config.NZBTOMEDIA_VERSION)
 
-nzbtomedia_configure_logging(LOG_FILE)
-Logger = logging.getLogger(__name__)
+    Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
+else:
+    sys.exit(-1)
 
-Logger.info("====================") # Seperate old from new log
-Logger.info("nzbToGamez %s", VERSION)
+# gamez category
+gzCategory = (config().get("Gamez", "gzCategory")).split(',')  # gamez
 
 WakeUp()
 
@@ -84,25 +92,18 @@ WakeUp()
 if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
     Logger.info("MAIN: Script triggered from NZBGet (11.0 or later).")
 
-    # NZBGet argv: all passed as environment variables.
-    # Exit codes used by NZBGet
-    POSTPROCESS_PARCHECK=92
-    POSTPROCESS_SUCCESS=93
-    POSTPROCESS_ERROR=94
-    POSTPROCESS_NONE=95
-
     # Check nzbget.conf options
     status = 0
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
         Logger.error("MAIN: Please enable option \"Unpack\" in nzbget configuration file, exiting")
-        sys.exit(POSTPROCESS_ERROR)
+        sys.exit(config.NZBGET_POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
         Logger.warning("MAIN: Par-check successful, but Par-repair disabled, exiting")
         Logger.info("MAIN: Please check your Par-repair settings for future downloads.")
-        sys.exit(POSTPROCESS_NONE)
+        sys.exit(config.NZBGET_POSTPROCESS_NONE)
 
     if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
         Logger.warning("MAIN: Par-repair failed, setting status \"failed\"")
@@ -132,9 +133,9 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # All checks done, now launching the script.
     Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessGames...")
-    result = autoProcessGames.process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
+    result = autoProcessGames().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
 # SABnzbd Pre 0.7.17
-elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
+elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
     # 1 The final directory of the job (full path)
     # 2 The original name of the NZB file
@@ -144,9 +145,9 @@ elif len(sys.argv) == SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessGames...")
-    result = autoProcessGames.process(sys.argv[1], sys.argv[3], sys.argv[7])
+    result = autoProcessGames().process(sys.argv[1], sys.argv[3], sys.argv[7])
 # SABnzbd 0.7.17+
-elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
+elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # SABnzbd argv:
     # 1 The final directory of the job (full path)
     # 2 The original name of the NZB file
@@ -157,16 +158,22 @@ elif len(sys.argv) >= SABNZB_0717_NO_OF_ARGUMENTS:
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     # 8 Failure URL
     Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessGames...")
-    result = autoProcessGames.process(sys.argv[1], sys.argv[3], sys.argv[7])
+    result = autoProcessGames().process(sys.argv[1], sys.argv[3], sys.argv[7])
 else:
+    result = 0
     Logger.warn("MAIN: Invalid number of arguments received from client. Exiting")
-    sys.exit(1)
+    Logger.info("MAIN: Running autoProcessGames as a manual run...")
+
+    for dirName in get_dirnames("Gamez", gzCategory[0]):
+        Logger.info("MAIN: Calling Gamez to post-process: %s", dirName)
+        result = autoProcessGames().process(dirName, dirName, 0)
+        if result != 0: break
 
 if result == 0:
     Logger.info("MAIN: The autoProcessGames script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-        sys.exit(POSTPROCESS_SUCCESS)
+        sys.exit(config.NZBGET_POSTPROCESS_SUCCESS)
 else:
     Logger.info("MAIN: A problem was reported in the autoProcessGames script.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-        sys.exit(POSTPROCESS_ERROR)
+        sys.exit(config.NZBGET_POSTPROCESS_ERROR)

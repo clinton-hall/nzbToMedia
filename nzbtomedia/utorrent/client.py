@@ -10,7 +10,7 @@ try:
 except ImportError:
     import simplejson as json
 
-from upload import MultiPartForm
+from nzbtomedia.utorrent.upload import MultiPartForm
 
 class UTorrentClient(object):
 

@@ -1,9 +1,9 @@
 import sys
 import logging
-
-from nzbToMediaConfig import *
 from subprocess import call, Popen
-from autoProcess.nzbToMediaUtil import create_destination
+
+from nzbtomedia.nzbToMediaConfig import *
+from nzbtomedia.nzbToMediaUtil import create_destination
 
 
 Logger = logging.getLogger()
@@ -111,7 +111,7 @@ def extract(filePath, outputDestination):
     # Create outputDestination folder
     create_destination(outputDestination)
 
-    Logger.info("MAIN: Loading config from %s", CONFIG_FILE)
+    Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
 
     passwordsfile = config().get("passwords", "PassWordFile")
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
