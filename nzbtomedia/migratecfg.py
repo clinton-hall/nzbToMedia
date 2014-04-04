@@ -112,8 +112,7 @@ class migratecfg:
                         confignew[section][subsection][option] = value
                     else:
                         confignew[section][option] = value
-        except:
-            return False
+        except:pass
 
         # create a backup of our old config
         if os.path.isfile(config.CONFIG_FILE):
