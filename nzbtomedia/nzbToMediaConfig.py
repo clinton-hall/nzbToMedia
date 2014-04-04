@@ -28,7 +28,7 @@ class config(object):
     NZBGET_POSTPROCESS_NONE = 95
 
     # config files
-    PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(__file__)))
+    PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
     CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg")
     SAMPLE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.sample")
     MOVIE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
