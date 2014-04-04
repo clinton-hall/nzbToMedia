@@ -1,6 +1,5 @@
 import time
 import datetime
-import json
 import logging
 import socket
 from lib import requests
