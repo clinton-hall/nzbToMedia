@@ -74,6 +74,11 @@ class autoProcessTV:
             process_method = config().get(section, "process_method")
         except config.NoOptionError:
             process_method = None
+        try:
+            Torrent_NoLink = int(config().get(section, "Torrent_NoLink"))
+        except (config.NoOptionError, ValueError):
+            Torrent_NoLink = 0
+
 
         mediaContainer = (config().get("Extensions", "mediaExtensions")).split(',')
         minSampleSize = int(config().get("Extensions", "minSampleSize"))
@@ -121,7 +126,7 @@ class autoProcessTV:
         dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
         TIME_OUT = int(TimePerGiB) * dirSize # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
         TIME_OUT += 60 # Add an extra minute for over-head/processing/metadata.
-        socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.
+        socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
 
         # configure SB params to pass
         params['quiet'] = 1
@@ -136,6 +141,8 @@ class autoProcessTV:
                 params[param] = dirName
 
             if param == "process_method":
+                if fork in SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
+                    del params[param]
                 if process_method:
                     params[param] = process_method
                 else:

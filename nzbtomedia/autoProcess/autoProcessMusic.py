@@ -55,7 +55,7 @@ class autoProcessMusic:
         dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
         TIME_OUT = int(TimePerGiB) * dirSize # HeadPhones needs to complete all moving/transcoding and renaming before returning the status.
         TIME_OUT += 60 # Add an extra minute for over-head/processing/metadata.
-        socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.
+        socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
 
         baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
 

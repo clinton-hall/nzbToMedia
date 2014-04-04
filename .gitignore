@@ -3,6 +3,6 @@ autoProcessMedia.cfg
 *.pyc
 *.pyo
 
-postprocess.log
+postprocess.log*
 /.idea/
 *.cfg.old

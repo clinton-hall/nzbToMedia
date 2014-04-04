@@ -75,7 +75,7 @@
 
 # Media Extensions
 #
-# This is a list of media extensions that may be transcoded if transcoder is enabled below.
+# This is a list of media extensions that are used to verify that the download does contain valid media.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
 ## Transcoder
@@ -227,11 +227,11 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     clientAgent = "sabnzbd"
     result = autoProcessTV().processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
-    result = 0
-
     Logger.debug("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
 
+    sbCategory = (config().get("SickBeard", "sbCategory")).split(',')  # tv
+    result = 1
     for dirName in get_dirnames("SickBeard", sbCategory[0]):
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", dirName)
         result = autoProcessTV().processEpisode(dirName, dirName, 0)

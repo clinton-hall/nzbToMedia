@@ -140,14 +140,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    if inputCategory in hpCategory:
-        noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
-        if useLink in ['sym','move']: # These don't work for HeadPhones.
-            useLink = 'no' # default to copy.
-
-    if inputCategory in sbCategory and fork in config.SICKBEARD_TORRENT: # Don't flatten when sending to SICKBEARD_TORRENT
-        noFlatten.extend(sbCategory)
-
+    noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
+      
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
@@ -187,15 +181,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if inputCategory in sbCategory and fork in config.SICKBEARD_TORRENT: # We want to link every file.
-                Logger.info("MAIN: Found file %s in %s", fileExtension, filePath)
-                try:
-                    copy_link(filePath, targetDirectory, useLink, outputDestination)
-                    copy_list.append([filePath, os.path.join(outputDestination, file)])
-                except:
-                    Logger.exception("MAIN: Failed to link file: %s", file)
-                continue
-
             if fileExtension in mediaContainer:  # If the file is a video file
                 if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in hpCategory:  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
@@ -217,13 +202,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     Logger.exception("MAIN: Failed to link file: %s", file)
                 continue
             elif fileExtension in compressedContainer:
-                if inputCategory in hpCategory: # We need to link all files for HP in order to move these back to support seeding.
-                    Logger.info("MAIN: Linking compressed archive file %s for file %s", fileExtension, filePath)
-                    try:
-                        copy_link(filePath, targetDirectory, useLink, outputDestination)
-                        copy_list.append([filePath, os.path.join(outputDestination, file)])
-                    except:
-                        Logger.exception("MAIN: Failed to link file: %s", file)
                 # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
                 if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                     part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
@@ -234,10 +212,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                         continue
                 Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                 try:
-                    if inputCategory in hpCategory: # HP needs to scan the same dir as passed to downloader.
-                        extractor.extract(filePath, inputDirectory)
-                    else:
-                        extractor.extract(filePath, outputDestination)
+                    extractor.extract(filePath, outputDestination)
                     extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
                     extracted_folder.append(os.path.dirname(filePath))
                 except:
@@ -257,7 +232,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in cpsCategory + sbCategory and not (inputCategory in sbCategory and fork in config.SICKBEARD_TORRENT):
+    if inputCategory in cpsCategory + sbCategory: 
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -276,11 +251,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             status = int(0)
         else:
             Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
-
-    if inputCategory in sbCategory and fork in config.SICKBEARD_TORRENT:
-        if len(copy_list) > 0:
-            Logger.debug("MAIN: Found and linked %s files", str(len(copy_list)))
-            status = int(0)
 
     processCategories = cpsCategory + sbCategory + hpCategory + mlCategory + gzCategory
 
@@ -314,25 +284,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-
-    if inputCategory in hpCategory:
-        # we need to move the output dir files back...
-        Logger.debug("MAIN: Moving temporary HeadPhones files back to allow seeding.")
-        for item in copy_list:
-            if os.path.isfile(os.path.normpath(item[1])): # check to ensure temp files still exist.
-                if os.path.isfile(os.path.normpath(item[0])): # both exist, remove temp version
-                    Logger.debug("MAIN: File %s still present. Removing tempoary file %s", str(item[0]), str(item[1]))
-                    os.unlink(os.path.normpath(item[1]))
-                    continue
-                else: # move temp version back to allow seeding or Torrent removal.
-                    Logger.debug("MAIN: Moving %s to %s", str(item[1]), str(item[0]))
-                    newDestination = os.path.split(os.path.normpath(item[0]))
-                    try:
-                        copy_link(os.path.normpath(item[1]), os.path.normpath(item[0]), 'move', newDestination[0])
-                    except:
-                        Logger.exception("MAIN: Failed to move file: %s", file)
-                    continue
-        shutil.rmtree(outputDestination)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
@@ -493,10 +444,9 @@ if __name__ == "__main__":
     minSampleSize = int(config().get("Extensions", "minSampleSize"))                      # 200 (in MB)
     SampleIDs = (config().get("Extensions", "SampleIDs")).split(',')                      # sample,-s.
 
-    Torrent_ForceLink = int(config().get("SickBeard", "Torrent_ForceLink"))               # 1
-
     cpsCategory = (config().get("CouchPotato", "cpsCategory")).split(',')                 # movie
     sbCategory = (config().get("SickBeard", "sbCategory")).split(',')                     # tv
+    Torrent_NoLink = int(config().get("SickBeard", "Torrent_NoLink"))                     # 0
     hpCategory = (config().get("HeadPhones", "hpCategory")).split(',')                    # music
     mlCategory = (config().get("Mylar", "mlCategory")).split(',')                         # comics
     gzCategory = (config().get("Gamez", "gzCategory")).split(',')                         # games

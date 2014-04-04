@@ -7,7 +7,9 @@ Allow Headphones to remove torrents and data after processing.
 Delete torrent if uselink = move
 Added forceClean for outputDir. Works in file permissions prevent CP/SB from moving files.
 Ignore .x264 from archive "part" checks.
-Added dynamic timeout based on directory size.
+Changed handling of TPB/Pistachitos SB forks. Default is to link/extract here. Disabled by Torrent_NoLink = 1.
+Changed handling for HeadPhones Now that HeadPhones allows process directory to be defined.
+
 
 Impacts NZBs
 Fix setting of Mylar config from NZBGet.
@@ -16,6 +18,8 @@ Impacts All
 Changes to Couchpotato API for [nosql] added. Keeps aligned with current CouchPotato develop branch.
 Add Auto Detection of SickBeard Fork. Thanks @echel0n
 Added config class, re-coded migratecfg, misc bugfixes and code cleanup. Thanks @echel0n
+Added dynamic timeout based on directory size.
+Added process_Method for SickBeard.
 
 V9.2 05/03/2014
 

@@ -222,7 +222,7 @@
 
 # Media Extensions
 #
-# This is a list of media extensions that may be transcoded if transcoder is enabled below.
+# This is a list of media extensions that are used to verify that the download does contain valid media.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
 ## Transcoder
@@ -472,6 +472,8 @@ else:
     Logger.info("MAIN: Running autoProcessGames as a manual run...")
     if process(get_dirnames("Gamez", gzCategory[0]), inputName=get_dirnames("Gamez", gzCategory[0]), status=0,clientAgent="manual", inputCategory=gzCategory[0]) != 0:
         Logger.info("MAIN: A problem was reported in the autoProcessGames script.")
+
+    result = 0
 
 if result == 0:
     Logger.info("MAIN: The nzbToMedia script completed successfully.")
