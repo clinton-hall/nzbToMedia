@@ -138,7 +138,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                if os.environ[envCatKey] in confignew[section].sections:
                     confignew[section][envCatKey][option] = value
 
 
@@ -151,7 +151,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                if os.environ[envCatKey] in confignew[section].sections:
                     confignew[section][envCatKey][option] = value
 
         section = "HeadPhones"
@@ -163,7 +163,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                if os.environ[envCatKey] in confignew[section].sections:
                     confignew[section][envCatKey][option] = value
 
         section = "Mylar"
@@ -175,7 +175,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                if os.environ[envCatKey] in confignew[section].sections:
                     confignew[section][envCatKey][option] = value
 
         section = "Gamez"
@@ -187,7 +187,7 @@ class migratecfg:
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                if confignew[section].has_key(os.environ[envCatKey]) and option not in confignew[section].sections:
+                if os.environ[envCatKey] in confignew[section].sections:
                     confignew[section][envCatKey][option] = value
 
         section = "Extensions"
