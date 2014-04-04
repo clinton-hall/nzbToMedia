@@ -13,12 +13,12 @@ ssl = 0
 web_root =
 delay = 65
 TimePerGiB = 60
-watch_dir =
 method = renamer
 delete_failed = 0
 wait_for = 2
 #### Set to 1 if CouchPotatoServer is running on a different server to your NZB client
 remoteCPS = 0
+watch_dir =
 
 [SickBeard]
 #### autoProcessing for TV Series
@@ -123,7 +123,7 @@ transcode = 0
 duplicate = 1
 # Only works on Linux. Highest priority is -20, lowest priority is 19.
 niceness = 0
-ignoreExtensions = .avi,.mkv
+ignoreExtensions = .avi,.mkv,.mp4
 outputVideoExtension = .mp4
 outputVideoCodec = libx264
 outputVideoPreset = medium

@@ -1,4 +1,6 @@
+import time
 import datetime
+import json
 import logging
 import socket
 import requests
@@ -64,7 +66,7 @@ class autoProcessMusic:
 
             Logger.info("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
 
-            datetime.time.sleep(delay)
+            time.sleep(delay)
 
             Logger.debug("Opening URL: %s", url)
 
@@ -74,8 +76,8 @@ class autoProcessMusic:
                 Logger.exception("Unable to open URL")
                 return 1  # failure
 
-            Logger.info("HeadPhones returned %s", r.content)
-            if r.content[0] == "OK":
+            Logger.info("HeadPhones returned %s", r.text)
+            if r.text == "OK":
                 Logger.info("%s started on HeadPhones for %s", command, nzbName)
             else:
                 Logger.error("%s has NOT started on HeadPhones for %s. Exiting", command, nzbName)
@@ -85,14 +87,14 @@ class autoProcessMusic:
             Logger.info("The download failed. Nothing to process")
             return 0 # Success (as far as this script is concerned)
 
-        if nzbName == "Manual Run":
+        if clientAgent == "manual":
             return 0 # success
 
         # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
         ## Hopefully we can use a "getHistory" check in here to confirm processing complete...
         start = datetime.datetime.now()  # set time for timeout
         while (datetime.datetime.now() - start) < datetime.timedelta(minutes=1):  # only wait 2 minutes, then return to TorrentToMedia
-            datetime.time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
+            time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
         else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
             Logger.info("This album should have completed processing. Please check HeadPhones Logs")
             # Logger.warning("The album does not appear to have changed status after 2 minutes. Please check HeadPhones Logs")

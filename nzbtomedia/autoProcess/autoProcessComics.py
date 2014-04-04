@@ -66,7 +66,7 @@ class autoProcessComics:
             return 1 # failure
 
         if r.ok:
-            Logger.info("%s", r.content)
+            Logger.info("%s", r.text)
 
         time.sleep(60) #wait 1 minute for now... need to see just what gets logged and how long it takes to process
         return 0 # Success

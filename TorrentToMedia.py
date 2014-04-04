@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import time
 import datetime
 import logging
 import os
@@ -123,7 +124,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             TransmissionClass.stop_torrent(inputID)
         if clientAgent == 'deluge' and delugeClient != "":
             delugeClient.core.pause_torrent([inputID])
-        datetime.time.sleep(5)  # Give Torrent client some time to catch up with the change
+        time.sleep(5)  # Give Torrent client some time to catch up with the change
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
@@ -342,7 +343,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 TransmissionClass.start_torrent(inputID)
             if clientAgent == 'deluge' and delugeClient != "":
                 delugeClient.core.resume_torrent([inputID])
-        datetime.time.sleep(5)
+        time.sleep(5)
     #cleanup
     if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
         num_files_new = int(0)
@@ -419,7 +420,7 @@ def external_script(outputDestination,torrentName,torrentLabel):
                     result = int(1)
                 final_result = final_result + result
 
-    datetime.time.sleep(user_delay)
+    time.sleep(user_delay)
     num_files_new = int(0)
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:

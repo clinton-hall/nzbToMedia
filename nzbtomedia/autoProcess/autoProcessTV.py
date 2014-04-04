@@ -182,7 +182,7 @@ class autoProcessTV:
             Logger.exception("Unable to open URL")
             return 1 # failure
 
-        Logger.info("%s", r.content)
+        Logger.info("%s", r.text)
         if status != 0 and delete_failed and not dirName in ['sys.argv[0]','/','']:
             delete(dirName)
         return 0 # Success

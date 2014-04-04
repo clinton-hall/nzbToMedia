@@ -69,7 +69,7 @@ class autoProcessMovie:
             release2 = []
             moviestatus2 = []
             try:
-                result = json.load(r.content)
+                result = json.load(r.text)
                 movieid2 = [item["_id"] for item in result["movies"]]
                 for item in result["movies"]:
                     if "identifier" in item:
@@ -143,7 +143,7 @@ class autoProcessMovie:
             return None, None
 
         try:
-            result = json.load(r.content)
+            result = json.load(r.text)
             movie_status = str(result["media"]["status"])
             Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
         except:
@@ -260,7 +260,7 @@ class autoProcessMovie:
                 Logger.exception("Unable to open URL")
                 return 1 # failure
 
-            result = json.load(r.content)
+            result = json.load(r.text)
             Logger.info("CouchPotatoServer returned %s", result)
             if result['success']:
                 Logger.info("%s scan started on CouchPotatoServer for %s", method, nzbName)
@@ -288,7 +288,7 @@ class autoProcessMovie:
                 Logger.exception("Unable to open URL")
                 return 1  # failure
 
-            Logger.info("%s", r.content)
+            Logger.info("%s", r.text)
             Logger.info("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
             if delete_failed and not dirName in ['sys.argv[0]','/','']:
                 Logger.info("Deleting failed files and folder %s", dirName)
@@ -314,7 +314,7 @@ class autoProcessMovie:
             if movie_status and initial_status and movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
                 Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
                 return 0 # success
-            datetime.time.sleep(pause_for) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
+            time.sleep(pause_for) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
         else:
             if release_status and initial_release_status and release_status != initial_release_status:  # Something has changed. CPS must have processed this movie.
                 Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
