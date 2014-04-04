@@ -6,21 +6,25 @@ class migratecfg:
     def migrate(self):
         categories = []
 
+        try:
+            # check for autoProcessMedia.cfg and create if it does not exist
+            if not config(config.CONFIG_FILE):
+                shutil.copyfile(config.SAMPLE_CONFIG_FILE, config.CONFIG_FILE)
+            configold = config(config.CONFIG_FILE)
+        except:pass
+
+        try:
+            # check for autoProcessMedia.cfg.sample and create if it does not exist
+            if not config(config.SAMPLE_CONFIG_FILE):
+                shutil.copyfile(config.CONFIG_FILE, config.SAMPLE_CONFIG_FILE)
+            confignew = config(config.SAMPLE_CONFIG_FILE)
+        except:pass
+        
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.sample and if they don't exist return and fail
         if not config() and not config(config.SAMPLE_CONFIG_FILE):
             return False
 
-        # check for autoProcessMedia.cfg and create if it does not exist
-        if not config(config.CONFIG_FILE):
-            shutil.copyfile(config.SAMPLE_CONFIG_FILE, config.CONFIG_FILE)
-        configold = config(config.CONFIG_FILE)
-
-        # check for autoProcessMedia.cfg.sample and create if it does not exist
-        if not config(config.SAMPLE_CONFIG_FILE):
-            shutil.copyfile(config.CONFIG_FILE, config.SAMPLE_CONFIG_FILE)
-        confignew = config(config.SAMPLE_CONFIG_FILE)
-
-        section = "CouchPotato"
+    section = "CouchPotato"
         for option, value in configold.items(section) or config(config.MOVIE_CONFIG_FILE).items(section):
             if option == "category": # change this old format
                 option = "cpsCategory"
