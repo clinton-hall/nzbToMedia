@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 
 # adds lib directory to system path
+import os
+import sys
+from nzbtomedia.nzbToMediaConfig import config
+
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
 
 #
@@ -33,14 +37,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
-import os
-import sys
-
-# NZBGet argv: all passed as environment variables.
-# Exit codes used by NZBGet
-POSTPROCESS_SUCCESS=93
-POSTPROCESS_ERROR=94
-POSTPROCESS_NONE=95
 
 def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
     # 200 MB in bytes
@@ -66,13 +62,13 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
         print "Please enable option \"Unpack\" in nzbget configuration file, exiting."
-        sys.exit(POSTPROCESS_ERROR)
+        sys.exit(config().POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
         print "Par-check successful, but Par-repair disabled, exiting."
         print "Please check your Par-repair settings for future downloads."
-        sys.exit(POSTPROCESS_NONE)
+        sys.exit(config().POSTPROCESS_NONE)
 
     if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
         print "Par-repair failed, setting status \"failed\"."
@@ -103,7 +99,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     # All checks done, now launching the script.
 
     if status == 1:
-        sys.exit(POSTPROCESS_NONE)
+        sys.exit(config().POSTPROCESS_NONE)
 
     mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
     SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
@@ -120,8 +116,8 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                         os.unlink(filePath)
                     except:
                         print "Error: unable to delete file", filePath
-                        sys.exit(POSTPROCESS_ERROR)
-    sys.exit(POSTPROCESS_SUCCESS)
+                        sys.exit(config().POSTPROCESS_ERROR)
+    sys.exit(config().POSTPROCESS_SUCCESS)
 
 else:
     print "This script can only be called from NZBGet (11.0 or later)."

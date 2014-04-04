@@ -1,14 +1,13 @@
 #!/usr/bin/env python
-
 # adds lib directory to system path
+import os
+import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
 
 import datetime
 import time
 import logging
-import os
 import re
-import sys
 import shutil
 from subprocess import Popen
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
@@ -25,7 +24,6 @@ from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
-
 
 def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
@@ -145,7 +143,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
     noFlatten.extend(hpCategory) # Make sure we preserve folder structure for HeadPhones.
-      
+
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
@@ -236,7 +234,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in cpsCategory + sbCategory: 
+    if inputCategory in cpsCategory + sbCategory:
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)

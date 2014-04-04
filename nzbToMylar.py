@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 # adds lib directory to system path
+import os
+import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
 
 #
@@ -66,8 +68,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 
 # Exit codes used by NZBGet
 import logging
-import os
-import sys
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.migratecfg import migratecfg
 from nzbtomedia.nzbToMediaConfig import config

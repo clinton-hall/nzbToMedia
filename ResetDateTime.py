@@ -1,7 +1,11 @@
 #!/usr/bin/env python
 
 # adds lib directory to system path
+import os
+import sys
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
+
+from nzbtomedia.nzbToMediaConfig import config
 
 #
 ##############################################################################
@@ -17,17 +21,6 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-# NZBGet V11+
-# Check if the script is called from nzbget 11.0 or later
-import os
-import sys
-
-# NZBGet argv: all passed as environment variables.
-# Exit codes used by NZBGet
-POSTPROCESS_SUCCESS=93
-POSTPROCESS_ERROR=94
-POSTPROCESS_NONE=95
-
 if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
     print "Script triggered from NZBGet (11.0 or later)."
 
@@ -36,13 +29,13 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     if os.environ['NZBOP_UNPACK'] != 'yes':
         print "Please enable option \"Unpack\" in nzbget configuration file, exiting."
-        sys.exit(POSTPROCESS_ERROR)
+        sys.exit(config().POSTPROCESS_ERROR)
 
     # Check par status
     if os.environ['NZBPP_PARSTATUS'] == '3':
         print "Par-check successful, but Par-repair disabled, exiting."
         print "Please check your Par-repair settings for future downloads."
-        sys.exit(POSTPROCESS_NONE)
+        sys.exit(config().POSTPROCESS_NONE)
 
     if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
         print "Par-repair failed, setting status \"failed\"."
@@ -73,7 +66,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     # All checks done, now launching the script.
 
     if status == 1:
-        sys.exit(POSTPROCESS_NONE)
+        sys.exit(config().POSTPROCESS_NONE)
 
     directory = os.path.normpath(os.environ['NZBPP_DIRECTORY'])
     for dirpath, dirnames, filenames in os.walk(directory):
@@ -85,8 +78,8 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                 continue
             except:
                 print "Error: unable to reset time for file", file
-                sys.exit(POSTPROCESS_ERROR)
-    sys.exit(POSTPROCESS_SUCCESS)
+                sys.exit(config().POSTPROCESS_ERROR)
+    sys.exit(config().POSTPROCESS_SUCCESS)
 
 else:
     print "This script can only be called from NZBGet (11.0 or later)."
