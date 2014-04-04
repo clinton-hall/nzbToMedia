@@ -29,11 +29,11 @@ class config(object):
 
     # config files
     PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(__file__)))
-    CONFIG_FILE = os.path.join(PROGRAM_DIR, "../autoProcessMedia.cfg")
-    SAMPLE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "../autoProcessMedia.cfg.sample")
+    CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg")
+    SAMPLE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.sample")
     MOVIE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
     TV_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
-    LOG_FILE = os.path.join(PROGRAM_DIR, "../postprocess.log")
+    LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
 
     # config error handling classes
     Error = ConfigParser.Error
