@@ -10,8 +10,13 @@ def autoFork(section):
     # config settings
     host = config().get(section, "host")
     port = config().get(section, "port")
-    username = config().get(section, "username")
-    password = config().get(section, "password")
+
+    try:
+        username = config().get(section, "username")
+        password = config().get(section, "password")
+    except:
+        username = None
+        password = None
 
     try:
         ssl = int(config().get(section, "ssl"))
@@ -41,7 +46,10 @@ def autoFork(section):
 
             # attempting to auto-detect fork
             try:
-                r = requests.get(url, auth=(username, password))
+                if username and password:
+                    r = requests.get(url, auth=(username, password))
+                else:
+                    r = requests.get(url)
             except requests.ConnectionError:
                 Logger.info("Could not connect to SickBeard to perform auto-fork detection!")
                 break

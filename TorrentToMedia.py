@@ -39,14 +39,26 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     utorrentClass = ""
     TransmissionClass = ""
 
-    # init autoFork
-    fork, fork_params = autoFork(inputCategory)
-
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
     inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
+
+    # init autoFork
+    if inputCategory in sbCategory:
+        fork, fork_params = autoFork("SickBeard")
+    elif inputCategory in cpsCategory:
+        fork, fork_params = autoFork("CouchPotato")
+    elif inputCategory in hpCategory:
+        fork, fork_params = autoFork("HeadPhones")
+    elif inputCategory in gzCategory:
+        fork, fork_params = autoFork("Gamez")
+    elif inputCategory in mlCategory:
+        fork, fork_params = autoFork("Mylar")
+    else:
+        fork = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)][0]
+        fork_params = config.FORKS.items()[config.FORKS.keys().index(config.FORK_DEFAULT)][0]
 
     if inputCategory in sbCategory:
         if fork in config.SICKBEARD_TORRENT and Torrent_ForceLink != 1:
@@ -511,10 +523,10 @@ if __name__ == "__main__":
         Logger.debug("arg %s is: %s", n, arg)
         n = n+1
 
-    if not len(sys.argv) > 1:
+    try:
+        inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
+    except:
         Logger.exception("MAIN: There was a problem loading variables")
         sys.exit(-1)
 
-    # process torrent
-    inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
     main(inputDirectory, inputName, inputCategory, inputHash, inputID)
