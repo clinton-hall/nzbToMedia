@@ -133,62 +133,71 @@ class migratecfg:
         envCatKey = 'NZBPO_CPSCATEGORY'
         envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
         cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
-        for index in range(len(envKeys)):
-            key = 'NZBPO_CPS' + envKeys[index]
-            if os.environ.has_key(key):
-                option = cfgKeys[index]
-                value = os.environ[key]
-                if os.environ[envCatKey] in confignew[section].sections:
-                    confignew[section][envCatKey][option] = value
-
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_CPS' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
         envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
         cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
-        for index in range(len(envKeys)):
-            key = 'NZBPO_SB' + envKeys[index]
-            if os.environ.has_key(key):
-                option = cfgKeys[index]
-                value = os.environ[key]
-                if os.environ[envCatKey] in confignew[section].sections:
-                    confignew[section][envCatKey][option] = value
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_SB' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
         envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
         cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
-        for index in range(len(envKeys)):
-            key = 'NZBPO_HP' + envKeys[index]
-            if os.environ.has_key(key):
-                option = cfgKeys[index]
-                value = os.environ[key]
-                if os.environ[envCatKey] in confignew[section].sections:
-                    confignew[section][envCatKey][option] = value
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_HP' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
         envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
         cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root']
-        for index in range(len(envKeys)):
-            key = 'NZBPO_MY' + envKeys[index]
-            if os.environ.has_key(key):
-                option = cfgKeys[index]
-                value = os.environ[key]
-                if os.environ[envCatKey] in confignew[section].sections:
-                    confignew[section][envCatKey][option] = value
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_MY' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
         envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
         cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root']
-        for index in range(len(envKeys)):
-            key = 'NZBPO_GZ' + envKeys[index]
-            if os.environ.has_key(key):
-                option = cfgKeys[index]
-                value = os.environ[key]
-                if os.environ[envCatKey] in confignew[section].sections:
-                    confignew[section][envCatKey][option] = value
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_GZ' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
