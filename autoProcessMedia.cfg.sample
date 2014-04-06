@@ -40,6 +40,18 @@
         Torrent_NoLink = 0
         process_method =
 
+[NzbDrone]
+    #### autoProcessing for TV Series
+    #### ndCategory - category that gets called for post-processing with NzbDrone
+    [[tv]]
+        Host = localhost
+        Port = 8989
+        APIKey =
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        WebRoot =
+        SSL = 0
+        Prefer = 0
+
 [HeadPhones]
     #### autoProcessing for Music
     #### music - category that gets called for post-processing with HP

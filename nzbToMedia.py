@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to CouchPotato, SickBeard, Mylar, Gamez, HeadPhones.
+# Post-Process to CouchPotato, SickBeard, NzbDrone, Mylar, Gamez, HeadPhones.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -132,6 +132,35 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 #
 # set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
 #sbprocess_method=
+
+## NzbDrone
+
+# NzbDrone script category.
+#
+# category that gets called for post-processing with NzbDrone.
+#ndCategory=tv
+
+# NzbDrone host.
+#ndHost=localhost
+
+# NzbDrone port.
+#ndPort=8989
+
+# NzbDrone API key.
+#ndAPIKey=
+
+# NzbDrone uses SSL (0, 1).
+#
+# Set to 1 if using SSL, else set to 0.
+#ndSSL=0
+
+# NzbDrone web root.
+#
+# set this if using a reverse proxy.
+#ndWebRoot=
+
+# Prefer NzbDrone if categories clash (0, 1).
+#ndPrefer=0
 
 ## HeadPhones
 
@@ -282,6 +311,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
+from nzbtomedia.autoProcess.autoProcessTVND import autoProcessTVND
 from nzbtomedia.migratecfg import migratecfg
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_dirnames
@@ -298,11 +328,21 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         else:
             Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
             return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif inputCategory in sections["SickBeard"]:
+    elif inputCategory in sections["SickBeard"] and (inputCategory not in sections["NzbDrone"] or int(config()["NzbDrone"][inputCategory]["Prefer"]) == 0):
         if isinstance(nzbDir, list):
             for dirName in nzbDir:
                 Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
                 result = autoProcessTV().processEpisode(dirName, dirName, status, clientAgent, inputCategory)
+                if result !=0:
+                    return result
+        else:
+            Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+            return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+    elif inputCategory in sections["NzbDrone"]:
+        if isinstance(nzbDir, list):
+            for dirName in nzbDir:
+                Logger.info("MAIN: Calling NzbDrone to post-process: %s", inputName)
+                result = autoProcessTVND().processEpisode(dirName, dirName, status, clientAgent, inputCategory)
                 if result !=0:
                     return result
         else:
@@ -362,7 +402,7 @@ else:
     sys.exit(-1)
 
 # setup sections and categories
-sections = config.get_categories(["CouchPotato","SickBeard","HeadPhones","Mylar","Gamez"])
+sections = config.get_categories(["CouchPotato","SickBeard","NzbDrone","HeadPhones","Mylar","Gamez"])
 
 WakeUp()
 

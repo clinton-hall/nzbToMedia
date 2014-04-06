@@ -35,7 +35,7 @@ class migratecfg:
                 if section == "SickBeard":
                     if option == "category":  # change this old format
                         option = "sbCategory"
-                if option in ["cpsCategory","sbCategory","hpCategory","mlCategory","gzCategory"]:
+                if option in ["cpsCategory","sbCategory","ndCategory","hpCategory","mlCategory","gzCategory"]:
                     if not isinstance(value, list):
                         value = [value]
 
@@ -79,6 +79,10 @@ class migratecfg:
                             confignew['Torrent'][option] = value
                             continue
                         if option in ["category", "sbCategory"]:
+                            continue
+
+                    if section == "NzbDrone":
+                        if option == "ndCategory":
                             continue
 
                     if section == "HeadPhones":
@@ -150,6 +154,20 @@ class migratecfg:
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_SB' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in confignew[section].sections:
+                        confignew[section][os.environ[envCatKey]] = {}
+                    confignew[section][os.environ[envCatKey]][option] = value
+
+        section = "NzbDrone"
+        envCatKey = 'NZBPO_NDCATEGORY'
+        envKeys = ['HOST', 'PORT', 'APIKEY', 'SSL', 'WEBROOT', 'PREFER']
+        cfgKeys = ['Host', 'Port', 'APIKey', 'SSL', 'WebRoot', 'Prefer']
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_ND' + envKeys[index]
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
