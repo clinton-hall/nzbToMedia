@@ -1,4 +1,5 @@
 autoProcessMedia.cfg
+logging.cfg
 
 *.pyc
 *.pyo

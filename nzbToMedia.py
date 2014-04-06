@@ -79,7 +79,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 # SickBeard script category.
 #
 # category that gets called for post-processing with SickBeard.
-#config().sbCategory=tv
+#sbCategory=tv
 
 # SickBeard host.
 #sbhost=localhost
