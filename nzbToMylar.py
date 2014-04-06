@@ -89,7 +89,7 @@ else:
     sys.exit(-1)
 
 # mylar category
-categories = config.get_categories(["Mylar"])
+sections = config.get_sections(["Mylar"])
 
 WakeUp()
 
@@ -171,13 +171,13 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessComics as a manual run...")
 
-    for section, category in categories.items():
-        for dirName in get_dirnames(section, category):
-            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
-            results = autoProcessComics().processEpisode(dirName, dirName, 0)
-            if results != 0:
-                result = 1
-                Logger.info("MAIN: A problem was reported in the autoProcessComics script.")
+    for section, categories in sections.items():
+        for category in categories:
+            dirNames = get_dirnames(section, category)
+            for dirName in dirNames:
+                Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+                results = autoProcessComics().processEpisode(dirName, dirName, 0, inputCategory=category)
+                if results != 0:result = results
 
 if result == 0:
     Logger.info("MAIN: The autoProcessComics script completed successfully.")

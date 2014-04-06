@@ -151,7 +151,7 @@ else:
     sys.exit(-1)
 
 # sickbeard category
-categories = config.get_categories(["SickBeard"])
+sections = config.get_sections(["SickBeard"])
 
 WakeUp()
 
@@ -236,13 +236,13 @@ else:
     Logger.debug("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessTV as a manual run...")
 
-    for section, category in categories.items():
-        for dirName in get_dirnames(section, category):
-            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
-            results = autoProcessTV().processEpisode(dirName, dirName, 0)
-            if results != 0:
-                result = 1
-                Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+    for section, categories in sections.items():
+        for category in categories:
+            dirNames = get_dirnames(section, category)
+            for dirName in dirNames:
+                Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+                results = autoProcessTV().processEpisode(dirName, dirName, 0, inputCategory=category)
+                if results != 0:result = results
 
 if result == 0:
     Logger.info("MAIN: The autoProcessTV script completed successfully.")

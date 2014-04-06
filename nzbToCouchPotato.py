@@ -149,7 +149,7 @@ else:
     sys.exit(-1)
 
 # setup sections and categories
-categories = config.get_categories(["CouchPotato"])
+sections = config.get_sections(["CouchPotato"])
 
 WakeUp()
 
@@ -239,13 +239,13 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     Logger.info("MAIN: Running autoProcessMovie as a manual run...")
 
-    for section, category in categories.items():
-        for dirName in get_dirnames(section, category):
-            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
-            results = autoProcessMovie().process(dirName, dirName, 0)
-            if results != 0:
-                result = 1
-                Logger.info("MAIN: A problem was reported in the autoProcessMovie script.")
+    for section, categories in sections.items():
+        for category in categories:
+            dirNames = get_dirnames(section, category)
+            for dirName in dirNames:
+                Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+                results = autoProcessMovie().process(dirName, dirName, 0, inputCategory=category)
+                if results != 0:result = results
 
 if result == 0:
     Logger.info("MAIN: The autoProcessMovie script completed successfully.")

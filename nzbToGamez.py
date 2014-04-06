@@ -84,7 +84,7 @@ else:
     sys.exit(-1)
 
 # gamez category
-categories = config.get_categories(['Gamez'])
+sections = config.get_sections(['Gamez'])
 
 WakeUp()
 
@@ -166,13 +166,13 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client. Exiting")
     Logger.info("MAIN: Running autoProcessGames as a manual run...")
 
-    for section, category in categories.items():
-        for dirName in get_dirnames(section, category):
-            Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
-            results = autoProcessGames().process(dirName, dirName, 0)
-            if results != 0:
-                result = 1
-                Logger.info("MAIN: A problem was reported in the autoProcessGames script.")
+    for section, categories in sections.items():
+        for category in categories:
+            dirNames = get_dirnames(section, category)
+            for dirName in dirNames:
+                Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
+                results = autoProcessGames().process(dirName, dirName, 0, inputCategory=category)
+                if results != 0:result = results
 
 if result == 0:
     Logger.info("MAIN: The autoProcessGames script completed successfully.")

@@ -362,7 +362,7 @@ else:
     sys.exit(-1)
 
 # setup sections and categories
-sections = config.get_categories(["CouchPotato","SickBeard","HeadPhones","Mylar","Gamez"])
+sections = config.get_sections(["CouchPotato","SickBeard","HeadPhones","Mylar","Gamez"])
 
 WakeUp()
 
@@ -454,9 +454,11 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, categories in sections.items():
         for category in categories:
-            dirnames = get_dirnames(section, category)
+            dirNames = get_dirnames(section, category)
             Logger.info("MAIN: Running " + section + ":" + category + " as a manual run...")
-            if process(dirnames, inputName=dirnames, status=0, inputCategory=category, clientAgent = "manual") != 0:
+            results = process(dirNames, inputName=dirNames, status=0, inputCategory=category, clientAgent = "manual")
+            if results != 0:
+                result = results
                 Logger.info("MAIN: A problem was reported when trying to manually run " + section + ":" + category + ".")
 
 if result == 0:

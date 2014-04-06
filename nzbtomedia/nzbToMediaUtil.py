@@ -451,13 +451,13 @@ def parse_args(clientAgent):
 
     return clients[clientAgent](sys.argv)
 
-def get_dirnames(section, category):
+def get_dirnames(section, inputCategory):
     try:
         watch_dir = config()[section][inputCategory]["watch_dir"]
     except:
         watch_dir = ""
     try:
-        outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], category)
+        outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], inputCategory)
     except:
         outputDirectory = ""
 
@@ -467,13 +467,15 @@ def get_dirnames(section, category):
         if os.path.exists(watch_dir):
             dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
                         os.path.isdir(os.path.join(watch_dir, o))])
+        if not dirNames:
+            Logger.warn("No Directories identified to Scan inside " + watch_dir)
+
     if outputDirectory != "":
         if os.path.exists(outputDirectory):
             dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
                         os.path.isdir(os.path.join(outputDirectory, o))])
-
-    if not dirNames:
-        Logger.warn("No Directories identified to Scan.")
+        if not dirNames:
+            Logger.warn("No Directories identified to Scan inside " + outputDirectory)
 
     return dirNames
 

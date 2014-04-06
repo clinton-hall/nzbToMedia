@@ -131,7 +131,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    noFlatten.extend(config.get_categories(["HeadPhones"]).values()) # Make sure we preserve folder structure for HeadPhones.
+    noFlatten.extend(list(chain.from_iterable(config.get_sections(["HeadPhones"]).values()))) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
@@ -173,7 +173,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in config.get_categories(["HeadPhones"]).values():  # Ignore samples
+                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not inputCategory in config.get_sections(["HeadPhones"]).values():  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
@@ -209,7 +209,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
                 continue
-            elif not inputCategory in list(chain.from_iterable(config.get_categories(['CouchPotato','SickBeard']).values())): #process all for non-video categories.
+            elif not inputCategory in list(chain.from_iterable(config.get_sections(['CouchPotato','SickBeard']).values())): #process all for non-video categories.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
@@ -223,7 +223,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if movie files exist in destination:
-    if inputCategory in list(chain.from_iterable(config.get_categories(['CouchPotato','SickBeard']).values())):
+    if inputCategory in list(chain.from_iterable(config.get_sections(['CouchPotato','SickBeard']).values())):
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -248,7 +248,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (inputCategory in list(chain.from_iterable(config.get_categories(['HeadPhones','Mylar','Gamez']).values()))): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (inputCategory in list(chain.from_iterable(config.get_sections(['HeadPhones','Mylar','Gamez']).values()))): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
@@ -435,7 +435,7 @@ if __name__ == "__main__":
     minSampleSize = int(config()["Extensions"]["minSampleSize"])                      # 200 (in MB)
     SampleIDs = (config()["Extensions"]["SampleIDs"])                      # sample,-s.
 
-    sections = config.get_categories(["CouchPotato", "SickBeard", "HeadPhones", "Mylar", "Gamez"])
+    sections = config.get_sections(["CouchPotato", "SickBeard", "HeadPhones", "Mylar", "Gamez"])
     categories += list(chain.from_iterable(sections.values()))
 
     user_script_categories = config()["UserScript"]["user_script_categories"]         # NONE

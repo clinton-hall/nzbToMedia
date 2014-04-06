@@ -47,7 +47,7 @@ class config(object):
             return
 
     @staticmethod
-    def get_categories(section):
+    def get_sections(section):
         sections = {}
 
         # check and return categories if section does exist
@@ -58,8 +58,3 @@ class config(object):
             if config().has_key(x):
                 sections.update({x: config()[x].sections})
         return sections
-
-    @staticmethod
-    def gather_subsection(section, key):
-        if section.depth > 1:
-            return section.name
