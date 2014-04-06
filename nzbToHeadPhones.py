@@ -77,15 +77,14 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 # Exit codes used by NZBGet
 import logging
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
-from nzbtomedia.migratecfg import migratecfg
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import get_dirnames, WakeUp, nzbtomedia_configure_logging
 
 # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-if migratecfg().migrate():
+if config.migrate():
     # check to write settings from nzbGet UI to autoProcessMedia.cfg.
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        migratecfg().addnzbget()
+        config.addnzbget()
 
     nzbtomedia_configure_logging(config.LOG_FILE)
     Logger = logging.getLogger(__name__)

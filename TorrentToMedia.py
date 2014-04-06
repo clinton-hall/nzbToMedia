@@ -17,7 +17,6 @@ from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
-from nzbtomedia.migratecfg import migratecfg
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, WakeUp, parse_args, flatten, \
@@ -393,7 +392,7 @@ def external_script(outputDestination,torrentName,torrentLabel):
 
 if __name__ == "__main__":
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-    if migratecfg().migrate():
+    if config.migrate():
         nzbtomedia_configure_logging(config.LOG_FILE)
         Logger = logging.getLogger(__name__)
         Logger.info("====================")  # Seperate old from new log

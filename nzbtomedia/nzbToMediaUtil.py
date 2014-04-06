@@ -452,30 +452,37 @@ def parse_args(clientAgent):
     return clients[clientAgent](sys.argv)
 
 def get_dirnames(section, inputCategory):
+
+    dirNames = []
+
     try:
         watch_dir = config()[section][inputCategory]["watch_dir"]
+        if not os.path.exists(watch_dir):
+            watch_dir = ""
     except:
         watch_dir = ""
+
     try:
         outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], inputCategory)
+        if not os.path.exists(watch_dir):
+            outputDirectory = ""
     except:
         outputDirectory = ""
 
-    # set dirName
-    dirNames = []
     if watch_dir != "":
-        if os.path.exists(watch_dir):
-            dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
-                        os.path.isdir(os.path.join(watch_dir, o))])
+        dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
+                    os.path.isdir(os.path.join(watch_dir, o))])
         if not dirNames:
             Logger.warn("No Directories identified to Scan inside " + watch_dir)
 
     if outputDirectory != "":
-        if os.path.exists(outputDirectory):
-            dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
-                        os.path.isdir(os.path.join(outputDirectory, o))])
+        dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
+                    os.path.isdir(os.path.join(outputDirectory, o))])
         if not dirNames:
             Logger.warn("No Directories identified to Scan inside " + outputDirectory)
+
+    if watch_dir == "" and outputDirectory == "":
+        Logger.warn("No watch_dir or outputDirectory setup to be Scanned, go fix you autoProcessMedia.cfg file.")
 
     return dirNames
 

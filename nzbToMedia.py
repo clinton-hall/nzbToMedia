@@ -282,7 +282,6 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.migratecfg import migratecfg
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_dirnames
 
@@ -345,10 +344,10 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
 ########################################################################################################################
 
 # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-if migratecfg().migrate():
+if config.migrate():
     # check to write settings from nzbGet UI to autoProcessMedia.cfg.
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        migratecfg().addnzbget()
+        config.addnzbget()
 
     nzbtomedia_configure_logging(config.LOG_FILE)
 
