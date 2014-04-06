@@ -52,7 +52,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if inputCategory in sections["SickBeard"]:
         fork, fork_params = autoFork("SickBeard", inputCategory)
         Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
-        if fork in config.SICKBEARD_TORRENT and Torrent_NoLink != 1:
+        if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1:
             Logger.info("MAIN: Calling SickBeard's %s branch to post-process: %s",fork ,inputName)
             result = autoProcessTV().processEpisode(inputDirectory, inputName, 0)
             if result != 0:
