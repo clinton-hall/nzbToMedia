@@ -20,7 +20,7 @@ class autoProcessTV:
             return 1  # failure
 
         # auto-detect correct section
-        section = [x for x in config.issubsection(inputCategory) if int(config()[x][inputCategory]['enabled']) == 1]
+        section = [x for x in config.issubsection(inputCategory) if int(config()[x][inputCategory]['enabled']) == 1][0]
         if len(section) > 1:
             Logger.error(
                 "MAIN: You can't have multiple sub-sections with the same name enabled, fix your autoProcessMedia.cfg file.")
