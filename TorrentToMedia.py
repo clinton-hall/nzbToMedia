@@ -129,7 +129,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
     if config.issubsection(inputCategory, "HeadPhones"):
-        noFlatten.extend(list(chain.from_iterable(config()[section].sections))) # Make sure we preserve folder structure for HeadPhones.
+        noFlatten.extend(list(chain.from_iterable(config.get_subsections("HeadPhones")))) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
