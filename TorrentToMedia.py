@@ -48,7 +48,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    if config.issubsection(inputCategory,["SickBeard","NzbDrone"]):
+    if config().issubsection(inputCategory,["SickBeard","NzbDrone"]):
         Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
         result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
         if result != 0:
@@ -128,8 +128,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    if config.issubsection(inputCategory, "HeadPhones"):
-        noFlatten.extend(list(chain.from_iterable(config.get_subsections("HeadPhones")))) # Make sure we preserve folder structure for HeadPhones.
+    if config().issubsection(inputCategory, "HeadPhones"):
+        noFlatten.extend(list(chain.from_iterable(config().get_subsections("HeadPhones")))) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
@@ -170,7 +170,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config.issubsection(inputCategory, ["HeadPhones"]):  # Ignore samples
+                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config().issubsection(inputCategory, ["HeadPhones"]):  # Ignore samples
                     Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                     continue
                 else:
@@ -206,7 +206,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 except:
                     Logger.exception("MAIN: Extraction failed for: %s", file)
                 continue
-            elif not config.issubsection(inputCategory,['CouchPotato','SickBeard','NzbDrone']): #process all for non-video categories.
+            elif not config().issubsection(inputCategory,['CouchPotato','SickBeard','NzbDrone']): #process all for non-video categories.
                 Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
@@ -220,7 +220,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if video files exist in destination:
-    if config.issubsection(inputCategory,["SickBeard","NzbDrone"]):
+    if config().issubsection(inputCategory,["SickBeard","NzbDrone"]):
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -245,7 +245,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (config.issubsection(inputCategory,['HeadPhones','Mylar','Gamez'])): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (config().issubsection(inputCategory,['HeadPhones','Mylar','Gamez'])): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
@@ -253,23 +253,23 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit(-1)
 
     result = 0
-    if config.issubsection(inputCategory,['CouchPotato']):
+    if config().issubsection(inputCategory,['CouchPotato']):
         Logger.info("MAIN: Calling CouchPotato:" + inputCategory + " to post-process: %s", inputName)
         download_id = inputHash
         result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
-    elif config.issubsection(inputCategory,['SickBeard']):
+    elif config().issubsection(inputCategory,['SickBeard']):
         Logger.info("MAIN: Calling Sick-Beard:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config.issubsection(inputCategory,['NzbDrone']):
+    elif config().issubsection(inputCategory,['NzbDrone']):
         Logger.info("MAIN: Calling NzbDrone:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config.issubsection(inputCategory,['HeadPhones']):
+    elif config().issubsection(inputCategory,['HeadPhones']):
         Logger.info("MAIN: Calling HeadPhones:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
-    elif config.issubsection(inputCategory,['Mylar']):
+    elif config().issubsection(inputCategory,['Mylar']):
         Logger.info("MAIN: Calling Mylar:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config.issubsection(inputCategory,['Gamez']):
+    elif config().issubsection(inputCategory,['Gamez']):
         Logger.info("MAIN: Calling Gamez:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessGames().process(outputDestination, inputName, status, clientAgent, inputCategory)
 
@@ -393,7 +393,7 @@ def external_script(outputDestination,torrentName,torrentLabel):
 
 if __name__ == "__main__":
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-    if config.migrate():
+    if config().migrate():
         nzbtomedia_configure_logging(config.LOG_FILE)
         Logger = logging.getLogger(__name__)
         Logger.info("====================")  # Seperate old from new log
@@ -435,7 +435,7 @@ if __name__ == "__main__":
     minSampleSize = int(config()["Extensions"]["minSampleSize"])                      # 200 (in MB)
     SampleIDs = (config()["Extensions"]["SampleIDs"])                      # sample,-s.
 
-    subsections = config.get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
+    subsections = config().get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
     categories += list(chain.from_iterable(subsections.values()))
 
     user_script_categories = config()["UserScript"]["user_script_categories"]         # NONE
@@ -465,7 +465,7 @@ if __name__ == "__main__":
     if inputDirectory is None:
         for section, subsection in subsections.iteritems():
             for category in subsection:
-                if config.isenabled(section, category):
+                if config().isenabled(section, category):
                     dirNames = get_dirnames(section, category)
                     Logger.info("MAIN: TorrentToMedia running %s:%s as a manual run...", section, category)
                     for dirName in dirNames:

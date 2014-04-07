@@ -15,7 +15,7 @@ class autoProcessMusic:
             return 1  # failure
 
         # auto-detect correct section
-        section = config.issubsection(inputCategory,checkenabled=True)[0]
+        section = config().issubsection(inputCategory,checkenabled=True)[0]
         if len(section) == 0:
             Logger.error(
                 "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)

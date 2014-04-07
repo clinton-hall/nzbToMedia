@@ -135,10 +135,10 @@ from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_dirnames
 
 # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-if config.migrate():
+if config().migrate():
     # check to write settings from nzbGet UI to autoProcessMedia.cfg.
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        config.addnzbget()
+        config().addnzbget()
 
     nzbtomedia_configure_logging(config.LOG_FILE)
     Logger = logging.getLogger(__name__)
@@ -230,12 +230,12 @@ else:
     result = 0
 
     # init sub-sections
-    subsections = config.get_subsections(["SickBeard"])
+    subsections = config().get_subsections(["SickBeard"])
 
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():
         for category in subsection:
-            if config.isenabled(section,category):
+            if config().isenabled(section,category):
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
                     Logger.info("MAIN: nzbTo%s running %s:%s as a manual run...", section, section, category)

@@ -166,7 +166,7 @@ class autoProcessMovie:
             return 1  # failure
 
         # auto-detect correct section
-        section = config.issubsection(inputCategory, checkenabled=True)[0]
+        section = ''.join(map(str, config().issubsection(inputCategory, checkenabled=True)))
         if not section:
             Logger.error(
                 "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
