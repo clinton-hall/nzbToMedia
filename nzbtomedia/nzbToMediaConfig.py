@@ -51,22 +51,28 @@ class config(object):
             return
 
     @staticmethod
-    def issubsection(subsection, sections=None):
+    def issubsection(inputCategory, sections=None, checkenabled=False):
+        # checks if the inputCategory belongs to the section
+        # or returns sections with subsections matching the inputCategoryu
         if not sections:
-            sections = config.__get_sections(subsection)
+            sections = config.get_sections(inputCategory)
 
         if not isinstance(sections, list):
             sections = [sections]
 
         results = set()
         for section in sections:
-            if config()[section].has_key(subsection):
-                results.add(section)
+            if config()[section].has_key(inputCategory):
+                if checkenabled:
+                    if config.isenabled(section, inputCategory):
+                        results.add(section)
+                else:
+                    results.add(section)
         return results if results.issubset(sections) else False
 
     @staticmethod
-    def __get_sections(subsections):
-        # check and return categories if section does exist
+    def get_sections(subsections):
+        # finds all sections belonging to the subsection and returns them
         if not isinstance(subsections, list):
             subsections = [subsections]
 
@@ -79,7 +85,7 @@ class config(object):
 
     @staticmethod
     def get_subsections(sections):
-        # check and return categories if section does exist
+        # finds all subsections belonging to the section and returns them
         if not isinstance(sections, list):
             sections = [sections]
 
@@ -91,6 +97,22 @@ class config(object):
                         subsection = [subsection]
                     to_return.update({section: subsection})
         return to_return
+
+    @staticmethod
+    def isenabled(section, inputCategory):
+        # checks if the subsection is enabled/disabled
+        if int(config()[section][inputCategory]['enabled']) == 1:
+            return True
+
+    @staticmethod
+    def search(key, section, subsection=None):
+        # searches for data in sections and subsections and returns it
+        if subsection:
+            if key in config()[section][subsection].keys():
+                return config()[section][subsection][key]
+        else:
+            if key in config()[section].keys():
+                return config()[section][key]
 
     @staticmethod
     def migrate():

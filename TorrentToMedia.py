@@ -465,9 +465,12 @@ if __name__ == "__main__":
     if inputDirectory is None:
         for section, subsection in subsections.iteritems():
             for category in subsection:
-                dirNames = get_dirnames(section, category)
-                Logger.info("MAIN: TorrentToMedia running %s:%s as a manual run...", section, category)
-                for dirName in dirNames:
-                    main(dirName, os.path.basename(dirName), category, inputHash, inputID)
+                if config.isenabled(section, category):
+                    dirNames = get_dirnames(section, category)
+                    Logger.info("MAIN: TorrentToMedia running %s:%s as a manual run...", section, category)
+                    for dirName in dirNames:
+                        main(dirName, os.path.basename(dirName), category, inputHash, inputID)
+                else:
+                    Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...",section, section, category)
     else:
         main(inputDirectory, inputName, inputCategory, inputHash, inputID)

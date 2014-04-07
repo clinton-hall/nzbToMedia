@@ -15,12 +15,8 @@ class autoProcessComics:
             return 1  # failure
 
         # auto-detect correct section
-        secCount, section = [x  for x in enumerate(config.issubsection(inputCategory)) if int(config()[x[1]][inputCategory]['enabled']) == 1][0]
-        if secCount > 1:
-            Logger.error(
-                "MAIN: You can't have multiple sub-sections with the same name enabled, fix your autoProcessMedia.cfg file.")
-            return 1
-        elif secCount == 0:
+        section = config.issubsection(inputCategory, checkenabled=True)
+        if len(section) == 0:
             Logger.error(
                 "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1

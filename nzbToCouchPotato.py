@@ -238,7 +238,7 @@ else:
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():
         for category in subsection:
-            if int(config()[section][category]['enabled']) == 1:
+            if config.isenabled(section, category):
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
                     Logger.info("MAIN: nzbToCouchPotato running %s:%s as a manual run...", section, subsection)
