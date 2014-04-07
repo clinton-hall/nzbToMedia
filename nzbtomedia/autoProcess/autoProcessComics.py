@@ -15,7 +15,7 @@ class autoProcessComics:
             return 1  # failure
 
         # auto-detect correct section
-        secCount, section = [x  for x in enumerate(config.issubsection(inputCategory)) if int(config()[x[1]][inputCategory]['enabled']) == 1]
+        secCount, section = [x  for x in enumerate(config.issubsection(inputCategory)) if int(config()[x[1]][inputCategory]['enabled']) == 1][0]
         if secCount > 1:
             Logger.error(
                 "MAIN: You can't have multiple sub-sections with the same name enabled, fix your autoProcessMedia.cfg file.")
