@@ -10,6 +10,7 @@ class config(original_ConfigObj):
         if len(args) == 0:
             args = (self.CONFIG_FILE,)
         super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
+        self.interpolation = False
 
     def __call__(self, *args, **kwargs):
         print()
