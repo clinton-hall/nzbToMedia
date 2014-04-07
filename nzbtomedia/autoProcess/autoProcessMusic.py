@@ -2,6 +2,7 @@ import time
 import datetime
 import logging
 import socket
+import urllib
 from lib import requests
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, getDirectorySize
@@ -60,12 +61,16 @@ class autoProcessMusic:
         TIME_OUT += 60 # Add an extra minute for over-head/processing/metadata.
         socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
 
-        baseURL = protocol + host + ":" + port + web_root + "/api?apikey=" + apikey + "&cmd="
+        baseURL = protocol + host + ":" + port + web_root + "/api?"
 
         if status == 0:
-            command = "forceProcess"
 
-            url = baseURL + command
+            params = {}
+            params['apikey'] = apikey
+            params['cmd'] = "forceProcess"
+            params['dir'] = dirName
+
+            url = baseURL + + urllib.urlencode(params)
 
             Logger.info("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
 
@@ -81,9 +86,9 @@ class autoProcessMusic:
 
             Logger.info("HeadPhones returned %s", r.text)
             if r.text == "OK":
-                Logger.info("%s started on HeadPhones for %s", command, nzbName)
+                Logger.info("Post-processing started on HeadPhones for %s in folder %s", nzbName, dirName)
             else:
-                Logger.error("%s has NOT started on HeadPhones for %s. Exiting", command, nzbName)
+                Logger.error("Post-proecssing has NOT started on HeadPhones for %s in folder %s. Exiting", nzbName, dirName)
                 return 1 # failure
 
         else:
