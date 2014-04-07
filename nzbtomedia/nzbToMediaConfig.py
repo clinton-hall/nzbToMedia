@@ -6,12 +6,6 @@ from itertools import chain
 
 original_ConfigObj = lib.configobj.ConfigObj
 class config(original_ConfigObj):
-    def __init__(self, *args, **kw):
-        if len(args) == 0:
-            args = (self.CONFIG_FILE,)
-        super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
-        self.interpolation = False
-
     # constants for nzbtomedia
     NZBTOMEDIA_VERSION = 'V9.3'
     NZBTOMEDIA_TIMEOUT = 60
@@ -46,6 +40,12 @@ class config(original_ConfigObj):
     LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
     LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
     SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
+
+    def __init__(self, *args, **kw):
+        if len(args) == 0:
+            args = (self.CONFIG_FILE,)
+        super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
+        self.interpolation = False
 
     def issubsection(self, inputCategory, sections=None, checkenabled=False):
         # checks if the inputCategory belongs to the section

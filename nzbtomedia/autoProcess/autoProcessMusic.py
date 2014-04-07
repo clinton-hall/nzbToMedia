@@ -70,7 +70,7 @@ class autoProcessMusic:
             params['cmd'] = "forceProcess"
             params['dir'] = dirName
 
-            url = baseURL + + urllib.urlencode(params)
+            url = baseURL + urllib.urlencode(params)
 
             Logger.info("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
 
