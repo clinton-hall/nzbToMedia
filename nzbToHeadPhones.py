@@ -181,7 +181,7 @@ else:
             dirNames = get_dirnames(section, category)
             for dirName in dirNames:
                 Logger.info("MAIN: nzbToHeadPhones running %s:%s as a manual run...", section, category)
-                results = autoProcessMusic.process(dirName, os.path.basename(dirName), 0, inputCategory=category)
+                results = autoProcessMusic().process(dirName, os.path.basename(dirName), 0, inputCategory=category)
                 if results != 0:
                     result = results
                     Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
