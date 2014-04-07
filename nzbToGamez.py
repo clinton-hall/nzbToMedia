@@ -133,7 +133,8 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # All checks done, now launching the script.
     Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessGames...")
-    result = autoProcessGames().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
+    clientAgent = "nzbget"
+    result = autoProcessGames().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status, clientAgent, os.environ['NZBPP_CATEGORY'])
 # SABnzbd Pre 0.7.17
 elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -145,7 +146,8 @@ elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessGames...")
-    result = autoProcessGames().process(sys.argv[1], sys.argv[3], sys.argv[7])
+    clientAgent = "sabnzbd"
+    result = autoProcessGames().process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 # SABnzbd 0.7.17+
 elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -158,7 +160,8 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     # 8 Failure URL
     Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessGames...")
-    result = autoProcessGames().process(sys.argv[1], sys.argv[3], sys.argv[7])
+    clientAgent = "sabnzbd"
+    result = autoProcessGames().process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
     result = 0
 

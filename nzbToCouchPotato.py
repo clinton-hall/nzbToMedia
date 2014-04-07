@@ -198,10 +198,9 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # All checks done, now launching the script.
     download_id = ""
-    if os.environ.has_key('NZBPR_COUCHPOTATO'):
-        download_id = os.environ['NZBPR_COUCHPOTATO']
+    if os.environ.has_key('NZBPR_COUCHPOTATO'): download_id = os.environ['NZBPR_COUCHPOTATO']
     Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessMovie...")
-    result = autoProcessMovie().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status, clientAgent, download_id)
+    result = autoProcessMovie().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], clientAgent="nzbget", inputCategory=os.environ['NZBPP_CATEGORY'])
 # SABnzbd Pre 0.7.17
 elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -213,8 +212,7 @@ elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessMovie...")
-    clientAgent = "sabnzbd"
-    result = autoProcessMovie().process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent)
+    result = autoProcessMovie().process(sys.argv[1], sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
 # SABnzbd 0.7.17+
 elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -227,8 +225,7 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     # 8 Failure URL
     Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessMovie...")
-    clientAgent = "sabnzbd"
-    result = autoProcessMovie().process(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent)
+    result = autoProcessMovie().process(sys.argv[1], sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
 else:
     result = 0
 
@@ -241,11 +238,11 @@ else:
             if config().isenabled(section, category):
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    Logger.info("MAIN: nzbToCouchPotato running %s:%s as a manual run...", section, subsection)
+                    Logger.info("MAIN: nzbToCouchPotato running %s:%s as a manual run...", section, category)
                     results = autoProcessMovie().process(dirName, os.path.basename(dirName), 0, inputCategory=category)
                     if results != 0:
                         result = results
-                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, subsection)
+                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
             else:
                 Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, section, category)
 
