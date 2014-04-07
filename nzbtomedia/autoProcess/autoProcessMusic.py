@@ -15,7 +15,7 @@ class autoProcessMusic:
             return 1  # failure
 
         # auto-detect correct section
-        section = config.issubsection(inputCategory,checkenabled=True)
+        section = config.issubsection(inputCategory,checkenabled=True)[0]
         if len(section) == 0:
             Logger.error(
                 "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
@@ -44,6 +44,7 @@ class autoProcessMusic:
             TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
         except:
             TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
+
         if ssl:
             protocol = "https://"
         else:

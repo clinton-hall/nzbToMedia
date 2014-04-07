@@ -1,10 +1,19 @@
-import logging
 import os
 import shutil
-from lib import configobj
+import lib.configobj
+from lib.configobj import ConfigObj
 from itertools import chain
 
-class config(object):
+original_ConfigObj = lib.configobj.ConfigObj
+class config(original_ConfigObj):
+    def __init__(self, *args, **kw):
+        if len(args) == 0:
+            args = (self.CONFIG_FILE,)
+        super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
+
+    def __call__(self, *args, **kwargs):
+        print()
+
     # constants for nzbtomedia
     NZBTOMEDIA_VERSION = 'V9.3'
     NZBTOMEDIA_TIMEOUT = 60
@@ -40,15 +49,6 @@ class config(object):
     LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
     SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
 
-    def __new__(cls, *config_file):
-        try:
-            # load config
-            if not config_file:
-                return configobj.ConfigObj(cls.CONFIG_FILE, interpolation=False)
-            else:
-                return configobj.ConfigObj(*config_file, interpolation=False)
-        except Exception, e:
-            return
 
     @staticmethod
     def issubsection(inputCategory, sections=None, checkenabled=False):
@@ -60,15 +60,15 @@ class config(object):
         if not isinstance(sections, list):
             sections = [sections]
 
-        results = set()
+        results = []
         for section in sections:
             if config()[section].has_key(inputCategory):
                 if checkenabled:
                     if config.isenabled(section, inputCategory):
-                        results.add(section)
+                        results.append(section)
                 else:
-                    results.add(section)
-        return results if results.issubset(sections) else False
+                    results.append(section)
+        return results if list(set(results).intersection(set(sections))) else False
 
     @staticmethod
     def get_sections(subsections):
@@ -114,8 +114,7 @@ class config(object):
             if key in config()[section].keys():
                 return config()[section][key]
 
-    @staticmethod
-    def migrate():
+    def migrate(self, *args, **kw):
         global config_new, config_old
         config_new = config_old = None
 
@@ -355,3 +354,5 @@ class config(object):
         # writing our configuration file to 'autoProcessMedia.cfg'
         with open(config.CONFIG_FILE, 'wb') as configFile:
             config_new.write(configFile)
+
+lib.configobj.ConfigObj = config
