@@ -14,7 +14,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, getD
 Logger = logging.getLogger()
 
 class autoProcessTV:
-    def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", section=None, inputCategory=None):
+    def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
         if dirName is None:
             Logger.error("No directory was given!")
             return 1  # failure

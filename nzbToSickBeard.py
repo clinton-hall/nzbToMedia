@@ -238,8 +238,7 @@ else:
             dirNames = get_dirnames(section, category)
             for dirName in dirNames:
                 Logger.info("MAIN: nzbTo%s running %s:%s as a manual run...", section, section, subsection)
-                results = autoProcessTV(dirName, inputName=os.path.basename(dirName), status=0, clientAgent="manual",
-                                  inputCategory=category)
+                results = autoProcessTV(dirName, inputName=os.path.basename(dirName), failed=0, clientAgent="manual", inputCategory=category)
                 if results != 0:
                     result = results
                     Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, subsection)
