@@ -198,6 +198,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
 
     # All checks done, now launching the script.
     download_id = ""
+
     if os.environ.has_key('NZBPR_COUCHPOTATO'): download_id = os.environ['NZBPR_COUCHPOTATO']
     Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessMovie...")
     result = autoProcessMovie().process(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], clientAgent="nzbget", inputCategory=os.environ['NZBPP_CATEGORY'])

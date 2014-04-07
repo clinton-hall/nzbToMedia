@@ -214,6 +214,7 @@ class autoProcessMovie:
             protocol = "https://"
         else:
             protocol = "http://"
+
         # don't delay when we are calling this script manually.
         if clientAgent == "manual":
             delay = 0
@@ -304,7 +305,10 @@ class autoProcessMovie:
         if clientAgent == "manual":
             return 0 # success
         if not download_id:
-            return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
+            if clientAgent in ['utorrent', 'transmission', 'deluge'] :
+                return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
+            else:
+                return 0
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.
