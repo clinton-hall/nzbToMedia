@@ -230,7 +230,7 @@ else:
     result = 0
 
     # init sub-sections
-    subsections = config.get_subsections(["SickBeard", "NzbDrone"])
+    subsections = config.get_subsections(["SickBeard"])
 
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():

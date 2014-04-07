@@ -47,6 +47,7 @@
     #### ndCategory - category that gets called for post-processing with NzbDrone
     [[tv]]
         enabled = 0
+        apikey =
         host = localhost
         port = 8989
         username =
