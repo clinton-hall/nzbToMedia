@@ -114,7 +114,8 @@ class config(original_ConfigObj):
             if key in config()[section].keys():
                 return config()[section][key]
 
-    def migrate(self, *args, **kw):
+    @staticmethod
+    def migrate():
         global config_new, config_old
         config_new = config_old = None
 
