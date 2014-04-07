@@ -178,6 +178,8 @@ else:
                     if results != 0:
                         result = results
                         Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
+            else:
+                Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, section, category)
 
 if result == 0:
     Logger.info("MAIN: The autoProcessComics script completed successfully.")
