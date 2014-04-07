@@ -139,27 +139,27 @@ class autoProcessTV:
         socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
 
         # configure SB params to pass
-        params['quiet'] = 1
+        fork_params['quiet'] = 1
         if nzbName is not None:
-            params['nzbName'] = nzbName
+            fork_params['nzbName'] = nzbName
 
-        for param in copy.copy(params):
+        for param in copy.copy(fork_params):
             if param == "failed":
-                params[param] = failed
+                fork_params[param] = failed
 
             if param in ["dirName", "dir"]:
-                params[param] = dirName
+                fork_params[param] = dirName
 
             if param == "process_method":
                 if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
-                    del params[param]
+                    del fork_params[param]
                 if process_method:
-                    params[param] = process_method
+                    fork_params[param] = process_method
                 else:
-                    del params[param]
+                    del fork_params[param]
 
         # delete any unused params so we don't pass them to SB by mistake
-        [params.pop(k) for k,v in params.items() if v is None]
+        [fork_params.pop(k) for k,v in fork_params.items() if v is None]
 
         if status == 0:
             Logger.info("The download succeeded. Sending process request to SickBeard's %s branch", fork)
@@ -184,7 +184,7 @@ class autoProcessTV:
         else:
             protocol = "http://"
 
-        url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(params)
+        url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork_params)
 
         if clientAgent == "manual":delay = 0
         Logger.info("Waiting for %s seconds to allow SB to process newly extracted files", str(delay))
