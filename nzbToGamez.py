@@ -83,7 +83,7 @@ else:
     sys.exit(-1)
 
 # gamez category
-sections = config.get_sections(['Gamez'])
+sections = config.get_subsections(['Gamez'])
 
 WakeUp()
 
@@ -162,16 +162,19 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
 else:
     result = 0
 
-    Logger.warn("MAIN: Invalid number of arguments received from client. Exiting")
-    Logger.info("MAIN: Running autoProcessGames as a manual run...")
+    # init sub-sections
+    subsections = config.get_subsections(["Gamez"])
 
-    for section, categories in sections.items():
-        for category in categories:
+    Logger.warn("MAIN: Invalid number of arguments received from client.")
+    for section, subsection in subsections.items():
+        for category in subsection:
             dirNames = get_dirnames(section, category)
             for dirName in dirNames:
-                Logger.info("MAIN: Calling " + section + ":" + category + " to post-process: %s", dirName)
-                results = autoProcessGames().process(dirName, dirName, 0, inputCategory=category)
-                if results != 0:result = results
+                Logger.info("MAIN: nzbToGamez running %s:%s as a manual run...", section, category)
+                results = autoProcessGames(dirName, inputName=os.path.basename(dirName), status=0, clientAgent = "manual", inputCategory=category)
+                if results != 0:
+                    result = results
+                    Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
 
 if result == 0:
     Logger.info("MAIN: The autoProcessGames script completed successfully.")

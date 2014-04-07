@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to CouchPotato, SickBeard, Mylar, Gamez, HeadPhones.
+# Post-Process to CouchPotato, SickBeard, NzbDrone, Mylar, Gamez, HeadPhones.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -88,7 +88,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 #sbport=8081
 
 # SickBeard username.
-#sbusername= 
+#sbusername=
 
 # SickBeard password.
 #sbpassword=
@@ -132,6 +132,35 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 #
 # set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
 #sbprocess_method=
+
+## NzbDrone
+
+# NzbDrone script category.
+#
+# category that gets called for post-processing with NzbDrone.
+#ndCategory=tv
+
+# NzbDrone host.
+#ndHost=localhost
+
+# NzbDrone port.
+#ndPort=8989
+
+# NzbDrone API key.
+#ndAPIKey=
+
+# NzbDrone uses SSL (0, 1).
+#
+# Set to 1 if using SSL, else set to 0.
+#ndSSL=0
+
+# NzbDrone web root.
+#
+# set this if using a reverse proxy.
+#ndWebRoot=
+
+# Prefer NzbDrone if categories clash (0, 1).
+#ndPrefer=0
 
 ## HeadPhones
 
@@ -183,7 +212,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 #myport=8090
 
 # Mylar username.
-#myusername= 
+#myusername=
 
 # Mylar password.
 #mypassword=
@@ -245,7 +274,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 
 # ignore extensions
 #
-# list of extensions that won't be transcoded. 
+# list of extensions that won't be transcoded.
 #ignoreExtensions=.avi,.mkv
 
 # ffmpeg output settings.
@@ -287,58 +316,24 @@ from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_
 
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
-    if inputCategory in sections["CouchPotato"]:
-        if isinstance(nzbDir, list):
-            for dirName in nzbDir:
-                Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-                result =  autoProcessMovie().process(dirName, dirName, status, clientAgent, download_id, inputCategory)
-                if result != 0:
-                    return result
-        else:
-            Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
-            return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif inputCategory in sections["SickBeard"]:
-        if isinstance(nzbDir, list):
-            for dirName in nzbDir:
-                Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-                result = autoProcessTV().processEpisode(dirName, dirName, status, clientAgent, inputCategory)
-                if result !=0:
-                    return result
-        else:
-            Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
-            return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in sections["HeadPhones"]:
-        if isinstance(nzbDir, list):
-            for dirName in nzbDir:
-                Logger.info("MAIN: Calling Headphones to post-process: %s", dirName)
-                result = autoProcessMusic().process(dirName, dirName, status, clientAgent, inputCategory)
-                if result != 0:
-                    return result
-        else:
-            Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
-            return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in sections["Mylar"]:
-        if isinstance(nzbDir, list):
-            for dirName in nzbDir:
-                Logger.info("MAIN: Calling Mylar to post-process: %s", dirName)
-                result = autoProcessComics().processEpisode(dirName, dirName, status, clientAgent, inputCategory)
-                if result != 0:
-                    return result
-        else:
-            Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
-            return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif inputCategory in sections["Gamez"]:
-        if isinstance(nzbDir, list):
-            for dirName in nzbDir:
-                Logger.info("MAIN: Calling Gamez to post-process: %s", dirName)
-                result = autoProcessGames().process(dirName, dirName, status, clientAgent, inputCategory)
-                if result != 0:
-                    return result
-        else:
-            Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
-            return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
+
+    if section in ["CouchPotato"]:
+        Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
+        return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
+    elif section in ["SickBeard", "NzbDrone"]:
+        Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
+        return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+    elif section in ["HeadPhones"]:
+        Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
+        return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
+    elif section in ["Mylar"]:
+        Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
+        return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+    elif section in ["Gamez"]:
+        Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
+        return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
-        Logger.warning("MAIN: The download category %s does not match any category defined in autoProcessMedia.cfg. Exiting.", inputCategory)
+        Logger.warning("MAIN: We could not find the section %s with a download category of %s in your autoProcessMedia.cfg. Exiting.", section, inputCategory)
         return -1
 
 ########################################################################################################################
@@ -359,9 +354,6 @@ if config.migrate():
 else:
     print("Unable to find " + config.CONFIG_FILE + " or " + config.SAMPLE_CONFIG_FILE)
     sys.exit(-1)
-
-# setup sections and categories
-sections = config.get_sections(["CouchPotato","SickBeard","HeadPhones","Mylar","Gamez"])
 
 WakeUp()
 
@@ -450,15 +442,20 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
 else:
     result = 0
 
+    # init sub-sections
+    subsections = config.get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
+
     Logger.warn("MAIN: Invalid number of arguments received from client.")
-    for section, categories in sections.items():
-        for category in categories:
+    for section, subsection in subsections.items():
+        for category in subsection:
             dirNames = get_dirnames(section, category)
-            Logger.info("MAIN: Running " + section + ":" + category + " as a manual run...")
-            results = process(dirNames, inputName=dirNames, status=0, inputCategory=category, clientAgent = "manual")
-            if results != 0:
-                result = results
-                Logger.info("MAIN: A problem was reported when trying to manually run " + section + ":" + category + ".")
+            for dirName in dirNames:
+                Logger.info("MAIN: nzbToMedia running %s:%s as a manual run...", section, subsection)
+                results = process(dirName, inputName=os.path.basename(dirName), status=0, clientAgent="manual",
+                                           inputCategory=category)
+                if results != 0:
+                    result = results
+                    Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, subsection)
 
 if result == 0:
     Logger.info("MAIN: The nzbToMedia script completed successfully.")

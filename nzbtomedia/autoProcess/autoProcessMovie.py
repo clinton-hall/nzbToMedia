@@ -165,12 +165,22 @@ class autoProcessMovie:
             Logger.error("No directory was given!")
             return 1  # failure
 
+        # auto-detect correct section
+        section = [x for x in config.issubsection(inputCategory) if config()[x][inputCategory]['enabled'] == 1]
+        if len(section) > 1:
+            Logger.error(
+                "MAIN: You can't have multiple sub-sections with the same name enabled, fix your autoProcessMedia.cfg file.")
+            return 1
+        elif len(section) == 0:
+            Logger.error(
+                "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
+            return 1
+
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT))  #initialize socket timeout.
         Logger.info("Loading config from %s", config.CONFIG_FILE)
 
         status = int(status)
 
-        section = "CouchPotato"
         host = config()[section][inputCategory]["host"]
         port = config()[section][inputCategory]["port"]
         apikey = config()[section][inputCategory]["apikey"]
@@ -178,6 +188,7 @@ class autoProcessMovie:
         method = config()[section][inputCategory]["method"]
         delete_failed = int(config()[section][inputCategory]["delete_failed"])
         wait_for = int(config()[section][inputCategory]["wait_for"])
+
         try:
             TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
         except:

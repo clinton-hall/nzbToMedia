@@ -1,7 +1,8 @@
+import logging
 import os
 import shutil
-from itertools import chain
 from lib import configobj
+from itertools import chain
 
 class config(object):
     # constants for nzbtomedia
@@ -37,157 +38,191 @@ class config(object):
     TV_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
     LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
     LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
+    SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
 
     def __new__(cls, *config_file):
         try:
             # load config
             if not config_file:
-                return configobj.ConfigObj(cls.CONFIG_FILE)
+                return configobj.ConfigObj(cls.CONFIG_FILE, interpolation=False)
             else:
-                return configobj.ConfigObj(*config_file)
+                return configobj.ConfigObj(*config_file, interpolation=False)
         except Exception, e:
             return
 
     @staticmethod
-    def get_sections(section):
-        sections = {}
+    def issubsection(subsection, sections=None):
+        if not sections:
+            sections = config.__get_sections(subsection)
 
+        if not isinstance(sections, list):
+            sections = [sections]
+
+        results = set()
+        for section in sections:
+            if config()[section].has_key(subsection):
+                results.add(section)
+        return results if results.issubset(sections) else False
+
+    @staticmethod
+    def __get_sections(subsections):
         # check and return categories if section does exist
-        if not isinstance(section, list):
-            section = [section]
+        if not isinstance(subsections, list):
+            subsections = [subsections]
 
-        for x in section:
-            if config().has_key(x):
-                sections.update({x: config()[x].sections})
-        return sections
+        to_return = []
+        for subsection in subsections:
+            for section in config().sections:
+                if config()[section].has_key(subsection):
+                    to_return.append(section)
+        return to_return
+
+    @staticmethod
+    def get_subsections(sections):
+        # check and return categories if section does exist
+        if not isinstance(sections, list):
+            sections = [sections]
+
+        to_return = {}
+        for section in sections:
+            if section in config().sections:
+                for subsection in config()[section].sections:
+                    if not isinstance(subsection, list):
+                        subsection = [subsection]
+                    to_return.update({section: subsection})
+        return to_return
 
     @staticmethod
     def migrate():
-        categories = {}
-        confignew = None
-        configold = None
+        global config_new, config_old
+        config_new = config_old = None
 
         try:
             # check for autoProcessMedia.cfg and create if it does not exist
             if not config(config.CONFIG_FILE):
                 shutil.copyfile(config.SAMPLE_CONFIG_FILE, config.CONFIG_FILE)
-            configold = config(config.CONFIG_FILE)
-        except:pass
+            config_old = config(config.CONFIG_FILE)
+        except:
+            pass
 
         try:
             # check for autoProcessMedia.cfg.sample and create if it does not exist
             if not config(config.SAMPLE_CONFIG_FILE):
                 shutil.copyfile(config.CONFIG_FILE, config.SAMPLE_CONFIG_FILE)
-            confignew = config(config.SAMPLE_CONFIG_FILE)
-        except:pass
+            config_new = config(config.SAMPLE_CONFIG_FILE)
+        except:
+            pass
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.sample and if they don't exist return and fail
-        if not config() and not config(config.SAMPLE_CONFIG_FILE) or not confignew or not configold:
+        if not config() and not config(config.SAMPLE_CONFIG_FILE) or not config_new or not config_old:
             return False
 
-        for section in configold.sections:
-            for option, value in configold[section].items():
-                if section == "CouchPotato":
-                    if option == "category":  # change this old format
-                        option = "cpsCategory"
-                if section == "SickBeard":
-                    if option == "category":  # change this old format
-                        option = "sbCategory"
-                if option in ["cpsCategory","sbCategory","hpCategory","mlCategory","gzCategory"]:
+
+        subsections = {}
+        # gather all new-style and old-style sub-sections
+        for newsection, newitems in config_new.iteritems():
+            if config_new[newsection].sections:
+                subsections.update({newsection: config_new[newsection].sections})
+        for section, items in config_old.iteritems():
+            if config_old[section].sections:
+                subsections.update({section: config_old[section].sections})
+            for option, value in config_old[section].items():
+                if option in ["category", "cpsCategory", "sbCategory", "hpCategory", "mlCategory", "gzCategory"]:
                     if not isinstance(value, list):
                         value = [value]
 
-                    categories.update({section: value})
+                    # add subsection
+                    subsections.update({section: value})
+                    config_old[section].pop(option)
                     continue
 
-        try:
-            for section in configold.sections:
-                subsection = None
-                if section in list(chain.from_iterable(categories.values())):
-                    subsection = section
-                    section = ''.join([k for k, v in categories.iteritems() if subsection in v])
-                elif section in categories.keys():
-                    subsection = categories[section][0]
+        def cleanup_values(values, section):
+            for option, value in values.iteritems():
+                if section in ['CouchPotato']:
+                    if option == ['outputDirectory']:
+                        config_new['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
+                        values.pop(option)
+                if section in ['CouchPotato', 'HeadPhones', 'Gamez']:
+                    if option in ['username', 'password']:
+                        values.pop(option)
+                if section in ["SickBeard", "NzbDrone"]:
+                    if option == "wait_for":  # remove old format
+                        values.pop(option)
+                    if option == "failed_fork":  # change this old format
+                        values['failed'] = 'auto'
+                        values.pop(option)
+                    if option == "Torrent_ForceLink":
+                        values['Torrent_NoLink'] = value
+                        values.pop(option)
+                    if option == "outputDirectory":  # move this to new location format
+                        config_new['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
+                        values.pop(option)
+                if section in ["Torrent"]:
+                    if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
+                        config_new['Extensions'][option] = value
+                        values.pop(option)
+                    if option == "useLink":  # Sym links supported now as well.
+                        if isinstance(value, int):
+                            num_value = int(value)
+                            if num_value == 1:
+                                value = 'hard'
+                            else:
+                                value = 'no'
+            return values
 
-                # create subsection if it does not exist
-                if subsection and subsection not in confignew[section].sections:
-                    confignew[section][subsection] = {}
+        def process_section(section, subsections=None):
+            if subsections:
+                for subsection in subsections:
+                    if subsection in config_old.sections:
+                        values = config_old[subsection]
+                        if subsection not in config_new[section].sections:
+                            config_new[section][subsection] = {}
+                        for option, value in values.items():
+                            config_new[section][subsection][option] = value
+                    elif subsection in config_old[section].sections:
+                        values = config_old[section][subsection]
+                        if subsection not in config_new[section].sections:
+                            config_new[section][subsection] = {}
+                        for option, value in values.items():
+                            config_new[section][subsection][option] = value
+            else:
+                values = config_old[section]
+                if section not in config_new.sections:
+                    config_new[section] = {}
+                for option, value in values.items():
+                    config_new[section][option] = value
 
-                for option, value in configold[section].items():
-                    if section == "CouchPotato":
-                        if option == "outputDirectory":  # move this to new location format
-                            value = os.path.split(os.path.normpath(value))[0]
-                            confignew['Torrent'][option] = value
-                            continue
-                        if option in ["username", "password"]:  # these are no-longer needed.
-                            continue
-                        if option in ["category","cpsCategory"]:
-                            continue
-
-                    if section == "SickBeard":
-                        if option == "wait_for":  # remove old format
-                            continue
-                        if option == "failed_fork":  # change this old format
-                            option = "fork"
-                            value = "auto"
-                        if option == "Torrent_ForceLink":
-                            continue
-                        if option == "outputDirectory":  # move this to new location format
-                            value = os.path.split(os.path.normpath(value))[0]
-                            confignew['Torrent'][option] = value
-                            continue
-                        if option in ["category", "sbCategory"]:
-                            continue
-
-                    if section == "HeadPhones":
-                        if option in ["username", "password" ]:
-                            continue
-                        if option == "hpCategory":
-                            continue
-
-                    if section == "Mylar":
-                        if option in "mlCategory":
-                            continue
-
-                    if section == "Gamez":
-                        if option in ["username", "password"]:  # these are no-longer needed.
-                            continue
-                        if option == "gzCategory":
-                            continue
-
-                    if section == "Torrent":
-                        if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
-                            section = "Extensions"  # these were moved
-                        if option == "useLink":  # Sym links supported now as well.
-                            if isinstance(value, int):
-                                num_value = int(value)
-                                if num_value == 1:
-                                    value = "hard"
-                                else:
-                                    value = "no"
-
-                    if subsection:
-                        confignew[section][subsection][option] = value
-                    else:
-                        confignew[section][option] = value
-        except:pass
+        # convert old-style categories to new-style sub-sections
+        for section in config_old.keys():
+            subsection = None
+            if section in list(chain.from_iterable(subsections.values())):
+                subsection = section
+                section = ''.join([k for k,v in subsections.iteritems() if subsection in v])
+                process_section(section, subsection)
+                #[[v.remove(c) for c in v if c in subsection] for k, v in subsections.items() if k == section]
+            elif section in subsections.keys():
+                subsection = subsections[section]
+                process_section(section, subsection)
+                #[[v.remove(c) for c in v if c in subsection] for k,v in subsections.items() if k == section]
+            elif section in config_old.keys():
+                process_section(section, subsection)
 
         # create a backup of our old config
         if os.path.isfile(config.CONFIG_FILE):
             cfgbak_name = config.CONFIG_FILE + ".old"
-            if os.path.isfile(cfgbak_name): # remove older backups
+            if os.path.isfile(cfgbak_name):  # remove older backups
                 os.unlink(cfgbak_name)
             os.rename(config.CONFIG_FILE, cfgbak_name)
 
         # writing our configuration file to 'autoProcessMedia.cfg'
         with open(config.CONFIG_FILE, 'wb') as configFile:
-            confignew.write(configFile)
+            config_new.write(configFile)
 
         return True
 
     @staticmethod
     def addnzbget():
-        confignew = config()
+        config_new = config()
         section = "CouchPotato"
         envCatKey = 'NZBPO_CPSCATEGORY'
         envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
@@ -198,9 +233,9 @@ class config(object):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in confignew[section].sections:
-                        confignew[section][os.environ[envCatKey]] = {}
-                    confignew[section][os.environ[envCatKey]][option] = value
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
@@ -212,9 +247,9 @@ class config(object):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in confignew[section].sections:
-                        confignew[section][os.environ[envCatKey]] = {}
-                    confignew[section][os.environ[envCatKey]][option] = value
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
@@ -226,9 +261,9 @@ class config(object):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in confignew[section].sections:
-                        confignew[section][os.environ[envCatKey]] = {}
-                    confignew[section][os.environ[envCatKey]][option] = value
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
@@ -240,9 +275,9 @@ class config(object):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in confignew[section].sections:
-                        confignew[section][os.environ[envCatKey]] = {}
-                    confignew[section][os.environ[envCatKey]][option] = value
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
@@ -254,9 +289,9 @@ class config(object):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in confignew[section].sections:
-                        confignew[section][os.environ[envCatKey]] = {}
-                    confignew[section][os.environ[envCatKey]][option] = value
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
@@ -266,7 +301,7 @@ class config(object):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew[section][option] = value
+                config_new[section][option] = value
 
         section = "Transcoder"
         envKeys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'OUTPUTAUDIOBITRATE', 'OUTPUTSUBTITLECODEC']
@@ -276,7 +311,7 @@ class config(object):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew[section][option] = value
+                config_new[section][option] = value
 
         section = "WakeOnLan"
         envKeys = ['WAKE', 'HOST', 'PORT', 'MAC']
@@ -286,7 +321,7 @@ class config(object):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                confignew[section][option] = value
+                config_new[section][option] = value
 
         # create a backup of our old config
         if os.path.isfile(config.CONFIG_FILE):
@@ -297,4 +332,4 @@ class config(object):
 
         # writing our configuration file to 'autoProcessMedia.cfg'
         with open(config.CONFIG_FILE, 'wb') as configFile:
-            confignew.write(configFile)
+            config_new.write(configFile)

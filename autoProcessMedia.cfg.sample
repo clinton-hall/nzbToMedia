@@ -5,6 +5,7 @@
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS
     [[movie]]
+        enabled = 0
         apikey =
         host = localhost
         port = 5050
@@ -24,6 +25,7 @@
     #### autoProcessing for TV Series
     #### tv - category that gets called for post-processing with SB
     [[tv]]
+        enabled = 0
         host = localhost
         port = 8081
         username =
@@ -40,10 +42,30 @@
         Torrent_NoLink = 0
         process_method =
 
+[NzbDrone]
+    #### autoProcessing for TV Series
+    #### ndCategory - category that gets called for post-processing with NzbDrone
+    [[tv]]
+        enabled = 0
+        host = localhost
+        port = 8989
+        username =
+        password =
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delay = 0
+        TimePerGiB = 60
+        watch_dir =
+        delete_failed = 0
+        nzbExtractionBy = Downloader
+        Torrent_NoLink = 0
+
 [HeadPhones]
     #### autoProcessing for Music
     #### music - category that gets called for post-processing with HP
     [[music]]
+        enabled = 0
         apikey =
         host = localhost
         port = 8181
@@ -58,6 +80,7 @@
     #### autoProcessing for Comics
     #### comics - category that gets called for post-processing with Mylar
     [[comics]]
+        enabled = 0
         host = localhost
         port= 8090
         username=
@@ -71,6 +94,7 @@
     #### autoProcessing for Games
     #### games - category that gets called for post-processing with Gamez
     [[games]]
+        enabled = 0
         apikey =
         host = localhost
         port = 8085
@@ -173,3 +197,28 @@
     # enter the full path to a text file containing passwords to be used for extraction attempts.
     # In the passwords file, every password should be on a new line
     PassWordFile =
+
+# Logging configuration
+[loggers]
+    keys = root
+
+[handlers]
+    keys = console
+
+[formatters]
+    keys = generic
+
+[logger_root]
+    level = NOTSET
+    handlers = console
+    qualname =
+
+[handler_console]
+    class = StreamHandler
+    args = (sys.stdout,)
+    level = INFO
+    formatter = generic
+
+[formatter_generic]
+    format = %(asctime)s|%(levelname)-7.7s %(message)s
+    datefmt = %H:%M:%S

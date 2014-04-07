@@ -9,7 +9,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to Mylar.
+# Post-Process to NzbDrone.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -18,34 +18,65 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 ##############################################################################
 ### OPTIONS                                                                ###
 
-## Mylar
+## NzbDrone
 
-# Mylar script category.
+# NzbDrone script category.
 #
-# category that gets called for post-processing with Mylar.
-#myCategory=comics
+# category that gets called for post-processing with NzbDrone.
+#ndCategory=tv
 
-# Mylar host.
-#myhost=localhost
+# NzbDrone host.
+#ndHost=localhost
 
-# Mylar port.
-#myport=8090
+# NzbDrone port.
+#ndPort=8989
 
-# Mylar username.
-#myusername= 
+# NzbDrone API key.
+#ndAPIKey=
 
-# Mylar password.
-#mypassword=
-
-# Mylar uses ssl (0, 1).
+# NzbDrone uses SSL (0, 1).
 #
-# Set to 1 if using ssl, else set to 0.
-#myssl=0
+# Set to 1 if using SSL, else set to 0.
+#ndSSL=0
 
-# Mylar web_root
+# NzbDrone web root.
 #
 # set this if using a reverse proxy.
-#myweb_root=
+#ndWebRoot=
+
+## Extensions
+
+# Media Extensions
+#
+# This is a list of media extensions that are used to verify that the download does contain valid media.
+#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
+
+## Transcoder
+
+# Transcode (0, 1).
+#
+# set to 1 to transcode, otherwise set to 0.
+#transcode=0
+
+# create a duplicate, or replace the original (0, 1).
+#
+# set to 1 to cretae a new file or 0 to replace the original
+#duplicate=1
+
+# ignore extensions
+#
+# list of extensions that won't be transcoded. 
+#ignoreExtensions=.avi,.mkv
+
+# ffmpeg output settings.
+#outputVideoExtension=.mp4
+#outputVideoCodec=libx264
+#outputVideoPreset=medium
+#outputVideoFramerate=24
+#outputVideoBitrate=800k
+#outputAudioCodec=libmp3lame
+#outputAudioBitrate=128k
+#outputSubtitleCodec=
 
 ## WakeOnLan
 
@@ -65,10 +96,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib'
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
-
-# Exit codes used by NZBGet
 import logging
-from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
+from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_dirnames
 
@@ -81,7 +110,7 @@ if config.migrate():
     nzbtomedia_configure_logging(config.LOG_FILE)
     Logger = logging.getLogger(__name__)
     Logger.info("====================")  # Seperate old from new log
-    Logger.info("nzbToMylar %s", config.NZBTOMEDIA_VERSION)
+    Logger.info("nzbToNzbDrone %s", config.NZBTOMEDIA_VERSION)
 
     Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
 else:
@@ -134,8 +163,9 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
         status = 1
 
     # All checks done, now launching the script.
-    Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessComics...")
-    result = autoProcessComics().processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBNAME'], status)
+    Logger.info("MAIN: Script triggered from NZBGet, starting autoProcessTV...")
+    clientAgent = "nzbget"
+    result = autoProcessTV().processEpisode(os.environ['NZBPP_DIRECTORY'], os.environ['NZBPP_NZBFILENAME'], status, clientAgent, os.environ['NZBPP_CATEGORY'])
 # SABnzbd Pre 0.7.17
 elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -146,8 +176,9 @@ elif len(sys.argv) == config.SABNZB_NO_OF_ARGUMENTS:
     # 5 User-defined category
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessComics...")
-    result = autoProcessComics().processEpisode(sys.argv[1], sys.argv[3], sys.argv[7])
+    Logger.info("MAIN: Script triggered from SABnzbd, starting autoProcessTV...")
+    clientAgent = "sabnzbd"
+    result = autoProcessTV().processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 # SABnzbd 0.7.17+
 elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # SABnzbd argv:
@@ -159,31 +190,32 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
     # 6 Group that the NZB was posted in e.g. alt.binaries.x
     # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
     # 8 Failure URL
-    Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessComics...")
-    result = autoProcessComics().processEpisode(sys.argv[1], sys.argv[3], sys.argv[7])
+    Logger.info("MAIN: Script triggered from SABnzbd 0.7.17+, starting autoProcessTV...")
+    clientAgent = "sabnzbd"
+    result = autoProcessTV().processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
     result = 0
 
     # init sub-sections
-    subsections = config.get_subsections(["Mylar"])
+    subsections = config.get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
 
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():
         for category in subsection:
             dirNames = get_dirnames(section, category)
             for dirName in dirNames:
-                Logger.info("MAIN: nzbToMylar running %s:%s as a manual run...", section, subsection)
-                results = autoProcessComics(dirName, inputName=os.path.basename(dirName), status=0, clientAgent="manual",
+                Logger.info("MAIN: nzbToNzbDrone running %s:%s as a manual run...", section, subsection)
+                results = autoProcessTV(dirName, inputName=os.path.basename(dirName), status=0, clientAgent="manual",
                                   inputCategory=category)
                 if results != 0:
                     result = results
                     Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, subsection)
 
 if result == 0:
-    Logger.info("MAIN: The autoProcessComics script completed successfully.")
+    Logger.info("MAIN: The autoProcessTV script completed successfully.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(config.NZBGET_POSTPROCESS_SUCCESS)
 else:
-    Logger.info("MAIN: A problem was reported in the autoProcessComics script.")
+    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
     if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
         sys.exit(config.NZBGET_POSTPROCESS_ERROR)

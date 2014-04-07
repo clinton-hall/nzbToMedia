@@ -51,6 +51,9 @@ def create_destination(outputDestination):
         sys.exit(-1)
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
+    if inputDirectory is None:
+        return inputDirectory, inputName, inputCategory, root
+
     if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory): # If the input directory is a file, assume single file downlaod and split dir/name.
         inputDirectory,inputName = os.path.split(os.path.normpath(inputDirectory))
 
@@ -327,14 +330,13 @@ def TestCon(host, port):
 
 def WakeUp():
     if not config():
-        Logger.error("You need an autoProcessMedia.config() file - did you rename and edit the .sample?")
+        Logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
         return
 
     wake = int(config()["WakeOnLan"]["wake"])
     if wake == 0: # just return if we don't need to wake anything.
         return
     Logger.info("Loading WakeOnLan config from %s", config.CONFIG_FILE)
-    config()["WakeOnLan"]["host"]
     host = config()["WakeOnLan"]["host"]
     port = int(config()["WakeOnLan"]["port"])
     mac = config()["WakeOnLan"]["mac"]
@@ -376,6 +378,7 @@ def convert_to_ascii(nzbName, dirName):
     return nzbName, dirName
 
 def parse_other(args):
+
     return os.path.normpath(args[1]), '', '', '', ''
 
 def parse_rtorrent(args):
@@ -449,40 +452,49 @@ def parse_args(clientAgent):
     'transmission': parse_transmission,
     }
 
-    return clients[clientAgent](sys.argv)
+    try:
+        return clients[clientAgent](sys.argv)
+    except:return None, None, None, None, None
 
-def get_dirnames(section, inputCategory):
+def get_dirnames(section, subsections=None):
 
     dirNames = []
 
-    try:
-        watch_dir = config()[section][inputCategory]["watch_dir"]
-        if not os.path.exists(watch_dir):
-            watch_dir = ""
-    except:
-        watch_dir = ""
+    if subsections is None:
+        subsections = config.get_subsections(section).values()
 
-    try:
-        outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], inputCategory)
-        if not os.path.exists(watch_dir):
-            outputDirectory = ""
-    except:
-        outputDirectory = ""
+    if not isinstance(subsections, list):
+        subsections = [subsections]
 
-    if watch_dir != "":
-        dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
-                    os.path.isdir(os.path.join(watch_dir, o))])
-        if not dirNames:
-            Logger.warn("No Directories identified to Scan inside " + watch_dir)
+    for subsection in subsections:
+        try:
+            watch_dir = config()[section][subsection]["watch_dir"]
+            if not os.path.exists(watch_dir):
+                watch_dir = None
+        except:
+            watch_dir = None
 
-    if outputDirectory != "":
-        dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
-                    os.path.isdir(os.path.join(outputDirectory, o))])
-        if not dirNames:
-            Logger.warn("No Directories identified to Scan inside " + outputDirectory)
+        try:
+            outputDirectory = os.path.join(config()["Torrent"]["outputDirectory"], subsection)
+            if not os.path.exists(outputDirectory):
+                outputDirectory = None
+        except:
+            outputDirectory = None
 
-    if watch_dir == "" and outputDirectory == "":
-        Logger.warn("No watch_dir or outputDirectory setup to be Scanned, go fix you autoProcessMedia.cfg file.")
+        if watch_dir:
+            dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
+                        os.path.isdir(os.path.join(watch_dir, o))])
+            if not dirNames:
+                Logger.warn("%s:%s has no directories identified to scan inside %s", section, subsection, watch_dir)
+
+        if outputDirectory:
+            dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
+                        os.path.isdir(os.path.join(outputDirectory, o))])
+            if not dirNames:
+                Logger.warn("%s:%s has no directories identified to scan inside %s", section, subsection, outputDirectory)
+
+        if watch_dir is None and outputDirectory is None:
+            Logger.warn("%s:%s has no watch_dir or outputDirectory setup to be Scanned, go fix you autoProcessMedia.cfg file.", section, subsection)
 
     return dirNames
 

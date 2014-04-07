@@ -14,10 +14,27 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, getD
 Logger = logging.getLogger()
 
 class autoProcessTV:
-    def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
+    def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", section=None, inputCategory=None):
         if dirName is None:
             Logger.error("No directory was given!")
             return 1  # failure
+
+        # auto-detect correct section
+        section = [x for x in config.issubsection(inputCategory) if config()[x][inputCategory]['enabled'] == 1]
+        if len(section) > 1:
+            Logger.error(
+                "MAIN: You can't have multiple sub-sections with the same name enabled, fix your autoProcessMedia.cfg file.")
+            return 1
+        elif len(section) == 0:
+            Logger.error(
+                "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
+            return 1
+
+        fork, fork_params = autoFork(section, inputCategory)
+        Torrent_NoLink = int(config()[section][inputCategory]["Torrent_NoLink"])  # 0
+        if not fork in config.SICKBEARD_TORRENT and not Torrent_NoLink == 1:
+            if clientAgent in ['utorrent', 'transmission', 'deluge']:
+                return 1
 
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT))  #initialize socket timeout.
 
@@ -25,7 +42,6 @@ class autoProcessTV:
 
         status = int(failed)
 
-        section = "SickBeard"
         host = config()[section][inputCategory]["host"]
         port = config()[section][inputCategory]["port"]
         username = config()[section][inputCategory]["username"]
@@ -89,9 +105,6 @@ class autoProcessTV:
             SpecificPath = cleanName[0]
         if os.path.isdir(SpecificPath):
             dirName = SpecificPath
-
-        # auto-detect fork type
-        fork, params = autoFork(section, inputCategory)
 
         if fork not in config.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if nzbName:
