@@ -308,7 +308,7 @@ class autoProcessMovie:
             if clientAgent in ['utorrent', 'transmission', 'deluge'] :
                 return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
             else:
-                return 0
+                return 0  # success
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.

@@ -114,21 +114,21 @@ class config(original_ConfigObj):
         try:
             # check for autoProcessMedia.cfg and create if it does not exist
             if not config():
-                shutil.copyfile(config.SAMPLE_CONFIG_FILE, config.CONFIG_FILE)
+                shutil.copyfile(self.SAMPLE_CONFIG_FILE, self.CONFIG_FILE)
             config_old = config()
         except:
             pass
 
         try:
             # check for autoProcessMedia.cfg.sample and create if it does not exist
-            if not config(config.SAMPLE_CONFIG_FILE):
-                shutil.copyfile(config.CONFIG_FILE, config.SAMPLE_CONFIG_FILE)
-            config_new = config(config.SAMPLE_CONFIG_FILE)
+            if not config(self.SAMPLE_CONFIG_FILE):
+                shutil.copyfile(self.CONFIG_FILE, self.SAMPLE_CONFIG_FILE)
+            config_new = config(self.SAMPLE_CONFIG_FILE)
         except:
             pass
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.sample and if they don't exist return and fail
-        if not config() and not config(config.SAMPLE_CONFIG_FILE) or not config_new or not config_old:
+        if not config() and not config(self.SAMPLE_CONFIG_FILE) or not config_new or not config_old:
             return False
 
 
@@ -222,14 +222,14 @@ class config(original_ConfigObj):
                 process_section(section, subsection)
 
         # create a backup of our old config
-        if os.path.isfile(config.CONFIG_FILE):
-            cfgbak_name = config.CONFIG_FILE + ".old"
+        if os.path.isfile(self.CONFIG_FILE):
+            cfgbak_name = self.CONFIG_FILE + ".old"
             if os.path.isfile(cfgbak_name):  # remove older backups
                 os.unlink(cfgbak_name)
-            os.rename(config.CONFIG_FILE, cfgbak_name)
+            os.rename(self.CONFIG_FILE, cfgbak_name)
 
         # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(config.CONFIG_FILE, 'wb') as configFile:
+        with open(self.CONFIG_FILE, 'wb') as configFile:
             config_new.write(configFile)
 
         return True
@@ -306,6 +306,20 @@ class config(original_ConfigObj):
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
 
+        section = "NzbDrone"
+        envCatKey = 'NZBPO_NDCATEGORY'
+        envKeys = ['HOST', 'PORT', 'APIKEY', 'SSL', 'WEBROOT', 'PREFER']
+        cfgKeys = ['Host', 'Port', 'APIKey', 'SSL', 'WebRoot', 'Prefer']
+        if os.environ.has_key(envCatKey):
+            for index in range(len(envKeys)):
+                key = 'NZBPO_ND' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    if os.environ[envCatKey] not in config_new[section].sections:
+                        config_new[section][os.environ[envCatKey]] = {}
+                    config_new[section][os.environ[envCatKey]][option] = value
+
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
         cfgKeys = ['compressedExtensions', 'mediaExtensions', 'metaExtensions']
@@ -337,14 +351,14 @@ class config(original_ConfigObj):
                 config_new[section][option] = value
 
         # create a backup of our old config
-        if os.path.isfile(config.CONFIG_FILE):
-            cfgbak_name = config.CONFIG_FILE + ".old"
+        if os.path.isfile(self.CONFIG_FILE):
+            cfgbak_name = self.CONFIG_FILE + ".old"
             if os.path.isfile(cfgbak_name):  # remove older backups
                 os.unlink(cfgbak_name)
-            os.rename(config.CONFIG_FILE, cfgbak_name)
+            os.rename(self.CONFIG_FILE, cfgbak_name)
 
         # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(config.CONFIG_FILE, 'wb') as configFile:
+        with open(self.CONFIG_FILE, 'wb') as configFile:
             config_new.write(configFile)
 
 lib.configobj.ConfigObj = config
