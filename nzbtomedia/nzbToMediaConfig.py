@@ -249,6 +249,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
@@ -263,6 +264,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
@@ -277,6 +279,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
@@ -291,6 +294,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
@@ -305,6 +309,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "NzbDrone"
         envCatKey = 'NZBPO_NDCATEGORY'
@@ -319,6 +324,7 @@ class config(original_ConfigObj):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
