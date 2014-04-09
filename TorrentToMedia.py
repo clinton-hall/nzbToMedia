@@ -53,7 +53,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
     Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
-    if config.issubsection(inputCategory,["SickBeard"]):
+    if config().issubsection(inputCategory,["SickBeard"]):
         Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
         if Torrent_NoLink == 1:
             Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
