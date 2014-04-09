@@ -35,12 +35,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     extracted_folder = []
     extractionSuccess = False
     copy_list = []
-    useLink = useLink_in
     file = None
-
-    delugeClient = ""
-    utorrentClass = ""
-    TransmissionClass = ""
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
@@ -48,39 +43,10 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    # Hardlink solution for Torrents
-    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
-        if clientAgent == 'utorrent':
-            try:
-                Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
-                utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to uTorrent")
+    TorrentClass = create_torrent_class(clientAgent, inputHash)
+    pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
 
-        if clientAgent == 'transmission':
-            try:
-                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
-                TransmissionClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to Transmission")
-
-        if clientAgent == 'deluge':
-            try:
-                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, DelugeHost, DelugePort)
-                delugeClient = DelugeClient()
-                delugeClient.connect(host = DelugeHost, port = DelugePort, username = DelugeUSR, password = DelugePWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to deluge")
-
-        # if we are using links with Torrents it means we need to pause it in order to access the files
-        Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
-        if clientAgent == 'utorrent' and utorrentClass != "":
-            utorrentClass.stop(inputHash)
-        if clientAgent == 'transmission' and TransmissionClass !="":
-            TransmissionClass.stop_torrent(inputID)
-        if clientAgent == 'deluge' and delugeClient != "":
-            delugeClient.core.pause_torrent([inputID])
-        time.sleep(5)  # Give Torrent client some time to catch up with the change
+    processCategories = list(chain.from_iterable(subsections.values()))
 
     if config.issubsection(inputCategory,["SickBeard"):
         fork, fork_params = autoFork("SickBeard", inputCategory)
@@ -90,8 +56,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
                 if result != 0:
                     Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
-                resume(clientAgent, inputHash, inputID, deleteOriginal, result, useLink, utorrentClass, TransmissionClass,  delugeClient)
-                cleanup_output(inputCategory, processCategories, result, outputDestination, mediaContainer, metaContainer)
+                resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+                cleanup_output(inputCategory, processCategories, result, outputDestination)
                 Logger.info("MAIN: All done.")
                 sys.exit()
 
@@ -253,8 +219,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         else:
             Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
 
-    processCategories = list(chain.from_iterable(subsections.values()))
-
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
@@ -289,36 +253,74 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
-    resume(clientAgent, inputHash, inputID, deleteOriginal, result, useLink, utorrentClass, TransmissionClass,  delugeClient)
-    cleanup_output(inputCategory, processCategories, result, outputDestination, mediaContainer, metaContainer)
+    resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+    cleanup_output(inputCategory, processCategories, result, outputDestination)
     Logger.info("MAIN: All done.")
 
-def resume(clientAgent, inputHash, inputID, deleteOriginal, result, useLink, utorrentClass, TransmissionClass,  delugeClient)
+def create_torrent_class(clientAgent, inputHash)    # Hardlink solution for Torrents
+    TorrentClass = ""
+    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
+        if clientAgent == 'utorrent':
+            try:
+                Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
+                TorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to uTorrent")
+
+        if clientAgent == 'transmission':
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
+                TorrentClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to Transmission")
+
+        if clientAgent == 'deluge':
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, DelugeHost, DelugePort)
+                TorrentClass = DelugeClient()
+                TorrentClass.connect(host = DelugeHost, port = DelugePort, username = DelugeUSR, password = DelugePWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to deluge")
+
+    return TorrentClass
+
+def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
+        # if we are using links with Torrents it means we need to pause it in order to access the files
+        Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
+        if clientAgent == 'utorrent' and TorrentClass != "":
+            TorrentClass.stop(inputHash)
+        if clientAgent == 'transmission' and TorrentClass !="":
+            TorrentClass.stop_torrent(inputID)
+        if clientAgent == 'deluge' and TorrentClass != "":
+            TorrentClass.core.pause_torrent([inputID])
+        time.sleep(5)  # Give Torrent client some time to catch up with the change
+
+def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
 
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if (deleteOriginal == 1 and result != 1) or useLink == 'move': # added uselink = move, if we move files, nothing to resume seeding.
+        if (int(config()["Torrent"]["deleteOriginal"]) is 1 and result != 1) or useLink == 'move': # if we move files, nothing to resume seeding.
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and utorrentClass != "":
-                utorrentClass.removedata(inputHash)
-                utorrentClass.remove(inputHash)
-            if clientAgent == 'transmission' and TransmissionClass !="":
-                TransmissionClass.remove_torrent(inputID, True)
-            if clientAgent == 'deluge' and delugeClient != "":
-                delugeClient.core.remove_torrent(inputID, True)
+            if clientAgent == 'utorrent' and TorrentClass != "":
+                TorrentClass.removedata(inputHash)
+                TorrentClass.remove(inputHash)
+            if clientAgent == 'transmission' and TorrentClass !="":
+                TorrentClass.remove_torrent(inputID, True)
+            if clientAgent == 'deluge' and TorrentClass != "":
+                TorrentClass.core.remove_torrent(inputID, True)
         # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         else:
             Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and utorrentClass != "":
-                utorrentClass.start(inputHash)
-            if clientAgent == 'transmission' and TransmissionClass !="":
-                TransmissionClass.start_torrent(inputID)
-            if clientAgent == 'deluge' and delugeClient != "":
-                delugeClient.core.resume_torrent([inputID])
+            if clientAgent == 'utorrent' and TorrentClass != "":
+                TorrentClass.start(inputHash)
+            if clientAgent == 'transmission' and TorrentClass !="":
+                TorrentClass.start_torrent(inputID)
+            if clientAgent == 'deluge' and TorrentClass != "":
+                TorrentClass.core.resume_torrent([inputID])
         time.sleep(5)
 
-def cleanup_output(inputCategory, processCategories, result, outputDestination, mediaContainer, metaContainer) 
+def cleanup_output(inputCategory, processCategories, result, outputDestination) 
     if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
         num_files_new = int(0)
         file_list = []
@@ -327,9 +329,9 @@ def cleanup_output(inputCategory, processCategories, result, outputDestination, 
                 filePath = os.path.join(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in mediaContainer or fileExtension in metaContainer:
-                    num_files_new = num_files_new + 1
+                    num_files_new += 1
                     file_list.append(file)
-        if num_files_new == int(0) or forceClean == 1:
+        if num_files_new is 0 or int(config()["Torrent"]["forceClean"]) is 1:
             Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
             shutil.rmtree(outputDestination)
         else:
@@ -426,7 +428,7 @@ if __name__ == "__main__":
 
     # EXAMPLE VALUES:
     clientAgent = config()["Torrent"]["clientAgent"]                                  # utorrent | deluge | transmission | rtorrent | other
-    useLink_in = config()["Torrent"]["useLink"]                                       # no | hard | sym
+    useLink = config()["Torrent"]["useLink"]                                          # no | hard | sym
     outputDirectory = config()["Torrent"]["outputDirectory"]                          # /abs/path/to/complete/
     categories = (config()["Torrent"]["categories"])                                  # music,music_videos,pictures,software
     noFlatten = (config()["Torrent"]["noFlatten"])
@@ -445,14 +447,11 @@ if __name__ == "__main__":
     DelugeUSR = config()["Torrent"]["DelugeUSR"]                                      # mysecretusr
     DelugePWD = config()["Torrent"]["DelugePWD"]                                      # mysecretpwr
 
-    deleteOriginal = int(config()["Torrent"]["deleteOriginal"])                       # 0
-    forceClean = int(config()["Torrent"]["forceClean"])                               # 0
-
-    compressedContainer = (config()["Extensions"]["compressedExtensions"]) # .zip,.rar,.7z
-    mediaContainer = (config()["Extensions"]["mediaExtensions"])           # .mkv,.avi,.divx
-    metaContainer = (config()["Extensions"]["metaExtensions"])             # .nfo,.sub,.srt
+    compressedContainer = (config()["Extensions"]["compressedExtensions"])            # .zip,.rar,.7z
+    mediaContainer = (config()["Extensions"]["mediaExtensions"])                      # .mkv,.avi,.divx
+    metaContainer = (config()["Extensions"]["metaExtensions"])                        # .nfo,.sub,.srt
     minSampleSize = int(config()["Extensions"]["minSampleSize"])                      # 200 (in MB)
-    SampleIDs = (config()["Extensions"]["SampleIDs"])                      # sample,-s.
+    SampleIDs = (config()["Extensions"]["SampleIDs"])                                 # sample,-s.
 
     subsections = config().get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
     categories += list(chain.from_iterable(subsections.values()))
