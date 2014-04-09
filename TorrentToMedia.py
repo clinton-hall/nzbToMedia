@@ -30,7 +30,6 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
     video = int(0)
-    video2 = int(0)
     foundFile = int(0)
     extracted_folder = []
     extractionSuccess = False
@@ -48,43 +47,24 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     processCategories = list(chain.from_iterable(subsections.values()))
 
-    if config.issubsection(inputCategory,["SickBeard"):
-        fork, fork_params = autoFork("SickBeard", inputCategory)
-            Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
-            if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1:
-                Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
-                result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
-                if result != 0:
-                    Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
-                resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
-                cleanup_output(inputCategory, processCategories, result, outputDestination)
-                Logger.info("MAIN: All done.")
-                sys.exit()
-
     outputDestination = ""
-    for category in categories:
-        if category == inputCategory:
-            if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
-                Logger.info("MAIN: Download is a directory")
-                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
-            else:
-                Logger.info("MAIN: Download is not a directory")
-                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, os.path.splitext(safeName(inputName))[0]))
-            Logger.info("MAIN: Output directory set to: %s", outputDestination)
-            break
-        else:
-            continue
+    if inputCategory == "":
+        inputCategory = "UNCAT"
+    outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
+    Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
-    if outputDestination == "":
-        if inputCategory == "":
-            inputCategory = "UNCAT"
-        if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
-            Logger.info("MAIN: Download is a directory")
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
-        else:
-            Logger.info("MAIN: Download is not a directory")
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, os.path.splitext(safeName(inputName))[0]))
-        Logger.info("MAIN: Output directory set to: %s", outputDestination)
+    if config.issubsection(inputCategory,["SickBeard"]):
+        fork, fork_params = autoFork("SickBeard", inputCategory)
+        Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
+        if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1:
+            Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
+            result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
+            if result != 0:
+                Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+            resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+            cleanup_output(inputCategory, processCategories, result, outputDestination)
+            Logger.info("MAIN: All done.")
+            sys.exit()
 
     processOnly = list(chain.from_iterable(subsections.values()))
     if not "NONE" in user_script_categories: # if None, we only process the 5 listed.
@@ -130,7 +110,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file does not match the Torrent name, skip it
 
             if root == 2:
-                Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
+                if foundFile == int(0):
+                    Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
                 if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
@@ -140,59 +121,34 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config().issubsection(inputCategory, ["HeadPhones"]):  # Ignore samples
-                    Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
-                    continue
-                else:
-                    video = video + 1
-                    Logger.info("MAIN: Found media file %s in %s", fileExtension, filePath)
-                    try:
-                        copy_link(filePath, targetDirectory, useLink, outputDestination)
-                        copy_list.append([filePath, os.path.join(outputDestination, file)])
-                    except:
-                        Logger.exception("MAIN: Failed to link file: %s", file)
-            elif fileExtension in metaContainer:
-                Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
-                try:
-                    copy_link(filePath, targetDirectory, useLink, outputDestination)
-                    copy_list.append([filePath, os.path.join(outputDestination, file)])
-                except:
-                    Logger.exception("MAIN: Failed to link file: %s", file)
+            if fileExtension in mediaContainer and is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config().issubsection(inputCategory, ["HeadPhones"]):   # Ignore samples
+                Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
                 continue
-            elif fileExtension in compressedContainer:
-                if config().issubsection(inputCategory,["SickBeard"]) and config()["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination":
-                    Logger.info("MAIN: Found archive file %s in %s", fileExtension, filePath)
+
+            if fileExtension in compressedContainer:
+                if not (config().issubsection(inputCategory,["SickBeard"]) and config()["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
+                    # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
+                    if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
+                        part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
+                        if part == 1: # we only want to extract the primary part.
+                            Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)
+                        else:
+                            Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
+                            continue
+                    Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                     try:
-                        copy_link(filePath, targetDirectory, useLink, outputDestination)
-                        copy_list.append([filePath, os.path.join(outputDestination, file)])
+                        extractor.extract(filePath, outputDestination)
+                        extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
+                        extracted_folder.append(os.path.dirname(filePath))
                     except:
-                        Logger.exception("MAIN: Failed to link file: %s", file)
+                        Logger.exception("MAIN: Extraction failed for: %s", file)
                     continue
-                # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
-                    part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
-                    if part == 1: # we only want to extract the primary part.
-                        Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)
-                    else:
-                        Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
-                        continue
-                Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
-                try:
-                    extractor.extract(filePath, outputDestination)
-                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
-                    extracted_folder.append(os.path.dirname(filePath))
-                except:
-                    Logger.exception("MAIN: Extraction failed for: %s", file)
-                continue
-            elif not config().issubsection(inputCategory,['CouchPotato','SickBeard','NzbDrone']): #process all for non-video categories.
-                Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
+
+            try:
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
-                continue
-            else:
-                Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
-                continue
+            except:
+                Logger.exception("MAIN: Failed to link file: %s", file)
 
     outputDestination = outputDestinationMaster # Reset here.
     if not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later.
@@ -205,19 +161,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 filePath = os.path.join(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in mediaContainer:  # If the file is a video file
-                    if is_sample(filePath, inputName, minSampleSize, SampleIDs):
-                        Logger.debug("MAIN: Removing sample file: %s", filePath)
-                        os.unlink(filePath)  # remove samples
-                    else:
-                        Logger.debug("MAIN: Found media file: %s", filePath)
-                        video2 = video2 + 1
-                else:
-                    Logger.debug("MAIN: File %s is not a media file", filePath)
-        if video2 >= video and video2 > int(0):  # Check that all video files were moved
-            Logger.debug("MAIN: Found %s media files", str(video2))
+                    Logger.debug("MAIN: Found media file: %s", filePath)
+                    video += 1
+        if video > int(0):  # Check that media files exist
+            Logger.debug("MAIN: Found %s media files", str(video))
             status = int(0)
         else:
-            Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
+            Logger.warning("MAIN: Found no media files in output.", str(video))
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
