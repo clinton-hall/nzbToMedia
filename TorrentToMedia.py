@@ -54,9 +54,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
     if config.issubsection(inputCategory,["SickBeard"]):
-        fork, fork_params = autoFork("SickBeard", inputCategory)
         Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
-        if fork in config.SICKBEARD_TORRENT and Torrent_NoLink == 1:
+        if Torrent_NoLink == 1:
             Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
             result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
             if result != 0:

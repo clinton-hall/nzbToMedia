@@ -28,10 +28,6 @@ class autoProcessTV:
             return 1
 
         fork, fork_params = autoFork(section, inputCategory)
-        Torrent_NoLink = int(config()[section][inputCategory]["Torrent_NoLink"])  # 0
-        if not fork in config.SICKBEARD_TORRENT and not Torrent_NoLink == 1:
-            if clientAgent in ['utorrent', 'transmission', 'deluge']:
-                return 1
 
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT))  #initialize socket timeout.
 
