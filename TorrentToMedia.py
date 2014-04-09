@@ -257,7 +257,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     cleanup_output(inputCategory, processCategories, result, outputDestination)
     Logger.info("MAIN: All done.")
 
-def create_torrent_class(clientAgent, inputHash)    # Hardlink solution for Torrents
+def create_torrent_class(clientAgent, inputHash):
+    # Hardlink solution for Torrents
     TorrentClass = ""
     if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
         if clientAgent == 'utorrent':
@@ -284,19 +285,18 @@ def create_torrent_class(clientAgent, inputHash)    # Hardlink solution for Torr
 
     return TorrentClass
 
-def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
-        # if we are using links with Torrents it means we need to pause it in order to access the files
-        Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
-        if clientAgent == 'utorrent' and TorrentClass != "":
-            TorrentClass.stop(inputHash)
-        if clientAgent == 'transmission' and TorrentClass !="":
-            TorrentClass.stop_torrent(inputID)
-        if clientAgent == 'deluge' and TorrentClass != "":
-            TorrentClass.core.pause_torrent([inputID])
-        time.sleep(5)  # Give Torrent client some time to catch up with the change
+def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName):
+    # if we are using links with Torrents it means we need to pause it in order to access the files
+    Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
+    if clientAgent == 'utorrent' and TorrentClass != "":
+        TorrentClass.stop(inputHash)
+    if clientAgent == 'transmission' and TorrentClass !="":
+        TorrentClass.stop_torrent(inputID)
+    if clientAgent == 'deluge' and TorrentClass != "":
+        TorrentClass.core.pause_torrent([inputID])
+    time.sleep(5)  # Give Torrent client some time to catch up with the change
 
-def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
-
+def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName):
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
@@ -320,7 +320,7 @@ def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputN
                 TorrentClass.core.resume_torrent([inputID])
         time.sleep(5)
 
-def cleanup_output(inputCategory, processCategories, result, outputDestination) 
+def cleanup_output(inputCategory, processCategories, result, outputDestination): 
     if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
         num_files_new = int(0)
         file_list = []
