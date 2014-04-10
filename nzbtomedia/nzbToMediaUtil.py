@@ -51,20 +51,30 @@ def create_destination(outputDestination):
         sys.exit(-1)
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
-    if inputDirectory is None:
-        return inputDirectory, inputName, inputCategory, root
-
-    catdir = False
+    single = False
     tordir = False
 
-    if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file, assume single file download and split dir/name.
-        inputDirectory,inputName = os.path.split(os.path.normpath(inputDirectory))
+    if inputDirectory is None:  # =Nothing to process here.
+        return inputDirectory, inputName, inputCategory, root, single
+
+    pathlist = os.path.normpath(inputDirectory).split(os.sep)
+
+    try:
+        inputCategory = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
+        Logger.debug("SEARCH: Found Category: %s in directory structure", inputCategory)
+    except IndexError:
+        inputCategory = ""
+        Logger.debug("SEARCH: Could not find a category in the directory structure")
+
+    if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file
+        single = True
+        if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
+        return inputDirectory, inputName, inputCategory, root, single
 
     if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
         Logger.info("SEARCH: Found category directory %s in input directory directory %s", inputCategory, inputDirectory)
         inputDirectory = os.path.join(inputDirectory, inputCategory)
         Logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
-        catdir = True
     if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
         Logger.info("SEARCH: Found torrent directory %s in input directory directory %s", inputName, inputDirectory)
         inputDirectory = os.path.join(inputDirectory, inputName)
@@ -76,49 +86,35 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         Logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
         tordir = True
 
-    pathlist = os.path.normpath(inputDirectory).split(os.sep)
+    imdbid = [item for item in pathlist if '.cp(tt' in item]  # This looks for the .cp(tt imdb id in the path.
+    if imdbid and not '.cp(tt' in inputName:
+        inputName = imdbid[0]  # This ensures the imdb id is preserved and passed to CP
+        tordir = True
 
-    if not catdir:
-        if inputCategory and inputCategory in pathlist:
-            Logger.debug("SEARCH: Found Category: %s in directory structure", inputCategory)
-            catdir = True
-        else:
-            for item in pathlist:
-                if item in categories:
-                    if not inputCategory: inputCategory = item
-                    Logger.debug("SEARCH: Found Category: %s in directory structure", item)
-                    catdir = True
-                    break
-            if not inputCategory:
-                Logger.info("SEARCH: Could not find a category in the directory structure")
+    if inputCategory and not tordir:
+        try:
+            index = pathlist.index(inputCategory)
+            if index + 1 < len(pathlist):
+                tordir = True
+                Logger.info("SEARCH: Found a unique directory %s in the category directory", pathlist[index+1])
+                if not inputName: inputName = pathlist[index+1]
+        except ValueError:
+            pass
 
-    if not tordir:
-        if inputName and (inputName in pathlist or safeName(inputName) in pathlist):
+    if inputName and not tordir:
+        if inputName in pathlist or safeName(inputName) in pathlist:
             Logger.info("SEARCH: Found torrent directory %s in the directory structure", inputName)
             tordir = True
-        elif catdir:
-            try:
-                index = pathlist.index(inputCategory)
-            except ValueError:
-                index = 0
-            if index != 0 and index < (len(pathlist)-1): # if there is another path after category.
-                tordir = True
-                if not inputName: inputName = pathlist[index+1]
-                Logger.info("SEARCH: Found a unique directory %s in the category directory", pathlist[index+1])
         else:
-            Logger.info("SEARCH: Could not find a unique directory for this download. Assume a common directory.")
-            Logger.info("SEARCH: We will try and determine which files to process, individually")     
-        
-    if tordir:  # in unique directory.
-        root = 0
-    
-    elif inputName:  # not unique directory, but we know the name to search for.
-        root = 1     
-       
-    else:  # we need to search the input directory for recently changed files.
+            root = 1
+    if not tordir:
         root = 2
-    
-    return inputDirectory, inputName, inputCategory, root
+
+    if root > 0:
+        Logger.info("SEARCH: Could not find a unique directory for this download. Assume a common directory.")
+        Logger.info("SEARCH: We will try and determine which files to process, individually")
+
+    return inputDirectory, inputName, inputCategory, root, single
 
 def is_sample(filePath, inputName, minSampleSize, SampleIDs):
     # 200 MB in bytes

@@ -38,7 +38,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
+    inputDirectory, inputName, inputCategory, root, single = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
@@ -83,8 +83,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
+    if single: inputDirectory,filename = os.path.split(inputDirectory)
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
-        Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)
+        if single:
+            dirnames[:] = [] 
+            filenames[:] = [filename]  # we just want to work with this one file if single = True
+        Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)if
         for file in filenames:
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
