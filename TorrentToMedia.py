@@ -92,7 +92,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         for file in filenames:
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
-            if inputCategory in noFlatten:
+            if inputCategory in noFlatten and not single:
                 newDir = dirpath # find the full path
                 newDir = newDir.replace(inputDirectory, "") #find the extra-depth directory
                 if len(newDir) > 0 and newDir[0] == "/":
