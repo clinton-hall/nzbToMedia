@@ -88,7 +88,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         if single:
             dirnames[:] = [] 
             filenames[:] = [filename]  # we just want to work with this one file if single = True
-        Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)if
+        Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)
         for file in filenames:
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
