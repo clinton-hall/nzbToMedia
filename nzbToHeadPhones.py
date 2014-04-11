@@ -175,22 +175,20 @@ elif len(sys.argv) >= config.SABNZB_0717_NO_OF_ARGUMENTS:
 else:
     result = 0
 
-    # init sub-sections
-    subsections = config().get_subsections(["HeadPhones"])
-
+    subsections = config()["HeadPhones"].subsections
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():
         for category in subsection:
-            if config().isenabled(section, category):
+            if config()[section].isenabled(category):
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    Logger.info("MAIN: nzbToHeadPhones running %s:%s as a manual run...", section, category)
+                    Logger.info("MAIN: nzbToHeadPhones running %s:%s as a manual run on folder %s ...", section, category, dirName)
                     results = autoProcessMusic().process(dirName, os.path.basename(dirName), 0, inputCategory=category)
                     if results != 0:
                         result = results
-                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
+                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s on folder %s ...", section, category, dirName)
             else:
-                Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, section, category)
+                Logger.info("MAIN: nzbToHeadPhones %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
 
 if result == 0:
     Logger.info("MAIN: The autoProcessMusic script completed successfully.")

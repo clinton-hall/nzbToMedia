@@ -21,17 +21,14 @@ class autoProcessTV:
             return 1  # failure
 
         # auto-detect correct section
-        section = ''.join(map(str, config().issubsection(inputCategory, checkenabled=True)))
+        section = config().findsection(inputCategory)
         if not section:
             Logger.error(
-                "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
+                "MAIN: We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
-        fork, fork_params = autoFork(section, inputCategory)
-        Torrent_NoLink = int(config()[section][inputCategory]["Torrent_NoLink"])  # 0
-        if not fork in config.SICKBEARD_TORRENT and not Torrent_NoLink == 1:
-            if clientAgent in ['utorrent', 'transmission', 'deluge']:
-                return 1
+        # auto-detect correct fork
+        fork, fork_params = autoFork(inputCategory)
 
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT))  #initialize socket timeout.
 

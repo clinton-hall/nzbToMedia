@@ -4,69 +4,66 @@ import lib.configobj
 from itertools import chain
 
 class Sections(dict):
-    def has_subsection(sections, subsection, checkenabled=False):
-        # checks sections for subsection, returns true/false
-        to_return = {}
+    def issubsection(sections, subsection, checkenabled=True):
+        # checks sections for subsection, returns true/false in {}
+        to_return = False
         for section in sections.values():
-            to_return.update({section.name: True})
-            if subsection in section and checkenabled:
-                if not section.isenabled():
-                    to_return.update({section.name: False})
-            elif subsection not in section:
-                to_return.update({section.name: False})
+            to_return = section.issubsection(subsection, checkenabled)
         return to_return
 
-    def isenabled(sections, subsection=None):
-        # checks if subsections are enabled, returns true/false
-        to_return = {}
+    def isenabled(sections, subsection):
+        # checks if subsections are enabled, returns true/false in {}
+        to_return = False
         for section in sections.values():
-            result = {}
-            subsections = [subsection] if subsection else section
-            for category in subsections:
-                if category in section:
-                    result[category] = True
-                    if not int(section[category]['enabled']) == 1:
-                        result[category] = False
-                    to_return.update({section.name:result})
+            to_return = section.isenabled(subsection)
         return to_return
 
     @property
+    def sections(sections):
+        # returns [subsections]
+        to_return = []
+        for section in sections:
+            to_return.append(sections[section].sections)
+        return list(set(chain.from_iterable(to_return)))
+
+    @property
     def subsections(sections):
+        # returns {section name:[subsections]}
         to_return = {}
         for section in sections:
-            result = []
-            for subsection in sections[section]:
-                result.append(subsection)
-            to_return[section] = result
+            to_return.update(sections[section].subsections)
         return to_return
 
 class Section(lib.configobj.Section):
-    def has_subsection(section, subsection, checkenabled=False):
+    def issubsection(section, subsection, checkenabled=True):
         # checks section for subsection, returns true/false
-        to_return=[True]
-        if subsection in section and checkenabled:
-            if not section.isenabled(subsection):
-                to_return.append(False)
-        elif subsection not in section:
-            to_return.append(False)
+        to_return = False
+        if subsection in section:
+            if checkenabled and section.isenabled(subsection):
+                to_return = True
+            else:
+                to_return = True
         return to_return
 
-    def isenabled(section, subsection=None):
-        # checks if subsection enabled, returns true/false
-        to_return = {}
-        subsections = [subsection] if subsection else section
-        for category in subsections:
-            to_return[category] = True
-            if not int(section[category]['enabled']) == 1:
-                to_return[category] = False
+    def isenabled(section, subsection):
+        # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
+        to_return = False
+        if subsection in section and int(section[subsection]['enabled']) == 1:
+            to_return = True
         return to_return
 
     @property
     def subsections(section):
-        to_return = []
+        # returns {section name:[subsections]}
+        to_return = {}
         for subsection in section:
-            to_return.append(subsection)
+            to_return.update({section.name: section.sections})
         return to_return
+
+    def findsection(section, key):
+        for subsection in section:
+            if key in section[subsection]:
+                return subsection
 
 class ConfigObj(lib.configobj.ConfigObj, Section):
     # constants for nzbtomedia
@@ -116,36 +113,11 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             for item in key:
                 val = dict.__getitem__(self, item)
                 result.update({item: val})
+            return result
         else:
             val = dict.__getitem__(self, key)
-            result.update({key: val})
-        return result
-
-    def get_sections(self, subsections):
-        # finds all sections belonging to the subsection and returns them
-        if not isinstance(subsections, list):
-            subsections = [subsections]
-
-        to_return = []
-        for subsection in subsections:
-            for section in config().sections:
-                if self[section].has_key(subsection):
-                    to_return.append(section)
-        return to_return
-
-    def get_subsections(self, sections):
-        # finds all subsections belonging to the section and returns them
-        if not isinstance(sections, list):
-            sections = [sections]
-
-        to_return = {}
-        for section in sections:
-            if section in self.sections:
-                for subsection in self[section].sections:
-                    if not isinstance(subsection, list):
-                        subsection = [subsection]
-                    to_return.update({section: subsection})
-        return to_return
+            #result.update({key: val})
+        return val
 
     def migrate(self):
         global config_new, config_old
@@ -171,13 +143,12 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
         if not config() and not config(self.SAMPLE_CONFIG_FILE) or not config_new or not config_old:
             return False
 
-
         subsections = {}
         # gather all new-style and old-style sub-sections
-        for newsection, newitems in config_new.iteritems():
+        for newsection, newitems in config_new.items():
             if config_new[newsection].sections:
                 subsections.update({newsection: config_new[newsection].sections})
-        for section, items in config_old.iteritems():
+        for section, items in config_old.items():
             if config_old[section].sections:
                 subsections.update({section: config_old[section].sections})
             for option, value in config_old[section].items():
@@ -289,6 +260,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
@@ -303,6 +275,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
@@ -317,6 +290,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
@@ -331,6 +305,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
@@ -345,6 +320,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "NzbDrone"
         envCatKey = 'NZBPO_NDCATEGORY'
@@ -359,6 +335,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                     if os.environ[envCatKey] not in config_new[section].sections:
                         config_new[section][os.environ[envCatKey]] = {}
                     config_new[section][os.environ[envCatKey]][option] = value
+            config_new[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']

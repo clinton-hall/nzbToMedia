@@ -5,9 +5,16 @@ from lib import requests
 
 from nzbToMediaConfig import config
 
-def autoFork(section, inputCategory):
+def autoFork(inputCategory):
 
     Logger = logging.getLogger()
+
+    # auto-detect correct section
+    section = config().findsection(inputCategory)
+    if not section:
+        Logger.error(
+            "MAIN: We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+        return 1
 
     # config settings
     try:

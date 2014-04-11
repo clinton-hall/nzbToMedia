@@ -1,14 +1,16 @@
+import os
 import sys
 import logging
 from subprocess import call, Popen
 
-from nzbtomedia.nzbToMediaConfig import *
+from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import create_destination
 
 
 Logger = logging.getLogger()
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
+
 
 def os_platform():
     # Author Credit: Matthew Scouten @ http://stackoverflow.com/a/7260315
@@ -20,22 +22,6 @@ def os_platform():
             #true_platform not assigned to if this does not exist
     return true_platform
 
-def which(program):
-    # Author Credit: Jay @ http://stackoverflow.com/a/377028
-    def is_exe(fpath):
-        return os.path.isfile(fpath) and os.access(fpath, os.X_OK)
-
-    fpath, fname = os.path.split(program)
-    if fpath:
-        if is_exe(program):
-            return program
-    else:
-        for path in os.environ["PATH"].split(os.pathsep):
-            exe_file = os.path.join(path, program)
-            if is_exe(exe_file):
-                return exe_file
-
-    return None
 
 def extract(filePath, outputDestination):
     # Using Windows
@@ -45,11 +31,11 @@ def extract(filePath, outputDestination):
         else:
             platform = 'x86'
         if not os.path.dirname(sys.argv[0]):
-            chplocation = os.path.normpath(os.path.join(os.getcwd(), 'extractor/bin/chp.exe'))
-            sevenzipLocation = os.path.normpath(os.path.join(os.getcwd(), 'extractor/bin/' + platform + '/7z.exe'))
+            chplocation = os.path.normpath(os.path.join(os.getcwd(), 'nzbtomedia/extractor/bin/chp.exe'))
+            sevenzipLocation = os.path.normpath(os.path.join(os.getcwd(), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
         else:
-            chplocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/chp.exe'))
-            sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'extractor/bin/' + platform + '/7z.exe'))
+            chplocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/chp.exe'))
+            sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False

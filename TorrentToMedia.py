@@ -30,58 +30,42 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
     video = int(0)
-    video2 = int(0)
     foundFile = int(0)
     extracted_folder = []
     extractionSuccess = False
     copy_list = []
-    useLink = useLink_in
     file = None
-
-    delugeClient = ""
-    utorrentClass = ""
-    TransmissionClass = ""
 
     Logger.debug("MAIN: Received Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    inputDirectory, inputName, inputCategory, root = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
+    inputDirectory, inputName, inputCategory, root, single = category_search(inputDirectory, inputName, inputCategory, root, categories)  # Confirm the category by parsing directory structure
 
     Logger.debug("MAIN: Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    if config().issubsection(inputCategory,["SickBeard","NzbDrone"]):
-        Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
-        result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
-        if result != 0:
-            Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
-        Logger.info("MAIN: All done.")
-        sys.exit()
+    TorrentClass = create_torrent_class(clientAgent, inputHash)
+    pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
+
+    processCategories = list(chain.from_iterable(subsections.values()))
 
     outputDestination = ""
-    for category in categories:
-        if category == inputCategory:
-            if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
-                Logger.info("MAIN: Download is a directory")
-                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, safeName(inputName)))
-            else:
-                Logger.info("MAIN: Download is not a directory")
-                outputDestination = os.path.normpath(os.path.join(outputDirectory, category, os.path.splitext(safeName(inputName))[0]))
-            Logger.info("MAIN: Output directory set to: %s", outputDestination)
-            break
-        else:
-            continue
+    if inputCategory == "":
+        inputCategory = "UNCAT"
+    outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
+    Logger.info("MAIN: Output directory set to: %s", outputDestination)
 
-    if outputDestination == "":
-        if inputCategory == "":
-            inputCategory = "UNCAT"
-        if os.path.basename(inputDirectory) == inputName and os.path.isdir(inputDirectory):
-            Logger.info("MAIN: Download is a directory")
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, safeName(inputName)))
-        else:
-            Logger.info("MAIN: Download is not a directory")
-            outputDestination = os.path.normpath(os.path.join(outputDirectory, inputCategory, os.path.splitext(safeName(inputName))[0]))
-        Logger.info("MAIN: Output directory set to: %s", outputDestination)
+    if config()["SickBeard"].issubsection(inputCategory):
+        Torrent_NoLink = int(config()["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
+        if Torrent_NoLink == 1:
+            Logger.info("MAIN: Calling autoProcessTV to post-process: %s",inputName)
+            result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
+            if result != 0:
+                Logger.info("MAIN: A problem was reported in the autoProcessTV script.")
+            resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+            cleanup_output(inputCategory, processCategories, result, outputDestination)
+            Logger.info("MAIN: All done.")
+            sys.exit()
 
-    processOnly = list(chain.from_iterable(subsections.values()))
+    processOnly = list(set(chain.from_iterable(subsections.values())))
     if not "NONE" in user_script_categories: # if None, we only process the 5 listed.
         if "ALL" in user_script_categories: # All defined categories
             processOnly = categories
@@ -92,53 +76,23 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         Logger.info("MAIN: All done.")
         sys.exit()
 
-    # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
-        if clientAgent == 'utorrent':
-            try:
-                Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
-                utorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to uTorrent")
-
-        if clientAgent == 'transmission':
-            try:
-                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
-                TransmissionClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to Transmission")
-
-        if clientAgent == 'deluge':
-            try:
-                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, DelugeHost, DelugePort)
-                delugeClient = DelugeClient()
-                delugeClient.connect(host = DelugeHost, port = DelugePort, username = DelugeUSR, password = DelugePWD)
-            except:
-                Logger.exception("MAIN: Failed to connect to deluge")
-
-        # if we are using links with uTorrent it means we need to pause it in order to access the files
-        Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
-        if clientAgent == 'utorrent' and utorrentClass != "":
-            utorrentClass.stop(inputHash)
-        if clientAgent == 'transmission' and TransmissionClass !="":
-            TransmissionClass.stop_torrent(inputID)
-        if clientAgent == 'deluge' and delugeClient != "":
-            delugeClient.core.pause_torrent([inputID])
-        time.sleep(5)  # Give Torrent client some time to catch up with the change
-
     Logger.debug("MAIN: Scanning files in directory: %s", inputDirectory)
 
-    if config().issubsection(inputCategory, "HeadPhones"):
-        noFlatten.extend(list(chain.from_iterable(config().get_subsections("HeadPhones")))) # Make sure we preserve folder structure for HeadPhones.
+    if config()["HeadPhones"].issubsection(inputCategory):
+        noFlatten.extend(config()["HeadPhones"].sections) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
+    if single: inputDirectory,filename = os.path.split(inputDirectory)
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
+        if single:
+            dirnames[:] = [] 
+            filenames[:] = [filenames]  # we just want to work with this one file if single = True
         Logger.debug("MAIN: Found %s files in %s", str(len(filenames)), dirpath)
         for file in filenames:
             filePath = os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
-            if inputCategory in noFlatten:
+            if inputCategory in noFlatten and not single:
                 newDir = dirpath # find the full path
                 newDir = newDir.replace(inputDirectory, "") #find the extra-depth directory
                 if len(newDir) > 0 and newDir[0] == "/":
@@ -159,7 +113,8 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file does not match the Torrent name, skip it
 
             if root == 2:
-                Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
+                if foundFile == int(0):
+                    Logger.debug("MAIN: Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
                 if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
@@ -169,83 +124,58 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 else:
                     continue  # This file has not been recently moved or created, skip it
 
-            if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config().issubsection(inputCategory, ["HeadPhones"]):  # Ignore samples
-                    Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
-                    continue
-                else:
-                    video = video + 1
-                    Logger.info("MAIN: Found media file %s in %s", fileExtension, filePath)
+            if fileExtension in mediaContainer and is_sample(filePath, inputName, minSampleSize, SampleIDs) and not config()["HeadPhones"].issubsection(inputCategory):   # Ignore samples
+                Logger.info("MAIN: Ignoring sample file: %s  ", filePath)
+                continue
+
+            if fileExtension in compressedContainer:
+                if (config()["SickBeard"].issubsection(inputCategory) and config()["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
+                    # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
+                    if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
+                        part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
+                        if part == 1: # we only want to extract the primary part.
+                            Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)
+                        else:
+                            Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
+                            continue
+                    Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
                     try:
-                        copy_link(filePath, targetDirectory, useLink, outputDestination)
-                        copy_list.append([filePath, os.path.join(outputDestination, file)])
+                        extractor.extract(filePath, outputDestination)
+                        extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
+                        extracted_folder.append(os.path.dirname(filePath))
                     except:
-                        Logger.exception("MAIN: Failed to link file: %s", file)
-            elif fileExtension in metaContainer:
-                Logger.info("MAIN: Found metadata file %s for file %s", fileExtension, filePath)
-                try:
-                    copy_link(filePath, targetDirectory, useLink, outputDestination)
-                    copy_list.append([filePath, os.path.join(outputDestination, file)])
-                except:
-                    Logger.exception("MAIN: Failed to link file: %s", file)
-                continue
-            elif fileExtension in compressedContainer:
-                # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
-                    part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
-                    if part == 1: # we only want to extract the primary part.
-                        Logger.debug("MAIN: Found primary part of a multi-part archive %s. Extracting", file)
-                    else:
-                        Logger.debug("MAIN: Found part %s of a multi-part archive %s. Ignoring", part, file)
-                        continue
-                Logger.info("MAIN: Found compressed archive %s for file %s", fileExtension, filePath)
-                try:
-                    extractor.extract(filePath, outputDestination)
-                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
-                    extracted_folder.append(os.path.dirname(filePath))
-                except:
-                    Logger.exception("MAIN: Extraction failed for: %s", file)
-                continue
-            elif not config().issubsection(inputCategory,['CouchPotato','SickBeard','NzbDrone']): #process all for non-video categories.
-                Logger.info("MAIN: Found file %s for category %s", filePath, inputCategory)
+                        Logger.exception("MAIN: Extraction failed for: %s", file)
+                    continue
+
+            try:
                 copy_link(filePath, targetDirectory, useLink, outputDestination)
                 copy_list.append([filePath, os.path.join(outputDestination, file)])
-                continue
-            else:
-                Logger.debug("MAIN: Ignoring unknown filetype %s for file %s", fileExtension, filePath)
-                continue
+            except:
+                Logger.exception("MAIN: Failed to link file: %s", file)
 
     outputDestination = outputDestinationMaster # Reset here.
     if not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         flatten(outputDestination)
 
     # Now check if video files exist in destination:
-    if config().issubsection(inputCategory,["CouchPotato","SickBeard","NzbDrone"]):
+    if config()["SickBeard","NzbDrone", "CouchPotato"].issubsection(inputCategory):
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in mediaContainer:  # If the file is a video file
-                    if is_sample(filePath, inputName, minSampleSize, SampleIDs):
-                        Logger.debug("MAIN: Removing sample file: %s", filePath)
-                        os.unlink(filePath)  # remove samples
-                    else:
-                        Logger.debug("MAIN: Found media file: %s", filePath)
-                        video2 = video2 + 1
-                else:
-                    Logger.debug("MAIN: File %s is not a media file", filePath)
-        if video2 >= video and video2 > int(0):  # Check that all video files were moved
-            Logger.debug("MAIN: Found %s media files", str(video2))
+                    Logger.debug("MAIN: Found media file: %s", filePath)
+                    video += 1
+        if video > int(0):  # Check that media files exist
+            Logger.debug("MAIN: Found %s media files", str(video))
             status = int(0)
         else:
-            Logger.debug("MAIN: Found %s media files in output. %s were found in input", str(video2), str(video))
-
-    processCategories = list(chain.from_iterable(subsections.values()))
+            Logger.warning("MAIN: Found no media files in output.", str(video))
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (config().issubsection(inputCategory,['HeadPhones','Mylar','Gamez'])): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (config()['HeadPhones','Mylar','Gamez'].issubsection(inputCategory)): # if movies linked/extracted or for other categories.
         Logger.debug("MAIN: Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
@@ -253,52 +183,97 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit(-1)
 
     result = 0
-    if config().issubsection(inputCategory,['CouchPotato']):
+    if config()['CouchPotato'].issubsection(inputCategory):
         Logger.info("MAIN: Calling CouchPotato:" + inputCategory + " to post-process: %s", inputName)
         download_id = inputHash
         result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
-    elif config().issubsection(inputCategory,['SickBeard']):
+    elif config()['SickBeard'].issubsection(inputCategory):
         Logger.info("MAIN: Calling Sick-Beard:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config().issubsection(inputCategory,['NzbDrone']):
+    elif config()['NzbDrone'].issubsection(inputCategory):
         Logger.info("MAIN: Calling NzbDrone:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config().issubsection(inputCategory,['HeadPhones']):
+    elif config()['HeadPhones'].issubsection(inputCategory):
         Logger.info("MAIN: Calling HeadPhones:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
-    elif config().issubsection(inputCategory,['Mylar']):
+    elif config()['Mylar'].issubsection(inputCategory):
         Logger.info("MAIN: Calling Mylar:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
-    elif config().issubsection(inputCategory,['Gamez']):
+    elif config()['Gamez'].issubsection(inputCategory):
         Logger.info("MAIN: Calling Gamez:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessGames().process(outputDestination, inputName, status, clientAgent, inputCategory)
 
     if result == 1:
         Logger.info("MAIN: A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
+    resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+    cleanup_output(inputCategory, processCategories, result, outputDestination)
+    Logger.info("MAIN: All done.")
+
+def create_torrent_class(clientAgent, inputHash):
+    # Hardlink solution for Torrents
+    TorrentClass = ""
+    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
+        if clientAgent == 'utorrent':
+            try:
+                Logger.debug("MAIN: Connecting to %s: %s", clientAgent, uTorrentWEBui)
+                TorrentClass = UTorrentClient(uTorrentWEBui, uTorrentUSR, uTorrentPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to uTorrent")
+
+        if clientAgent == 'transmission':
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, TransmissionHost, TransmissionPort)
+                TorrentClass = TransmissionClient(TransmissionHost, TransmissionPort, TransmissionUSR, TransmissionPWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to Transmission")
+
+        if clientAgent == 'deluge':
+            try:
+                Logger.debug("MAIN: Connecting to %s: http://%s:%s", clientAgent, DelugeHost, DelugePort)
+                TorrentClass = DelugeClient()
+                TorrentClass.connect(host = DelugeHost, port = DelugePort, username = DelugeUSR, password = DelugePWD)
+            except:
+                Logger.exception("MAIN: Failed to connect to deluge")
+
+    return TorrentClass
+
+def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName):
+    # if we are using links with Torrents it means we need to pause it in order to access the files
+    Logger.debug("MAIN: Stoping torrent %s in %s while processing", inputName, clientAgent)
+    if clientAgent == 'utorrent' and TorrentClass != "":
+        TorrentClass.stop(inputHash)
+    if clientAgent == 'transmission' and TorrentClass !="":
+        TorrentClass.stop_torrent(inputID)
+    if clientAgent == 'deluge' and TorrentClass != "":
+        TorrentClass.core.pause_torrent([inputID])
+    time.sleep(5)  # Give Torrent client some time to catch up with the change
+
+def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName):
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if (deleteOriginal == 1 and result != 1) or useLink == 'move': # added uselink = move, if we move files, nothing to resume seeding.
+        if (int(config()["Torrent"]["deleteOriginal"]) is 1 and result != 1) or useLink == 'move': # if we move files, nothing to resume seeding.
             Logger.debug("MAIN: Deleting torrent %s from %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and utorrentClass != "":
-                utorrentClass.removedata(inputHash)
-                utorrentClass.remove(inputHash)
-            if clientAgent == 'transmission' and TransmissionClass !="":
-                TransmissionClass.remove_torrent(inputID, True)
-            if clientAgent == 'deluge' and delugeClient != "":
-                delugeClient.core.remove_torrent(inputID, True)
+            if clientAgent == 'utorrent' and TorrentClass != "":
+                TorrentClass.removedata(inputHash)
+                TorrentClass.remove(inputHash)
+            if clientAgent == 'transmission' and TorrentClass !="":
+                TorrentClass.remove_torrent(inputID, True)
+            if clientAgent == 'deluge' and TorrentClass != "":
+                TorrentClass.core.remove_torrent(inputID, True)
         # we always want to resume seeding, for now manually find out what is wrong when extraction fails
         else:
             Logger.debug("MAIN: Starting torrent %s in %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and utorrentClass != "":
-                utorrentClass.start(inputHash)
-            if clientAgent == 'transmission' and TransmissionClass !="":
-                TransmissionClass.start_torrent(inputID)
-            if clientAgent == 'deluge' and delugeClient != "":
-                delugeClient.core.resume_torrent([inputID])
+            if clientAgent == 'utorrent' and TorrentClass != "":
+                TorrentClass.start(inputHash)
+            if clientAgent == 'transmission' and TorrentClass !="":
+                TorrentClass.start_torrent(inputID)
+            if clientAgent == 'deluge' and TorrentClass != "":
+                TorrentClass.core.resume_torrent([inputID])
         time.sleep(5)
-    #cleanup
+
+def cleanup_output(inputCategory, processCategories, result, outputDestination): 
     if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
         num_files_new = int(0)
         file_list = []
@@ -307,18 +282,17 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 filePath = os.path.join(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in mediaContainer or fileExtension in metaContainer:
-                    num_files_new = num_files_new + 1
+                    num_files_new += 1
                     file_list.append(file)
-        if num_files_new == int(0) or forceClean == 1:
+        if num_files_new is 0 or int(config()["Torrent"]["forceClean"]) is 1:
             Logger.info("All files have been processed. Cleaning outputDirectory %s", outputDestination)
             shutil.rmtree(outputDestination)
         else:
             Logger.info("outputDirectory %s still contains %s media and/or meta files. This directory will not be removed.", outputDestination, num_files_new)
             for item in file_list:
                 Logger.debug("media/meta file found: %s", item)
-    Logger.info("MAIN: All done.")
 
-def external_script(outputDestination,torrentName,torrentLabel):
+def external_script(outputDestination, torrentName, torrentLabel):
 
     final_result = int(0) # start at 0.
     num_files = int(0)
@@ -407,7 +381,7 @@ if __name__ == "__main__":
 
     # EXAMPLE VALUES:
     clientAgent = config()["Torrent"]["clientAgent"]                                  # utorrent | deluge | transmission | rtorrent | other
-    useLink_in = config()["Torrent"]["useLink"]                                       # no | hard | sym
+    useLink = config()["Torrent"]["useLink"]                                          # no | hard | sym
     outputDirectory = config()["Torrent"]["outputDirectory"]                          # /abs/path/to/complete/
     categories = (config()["Torrent"]["categories"])                                  # music,music_videos,pictures,software
     noFlatten = (config()["Torrent"]["noFlatten"])
@@ -426,17 +400,15 @@ if __name__ == "__main__":
     DelugeUSR = config()["Torrent"]["DelugeUSR"]                                      # mysecretusr
     DelugePWD = config()["Torrent"]["DelugePWD"]                                      # mysecretpwr
 
-    deleteOriginal = int(config()["Torrent"]["deleteOriginal"])                       # 0
-    forceClean = int(config()["Torrent"]["forceClean"])                               # 0
-
-    compressedContainer = (config()["Extensions"]["compressedExtensions"]) # .zip,.rar,.7z
-    mediaContainer = (config()["Extensions"]["mediaExtensions"])           # .mkv,.avi,.divx
-    metaContainer = (config()["Extensions"]["metaExtensions"])             # .nfo,.sub,.srt
+    compressedContainer = (config()["Extensions"]["compressedExtensions"])            # .zip,.rar,.7z
+    mediaContainer = (config()["Extensions"]["mediaExtensions"])                      # .mkv,.avi,.divx
+    metaContainer = (config()["Extensions"]["metaExtensions"])                        # .nfo,.sub,.srt
     minSampleSize = int(config()["Extensions"]["minSampleSize"])                      # 200 (in MB)
-    SampleIDs = (config()["Extensions"]["SampleIDs"])                      # sample,-s.
+    SampleIDs = (config()["Extensions"]["SampleIDs"])                                 # sample,-s.
 
-    subsections = config().get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
-    categories += list(chain.from_iterable(subsections.values()))
+    sections = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
+    subsections = config()[sections].subsections
+    categories += config()[sections].sections
 
     user_script_categories = config()["UserScript"]["user_script_categories"]         # NONE
     if not "NONE" in user_script_categories:
@@ -463,12 +435,12 @@ if __name__ == "__main__":
 
         # check if this is a manual run
     if inputDirectory is None:
-        for section, subsection in subsections.iteritems():
+        for section, subsection in subsections.items():
             for category in subsection:
-                if config().isenabled(section, category):
+                if config()[section].isenabled(category):
                     dirNames = get_dirnames(section, category)
-                    Logger.info("MAIN: TorrentToMedia running %s:%s as a manual run...", section, category)
                     for dirName in dirNames:
+                        Logger.info("MAIN: TorrentToMedia running %s:%s as a manual run for folder %s ...", section, category, dirName)
                         main(dirName, os.path.basename(dirName), category, inputHash, inputID)
                 else:
                     Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...",section, section, category)

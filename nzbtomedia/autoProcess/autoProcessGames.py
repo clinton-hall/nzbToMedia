@@ -14,10 +14,10 @@ class autoProcessGames:
             return 1  # failure
 
         # auto-detect correct section
-        section = ''.join(map(str, config().issubsection(inputCategory, checkenabled=True)))
+        section = config().findsection(inputCategory)
         if not section:
             Logger.error(
-                "MAIN: We were unable to find a processor for category %s that was enabled, please check your autoProcessMedia.cfg file.", inputCategory)
+                "MAIN: We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
         socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.

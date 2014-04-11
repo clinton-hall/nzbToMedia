@@ -317,19 +317,19 @@ from nzbtomedia.nzbToMediaUtil import nzbtomedia_configure_logging, WakeUp, get_
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
 
-    if section in ["CouchPotato"]:
+    if config()["CouchPotato"].issubsection(inputCategory):
         Logger.info("MAIN: Calling CouchPotatoServer to post-process: %s", inputName)
         return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif section in ["SickBeard", "NzbDrone"]:
+    elif config()["SickBeard", "NzbDrone"].issubsection(inputCategory):
         Logger.info("MAIN: Calling Sick-Beard to post-process: %s", inputName)
         return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif section in ["HeadPhones"]:
+    elif config()["HeadPhones"].issubsection(inputCategory):
         Logger.info("MAIN: Calling HeadPhones to post-process: %s", inputName)
         return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif section in ["Mylar"]:
+    elif config()["Mylar"].issubsection(inputCategory):
         Logger.info("MAIN: Calling Mylar to post-process: %s", inputName)
         return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif section in ["Gamez"]:
+    elif config()["Gamez"].issubsection(inputCategory):
         Logger.info("MAIN: Calling Gamez to post-process: %s", inputName)
         return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
@@ -443,21 +443,20 @@ else:
     result = 0
 
     # init sub-sections
-    subsections = config().get_subsections(["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"])
-
+    subsections = config()["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"].subsections
     Logger.warn("MAIN: Invalid number of arguments received from client.")
     for section, subsection in subsections.items():
         for category in subsection:
-            if config().isenabled(section, category):
+            if config()[section].isenabled(category):
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    Logger.info("MAIN: nzbToMedia running %s:%s as a manual run...", section, category)
+                    Logger.info("MAIN: nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
                     results = process(dirName, os.path.basename(dirName), 0, inputCategory=category)
                     if results != 0:
                         result = results
-                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, subsection)
+                        Logger.info("MAIN: A problem was reported when trying to manually run %s:%s.", section, category)
             else:
-                Logger.info("MAIN: nzbTo%s %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section,section, category)
+                Logger.info("MAIN: nzbToMedia %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
 
 if result == 0:
     Logger.info("MAIN: The nzbToMedia script completed successfully.")
