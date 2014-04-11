@@ -220,7 +220,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         flatten(outputDestination)
 
     # Now check if video files exist in destination:
-    if config().issubsection(inputCategory,["SickBeard","NzbDrone"]):
+    if config().issubsection(inputCategory,["CouchPotato","SickBeard","NzbDrone"]):
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)

@@ -1,11 +1,74 @@
 import os
 import shutil
 import lib.configobj
-from lib.configobj import ConfigObj
 from itertools import chain
 
-original_ConfigObj = lib.configobj.ConfigObj
-class config(original_ConfigObj):
+class Sections(dict):
+    def has_subsection(sections, subsection, checkenabled=False):
+        # checks sections for subsection, returns true/false
+        to_return = {}
+        for section in sections.values():
+            to_return.update({section.name: True})
+            if subsection in section and checkenabled:
+                if not section.isenabled():
+                    to_return.update({section.name: False})
+            elif subsection not in section:
+                to_return.update({section.name: False})
+        return to_return
+
+    def isenabled(sections, subsection=None):
+        # checks if subsections are enabled, returns true/false
+        to_return = {}
+        for section in sections.values():
+            result = {}
+            subsections = [subsection] if subsection else section
+            for category in subsections:
+                if category in section:
+                    result[category] = True
+                    if not int(section[category]['enabled']) == 1:
+                        result[category] = False
+                    to_return.update({section.name:result})
+        return to_return
+
+    @property
+    def subsections(sections):
+        to_return = {}
+        for section in sections:
+            result = []
+            for subsection in sections[section]:
+                result.append(subsection)
+            to_return[section] = result
+        return to_return
+
+class Section(lib.configobj.Section):
+    def has_subsection(section, subsection, checkenabled=False):
+        # checks section for subsection, returns true/false
+        to_return=[True]
+        if subsection in section and checkenabled:
+            if not section.isenabled(subsection):
+                to_return.append(False)
+        elif subsection not in section:
+            to_return.append(False)
+        return to_return
+
+    def isenabled(section, subsection=None):
+        # checks if subsection enabled, returns true/false
+        to_return = {}
+        subsections = [subsection] if subsection else section
+        for category in subsections:
+            to_return[category] = True
+            if not int(section[category]['enabled']) == 1:
+                to_return[category] = False
+        return to_return
+
+    @property
+    def subsections(section):
+        to_return = []
+        for subsection in section:
+            to_return.append(subsection)
+        return to_return
+
+class ConfigObj(lib.configobj.ConfigObj, Section):
     # constants for nzbtomedia
     NZBTOMEDIA_VERSION = 'V9.3'
     NZBTOMEDIA_TIMEOUT = 60
@@ -47,24 +110,16 @@ class config(original_ConfigObj):
         super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
         self.interpolation = False
 
-    def issubsection(self, inputCategory, sections=None, checkenabled=False):
-        # checks if the inputCategory belongs to the section
-        # or returns sections with subsections matching the inputCategoryu
-        if not sections:
-            sections = self.get_sections(inputCategory)
-
-        if not isinstance(sections, list):
-            sections = [sections]
-
-        results = []
-        for section in sections:
-            if self[section].has_key(inputCategory):
-                if checkenabled:
-                    if self.isenabled(section, inputCategory):
-                        results.append(section)
-                else:
-                    results.append(section)
-        return results if list(set(results).intersection(set(sections))) else []
+    def __getitem__(self, key):
+        result = Sections()
+        if isinstance(key, tuple):
+            for item in key:
+                val = dict.__getitem__(self, item)
+                result.update({item: val})
+        else:
+            val = dict.__getitem__(self, key)
+            result.update({key: val})
+        return result
 
     def get_sections(self, subsections):
         # finds all sections belonging to the subsection and returns them
@@ -91,21 +146,6 @@ class config(original_ConfigObj):
                         subsection = [subsection]
                     to_return.update({section: subsection})
         return to_return
-
-
-    def isenabled(self, section, inputCategory):
-        # checks if the subsection is enabled/disabled
-        if int(self[section][inputCategory]['enabled']) == 1:
-            return True
-
-    def search(self, key, section, subsection=None):
-        # searches for data in sections and subsections and returns it
-        if subsection:
-            if key in self[section][subsection].keys():
-                return self[section][subsection][key]
-        else:
-            if key in self[section].keys():
-                return self[section][key]
 
     def migrate(self):
         global config_new, config_old
@@ -238,8 +278,8 @@ class config(original_ConfigObj):
         config_new = config()
         section = "CouchPotato"
         envCatKey = 'NZBPO_CPSCATEGORY'
-        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
-        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
+        envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
+        cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'TimePerGiB']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_CPS' + envKeys[index]
@@ -252,8 +292,8 @@ class config(original_ConfigObj):
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
-        envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'PROCESS_METHOD']
-        cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'process_method']
+        envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY']
+        cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'Torrent_NoLink', 'nzbExtractionBy']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_SB' + envKeys[index]
@@ -266,8 +306,8 @@ class config(original_ConfigObj):
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
-        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
-        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
+        envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'TIMEPERGIB']
+        cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'delay', 'TimePerGiB']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_HP' + envKeys[index]
@@ -280,8 +320,8 @@ class config(original_ConfigObj):
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
-        envKeys = ['HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
-        cfgKeys = ['host', 'port', 'username', 'password', 'ssl', 'web_root']
+        envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT']
+        cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_MY' + envKeys[index]
@@ -294,8 +334,8 @@ class config(original_ConfigObj):
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
-        envKeys = ['APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
-        cfgKeys = ['apikey', 'host', 'port', 'ssl', 'web_root']
+        envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT']
+        cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_GZ' + envKeys[index]
@@ -308,8 +348,8 @@ class config(original_ConfigObj):
 
         section = "NzbDrone"
         envCatKey = 'NZBPO_NDCATEGORY'
-        envKeys = ['HOST', 'PORT', 'APIKEY', 'SSL', 'WEBROOT', 'PREFER']
-        cfgKeys = ['Host', 'Port', 'APIKey', 'SSL', 'WebRoot', 'Prefer']
+        envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'DELAY', 'TIMEPERGIB', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY']
+        cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'delay', 'TimePerGiB', 'Torrent_NoLink', 'nzbExtractionBy']
         if os.environ.has_key(envCatKey):
             for index in range(len(envKeys)):
                 key = 'NZBPO_ND' + envKeys[index]
@@ -361,4 +401,6 @@ class config(original_ConfigObj):
         with open(self.CONFIG_FILE, 'wb') as configFile:
             config_new.write(configFile)
 
-lib.configobj.ConfigObj = config
+lib.configobj.Section = Section
+lib.configobj.ConfigObj = ConfigObj
+config = ConfigObj
