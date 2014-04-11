@@ -30,6 +30,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
     video = int(0)
+    archive = int(0)
     foundFile = int(0)
     extracted_folder = []
     extractionSuccess = False
@@ -166,8 +167,13 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 if fileExtension in mediaContainer:  # If the file is a video file
                     Logger.debug("MAIN: Found media file: %s", filePath)
                     video += 1
+                if fileExtension in compressedContainer:  # If the file is an archive file
+                    archive += 1
         if video > int(0):  # Check that media files exist
             Logger.debug("MAIN: Found %s media files", str(video))
+            status = int(0)
+        elif not (config().issubsection(inputCategory,["SickBeard"]) and config()["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination") and archive > int(0):
+            Logger.debug("MAIN: Found %s archive files to be extracted by SickBeard", str(archive))
             status = int(0)
         else:
             Logger.warning("MAIN: Found no media files in output.")
