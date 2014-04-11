@@ -170,7 +170,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.debug("MAIN: Found %s media files", str(video))
             status = int(0)
         else:
-            Logger.warning("MAIN: Found no media files in output.", str(video))
+            Logger.warning("MAIN: Found no media files in output.")
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)
