@@ -10,7 +10,6 @@ import logging
 import re
 import shutil
 from subprocess import Popen
-from itertools import chain
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
@@ -30,6 +29,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     status = int(1)  # 1 = failed | 0 = success
     root = int(0)
     video = int(0)
+    archive = int(0)
     foundFile = int(0)
     extracted_folder = []
     extractionSuccess = False
@@ -45,7 +45,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     TorrentClass = create_torrent_class(clientAgent, inputHash)
     pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
 
-    processCategories = list(chain.from_iterable(subsections.values()))
+    processCategories = config()[sections].sections
 
     outputDestination = ""
     if inputCategory == "":
@@ -65,7 +65,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
             Logger.info("MAIN: All done.")
             sys.exit()
 
-    processOnly = list(set(chain.from_iterable(subsections.values())))
+    processOnly = config()[sections].sections
     if not "NONE" in user_script_categories: # if None, we only process the 5 listed.
         if "ALL" in user_script_categories: # All defined categories
             processOnly = categories
@@ -166,11 +166,16 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 if fileExtension in mediaContainer:  # If the file is a video file
                     Logger.debug("MAIN: Found media file: %s", filePath)
                     video += 1
+                if fileExtension in compressedContainer:  # If the file is an archive file
+                    archive += 1
         if video > int(0):  # Check that media files exist
             Logger.debug("MAIN: Found %s media files", str(video))
             status = int(0)
+        elif not (config()["SickBeard"].issubsection(inputCategory) and config()["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination") and archive > int(0):
+            Logger.debug("MAIN: Found %s archive files to be extracted by SickBeard", str(archive))
+            status = int(0)
         else:
-            Logger.warning("MAIN: Found no media files in output.", str(video))
+            Logger.warning("MAIN: Found no media files in output.")
 
     if (inputCategory in user_script_categories and not "NONE" in user_script_categories) or ("ALL" in user_script_categories and not inputCategory in processCategories):
         Logger.info("MAIN: Processing user script %s.", user_script)

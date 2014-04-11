@@ -101,6 +101,14 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
     LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
     SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
 
+    try:
+        repo = check_output(["git", "config", "--get", "remote.origin.url"]).splitlines()[0]
+        branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).splitlines()[0]
+        hash = check_output(["git", "rev-parse", "--short", "HEAD"]).splitlines()[0]
+        NZBTOMEDIA_VERSION = 'repo:' + repo + ' branch:' + branch + ' hash: ' + hash
+    except CalledProcessError:
+        pass
+
     def __init__(self, *args, **kw):
         if len(args) == 0:
             args = (self.CONFIG_FILE,)
