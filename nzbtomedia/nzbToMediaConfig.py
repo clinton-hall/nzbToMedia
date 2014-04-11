@@ -1,6 +1,7 @@
 import os
 import shutil
 import lib.configobj
+from subprocess import check_output, CalledProcessError
 from lib.configobj import ConfigObj
 from itertools import chain
 
@@ -40,6 +41,14 @@ class config(original_ConfigObj):
     LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
     LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
     SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
+
+    try:
+        repo = check_output(["git", "config", "--get", "remote.origin.url"]).splitlines()[0]
+        branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).splitlines()[0]
+        hash = check_output(["git", "rev-parse", "--short", "HEAD"]).splitlines()[0]
+        NZBTOMEDIA_VERSION = 'repo:' + repo + ' branch:' + branch + ' hash: ' + hash
+    except CalledProcessError:
+        pass
 
     def __init__(self, *args, **kw):
         if len(args) == 0:
