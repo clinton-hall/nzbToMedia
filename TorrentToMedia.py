@@ -158,6 +158,9 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if not inputCategory in noFlatten: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         flatten(outputDestination)
 
+    if os.name == 'nt':  # remove Read Only flag from files in Windows.
+        remove_read_only(outputDestination)
+
     # Now check if video files exist in destination:
     if config().issubsection(inputCategory,["SickBeard","NzbDrone","CouchPotato"]):
         for dirpath, dirnames, filenames in os.walk(outputDestination):

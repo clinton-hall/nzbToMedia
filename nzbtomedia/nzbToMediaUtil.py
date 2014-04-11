@@ -205,12 +205,20 @@ def removeEmptyFolders(path):
         Logger.debug("REMOVER: Removing empty folder: %s", path)
         os.rmdir(path)
 
+def remove_read_only(path):
+    if not os.path.isdir(path):
+        return
+    for dirpath, dirnames, filenames in os.walk(path):
+        for filename in filenames:
+            Logger.debug("Removing Read Only Flag for: %s", filename)
+            os.chmod(os.path.join(dirpath, filename), stat.S_IWRITE)
+
 def iterate_media_files(dirname):
     mediaContainer = [ '.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv',
         '.mp4', '.mpg', '.mpeg', '.iso' ]
 
-    for dirpath, dirnames, filesnames in os.walk(dirname):
-        for filename in filesnames:
+    for dirpath, dirnames, filenames in os.walk(dirname):
+        for filename in filenames:
             fileExtension = os.path.splitext(filename)[1]
             if not (fileExtension in mediaContainer):
                 continue
