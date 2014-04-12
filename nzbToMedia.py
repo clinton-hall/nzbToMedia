@@ -333,10 +333,11 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         return -1
 
 def main():
-    print sys.argv
-
     # Initialize the config
     nzbtomedia.initialize()
+
+    # debug command line options
+    logger.debug("Options passed into nzbToMedia: " + sys.argv)
 
     # Post-Processing Result
     result = 0
