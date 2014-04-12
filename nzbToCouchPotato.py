@@ -120,8 +120,6 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
-
-import logging
 import os
 import sys
 import nzbtomedia

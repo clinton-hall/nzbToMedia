@@ -1,16 +1,11 @@
 import os
 import sys
-import logging
+import nzbtomedia
 from subprocess import call, Popen
-
-from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import create_destination
-
-
-Logger = logging.getLogger()
+from nzbtomedia import logger
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
-
 
 def os_platform():
     # Author Credit: Matthew Scouten @ http://stackoverflow.com/a/7260315
@@ -75,12 +70,13 @@ def extract(filePath, outputDestination):
                             logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
                             del EXTRACT_COMMANDS[k]
         else:
-            Logger.warn("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
+            logger.warning("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
 
         if not EXTRACT_COMMANDS:
-            Logger.warn("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
+            logger.warning("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
     ext = os.path.splitext(filePath)
+    cmd = []
     if ext[1] in (".gz", ".bz2", ".lzma"):
     # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":

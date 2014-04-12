@@ -1,15 +1,12 @@
 import errno
-import logging
 import os
 import sys
+import nzbtomedia
 from subprocess import call
-from nzbtomedia.nzbToMediaConfig import config
-
+from nzbtomedia import logger
 
 class Transcoder:
     def Transcode_directory(self, dirName):
-        Logger = logging.getLogger()
-
         if os.name == 'nt':
             ffmpeg = os.path.join(os.path.dirname(sys.argv[0]), 'ffmpeg\\bin\\ffmpeg.exe') # note, will need to package in this dir.
             useNiceness = False
