@@ -442,5 +442,7 @@ def main():
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
+    return result
+
 if __name__ == '__main__':
-    main()
+    exit(main())
