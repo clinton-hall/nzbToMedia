@@ -1,7 +1,7 @@
 import os
 import shutil
 import nzbtomedia
-import lib.configobj
+from lib.configobj import *
 from itertools import chain
 
 class Sections(dict):
@@ -34,7 +34,7 @@ class Sections(dict):
                 to_return.update({section:{key:dict.__getitem__(subsection, key)}})
         return to_return
 
-class Section(lib.configobj.Section):
+class Section(configobj.Section):
     def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         if section:
@@ -60,11 +60,11 @@ class Section(lib.configobj.Section):
                 result.update({section: subsection})
         return result
 
-class ConfigObj(lib.configobj.ConfigObj, Section):
+class ConfigObj(configobj.ConfigObj, Section):
     def __init__(self, *args, **kw):
         if len(args) == 0:
             args = (nzbtomedia.CONFIG_FILE,)
-        super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
+        super(configobj.ConfigObj, self).__init__(*args, **kw)
         self.interpolation = False
 
     @staticmethod
@@ -331,7 +331,6 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
         CFG_NEW.write()
         CFG_NEW.clear()
 
-
-lib.configobj.Section = Section
-lib.configobj.ConfigObj = ConfigObj
+configobj.Section = Section
+configobj.ConfigObj = ConfigObj
 config = ConfigObj

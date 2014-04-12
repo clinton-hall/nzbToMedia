@@ -20,6 +20,7 @@ import sys
 from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF16_BE, BOM_UTF16_LE
 
 import six
+from _version import __version__
 
 # imported lazily to avoid startup performance hit if it isn't used
 compiler = None
@@ -1233,7 +1234,7 @@ class ConfigObj(Section):
             self.filename = infile
             if os.path.isfile(infile):
                 with open(infile, 'rb') as h:
-                    content = h.read() or []
+                    content = h.readlines() or []
             elif self.file_error:
                 # raise an error if the file doesn't exist
                 raise IOError('Config file not found: "%s".' % self.filename)
