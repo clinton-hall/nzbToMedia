@@ -333,10 +333,8 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         return -1
 
 ########################################################################################################################
-logger.postprocess("====================")  # Seperate old from new log
-logger.postprocess("nzbToMedia %s", nzbtomedia.NZBTOMEDIA_VERSION)
-
-logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
+# Initialize the config
+nzbtomedia.initialize()
 
 # Post-Processing Result
 result = 0

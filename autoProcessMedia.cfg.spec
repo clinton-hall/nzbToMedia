@@ -203,28 +203,3 @@
     # enter the full path to a text file containing passwords to be used for extraction attempts.
     # In the passwords file, every password should be on a new line
     PassWordFile =
-
-# Logging configuration
-[loggers]
-    keys = root
-
-[handlers]
-    keys = console
-
-[formatters]
-    keys = generic
-
-[logger_root]
-    level = NOTSET
-    handlers = console
-    qualname =
-
-[handler_console]
-    class = StreamHandler
-    args = (sys.stdout,)
-    level = INFO
-    formatter = generic
-
-[formatter_generic]
-    format = %(asctime)s|%(levelname)-7.7s %(message)s
-    datefmt = %H:%M:%S
