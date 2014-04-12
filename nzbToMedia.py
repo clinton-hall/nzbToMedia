@@ -314,19 +314,19 @@ from nzbtomedia import logger
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
 
     if nzbtomedia.CFG["CouchPotato"][inputCategory]:
-        logger.postprocess("Calling CouchPotatoServer to post-process: %s", logger.MESSAGE), inputName
+        logger.postprocess("Calling CouchPotatoServer to post-process: %s", inputName)
         return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
     elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
-        logger.postprocess("Calling Sick-Beard to post-process: %s",logger.MESSAGE), inputName
+        logger.postprocess("Calling Sick-Beard to post-process: %s", inputName)
         return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
-        logger.postprocess("Calling HeadPhones to post-process: %s", logger.MESSAGE), inputName
+        logger.postprocess("Calling HeadPhones to post-process: %s", inputName)
         return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["Mylar"][inputCategory]:
-        logger.postprocess("Calling Mylar to post-process: %s",logger.MESSAGE), inputName
+        logger.postprocess("Calling Mylar to post-process: %s", inputName)
         return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["Gamez"][inputCategory]:
-        logger.postprocess("Calling Gamez to post-process: %s",logger.MESSAGE), inputName
+        logger.postprocess("Calling Gamez to post-process: %s", inputName)
         return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
         logger.postprocess("We could not find the section %s with a download category of %s in your autoProcessMedia.cfg. Exiting.",logger.WARNING), section, inputCategory
