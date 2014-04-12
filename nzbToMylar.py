@@ -152,7 +152,6 @@ elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
 else:
     result = 0
 
-    subsections = nzbtomedia.CFG["Mylar"].subsections
     logger.warning("Invalid number of arguments received from client.")
     for section, subsection in nzbtomedia.SUBSECTIONS['Mylar'].items():
         for category in subsection:
