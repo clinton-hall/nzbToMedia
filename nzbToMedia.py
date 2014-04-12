@@ -17,7 +17,7 @@
 # CouchPotato script category.
 #
 # category that gets called for post-processing with CouchPotatoServer.
-#[[movie]]
+#cpsCategory=movie
 
 # CouchPotato api key.
 #cpsapikey=
