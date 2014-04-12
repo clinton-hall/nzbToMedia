@@ -1,15 +1,8 @@
-import logging
 import urllib
-
 import nzbtomedia
-
 from lib import requests
-from nzbToMediaConfig import config
-
+from nzbtomedia import logger
 def autoFork(inputCategory):
-
-    Logger = logging.getLogger()
-
     # auto-detect correct section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if not section:
@@ -34,12 +27,12 @@ def autoFork(inputCategory):
 
     try:
         ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
-    except (config, ValueError):
+    except:
         ssl = 0
 
     try:
         web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
-    except config:
+    except:
         web_root = ""
 
     try:
