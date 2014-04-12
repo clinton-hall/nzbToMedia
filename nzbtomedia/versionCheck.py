@@ -1,10 +1,17 @@
+# Author: Nic Wolfe <nic@wolfeden.ca>
+# Modified by: echel0n
+
 import os
+import platform
 import shutil
+import subprocess
+import re
 import urllib
 import tarfile
 import stat
 import traceback
 import gh_api as github
+
 import nzbtomedia
 from nzbtomedia import logger
 
@@ -14,10 +21,37 @@ class CheckVersion():
     """
 
     def __init__(self):
-        self.updater = SourceUpdateManager()
+        self.install_type = self.find_install_type()
+        self.installed_version = None
+        self.installed_branch = None
+
+        if self.install_type == 'git':
+            self.updater = GitUpdateManager()
+        elif self.install_type == 'source':
+            self.updater = SourceUpdateManager()
+        else:
+            self.updater = None
 
     def run(self):
         self.check_for_new_version()
+
+    def find_install_type(self):
+        """
+        Determines how this copy of SB was installed.
+
+        returns: type of installation. Possible values are:
+            'win': any compiled windows build
+            'git': running from source using git
+            'source': running from source without git
+        """
+
+        # check if we're a windows build
+        if os.path.isdir(os.path.join(nzbtomedia.PROGRAM_DIR, u'.git')):
+            install_type = 'git'
+        else:
+            install_type = 'source'
+
+        return install_type
 
     def check_for_new_version(self, force=False):
         """
@@ -28,42 +62,296 @@ class CheckVersion():
         force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
         """
 
-        logger.info("Checking if nzbToMedia needs an update")
-        if not self.updater.need_update():
-            NEWEST_VERSION_STRING = None
-            logger.info("No update needed")
+#        if not nzbtomedia.VERSION_NOTIFY and not force:
+#            logger.log(u"Version checking is disabled, not checking for the newest version")
+#            return False
 
-            if force:
-                logger.info("No update needed")
+        logger.log(u"Checking if " + self.install_type + " needs an update")
+        if not self.updater.need_update():
+            nzbtomedia.NEWEST_VERSION_STRING = None
+            logger.log(u"No update needed")
             return False
 
-        if not self.updater._cur_commit_hash:
-            logger.info("Unknown current version number, don't know if we should update or not")
-        elif self.updater._num_commits_behind > 0:
-            logger.info("There is a newer version available, (you're " + str(self.updater._num_commits_behind) + " commit(s) behind")
-
+        self.updater.set_newest_text()
         return True
 
     def update(self):
         if self.updater.need_update():
             return self.updater.update()
 
+    def find_installed_version(self):
+        if self.updater._find_installed_version():
+            nzbtomedia.NZBTOMEDIA_VERSION = self.updater._cur_commit_hash
+            nzbtomedia.NZBTOMEDIA_BRANCH = self.updater.branch
+
 class UpdateManager():
     def get_github_repo_user(self):
-        return 'clinton-hall'
+        repo_user = 'clinton-hall'
+        if nzbtomedia.CFG['General']['git_user']:
+            repo_user =  nzbtomedia.CFG['General']['git_user']
+        return repo_user
 
     def get_github_repo(self):
         return 'nzbToMedia'
 
-#    def get_update_url(self):
-#        return nzbtomedia.WEB_ROOT + "/home/update/?pid=" + str(nzbtomedia.PID)
+    def get_github_branch(self):
+        git_branch = 'master'
+        if nzbtomedia.CFG['General']['git_branch']:
+            git_branch =  nzbtomedia.CFG['General']['git_branch']
+        return git_branch
+
+class GitUpdateManager(UpdateManager):
+    def __init__(self):
+        self._git_path = self._find_working_git()
+        self.github_repo_user = self.get_github_repo_user()
+        self.github_repo = self.get_github_repo()
+        self.branch = self._find_git_branch()
+
+        self._cur_commit_hash = None
+        self._newest_commit_hash = None
+        self._num_commits_behind = 0
+        self._num_commits_ahead = 0
+
+    def _git_error(self):
+        error_message = 'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.'
+        nzbtomedia.NEWEST_VERSION_STRING = error_message
+
+    def _find_working_git(self):
+        test_cmd = 'version'
+
+        if nzbtomedia.GIT_PATH:
+            main_git = '"' + nzbtomedia.GIT_PATH + '"'
+        else:
+            main_git = 'git'
+
+        logger.log(u"Checking if we can use git commands: " + main_git + ' ' + test_cmd, logger.DEBUG)
+        output, err, exit_status = self._run_git(main_git, test_cmd)
+
+        if exit_status == 0:
+            logger.log(u"Using: " + main_git, logger.DEBUG)
+            return main_git
+        else:
+            logger.log(u"Not using: " + main_git, logger.DEBUG)
+
+        # trying alternatives
+
+        alternative_git = []
+
+        # osx people who start SB from launchd have a broken path, so try a hail-mary attempt for them
+        if platform.system().lower() == 'darwin':
+            alternative_git.append('/usr/local/git/bin/git')
+
+        if platform.system().lower() == 'windows':
+            if main_git != main_git.lower():
+                alternative_git.append(main_git.lower())
+
+        if alternative_git:
+            logger.log(u"Trying known alternative git locations", logger.DEBUG)
+
+            for cur_git in alternative_git:
+                logger.log(u"Checking if we can use git commands: " + cur_git + ' ' + test_cmd, logger.DEBUG)
+                output, err, exit_status = self._run_git(cur_git, test_cmd)
+
+                if exit_status == 0:
+                    logger.log(u"Using: " + cur_git, logger.DEBUG)
+                    return cur_git
+                else:
+                    logger.log(u"Not using: " + cur_git, logger.DEBUG)
+
+        # Still haven't found a working git
+        error_message = 'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.'
+        nzbtomedia.NEWEST_VERSION_STRING = error_message
+
+        return None
+
+    def _run_git(self, git_path, args):
+
+        output = err = exit_status = None
+
+        if not git_path:
+            logger.log(u"No git specified, can't use git commands", logger.ERROR)
+            exit_status = 1
+            return (output, err, exit_status)
+
+        cmd = git_path + ' ' + args
+
+        try:
+            logger.log(u"Executing " + cmd + " with your shell in " + nzbtomedia.PROGRAM_DIR, logger.DEBUG)
+            p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                                 shell=True, cwd=nzbtomedia.PROGRAM_DIR)
+            output, err = p.communicate()
+            exit_status = p.returncode
+
+            if output:
+                output = output.strip()
+            logger.log(u"git output: " + output, logger.DEBUG)
+
+        except OSError:
+            logger.log(u"Command " + cmd + " didn't work")
+            exit_status = 1
+
+        if exit_status == 0:
+            logger.log(cmd + u" : returned successful", logger.DEBUG)
+            exit_status = 0
+
+        elif exit_status == 1:
+            logger.log(cmd + u" returned : " + output, logger.ERROR)
+            exit_status = 1
+
+        elif exit_status == 128 or 'fatal:' in output or err:
+            logger.log(cmd + u" returned : " + output, logger.ERROR)
+            exit_status = 128
+
+        else:
+            logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.ERROR)
+            exit_status = 1
+
+        return (output, err, exit_status)
+
+    def _find_installed_version(self):
+        """
+        Attempts to find the currently installed version of Sick Beard.
+
+        Uses git show to get commit version.
+
+        Returns: True for success or False for failure
+        """
+
+        output, err, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
+
+        if exit_status == 0 and output:
+            cur_commit_hash = output.strip()
+            if not re.match('^[a-z0-9]+$', cur_commit_hash):
+                logger.log(u"Output doesn't look like a hash, not using it", logger.ERROR)
+                return False
+            self._cur_commit_hash = cur_commit_hash
+            return True
+        else:
+            return False
+
+    def _find_git_branch(self):
+        nzbtomedia.NZBTOMEDIA_BRANCH = self.get_github_branch()
+        branch_info, err, exit_status = self._run_git(self._git_path, 'symbolic-ref -q HEAD')  # @UnusedVariable
+        if exit_status == 0 and branch_info:
+            branch = branch_info.strip().replace('refs/heads/', '', 1)
+            if branch:
+                nzbtomedia.NZBTOMEDIA_VERSION = branch
+        return nzbtomedia.NZBTOMEDIA_VERSION
+
+    def _check_github_for_update(self):
+        """
+        Uses git commands to check if there is a newer version that the provided
+        commit hash. If there is a newer version it sets _num_commits_behind.
+        """
+
+        self._newest_commit_hash = None
+        self._num_commits_behind = 0
+        self._num_commits_ahead = 0
+
+        # get all new info from github
+        output, err, exit_status = self._run_git(self._git_path, 'fetch origin')
+
+        if not exit_status == 0:
+            logger.log(u"Unable to contact github, can't check for update", logger.ERROR)
+            return
+
+        # get latest commit_hash from remote
+        output, err, exit_status = self._run_git(self._git_path, 'rev-parse --verify --quiet "@{upstream}"')
+
+        if exit_status == 0 and output:
+            cur_commit_hash = output.strip()
+
+            if not re.match('^[a-z0-9]+$', cur_commit_hash):
+                logger.log(u"Output doesn't look like a hash, not using it", logger.DEBUG)
+                return
+
+            else:
+                self._newest_commit_hash = cur_commit_hash
+        else:
+            logger.log(u"git didn't return newest commit hash", logger.DEBUG)
+            return
+
+        # get number of commits behind and ahead (option --count not supported git < 1.7.2)
+        output, err, exit_status = self._run_git(self._git_path, 'rev-list --left-right "@{upstream}"...HEAD')
+
+        if exit_status == 0 and output:
+
+            try:
+                self._num_commits_behind = int(output.count("<"))
+                self._num_commits_ahead = int(output.count(">"))
+
+            except:
+                logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
+                return
+
+        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u", newest_commit = " + str(self._newest_commit_hash)
+                   + u", num_commits_behind = " + str(self._num_commits_behind) + u", num_commits_ahead = " + str(
+            self._num_commits_ahead), logger.DEBUG)
+
+    def set_newest_text(self):
+
+        # if we're up to date then don't set this
+        nzbtomedia.NEWEST_VERSION_STRING = None
+
+        if self._num_commits_ahead:
+            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.ERROR)
+            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
+
+        elif self._num_commits_behind > 0:
+
+            base_url = 'http://github.com/' + self.github_repo_user + '/' + self.github_repo
+            if self._newest_commit_hash:
+                url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
+            else:
+                url = base_url + '/commits/'
+
+            newest_text = 'There is a newer version available '
+            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
+            if self._num_commits_behind > 1:
+                newest_text += 's'
+            newest_text += ' behind)'
+
+        else:
+            return
+
+        nzbtomedia.NEWEST_VERSION_STRING = newest_text
+
+    def need_update(self):
+        self._find_installed_version()
+
+        if not self._cur_commit_hash:
+            return True
+        else:
+            try:
+                self._check_github_for_update()
+            except Exception, e:
+                logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
+                return False
+
+            if self._num_commits_behind > 0:
+                return True
+
+        return False
+
+    def update(self):
+        """
+        Calls git pull origin <branch> in order to update Sick Beard. Returns a bool depending
+        on the call's success.
+        """
+
+        output, err, exit_status = self._run_git(self._git_path, 'pull origin ' + self.branch)  # @UnusedVariable
+
+        if exit_status == 0:
+            return True
+
+        return False
+
 
 class SourceUpdateManager(UpdateManager):
-    
     def __init__(self):
         self.github_repo_user = self.get_github_repo_user()
         self.github_repo = self.get_github_repo()
-        self.branch = 'master'
+        self.branch = self.get_github_branch()
 
         self._cur_commit_hash = None
         self._newest_commit_hash = None
@@ -81,7 +369,7 @@ class SourceUpdateManager(UpdateManager):
             with open(version_file, 'r') as fp:
                 self._cur_commit_hash = fp.read().strip(' \n\r')
         except EnvironmentError, e:
-            logger.debug("Unable to open 'version.txt': " + str(e))
+            logger.log(u"Unable to open 'version.txt': " + str(e), logger.DEBUG)
 
         if not self._cur_commit_hash:
             self._cur_commit_hash = None
@@ -93,7 +381,7 @@ class SourceUpdateManager(UpdateManager):
         try:
             self._check_github_for_update()
         except Exception, e:
-            logger.error("Unable to contact github, can't check for update: " + repr(e))
+            logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
             return False
 
         if not self._cur_commit_hash or self._num_commits_behind > 0:
@@ -139,8 +427,8 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        logger.debug("cur_commit = " + str(self._cur_commit_hash) + ", newest_commit = " + str(self._newest_commit_hash)
-                   + ", num_commits_behind = " + str(self._num_commits_behind))
+        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u", newest_commit = " + str(self._newest_commit_hash)
+                   + u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
 
     def set_newest_text(self):
 
@@ -148,9 +436,26 @@ class SourceUpdateManager(UpdateManager):
         nzbtomedia.NEWEST_VERSION_STRING = None
 
         if not self._cur_commit_hash:
-            logger.info("Unknown current version number, don't know if we should update or not")
+            logger.log(u"Unknown current version number, don't know if we should update or not", logger.DEBUG)
+
+            newest_text = "Unknown current version number: If you've never used the Sick Beard upgrade system before then current version is not set."
+
         elif self._num_commits_behind > 0:
-            logger.info("There is a newer version available, (you're " + str(self._num_commits_behind) + " commit(s) behind")
+            base_url = 'http://github.com/' + self.github_repo_user + '/' + self.github_repo
+            if self._newest_commit_hash:
+                url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
+            else:
+                url = base_url + '/commits/'
+
+            newest_text = 'There is a newer version available'
+            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
+            if self._num_commits_behind > 1:
+                newest_text += "s"
+            newest_text += " behind)"
+        else:
+            return
+
+        nzbtomedia.NEWEST_VERSION_STRING = newest_text
 
     def update(self):
         """
@@ -165,45 +470,45 @@ class SourceUpdateManager(UpdateManager):
             sb_update_dir = os.path.join(nzbtomedia.PROGRAM_DIR, u'sb-update')
 
             if os.path.isdir(sb_update_dir):
-                logger.info("Clearing out update folder " + sb_update_dir + " before extracting")
+                logger.log(u"Clearing out update folder " + sb_update_dir + " before extracting")
                 shutil.rmtree(sb_update_dir)
 
-            logger.info("Creating update folder " + sb_update_dir + " before extracting")
+            logger.log(u"Creating update folder " + sb_update_dir + " before extracting")
             os.makedirs(sb_update_dir)
 
             # retrieve file
-            logger.info("Downloading update from " + repr(tar_download_url))
-            tar_download_path = os.path.join(sb_update_dir, u'sb-update.tar')
+            logger.log(u"Downloading update from " + repr(tar_download_url))
+            tar_download_path = os.path.join(sb_update_dir, u'nzbtomedia-update.tar')
             urllib.urlretrieve(tar_download_url, tar_download_path)
 
-            if not str(os.path.isfile, tar_download_path):
-                logger.error("Unable to retrieve new version from " + tar_download_url + ", can't update")
+            if not os.path.isfile(tar_download_path):
+                logger.log(u"Unable to retrieve new version from " + tar_download_url + ", can't update", logger.ERROR)
                 return False
 
-            if not str(tarfile.is_tarfile, tar_download_path):
-                logger.error("Retrieved version from " + tar_download_url + " is corrupt, can't update")
+            if not tarfile.is_tarfile(tar_download_path):
+                logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.ERROR)
                 return False
 
             # extract to sb-update dir
-            logger.info("Extracting file " + tar_download_path)
+            logger.log(u"Extracting file " + tar_download_path)
             tar = tarfile.open(tar_download_path)
             tar.extractall(sb_update_dir)
             tar.close()
 
             # delete .tar.gz
-            logger.info("Deleting file " + tar_download_path)
+            logger.log(u"Deleting file " + tar_download_path)
             os.remove(tar_download_path)
 
             # find update dir name
             update_dir_contents = [x for x in os.listdir(sb_update_dir) if
                                    os.path.isdir(os.path.join(sb_update_dir, x))]
             if len(update_dir_contents) != 1:
-                logger.error("Invalid update data, update failed: " + str(update_dir_contents))
+                logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.ERROR)
                 return False
             content_dir = os.path.join(sb_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
-            logger.info("Moving files from " + content_dir + " to " + nzbtomedia.PROGRAM_DIR)
+            logger.log(u"Moving files from " + content_dir + " to " + nzbtomedia.PROGRAM_DIR)
             for dirname, dirnames, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
@@ -219,7 +524,7 @@ class SourceUpdateManager(UpdateManager):
                             os.remove(new_path)
                             os.renames(old_path, new_path)
                         except Exception, e:
-                            logger.debug("Unable to update " + new_path + ': ' + str(e))
+                            logger.log(u"Unable to update " + new_path + ': ' + str(e), logger.DEBUG)
                             os.remove(old_path)  # Trash the updated file without moving in new path
                         continue
 
@@ -232,12 +537,12 @@ class SourceUpdateManager(UpdateManager):
                 with open(version_path, 'w') as ver_file:
                     ver_file.write(self._newest_commit_hash)
             except EnvironmentError, e:
-                logger.error("Unable to write version file, update not complete: " + str(e))
+                logger.log(u"Unable to write version file, update not complete: " + str(e), logger.ERROR)
                 return False
 
         except Exception, e:
-            logger.error("Error while trying to update: " + str(e))
-            logger.debug("Traceback: " + traceback.format_exc())
+            logger.log(u"Error while trying to update: " + str(e), logger.ERROR)
+            logger.log(u"Traceback: " + traceback.format_exc(), logger.DEBUG)
             return False
 
         return True

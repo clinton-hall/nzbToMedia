@@ -1,6 +1,11 @@
 # nzbToMedia Configuration
 # For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
 
+[General]
+    git_path =
+    git_user =
+    git_branch =
+
 [CouchPotato]
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS

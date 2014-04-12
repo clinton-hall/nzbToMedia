@@ -1,9 +1,7 @@
-autoProcessMedia.cfg
-logging.cfg
-
+*.cfg
+*.cfg.old
 *.pyc
 *.pyo
-
-postprocess.log*
+*.log
+/logs/
 /.idea/
-*.cfg.old

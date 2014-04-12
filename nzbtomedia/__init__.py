@@ -1,11 +1,11 @@
 import os
 import sys
-
-from nzbtomedia import logger
+import platform
+from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
+from nzbtomedia.nzbToMediaUtil import WakeUp
 
 # sabnzbd constants
-from nzbtomedia.nzbToMediaUtil import WakeUp
 
 SABNZB_NO_OF_ARGUMENTS = 8
 SABNZB_0717_NO_OF_ARGUMENTS = 9
@@ -41,9 +41,14 @@ SYS_ENCODING = ''
 
 # version constants
 NZBTOMEDIA_VERSION = None
+NZBTOMEDIA_BRANCH = None
 NEWEST_VERSION = None
 NEWEST_VERSION_STRING = None
 VERSION_NOTIFY = None
+
+GIT_PATH = None
+GIT_USER = None
+GIT_BRANCH = None
 
 CLIENTAGENT = None
 USELINK = None
@@ -81,12 +86,12 @@ __INITIALIZED__ = False
 def initialize():
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SICKBEARD_TORRENT, SICKBEARD_FAILED, \
-        PROGRAM_DIR, CFG, CFG_LOGGING, CONFIG_FILE, CONFIG_MOVIE_FILE, CONFIG_SPEC_FILE, LOG_DIR, \
+        PROGRAM_DIR, CFG, CFG_LOGGING, CONFIG_FILE, CONFIG_MOVIE_FILE, CONFIG_SPEC_FILE, LOG_DIR, NZBTOMEDIA_BRANCH, \
         CONFIG_TV_FILE, LOG_FILE, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, \
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, CLIENTAGENT, USELINK, OUTPUTDIRECTORY, NOFLATTEN, \
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
-        SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__
+        SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, GIT_PATH, GIT_USER, GIT_BRANCH
 
     if __INITIALIZED__:
         return False
@@ -109,6 +114,7 @@ def initialize():
     # init logging
     logger.ntm_log_instance.initLogging()
 
+
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
         logger.error("Unable to load config from %s", CONFIG_FILE)
@@ -117,11 +123,12 @@ def initialize():
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         config.addnzbget()
 
-    NZBTOMEDIA_VERSION = 'nzbToMedia ' + version.SICKBEARD_VERSION.replace(' ', '-') + ' (' + sys.platform.system() + '; ' + sys.platform.release()
-
-    logger.info("nzbToMedia %s", NZBTOMEDIA_VERSION)
     logger.info("Loading config from %s", CONFIG_FILE)
 
+    # check for newer version
+    versionCheck.CheckVersion().find_installed_version()
+    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
+    versionCheck.CheckVersion().check_for_new_version()
 
     WakeUp()
 
@@ -156,6 +163,8 @@ def initialize():
     CATEGORIES += CFG[SECTIONS].sections
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]  # NONE
+
+    GIT_PATH = CFG["General"]["git_path"]
 
     __INITIALIZED__ = True
     return True

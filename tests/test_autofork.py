@@ -5,8 +5,6 @@ from nzbtomedia import logger
 # Initialize the config
 nzbtomedia.initialize()
 
-test = CheckVersion().check_for_new_version()
-
 print nzbtomedia.CFG.findsection('tv')
 print
 print nzbtomedia.CFG.sections
