@@ -2,6 +2,7 @@
 # For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
 
 [General]
+    auto_update = 0
     git_path =
     git_user =
     git_branch =
