@@ -5,6 +5,8 @@ from nzbtomedia import logger
 # Initialize the config
 nzbtomedia.initialize()
 
+print nzbtomedia.SUBSECTIONS["SickBeard"].items()
+print
 print nzbtomedia.CFG.findsection('tv')
 print
 print nzbtomedia.CFG.sections

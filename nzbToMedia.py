@@ -424,9 +424,8 @@ else:
     result = 0
 
     # init sub-sections
-    subsections = nzbtomedia.CFG["CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez"].subsections
     logger.warning("Invalid number of arguments received from client.")
-    for section, subsection in subsections.items():
+    for section, subsection in nzbtomedia.SUBSECTIONS.items():
         for category in subsection:
             if nzbtomedia.CFG[section].isenabled(category):
                 dirNames = get_dirnames(section, category)

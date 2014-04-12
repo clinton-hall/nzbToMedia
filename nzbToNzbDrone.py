@@ -182,9 +182,8 @@ elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
 else:
     result = 0
 
-    subsections = nzbtomedia.CFG["NzbDrone"].subsections
     logger.warning("Invalid number of arguments received from client.")
-    for section, subsection in subsections.items():
+    for section, subsection in nzbtomedia.SUBSECTIONS['NzbDrone'].items():
         for category in subsection:
             if nzbtomedia.CFG[section].isenabled(category):
                 dirNames = get_dirnames(section, category)

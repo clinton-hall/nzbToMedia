@@ -32,7 +32,7 @@ class Sections(dict):
         # returns {section name:[subsections]}
         to_return = {}
         for section in sections:
-            to_return.update(sections[section].subsections)
+            to_return.update({section:sections[section].subsections})
         return to_return
 
 class Section(lib.configobj.Section):
@@ -58,7 +58,7 @@ class Section(lib.configobj.Section):
         # returns {section name:[subsections]}
         to_return = {}
         for subsection in section:
-            to_return.update({section.name: section.sections})
+            to_return.update({subsection:section[subsection]})
         return to_return
 
     def findsection(section, key):
