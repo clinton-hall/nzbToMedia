@@ -329,118 +329,117 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         logger.postprocess("Calling Gamez to post-process: %s", inputName)
         return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
-        logger.postprocess("We could not find the section %s with a download category of %s in your autoProcessMedia.cfg. Exiting.",logger.WARNING), section, inputCategory
+        logger.postprocess("We could not find a section with the download category of %s in your autoProcessMedia.cfg. Exiting.", inputCategory)
         return -1
 
-########################################################################################################################
-# Initialize the config
-nzbtomedia.initialize()
+def main():
+    print sys.argv
 
-# Post-Processing Result
-result = 0
+    # Initialize the config
+    nzbtomedia.initialize()
 
-# NZBGet V11+
-# Check if the script is called from nzbget 11.0 or later
-if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
-    logger.postprocess("Script triggered from NZBGet (11.0 or later).")
-
-    # NZBGet argv: all passed as environment variables.
-    clientAgent = "nzbget"
-
-    # Check nzbget.conf options
-    status = 0
-
-    if os.environ['NZBOP_UNPACK'] != 'yes':
-        logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
-
-    # Check par status
-    if os.environ['NZBPP_PARSTATUS'] == '3':
-        logger.warning("Par-check successful, but Par-repair disabled, exiting")
-        logger.postprocess("Please check your Par-repair settings for future downloads.")
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
-
-    if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
-        logger.warning("Par-repair failed, setting status \"failed\"")
-        status = 1
-
-    # Check unpack status
-    if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        logger.warning("Unpack failed, setting status \"failed\"")
-        status = 1
-
-    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
-        # Unpack was skipped due to nzb-file properties or due to errors during par-check
-
-        if os.environ['NZBPP_HEALTH'] < 1000:
-            logger.warning("Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
-            logger.postprocess("Please check your Par-check/repair settings for future downloads.")
-            status = 1
-
-        else:
-            logger.postprocess("Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
-            logger.postprocess("Please check your Par-check/repair settings for future downloads.")
-
-    # Check if destination directory exists (important for reprocessing of history items)
-    if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status \"failed\"", os.environ['NZBPP_DIRECTORY'])
-        status = 1
-
-    # All checks done, now launching the script.
-    download_id = ""
-    if os.environ.has_key('NZBPR_COUCHPOTATO'):download_id = os.environ['NZBPR_COUCHPOTATO']
-    result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], clientAgent = "nzbget", inputCategory=os.environ['NZBPP_CATEGORY'])
-    if result != 0: logger.error("A problem was reported in the autoProcess* script.")
-# SABnzbd Pre 0.7.17
-elif len(sys.argv) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
-    # SABnzbd argv:
-    # 1 The final directory of the job (full path)
-    # 2 The original name of the NZB file
-    # 3 Clean version of the job name (no path info and ".nzb" removed)
-    # 4 Indexer's report number (if supported)
-    # 5 User-defined category
-    # 6 Group that the NZB was posted in e.g. alt.binaries.x
-    # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    logger.postprocess("Script triggered from SABnzbd")
-    result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
-    if result != 0: logger.error("A problem was reported in the autoProcess* script.")
-# SABnzbd 0.7.17+
-elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
-    # SABnzbd argv:
-    # 1 The final directory of the job (full path)
-    # 2 The original name of the NZB file
-    # 3 Clean version of the job name (no path info and ".nzb" removed)
-    # 4 Indexer's report number (if supported)
-    # 5 User-defined category
-    # 6 Group that the NZB was posted in e.g. alt.binaries.x
-    # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    # 8 Failure URL
-    logger.postprocess("Script triggered from SABnzbd 0.7.17+")
-    result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
-    if result != 0:logger.error("A problem was reported in the autoProcess* script.")
-else:
+    # Post-Processing Result
     result = 0
 
-    # init sub-sections
-    logger.warning("Invalid number of arguments received from client.")
-    for section, subsection in nzbtomedia.SUBSECTIONS.items():
-        for category in subsection:
-            if nzbtomedia.CFG[section][category].isenabled():
-                dirNames = get_dirnames(section, category)
-                for dirName in dirNames:
-                    logger.postprocess("nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
-                    results = process(dirName, os.path.basename(dirName), 0, inputCategory=category)
-                    if results != 0:
-                        result = results
-                        logger.error("A problem was reported when trying to manually run %s:%s.", section, category)
-            else:
-                logger.postprocess("nzbToMedia %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
+    # NZBGet V11+
+    # Check if the script is called from nzbget 11.0 or later
+    if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
+        logger.postprocess("Script triggered from NZBGet (11.0 or later).")
 
-if result == 0:
-    logger.postprocess("The nzbToMedia script completed successfully.")
-    if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
-else:
-    logger.error("A problem was reported in the nzbToMedia script.")
-    if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+        if os.environ['NZBOP_UNPACK'] != 'yes':
+            logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+
+        # Check par status
+        if os.environ['NZBPP_PARSTATUS'] == '3':
+            logger.warning("Par-check successful, but Par-repair disabled, exiting")
+            logger.postprocess("Please check your Par-repair settings for future downloads.")
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
+
+        if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
+            logger.warning("Par-repair failed, setting status \"failed\"")
+            status = 1
+
+        # Check unpack status
+        if os.environ['NZBPP_UNPACKSTATUS'] == '1':
+            logger.warning("Unpack failed, setting status \"failed\"")
+            status = 1
+
+        if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
+            # Unpack was skipped due to nzb-file properties or due to errors during par-check
+
+            if os.environ['NZBPP_HEALTH'] < 1000:
+                logger.warning("Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
+                logger.postprocess("Please check your Par-check/repair settings for future downloads.")
+                status = 1
+
+            else:
+                logger.postprocess("Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
+                logger.postprocess("Please check your Par-check/repair settings for future downloads.")
+
+        # Check if destination directory exists (important for reprocessing of history items)
+        if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
+            logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status \"failed\"", os.environ['NZBPP_DIRECTORY'])
+            status = 1
+
+        # Check for download_id to pass to CouchPotato
+        download_id = ""
+        if os.environ.has_key('NZBPR_COUCHPOTATO'):
+            download_id = os.environ['NZBPR_COUCHPOTATO']
+
+        # All checks done, now launching the script.
+        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], clientAgent = "nzbget", download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
+    # SABnzbd Pre 0.7.17
+    elif len(sys.argv) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
+        # SABnzbd argv:
+        # 1 The final directory of the job (full path)
+        # 2 The original name of the NZB file
+        # 3 Clean version of the job name (no path info and ".nzb" removed)
+        # 4 Indexer's report number (if supported)
+        # 5 User-defined category
+        # 6 Group that the NZB was posted in e.g. alt.binaries.x
+        # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
+        logger.postprocess("Script triggered from SABnzbd")
+        result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
+    # SABnzbd 0.7.17+
+    elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
+        # SABnzbd argv:
+        # 1 The final directory of the job (full path)
+        # 2 The original name of the NZB file
+        # 3 Clean version of the job name (no path info and ".nzb" removed)
+        # 4 Indexer's report number (if supported)
+        # 5 User-defined category
+        # 6 Group that the NZB was posted in e.g. alt.binaries.x
+        # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
+        # 8 Failure URL
+        logger.postprocess("Script triggered from SABnzbd 0.7.17+")
+        result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
+    else:
+        # Perform Manual Run
+        logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
+
+        # Loop and auto-process
+        for section, subsection in nzbtomedia.SUBSECTIONS.items():
+            for category in subsection:
+                if nzbtomedia.CFG[section][category].isenabled():
+                    dirNames = get_dirnames(section, category)
+                    for dirName in dirNames:
+                        logger.postprocess("nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
+                        results = process(dirName, os.path.basename(dirName), 0, inputCategory=category)
+                        if results != 0:
+                            result = results
+                            logger.error("A problem was reported when trying to manually run %s:%s.", section, category)
+                else:
+                    logger.postprocess("nzbToMedia %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
+
+    if result == 0:
+        logger.postprocess("The nzbToMedia script completed successfully.")
+        if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
+    else:
+        logger.error("A problem was reported in the nzbToMedia script.")
+        if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+
+if __name__ == '__main__':
+    main()
