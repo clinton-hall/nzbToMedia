@@ -223,6 +223,7 @@ def restart():
         popen_list += SYS_ARGV
         logger.log(u"Restarting nzbToMedia with " + str(popen_list))
         logger.close()
-        subprocess.Popen(popen_list, cwd=os.getcwd(), shell=True)
+        p = subprocess.Popen(popen_list, cwd=os.getcwd())
+        p.wait()
 
     os._exit(0)
