@@ -289,32 +289,17 @@ class GitUpdateManager(UpdateManager):
             self._num_commits_ahead), logger.DEBUG)
 
     def set_newest_text(self):
-
-        # if we're up to date then don't set this
-        nzbtomedia.NEWEST_VERSION_STRING = None
-
         if self._num_commits_ahead:
             logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.ERROR)
-            newest_text = "Local branch is ahead of " + self.branch + ". Automatic update not possible."
-
         elif self._num_commits_behind > 0:
-
-            base_url = 'http://github.com/' + self.github_repo_user + '/' + self.github_repo
-            if self._newest_commit_hash:
-                url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
-            else:
-                url = base_url + '/commits/'
-
             newest_text = 'There is a newer version available '
             newest_text += " (you're " + str(self._num_commits_behind) + " commit"
             if self._num_commits_behind > 1:
                 newest_text += 's'
             newest_text += ' behind)'
-
+            logger.log(newest_text, logger.MESSAGE)
         else:
             return
-
-        nzbtomedia.NEWEST_VERSION_STRING = newest_text
 
     def need_update(self):
         self._find_installed_version()
@@ -436,26 +421,16 @@ class SourceUpdateManager(UpdateManager):
         nzbtomedia.NEWEST_VERSION_STRING = None
 
         if not self._cur_commit_hash:
-            logger.log(u"Unknown current version number, don't know if we should update or not", logger.DEBUG)
-
-            newest_text = "Unknown current version number: If you've never used the Sick Beard upgrade system before then current version is not set."
-
+            logger.log(u"Unknown current version number, don't know if we should update or not", logger.ERROR)
         elif self._num_commits_behind > 0:
-            base_url = 'http://github.com/' + self.github_repo_user + '/' + self.github_repo
-            if self._newest_commit_hash:
-                url = base_url + '/compare/' + self._cur_commit_hash + '...' + self._newest_commit_hash
-            else:
-                url = base_url + '/commits/'
-
             newest_text = 'There is a newer version available'
             newest_text += " (you're " + str(self._num_commits_behind) + " commit"
             if self._num_commits_behind > 1:
                 newest_text += "s"
             newest_text += " behind)"
+            logger.log(newest_text, logger.MESSAGE)
         else:
             return
-
-        nzbtomedia.NEWEST_VERSION_STRING = newest_text
 
     def update(self):
         """
