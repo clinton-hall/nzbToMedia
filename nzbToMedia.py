@@ -307,30 +307,38 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames
+from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories
 from nzbtomedia import logger
 
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
+    # auto-detect section
+    section = nzbtomedia.CFG.findsection(inputCategory)
 
     if nzbtomedia.CFG["CouchPotato"][inputCategory]:
         logger.postprocess("Calling CouchPotatoServer to post-process: %s", inputName)
-        return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
+        result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
     elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
         logger.postprocess("Calling Sick-Beard to post-process: %s", inputName)
-        return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+        result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
         logger.postprocess("Calling HeadPhones to post-process: %s", inputName)
-        return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
+        result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["Mylar"][inputCategory]:
         logger.postprocess("Calling Mylar to post-process: %s", inputName)
-        return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+        result = autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["Gamez"][inputCategory]:
         logger.postprocess("Calling Gamez to post-process: %s", inputName)
-        return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
+        result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
         logger.postprocess("We could not find a section with the download category of %s in your autoProcessMedia.cfg. Exiting.", inputCategory)
         return -1
+
+    if result == 0:
+        # Clean up any leftover files
+        cleanup_directories(inputCategory, section, result, nzbDir)
+
+    return result
 
 def main():
     # Initialize the config
@@ -432,21 +440,21 @@ def main():
                         logger.postprocess("nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
                         results = process(dirName, os.path.basename(dirName), 0, inputCategory=category)
                         if results != 0:
-                            result = results
                             logger.error("A problem was reported when trying to manually run %s:%s.", section, category)
+                            result = results
+
                 else:
                     logger.postprocess("nzbToMedia %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
 
     if result == 0:
         logger.postprocess("The nzbToMedia script completed successfully.")
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
+            return nzbtomedia.NZBGET_POSTPROCESS_SUCCESS
     else:
         logger.error("A problem was reported in the nzbToMedia script.")
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+            return nzbtomedia.NZBGET_POSTPROCESS_ERROR
 
     return result
-
 if __name__ == '__main__':
     exit(main())

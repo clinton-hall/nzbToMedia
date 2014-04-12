@@ -15,7 +15,7 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only
+    remove_read_only, cleanup_directories
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
@@ -54,9 +54,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
             if result != 0:
                 logger.error("A problem was reported in the autoProcessTV script.")
             resume_torrent(nzbtomedia.CLIENTAGENT, TorrentClass, inputHash, inputID, result, inputName)
-            cleanup_output(inputCategory, processCategories, result, outputDestination)
-            logger.postprocess("All done.")
-            sys.exit()
+            cleanup_directories(inputCategory, processCategories, result, outputDestination)
+            return result
 
     processOnly = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES: # if None, we only process the 5 listed.
@@ -66,8 +65,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
 
     if not inputCategory in processOnly:
         logger.postprocess("No processing to be done for category: %s. Exiting", inputCategory)
-        logger.postprocess("All done.")
-        sys.exit()
+        return
 
     logger.debug("Scanning files in directory: %s", inputDirectory)
 
@@ -182,7 +180,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
         status = int(0) # hp, my, gz don't support failed.
     else:
         logger.error("Something failed! Please check logs. Exiting")
-        sys.exit(-1)
+        return status
 
     result = 0
     if nzbtomedia.CFG['CouchPotato'][inputCategory]:
@@ -209,7 +207,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
     resume_torrent(nzbtomedia.CLIENTAGENT, TorrentClass, inputHash, inputID, result, inputName)
-    cleanup_output(inputCategory, processCategories, result, outputDestination)
+    cleanup_directories(inputCategory, processCategories, result, outputDestination)
     return result
 
 def create_torrent_class(clientAgent, inputHash):
@@ -277,25 +275,6 @@ def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputN
             if clientAgent == 'deluge' and TorrentClass != "":
                 TorrentClass.core.resume_torrent([inputID])
         time.sleep(5)
-
-def cleanup_output(inputCategory, processCategories, result, outputDestination): 
-    if inputCategory in processCategories and result == 0 and os.path.isdir(outputDestination):
-        num_files_new = int(0)
-        file_list = []
-        for dirpath, dirnames, filenames in os.walk(outputDestination):
-            for file in filenames:
-                filePath = os.path.join(dirpath, file)
-                fileName, fileExtension = os.path.splitext(file)
-                if fileExtension in nzbtomedia.MEDIACONTAINER or fileExtension in nzbtomedia.METACONTAINER:
-                    num_files_new += 1
-                    file_list.append(file)
-        if num_files_new is 0 or int(nzbtomedia.CFG["Torrent"]["forceClean"]) is 1:
-            logger.postprocess("All files have been processed. Cleaning outputDirectory %s", outputDestination)
-            shutil.rmtree(outputDestination)
-        else:
-            logger.postprocess("outputDirectory %s still contains %s media and/or meta files. This directory will not be removed.", outputDestination, num_files_new)
-            for item in file_list:
-                logger.debug("media/meta file found: %s", item)
 
 def external_script(outputDestination, torrentName, torrentLabel):
 
@@ -388,7 +367,7 @@ def main():
         inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(nzbtomedia.CLIENTAGENT)
     except:
         logger.error("There was a problem loading variables")
-        sys.exit(-1)
+        return -1
 
         # check if this is a manual run
     if inputDirectory is None:

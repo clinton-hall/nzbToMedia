@@ -424,3 +424,22 @@ def delete(dirName):
         shutil.rmtree(dirName, True)
     except:
         logger.error("Unable to delete folder %s", dirName)
+
+def cleanup_directories(inputCategory, processCategories, result, directory):
+    if inputCategory in processCategories and result == 0 and os.path.isdir(directory):
+        num_files_new = int(0)
+        file_list = []
+        for dirpath, dirnames, filenames in os.walk(directory):
+            for file in filenames:
+                filePath = os.path.join(dirpath, file)
+                fileName, fileExtension = os.path.splitext(file)
+                if fileExtension in nzbtomedia.MEDIACONTAINER or fileExtension in nzbtomedia.METACONTAINER:
+                    num_files_new += 1
+                    file_list.append(file)
+        if num_files_new is 0 or int(nzbtomedia.CFG["General"]["force_clean"]) == 1:
+            logger.info("All files have been processed. Cleaning directory %s", directory)
+            shutil.rmtree(directory)
+        else:
+            logger.info("Directory %s still contains %s media and/or meta files. This directory will not be removed.", directory, num_files_new)
+            for item in file_list:
+                logger.debug("media/meta file found: %s", item)

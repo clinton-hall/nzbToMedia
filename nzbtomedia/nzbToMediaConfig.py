@@ -143,25 +143,28 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                                 value = 'hard'
                             else:
                                 value = 'no'
+                    if option == "forceClean":
+                        CFG_NEW['General']['force_clean'] = value
+                        values.pop(option)
             return values
 
         def process_section(section, subsections=None):
             if subsections:
                 for subsection in subsections:
                     if subsection in CFG_OLD.sections:
-                        values = CFG_OLD[subsection]
+                        values = cleanup_values(CFG_OLD[subsection], section)
                         if subsection not in CFG_NEW[section].sections:
                             CFG_NEW[section][subsection] = {}
                         for option, value in values.items():
                             CFG_NEW[section][subsection][option] = value
                     elif subsection in CFG_OLD[section].sections:
-                        values = CFG_OLD[section][subsection]
+                        values = cleanup_values(CFG_OLD[section][subsection], section)
                         if subsection not in CFG_NEW[section].sections:
                             CFG_NEW[section][subsection] = {}
                         for option, value in values.items():
                             CFG_NEW[section][subsection][option] = value
             else:
-                values = CFG_OLD[section]
+                values = cleanup_values(CFG_OLD[section], section)
                 if section not in CFG_NEW.sections:
                     CFG_NEW[section] = {}
                 for option, value in values.items():
@@ -174,11 +177,9 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 subsection = section
                 section = ''.join([k for k,v in subsections.iteritems() if subsection in v])
                 process_section(section, subsection)
-                #[[v.remove(c) for c in v if c in subsection] for k, v in subsections.items() if k == section]
             elif section in subsections.keys():
                 subsection = subsections[section]
                 process_section(section, subsection)
-                #[[v.remove(c) for c in v if c in subsection] for k,v in subsections.items() if k == section]
             elif section in CFG_OLD.keys():
                 process_section(section, subsection)
 
