@@ -84,7 +84,16 @@ SAMPLEIDS = None
 SECTIONS = []
 SUBSECTIONS = {}
 
+TRANSCODE = None
+
 USER_SCRIPT_CATEGORIES = None
+USER_SCRIPT_MEDIAEXTENSIONS = None
+USER_SCRIPT = None
+USER_SCRIPT_PARAM = None
+USER_SCRIPT_SUCCESSCODES = None
+USER_SCRIPT_CLEAN = None
+USER_DELAY = None
+USER_SCRIPT_RUNONCE = None
 
 __INITIALIZED__ = False
 
@@ -97,7 +106,9 @@ def initialize():
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
         SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, GIT_PATH, GIT_USER, GIT_BRANCH, AUTO_UPDATE, APP_FILENAME, \
-        APP_NAME
+        APP_NAME,USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN,\
+        USER_DELAY, USER_SCRIPT_RUNONCE, TRANSCODE
+
 
     if __INITIALIZED__:
         return False
@@ -204,9 +215,21 @@ def initialize():
     SUBSECTIONS = CFG[SECTIONS]
     CATEGORIES += SUBSECTIONS.sections
 
-    USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]  # NONE
+    TRANSCODE = int(CFG["Transcoder"]["transcode"])
+
+    USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
+    if not "NONE" in USER_SCRIPT_CATEGORIES:
+        USER_SCRIPT_MEDIAEXTENSIONS = (CFG["UserScript"]["user_script_mediaExtensions"])
+        USER_SCRIPT = CFG["UserScript"]["user_script_path"]
+        USER_SCRIPT_PARAM = (CFG["UserScript"]["user_script_param"])
+        USER_SCRIPT_SUCCESSCODES = (CFG["UserScript"]["user_script_successCodes"])
+        USER_SCRIPT_CLEAN = int(CFG["UserScript"]["user_script_clean"])
+        USER_DELAY = int(CFG["UserScript"]["delay"])
+        USER_SCRIPT_RUNONCE = int(CFG["UserScript"]["user_script_runOnce"])
 
     GIT_PATH = CFG["General"]["git_path"]
+    GIT_USER = CFG["General"]["git_user"]
+    GIT_BRANCH = CFG["General"]["git_branch"]
 
     __INITIALIZED__ = True
     return True
