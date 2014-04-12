@@ -381,7 +381,7 @@ def get_dirnames(section, subsections=None):
     dirNames = []
 
     if subsections is None:
-        subsections = nzbtomedia.CFG[section].subsections.values()
+        subsections = nzbtomedia.SUBSECTIONS[section].sections
 
     if not isinstance(subsections, list):
         subsections = [subsections]

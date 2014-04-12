@@ -216,7 +216,7 @@ else:
     logger.warning("Invalid number of arguments received from client.")
     for section, subsection in nzbtomedia.SUBSECTIONS['CouchPotato'].items():
         for category in subsection:
-            if nzbtomedia.CFG[section].isenabled(category):
+            if nzbtomedia.CFG[section][category].isenabled():
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
                     logger.postprocess("Running %s:%s as a manual run on folder %s ...", section, category, dirName)

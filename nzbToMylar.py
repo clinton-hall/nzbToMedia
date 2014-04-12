@@ -153,18 +153,18 @@ else:
     result = 0
 
     logger.warning("Invalid number of arguments received from client.")
-    for section, subsection in nzbtomedia.SUBSECTIONS['Mylar'].items():
-        for category in subsection:
-            if nzbtomedia.CFG[section].isenabled(category):
-                dirNames = get_dirnames(section, category)
-                for dirName in dirNames:
-                    logger.postprocess("nzbToMylar running %s:%s as a manual run on folder %s ...", section, category, dirName)
-                    results = autoProcessComics().processEpisode(dirName, os.path.basename(dirName), 0, inputCategory=category)
-                    if results != 0:
-                        result = results
-                        logger.error("A problem was reported when trying to manually run %s:%s on folder %s ...", section, category, dirName)
-            else:
-                logger.postprocess("nzbToMylar %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
+    section = "Mylar"
+    for category in nzbtomedia.SUBSECTIONS[section]:
+        if nzbtomedia.SUBSECTIONS[section][category].isenabled():
+            dirNames = get_dirnames(section, category)
+            for dirName in dirNames:
+                logger.postprocess("nzbToMylar running %s:%s as a manual run on folder %s ...", section, category, dirName)
+                results = autoProcessComics().processEpisode(dirName, os.path.basename(dirName), 0, inputCategory=category)
+                if results != 0:
+                    result = results
+                    logger.error("A problem was reported when trying to manually run %s:%s on folder %s ...", section, category, dirName)
+        else:
+            logger.postprocess("nzbToMylar %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
 
 if result == 0:
     logger.postprocess("The autoProcessComics script completed successfully.")

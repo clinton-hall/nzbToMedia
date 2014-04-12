@@ -5,66 +5,60 @@ import lib.configobj
 from itertools import chain
 
 class Sections(dict):
-    def issubsection(sections, subsection, checkenabled=True):
-        # checks sections for subsection, returns true/false in {}
+    def isenabled(sections):
+        # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         to_return = False
-        for section in sections.values():
-            to_return = section.issubsection(subsection, checkenabled)
-        return to_return
-
-    def isenabled(sections, subsection):
-        # checks if subsections are enabled, returns true/false in {}
-        to_return = False
-        for section in sections.values():
-            to_return = section.isenabled(subsection)
+        for section, subsection in sections.items():
+            for item in subsection:
+                if int(subsection[item]['enabled']) == 1:
+                        to_return = True
         return to_return
 
     @property
     def sections(sections):
         # returns [subsections]
         to_return = []
-        for section in sections:
-            to_return.append(sections[section].sections)
+        for section, subsection in sections.items():
+            to_return.append(subsection)
         return list(set(chain.from_iterable(to_return)))
 
-    @property
-    def subsections(sections):
-        # returns {section name:[subsections]}
-        to_return = {}
-        for section in sections:
-            to_return.update({section:sections[section].subsections})
+    def __getitem__(self, key):
+        # check for key in sections
+        if key in self:
+            return dict.__getitem__(self, key)
+
+        # check for key in subsections
+        to_return = Sections()
+        for section, subsection in self.items():
+            if key in subsection:
+                to_return.update({section:{key:dict.__getitem__(subsection, key)}})
         return to_return
 
 class Section(lib.configobj.Section):
-    def issubsection(section, subsection, checkenabled=True):
-        # checks section for subsection, returns true/false
-        to_return = False
-        if subsection in section:
-            if checkenabled and section.isenabled(subsection):
-                to_return = True
-            else:
-                to_return = True
-        return to_return
-
-    def isenabled(section, subsection):
+    def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
-        to_return = False
-        if subsection in section and int(section[subsection]['enabled']) == 1:
-            to_return = True
-        return to_return
-
-    @property
-    def subsections(section):
-        # returns {section name:[subsections]}
-        to_return = {}
-        for subsection in section:
-            to_return.update({subsection:section[subsection]})
-        return to_return
+        if section:
+            if int(section['enabled']) == 1:
+                    return True
+        return False
 
     def findsection(section, key):
         for subsection in section:
             if key in section[subsection]:
                 return subsection
+
+    def __getitem__(self, key):
+        # check for key in section
+        if key in self.keys():
+            return dict.__getitem__(self, key)
+
+        # check for key in subsection
+        result = Sections()
+        for section in key:
+            if section in self:
+                subsection = dict.__getitem__(self, section)
+                result.update({section: subsection})
+        return result
 
 class ConfigObj(lib.configobj.ConfigObj, Section):
     def __init__(self, *args, **kw):
@@ -72,18 +66,6 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             args = (nzbtomedia.CONFIG_FILE,)
         super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
         self.interpolation = False
-
-    def __getitem__(self, key):
-        result = Sections()
-        if isinstance(key, tuple):
-            for item in key:
-                val = dict.__getitem__(self, item)
-                result.update({item: val})
-            return result
-        else:
-            val = dict.__getitem__(self, key)
-            #result.update({key: val})
-        return val
 
     @staticmethod
     def migrate():
@@ -210,9 +192,6 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
         # writing our configuration file to 'autoProcessMedia.cfg'
         with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
             CFG_NEW.write(configFile)
-
-        # reload config
-        nzbtomedia.CFG = CFG_NEW
 
         return True
 
@@ -350,9 +329,6 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
         with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
             CFG_NEW.write(configFile)
 
-        # reload config
-        nzbtomedia.CFG = CFG_NEW
-        
 lib.configobj.Section = Section
 lib.configobj.ConfigObj = ConfigObj
 config = ConfigObj

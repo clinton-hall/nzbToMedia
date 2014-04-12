@@ -114,7 +114,6 @@ def initialize():
     # init logging
     logger.ntm_log_instance.initLogging()
 
-
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
         logger.error("Unable to load config from %s", CONFIG_FILE)
@@ -123,7 +122,9 @@ def initialize():
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         config.addnzbget()
 
+    # load newly migrated config
     logger.info("Loading config from %s", CONFIG_FILE)
+    CFG = config()
 
     # check for newer version
     versionCheck.CheckVersion().find_installed_version()
@@ -159,8 +160,8 @@ def initialize():
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
 
     SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
-    SUBSECTIONS = CFG[SECTIONS].subsections
-    CATEGORIES += CFG[SECTIONS].sections
+    SUBSECTIONS = CFG[SECTIONS]
+    CATEGORIES += SUBSECTIONS.sections
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]  # NONE
 

@@ -14,7 +14,8 @@ from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
-from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, parse_args, flatten, get_dirnames
+from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, parse_args, flatten, get_dirnames, \
+    remove_read_only
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
@@ -46,7 +47,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     outputDestination = os.path.normpath(os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, safeName(inputName)))
     logger.postprocess("Output directory set to: %s", outputDestination)
 
-    if nzbtomedia.CFG["SickBeard"].issubsection(inputCategory):
+    if nzbtomedia.CFG["SickBeard"][inputCategory]:
         Torrent_NoLink = int(nzbtomedia.CFG["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
         if Torrent_NoLink == 1:
             logger.postprocess("Calling autoProcessTV to post-process: %s",inputName)
@@ -71,7 +72,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
 
     logger.debug("Scanning files in directory: %s", inputDirectory)
 
-    if nzbtomedia.CFG["HeadPhones"].issubsection(inputCategory):
+    if nzbtomedia.CFG["HeadPhones"][inputCategory]:
         nzbtomedia.NOFLATTEN.extend(nzbtomedia.CFG["HeadPhones"].sections) # Make sure we preserve folder structure for HeadPhones.
 
     outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
@@ -118,12 +119,12 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                     continue  # This file has not been recently moved or created, skip it
 
             if fileExtension in nzbtomedia.MEDIACONTAINER and is_sample(filePath, inputName, nzbtomedia.MINSAMPLESIZE,
-                                                                        nzbtomedia.SAMPLEIDS) and not nzbtomedia.CFG["HeadPhones"].issubsection(inputCategory):   # Ignore samples
+                                                                        nzbtomedia.SAMPLEIDS) and not nzbtomedia.CFG["HeadPhones"][inputCategory]:   # Ignore samples
                 logger.postprocess("Ignoring sample file: %s  ", filePath)
                 continue
 
             if fileExtension in nzbtomedia.COMPRESSEDCONTAINER:
-                if (nzbtomedia.CFG["SickBeard"].issubsection(inputCategory) and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
+                if (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
                     # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
                     if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                         part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
@@ -155,7 +156,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         remove_read_only(outputDestination)
 
     # Now check if video files exist in destination:
-    if nzbtomedia.CFG["SickBeard","NzbDrone", "CouchPotato"].issubsection(inputCategory):
+    if nzbtomedia.CFG["SickBeard","NzbDrone", "CouchPotato"][inputCategory]:
         for dirpath, dirnames, filenames in os.walk(outputDestination):
             for file in filenames:
                 filePath = os.path.join(dirpath, file)
@@ -168,7 +169,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         if video > int(0):  # Check that media files exist
             logger.debug("Found %s media files", str(video))
             status = int(0)
-        elif not (nzbtomedia.CFG["SickBeard"].issubsection(inputCategory) and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination") and archive > int(0):
+        elif not (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination") and archive > int(0):
             logger.debug("Found %s archive files to be extracted by SickBeard", str(archive))
             status = int(0)
         else:
@@ -177,7 +178,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
     if (inputCategory in nzbtomedia.USER_SCRIPT_CATEGORIES and not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES) or ("ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES and not inputCategory in processCategories):
         logger.postprocess("Processing user script %s.", user_script)
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (nzbtomedia.CFG['HeadPhones','Mylar','Gamez'].issubsection(inputCategory)): # if movies linked/extracted or for other categories.
+    elif status == int(0) or (nzbtomedia.CFG['HeadPhones','Mylar','Gamez'][inputCategory]): # if movies linked/extracted or for other categories.
         logger.debug("Calling autoProcess script for successful download.")
         status = int(0) # hp, my, gz don't support failed.
     else:
@@ -185,23 +186,23 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
         sys.exit(-1)
 
     result = 0
-    if nzbtomedia.CFG['CouchPotato'].issubsection(inputCategory):
+    if nzbtomedia.CFG['CouchPotato'][inputCategory]:
         logger.postprocess("Calling CouchPotato:" + inputCategory + " to post-process: %s", inputName)
         download_id = inputHash
         result = autoProcessMovie().process(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, download_id, inputCategory)
-    elif nzbtomedia.CFG['SickBeard'].issubsection(inputCategory):
+    elif nzbtomedia.CFG['SickBeard'][inputCategory]:
         logger.postprocess("Calling Sick-Beard:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
-    elif nzbtomedia.CFG['NzbDrone'].issubsection(inputCategory):
+    elif nzbtomedia.CFG['NzbDrone'][inputCategory]:
         logger.postprocess("Calling NzbDrone:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
-    elif nzbtomedia.CFG['HeadPhones'].issubsection(inputCategory):
+    elif nzbtomedia.CFG['HeadPhones'][inputCategory]:
         logger.postprocess("Calling HeadPhones:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessMusic().process(inputDirectory, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
-    elif nzbtomedia.CFG['Mylar'].issubsection(inputCategory):
+    elif nzbtomedia.CFG['Mylar'][inputCategory]:
         logger.postprocess("Calling Mylar:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
-    elif nzbtomedia.CFG['Gamez'].issubsection(inputCategory):
+    elif nzbtomedia.CFG['Gamez'][inputCategory]:
         logger.postprocess("Calling Gamez:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessGames().process(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
 
@@ -401,7 +402,7 @@ if __name__ == "__main__":
     if inputDirectory is None:
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
-                if nzbtomedia.CFG[section].isenabled(category):
+                if nzbtomedia.CFG[section][category].isenabled():
                     dirNames = get_dirnames(section, category)
                     for dirName in dirNames:
                         logger.postprocess("Running %s:%s as a manual run for folder %s ...", section, category, dirName)

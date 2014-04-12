@@ -313,19 +313,19 @@ from nzbtomedia import logger
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
 
-    if nzbtomedia.CFG["CouchPotato"].issubsection(inputCategory):
+    if nzbtomedia.CFG["CouchPotato"][inputCategory]:
         logger.postprocess("Calling CouchPotatoServer to post-process: %s", logger.MESSAGE), inputName
         return autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif nzbtomedia.CFG["SickBeard", "NzbDrone"].issubsection(inputCategory):
+    elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
         logger.postprocess("Calling Sick-Beard to post-process: %s",logger.MESSAGE), inputName
         return autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["HeadPhones"].issubsection(inputCategory):
+    elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
         logger.postprocess("Calling HeadPhones to post-process: %s", logger.MESSAGE), inputName
         return autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["Mylar"].issubsection(inputCategory):
+    elif nzbtomedia.CFG["Mylar"][inputCategory]:
         logger.postprocess("Calling Mylar to post-process: %s",logger.MESSAGE), inputName
         return autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["Gamez"].issubsection(inputCategory):
+    elif nzbtomedia.CFG["Gamez"][inputCategory]:
         logger.postprocess("Calling Gamez to post-process: %s",logger.MESSAGE), inputName
         return autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
@@ -427,7 +427,7 @@ else:
     logger.warning("Invalid number of arguments received from client.")
     for section, subsection in nzbtomedia.SUBSECTIONS.items():
         for category in subsection:
-            if nzbtomedia.CFG[section].isenabled(category):
+            if nzbtomedia.CFG[section][category].isenabled():
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
                     logger.postprocess("nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
