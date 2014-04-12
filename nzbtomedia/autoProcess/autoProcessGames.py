@@ -1,42 +1,37 @@
 import json
-import logging
-import socket
+import nzbtomedia
 from lib import requests
-from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
-
-Logger = logging.getLogger()
+from nzbtomedia import logger
 
 class autoProcessGames:
     def process(self, dirName, nzbName=None, status=0, clientAgent='manual', inputCategory=None):
         if dirName is None:
-            Logger.error("No directory was given!")
+            logger.error("No directory was given!")
             return 1  # failure
 
         # auto-detect correct section
-        section = config().findsection(inputCategory)
+        section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
-            Logger.error(
-                "MAIN: We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+            logger.error(
+                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
-        socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.
-
-        Logger.info("Loading config from %s", config.CONFIG_FILE)
+        logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
 
         status = int(status)
 
-        host = config()[section][inputCategory]["host"]
-        port = config()[section][inputCategory]["port"]
-        apikey = config()[section][inputCategory]["apikey"]
+        host = nzbtomedia.CFG[section][inputCategory]["host"]
+        port = nzbtomedia.CFG[section][inputCategory]["port"]
+        apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
 
         try:
-            ssl = int(config()[section][inputCategory]["ssl"])
+            ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
             ssl = 0
 
         try:
-            web_root = config()[section][inputCategory]["web_root"]
+            web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
 
@@ -57,23 +52,23 @@ class autoProcessGames:
 
         url = baseURL + "UPDATEREQUESTEDSTATUS&db_id=" + gamezID + "&status=" + downloadStatus
 
-        Logger.debug("Opening URL: %s", url)
+        logger.debug("Opening URL: %s", url)
 
         try:
             r = requests.get(url, stream=True)
         except requests.ConnectionError:
-            Logger.exception("Unable to open URL")
+            logger.error("Unable to open URL")
             return 1  # failure
 
         result = {}
         for line in r.iter_lines():
             if line:
-                Logger.info("%s", line)
+                logger.postprocess("%s", line)
                 result.update(json.load(line))
 
         if result['success']:
-            Logger.info("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)
+            logger.postprocess("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)
             return 0 # Success
         else:
-            Logger.error("Status for %s has NOT been updated in Gamez", gamezID)
+            logger.error("Status for %s has NOT been updated in Gamez", gamezID)
             return 1 # failure

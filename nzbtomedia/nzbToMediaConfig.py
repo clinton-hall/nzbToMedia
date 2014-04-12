@@ -1,5 +1,6 @@
 import os
 import shutil
+import nzbtomedia
 import lib.configobj
 from itertools import chain
 
@@ -66,52 +67,9 @@ class Section(lib.configobj.Section):
                 return subsection
 
 class ConfigObj(lib.configobj.ConfigObj, Section):
-    # constants for nzbtomedia
-    NZBTOMEDIA_VERSION = 'V9.3'
-    NZBTOMEDIA_TIMEOUT = 60
-
-    # Constants pertinant to SabNzb
-    SABNZB_NO_OF_ARGUMENTS = 8
-    SABNZB_0717_NO_OF_ARGUMENTS = 9
-
-    # Constants pertaining to SickBeard Branches:
-    FORKS = {}
-    FORK_DEFAULT = "default"
-    FORK_FAILED = "failed"
-    FORK_FAILED_TORRENT = "failed-torrent"
-    FORKS[FORK_DEFAULT] = {"dir": None, "method": None}
-    FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
-    FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
-    SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT]
-    SICKBEARD_TORRENT = [FORK_FAILED_TORRENT]
-
-    # NZBGet Exit Codes
-    NZBGET_POSTPROCESS_PARCHECK = 92
-    NZBGET_POSTPROCESS_SUCCESS = 93
-    NZBGET_POSTPROCESS_ERROR = 94
-    NZBGET_POSTPROCESS_NONE = 95
-
-    # config files
-    PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
-    CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg")
-    SAMPLE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.sample")
-    MOVIE_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
-    TV_CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
-    LOG_FILE = os.path.join(PROGRAM_DIR, "postprocess.log")
-    LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg")
-    SAMPLE_LOG_CONFIG = os.path.join(PROGRAM_DIR, "logging.cfg.sample")
-
-    try:
-        repo = check_output(["git", "config", "--get", "remote.origin.url"]).splitlines()[0]
-        branch = check_output(["git", "rev-parse", "--abbrev-ref", "HEAD"]).splitlines()[0]
-        hash = check_output(["git", "rev-parse", "--short", "HEAD"]).splitlines()[0]
-        NZBTOMEDIA_VERSION = 'repo:' + repo + ' branch:' + branch + ' hash: ' + hash
-    except CalledProcessError:
-        pass
-
     def __init__(self, *args, **kw):
         if len(args) == 0:
-            args = (self.CONFIG_FILE,)
+            args = (nzbtomedia.CONFIG_FILE,)
         super(lib.configobj.ConfigObj, self).__init__(*args, **kw)
         self.interpolation = False
 
@@ -127,53 +85,55 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             #result.update({key: val})
         return val
 
-    def migrate(self):
-        global config_new, config_old
-        config_new = config_old = None
+    @staticmethod
+    def migrate():
+        global CFG_NEW, CFG_OLD
+        CFG_NEW = None
+        CFG_OLD = None
 
         try:
             # check for autoProcessMedia.cfg and create if it does not exist
-            if not config():
-                shutil.copyfile(self.SAMPLE_CONFIG_FILE, self.CONFIG_FILE)
-            config_old = config()
+            if not os.path.isfile(nzbtomedia.CONFIG_FILE):
+                shutil.copyfile(nzbtomedia.CONFIG_SPEC_FILE, nzbtomedia.CONFIG_FILE)
+            CFG_OLD = config(nzbtomedia.CONFIG_FILE)
         except:
             pass
 
         try:
-            # check for autoProcessMedia.cfg.sample and create if it does not exist
-            if not config(self.SAMPLE_CONFIG_FILE):
-                shutil.copyfile(self.CONFIG_FILE, self.SAMPLE_CONFIG_FILE)
-            config_new = config(self.SAMPLE_CONFIG_FILE)
+            # check for autoProcessMedia.cfg.spec and create if it does not exist
+            if not os.path.isfile(nzbtomedia.CONFIG_SPEC_FILE):
+                shutil.copyfile(nzbtomedia.CONFIG_FILE, nzbtomedia.CONFIG_SPEC_FILE)
+            CFG_NEW = config(nzbtomedia.CONFIG_SPEC_FILE)
         except:
             pass
 
-        # check for autoProcessMedia.cfg and autoProcessMedia.cfg.sample and if they don't exist return and fail
-        if not config() and not config(self.SAMPLE_CONFIG_FILE) or not config_new or not config_old:
+        # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
+        if not CFG_NEW or not CFG_OLD:
             return False
 
         subsections = {}
         # gather all new-style and old-style sub-sections
-        for newsection, newitems in config_new.items():
-            if config_new[newsection].sections:
-                subsections.update({newsection: config_new[newsection].sections})
-        for section, items in config_old.items():
-            if config_old[section].sections:
-                subsections.update({section: config_old[section].sections})
-            for option, value in config_old[section].items():
+        for newsection, newitems in CFG_NEW.items():
+            if CFG_NEW[newsection].sections:
+                subsections.update({newsection: CFG_NEW[newsection].sections})
+        for section, items in CFG_OLD.items():
+            if CFG_OLD[section].sections:
+                subsections.update({section: CFG_OLD[section].sections})
+            for option, value in CFG_OLD[section].items():
                 if option in ["category", "cpsCategory", "sbCategory", "hpCategory", "mlCategory", "gzCategory"]:
                     if not isinstance(value, list):
                         value = [value]
 
                     # add subsection
                     subsections.update({section: value})
-                    config_old[section].pop(option)
+                    CFG_OLD[section].pop(option)
                     continue
 
         def cleanup_values(values, section):
             for option, value in values.iteritems():
                 if section in ['CouchPotato']:
                     if option == ['outputDirectory']:
-                        config_new['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
+                        CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)
                 if section in ['CouchPotato', 'HeadPhones', 'Gamez']:
                     if option in ['username', 'password']:
@@ -188,11 +148,11 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                         values['Torrent_NoLink'] = value
                         values.pop(option)
                     if option == "outputDirectory":  # move this to new location format
-                        config_new['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
+                        CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)
                 if section in ["Torrent"]:
                     if option in ["compressedExtensions", "mediaExtensions", "metaExtensions", "minSampleSize"]:
-                        config_new['Extensions'][option] = value
+                        CFG_NEW['Extensions'][option] = value
                         values.pop(option)
                     if option == "useLink":  # Sym links supported now as well.
                         if isinstance(value, int):
@@ -206,27 +166,27 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
         def process_section(section, subsections=None):
             if subsections:
                 for subsection in subsections:
-                    if subsection in config_old.sections:
-                        values = config_old[subsection]
-                        if subsection not in config_new[section].sections:
-                            config_new[section][subsection] = {}
+                    if subsection in CFG_OLD.sections:
+                        values = CFG_OLD[subsection]
+                        if subsection not in CFG_NEW[section].sections:
+                            CFG_NEW[section][subsection] = {}
                         for option, value in values.items():
-                            config_new[section][subsection][option] = value
-                    elif subsection in config_old[section].sections:
-                        values = config_old[section][subsection]
-                        if subsection not in config_new[section].sections:
-                            config_new[section][subsection] = {}
+                            CFG_NEW[section][subsection][option] = value
+                    elif subsection in CFG_OLD[section].sections:
+                        values = CFG_OLD[section][subsection]
+                        if subsection not in CFG_NEW[section].sections:
+                            CFG_NEW[section][subsection] = {}
                         for option, value in values.items():
-                            config_new[section][subsection][option] = value
+                            CFG_NEW[section][subsection][option] = value
             else:
-                values = config_old[section]
-                if section not in config_new.sections:
-                    config_new[section] = {}
+                values = CFG_OLD[section]
+                if section not in CFG_NEW.sections:
+                    CFG_NEW[section] = {}
                 for option, value in values.items():
-                    config_new[section][option] = value
+                    CFG_NEW[section][option] = value
 
         # convert old-style categories to new-style sub-sections
-        for section in config_old.keys():
+        for section in CFG_OLD.keys():
             subsection = None
             if section in list(chain.from_iterable(subsections.values())):
                 subsection = section
@@ -237,24 +197,28 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 subsection = subsections[section]
                 process_section(section, subsection)
                 #[[v.remove(c) for c in v if c in subsection] for k,v in subsections.items() if k == section]
-            elif section in config_old.keys():
+            elif section in CFG_OLD.keys():
                 process_section(section, subsection)
 
         # create a backup of our old config
-        if os.path.isfile(self.CONFIG_FILE):
-            cfgbak_name = self.CONFIG_FILE + ".old"
+        if os.path.isfile(nzbtomedia.CONFIG_FILE):
+            cfgbak_name = nzbtomedia.CONFIG_FILE + ".old"
             if os.path.isfile(cfgbak_name):  # remove older backups
                 os.unlink(cfgbak_name)
-            os.rename(self.CONFIG_FILE, cfgbak_name)
+            os.rename(nzbtomedia.CONFIG_FILE, cfgbak_name)
 
         # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(self.CONFIG_FILE, 'wb') as configFile:
-            config_new.write(configFile)
+        with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
+            CFG_NEW.write(configFile)
+
+        # reload config
+        nzbtomedia.CFG = CFG_NEW
 
         return True
 
-    def addnzbget(self):
-        config_new = config()
+    @staticmethod
+    def addnzbget():
+        CFG_NEW = nzbtomedia.CFG
         section = "CouchPotato"
         envCatKey = 'NZBPO_CPSCATEGORY'
         envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
@@ -265,10 +229,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "SickBeard"
         envCatKey = 'NZBPO_SBCATEGORY'
@@ -280,10 +244,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "HeadPhones"
         envCatKey = 'NZBPO_HPCATEGORY'
@@ -295,10 +259,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Mylar"
         envCatKey = 'NZBPO_MYCATEGORY'
@@ -310,10 +274,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Gamez"
         envCatKey = 'NZBPO_GZCATEGORY'
@@ -325,10 +289,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "NzbDrone"
         envCatKey = 'NZBPO_NDCATEGORY'
@@ -340,10 +304,10 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 if os.environ.has_key(key):
                     option = cfgKeys[index]
                     value = os.environ[key]
-                    if os.environ[envCatKey] not in config_new[section].sections:
-                        config_new[section][os.environ[envCatKey]] = {}
-                    config_new[section][os.environ[envCatKey]][option] = value
-            config_new[section][os.environ[envCatKey]]['enabled'] = 1
+                    if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                        CFG_NEW[section][os.environ[envCatKey]] = {}
+                    CFG_NEW[section][os.environ[envCatKey]][option] = value
+            CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
         section = "Extensions"
         envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
@@ -353,7 +317,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                config_new[section][option] = value
+                CFG_NEW[section][option] = value
 
         section = "Transcoder"
         envKeys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'OUTPUTAUDIOBITRATE', 'OUTPUTSUBTITLECODEC']
@@ -363,7 +327,7 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                config_new[section][option] = value
+                CFG_NEW[section][option] = value
 
         section = "WakeOnLan"
         envKeys = ['WAKE', 'HOST', 'PORT', 'MAC']
@@ -373,19 +337,22 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
             if os.environ.has_key(key):
                 option = cfgKeys[index]
                 value = os.environ[key]
-                config_new[section][option] = value
+                CFG_NEW[section][option] = value
 
         # create a backup of our old config
-        if os.path.isfile(self.CONFIG_FILE):
-            cfgbak_name = self.CONFIG_FILE + ".old"
+        if os.path.isfile(nzbtomedia.CONFIG_FILE):
+            cfgbak_name = nzbtomedia.CONFIG_FILE + ".old"
             if os.path.isfile(cfgbak_name):  # remove older backups
                 os.unlink(cfgbak_name)
-            os.rename(self.CONFIG_FILE, cfgbak_name)
+            os.rename(nzbtomedia.CONFIG_FILE, cfgbak_name)
 
         # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(self.CONFIG_FILE, 'wb') as configFile:
-            config_new.write(configFile)
+        with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
+            CFG_NEW.write(configFile)
 
+        # reload config
+        nzbtomedia.CFG = CFG_NEW
+        
 lib.configobj.Section = Section
 lib.configobj.ConfigObj = ConfigObj
 config = ConfigObj

@@ -37,7 +37,7 @@ def extract(filePath, outputDestination):
             chplocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/chp.exe'))
             sevenzipLocation = os.path.normpath(os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
-            Logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
+            logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
         else:
             if not os.path.exists(chplocation):
@@ -72,7 +72,7 @@ def extract(filePath, outputDestination):
                 if call(['which', cmd]): #note, returns 0 if exists, or 1 if doesn't exist.
                     for k, v in EXTRACT_COMMANDS.items():
                         if cmd in v[0]:
-                            Logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
+                            logger.error("EXTRACTOR: %s not found, disabling support for %s", cmd, k)
                             del EXTRACT_COMMANDS[k]
         else:
             Logger.warn("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
@@ -91,22 +91,22 @@ def extract(filePath, outputDestination):
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]
         else:
-            Logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
+            logger.debug("EXTRACTOR: Unknown file type: %s", ext[1])
             return False
 
     # Create outputDestination folder
     create_destination(outputDestination)
 
-    Logger.info("MAIN: Loading config from %s", config.CONFIG_FILE)
+    logger.info("Loading config from %s", nzbtomedia.CONFIG_FILE)
 
-    passwordsfile = config()["passwords"]["PassWordFile"]
+    passwordsfile = nzbtomedia.CFG["passwords"]["PassWordFile"]
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
         passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
     else:
         passwords = []
 
-    Logger.info("Extracting %s to %s", filePath, outputDestination)
-    Logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
+    logger.info("Extracting %s to %s", filePath, outputDestination)
+    logger.debug("Extracting %s %s %s", cmd, filePath, outputDestination)
     pwd = os.getcwd() # Get our Present Working Directory
     os.chdir(outputDestination) # Not all unpack commands accept full paths, so just extract into this directory
     try: # now works same for nt and *nix
@@ -116,9 +116,9 @@ def extract(filePath, outputDestination):
         p = Popen(cmd2) # should extract files fine.
         res = p.wait()
         if (res >= 0 and os.name == 'nt') or res == 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
-            Logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
+            logger.info("EXTRACTOR: Extraction was successful for %s to %s", filePath, outputDestination)
         elif len(passwords) > 0:
-            Logger.info("EXTRACTOR: Attempting to extract with passwords")
+            logger.info("EXTRACTOR: Attempting to extract with passwords")
             pass_success = int(0)
             for password in passwords:
                 if password == "": # if edited in windows or otherwise if blank lines.
@@ -130,14 +130,14 @@ def extract(filePath, outputDestination):
                 p = Popen(cmd2) # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and os.name == 'nt') or res == 0: # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
-                    Logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s", filePath, outputDestination, password)
+                    logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s", filePath, outputDestination, password)
                     pass_success = int(1)
                     break
                 else:
                     continue
             if pass_success == int(0):
-                Logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
+                logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s", filePath, res)
     except:
-        Logger.exception("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
+        logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s", filePath, cmd)
     os.chdir(pwd) # Go back to our Original Working Directory
     return True

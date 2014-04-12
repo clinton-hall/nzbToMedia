@@ -1,17 +1,14 @@
 import time
 import datetime
-import logging
 import socket
 import urllib
 import shutil
-import json
+import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
-from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import getDirectorySize, convert_to_ascii
-
-Logger = logging.getLogger()
+from nzbtomedia import logger
 
 class autoProcessMovie:
 
@@ -24,7 +21,7 @@ class autoProcessMovie:
             imdbid = nzbName[a:b]
 
         if imdbid:
-            Logger.info("Found movie id %s in name", imdbid)
+            logger.postprocess("Found movie id %s in name", imdbid)
             return imdbid
 
         a = dirName.find('.cp(') + 4 #search for .cptt( in dirname
@@ -33,14 +30,14 @@ class autoProcessMovie:
             imdbid = dirName[a:b]
 
         if imdbid:
-            Logger.info("Found movie id %s in directory", imdbid)
+            logger.postprocess("Found movie id %s in directory", imdbid)
             return imdbid
 
         else:
-            Logger.debug("Could not find an imdb id in directory or name")
+            logger.debug("Could not find an imdb id in directory or name")
             return ""
 
-    def get_movie_info(self, baseURL, imdbid, download_id):
+    def get_movie_postprocess(self, baseURL, imdbid, download_id):
 
         movie_id = None
         movie_status = None
@@ -57,12 +54,12 @@ class autoProcessMovie:
         while True:
             url = baseURL + "media.list/?status=active&release_status=snatched&limit_offset=50," + str(offset)
 
-            Logger.debug("Opening URL: %s", url)
+            logger.debug("Opening URL: %s", url)
 
             try:
                 r = requests.get(url)
             except requests.ConnectionError:
-                Logger.exception("Unable to open URL")
+                logger.error("Unable to open URL")
                 break
 
             library2 = []
@@ -77,7 +74,7 @@ class autoProcessMovie:
                 release2 = [item["releases"] for item in result["movies"]]
                 moviestatus2 = [item["status"] for item in result["movies"]]
             except Exception, e:
-                Logger.exception("Unable to parse json data for movies")
+                logger.error("Unable to parse json data for movies")
                 break
 
             movieid.extend(movieid2)
@@ -99,7 +96,7 @@ class autoProcessMovie:
             if imdbid and library[index] == imdbid:
                 movie_id = str(movieid[index])
                 movie_status = str(moviestatus[index])
-                Logger.info("Found movie id %s with status %s in CPS database for movie %s", movie_id, movie_status, imdbid)
+                logger.postprocess("Found movie id %s with status %s in CPS database for movie %s", movie_id, movie_status, imdbid)
                 if not download_id and len(releaselist) == 1:
                     download_id = releaselist[0]["download_info"]["id"]
 
@@ -107,19 +104,19 @@ class autoProcessMovie:
                 movie_id = str(movieid[index])
                 movie_status = str(moviestatus[index])
                 imdbid = str(library[index])
-                Logger.info("Found movie id %s and imdb %s with status %s in CPS database via download_id %s", movie_id, imdbid, movie_status, download_id)
+                logger.postprocess("Found movie id %s and imdb %s with status %s in CPS database via download_id %s", movie_id, imdbid, movie_status, download_id)
 
             else:
                 continue
 
             if len(releaselist) == 1:
                 release_status = releaselist[0]["status"]
-                Logger.debug("Found a single release with download_id: %s. Release status is: %s", download_id, release_status)
+                logger.debug("Found a single release with download_id: %s. Release status is: %s", download_id, release_status)
 
             break
 
         if not movie_id:
-            Logger.exception("Could not parse database results to determine imdbid or movie id")
+            logger.error("Could not parse database results to determine imdbid or movie id")
 
         return movie_id, imdbid, download_id, movie_status, release_status
 
@@ -130,22 +127,22 @@ class autoProcessMovie:
         if not movie_id:
             return movie_status, release_status
 
-        Logger.debug("Looking for status of movie: %s", movie_id)
+        logger.debug("Looking for status of movie: %s", movie_id)
         url = baseURL + "media.get/?id=" + str(movie_id)
-        Logger.debug("Opening URL: %s", url)
+        logger.debug("Opening URL: %s", url)
 
         try:
             r = requests.get(url)
         except requests.ConnectionError:
-            Logger.exception("Unable to open URL")
+            logger.error("Unable to open URL")
             return None, None
 
         try:
             result = r.json()
             movie_status = str(result["media"]["status"])
-            Logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
+            logger.debug("This movie is marked as status %s in CouchPotatoServer", movie_status)
         except:
-            Logger.exception("Could not find a status for this movie")
+            logger.error("Could not find a status for this movie")
 
         try:
             if len(result["media"]["releases"]) == 1 and result["media"]["releases"][0]["status"] == "done":
@@ -154,55 +151,54 @@ class autoProcessMovie:
                 release_status_list = [item["status"] for item in result["media"]["releases"] if "download_info" in item and item["download_info"]["id"].lower() == download_id.lower()]
                 if len(release_status_list) == 1:
                     release_status = release_status_list[0]
-            Logger.debug("This release is marked as status %s in CouchPotatoServer", release_status)
+            logger.debug("This release is marked as status %s in CouchPotatoServer", release_status)
         except: # index out of range/doesn't exist?
-            Logger.exception("Could not find a status for this release")
+            logger.error("Could not find a status for this release")
 
         return movie_status, release_status
 
     def process(self, dirName, nzbName=None, status=0, clientAgent = "manual", download_id = "", inputCategory=None):
         if dirName is None:
-            Logger.error("No directory was given!")
+            logger.error("No directory was given!")
             return 1  # failure
 
         # auto-detect correct section
-        section = config().findsection(inputCategory)
+        section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
-            Logger.error(
-                "MAIN: We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+            logger.error(
+                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
-        socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT))  #initialize socket timeout.
-        Logger.info("Loading config from %s", config.CONFIG_FILE)
+        logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
 
         status = int(status)
 
-        host = config()[section][inputCategory]["host"]
-        port = config()[section][inputCategory]["port"]
-        apikey = config()[section][inputCategory]["apikey"]
-        delay = float(config()[section][inputCategory]["delay"])
-        method = config()[section][inputCategory]["method"]
-        delete_failed = int(config()[section][inputCategory]["delete_failed"])
-        wait_for = int(config()[section][inputCategory]["wait_for"])
+        host = nzbtomedia.CFG[section][inputCategory]["host"]
+        port = nzbtomedia.CFG[section][inputCategory]["port"]
+        apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
+        delay = float(nzbtomedia.CFG[section][inputCategory]["delay"])
+        method = nzbtomedia.CFG[section][inputCategory]["method"]
+        delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
+        wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
 
         try:
-            TimePerGiB = int(config()[section][inputCategory]["TimePerGiB"])
+            TimePerGiB = int(nzbtomedia.CFG[section][inputCategory]["TimePerGiB"])
         except:
             TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
         try:
-            ssl = int(config()[section][inputCategory]["ssl"])
+            ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
             ssl = 0
         try:
-            web_root = config()[section][inputCategory]["web_root"]
+            web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
         try:
-            transcode = int(config()["Transcoder"]["transcode"])
+            transcode = int(nzbtomedia.CFG["Transcoder"]["transcode"])
         except:
             transcode = 0
         try:
-            remoteCPS = int(config()[section][inputCategory]["remoteCPS"])
+            remoteCPS = int(nzbtomedia.CFG[section][inputCategory]["remoteCPS"])
         except:
             remoteCPS = 0
 
@@ -221,7 +217,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
 
-        movie_id, imdbid, download_id, initial_status, initial_release_status = self.get_movie_info(baseURL, imdbid, download_id) # get the CPS database movie id for this movie.
+        movie_id, imdbid, download_id, initial_status, initial_release_status = self.get_movie_postprocess(baseURL, imdbid, download_id) # get the CPS database movie id for this movie.
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
@@ -230,9 +226,9 @@ class autoProcessMovie:
             if transcode == 1:
                 result = Transcoder().Transcode_directory(dirName)
                 if result == 0:
-                    Logger.debug("Transcoding succeeded for files in %s", dirName)
+                    logger.debug("Transcoding succeeded for files in %s", dirName)
                 else:
-                    Logger.warning("Transcoding failed for files in %s", dirName)
+                    logger.warning("Transcoding failed for files in %s", dirName)
 
             if method == "manage":
                 command = "manage.update"
@@ -251,55 +247,55 @@ class autoProcessMovie:
 
             url = baseURL + command
 
-            Logger.info("Waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
+            logger.postprocess("Waiting for %s seconds to allow CPS to process newly extracted files", str(delay))
 
             time.sleep(delay)
 
-            Logger.debug("Opening URL: %s", url)
+            logger.debug("Opening URL: %s", url)
 
             try:
                 r = requests.get(url)
             except requests.ConnectionError:
-                Logger.exception("Unable to open URL")
+                logger.error("Unable to open URL")
                 return 1 # failure
 
             result = r.json()
-            Logger.info("CouchPotatoServer returned %s", result)
+            logger.postprocess("CouchPotatoServer returned %s", result)
             if result['success']:
-                Logger.info("%s scan started on CouchPotatoServer for %s", method, nzbName)
+                logger.postprocess("%s scan started on CouchPotatoServer for %s", method, nzbName)
             else:
-                Logger.error("%s scan has NOT started on CouchPotatoServer for %s. Exiting", method, nzbName)
+                logger.error("%s scan has NOT started on CouchPotatoServer for %s. Exiting", method, nzbName)
                 return 1 # failure
 
         else:
-            Logger.info("Download of %s has failed.", nzbName)
-            Logger.info("Trying to re-cue the next highest ranked release")
+            logger.postprocess("Download of %s has failed.", nzbName)
+            logger.postprocess("Trying to re-cue the next highest ranked release")
 
             if not movie_id:
-                Logger.warning("Cound not find a movie in the database for release %s", nzbName)
-                Logger.warning("Please manually ignore this release and refresh the wanted movie")
-                Logger.error("Exiting autoProcessMovie script")
+                logger.warning("Cound not find a movie in the database for release %s", nzbName)
+                logger.warning("Please manually ignore this release and refresh the wanted movie")
+                logger.error("Exiting autoProcessMovie script")
                 return 1 # failure
 
             url = baseURL + "movie.searcher.try_next/?media_id=" + movie_id
 
-            Logger.debug("Opening URL: %s", url)
+            logger.debug("Opening URL: %s", url)
 
             try:
                 r = requests.get(url, stream=True)
             except requests.ConnectionError:
-                Logger.exception("Unable to open URL")
+                logger.error("Unable to open URL")
                 return 1  # failure
 
             for line in r.iter_lines():
-                if line: Logger.info("%s", line)
-            Logger.info("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
+                if line: logger.postprocess("%s", line)
+            logger.postprocess("Movie %s set to try the next best release on CouchPotatoServer", movie_id)
             if delete_failed and not dirName in ['sys.argv[0]','/','']:
-                Logger.info("Deleting failed files and folder %s", dirName)
+                logger.postprocess("Deleting failed files and folder %s", dirName)
                 try:
                     shutil.rmtree(dirName)
                 except:
-                    Logger.exception("Unable to delete folder %s", dirName)
+                    logger.error("Unable to delete folder %s", dirName)
             return 0 # success
 
         if clientAgent == "manual":
@@ -311,21 +307,19 @@ class autoProcessMovie:
                 return 0  # success
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
-        socket.setdefaulttimeout(int(config.NZBTOMEDIA_TIMEOUT)) #initialize socket timeout.
-
         release_status = None
         start = datetime.datetime.now()  # set time for timeout
         pause_for = int(wait_for) * 10 # keep this so we only ever have 6 complete loops. This may not be necessary now?
         while (datetime.datetime.now() - start) < datetime.timedelta(minutes=wait_for):  # only wait 2 (default) minutes, then return.
             movie_status, release_status = self.get_status(baseURL, movie_id, download_id) # get the current status fo this movie.
             if movie_status and initial_status and movie_status != initial_status:  # Something has changed. CPS must have processed this movie.
-                Logger.info("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
+                logger.postprocess("SUCCESS: This movie is now marked as status %s in CouchPotatoServer", movie_status)
                 return 0 # success
             time.sleep(pause_for) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
         else:
             if release_status and initial_release_status and release_status != initial_release_status:  # Something has changed. CPS must have processed this movie.
-                Logger.info("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
+                logger.postprocess("SUCCESS: This release is now marked as status %s in CouchPotatoServer", release_status)
                 return 0 # success
             else: # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
-                Logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
+                logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
                 return 1 # failure
