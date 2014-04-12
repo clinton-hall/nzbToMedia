@@ -124,7 +124,7 @@ def main(inputDirectory, inputName, inputCategory, inputHash, inputID):
                 continue
 
             if fileExtension in nzbtomedia.COMPRESSEDCONTAINER:
-                if (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
+                if not (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
                     # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
                     if re.search(r'\d+', os.path.splitext(fileName)[1]) and os.path.dirname(filePath) in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
                         part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
