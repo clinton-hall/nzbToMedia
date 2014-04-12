@@ -38,7 +38,7 @@ CONFIG_SPEC_FILE = ''
 CONFIG_MOVIE_FILE = ''
 CONFIG_TV_FILE = ''
 SYS_ENCODING = ''
-SYSV_ARGS = ''
+SYS_ARGV = ''
 
 # version constants
 AUTO_UPDATE = None
@@ -89,7 +89,7 @@ def initialize():
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SICKBEARD_TORRENT, SICKBEARD_FAILED, \
         PROGRAM_DIR, CFG, CFG_LOGGING, CONFIG_FILE, CONFIG_MOVIE_FILE, CONFIG_SPEC_FILE, LOG_DIR, NZBTOMEDIA_BRANCH, \
-        CONFIG_TV_FILE, LOG_FILE, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYSV_ARGS, \
+        CONFIG_TV_FILE, LOG_FILE, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, \
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, CLIENTAGENT, USELINK, OUTPUTDIRECTORY, NOFLATTEN, \
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
@@ -109,7 +109,7 @@ def initialize():
     CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.spec")
     CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
     CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
-    SYSV_ARGS = sys.argv[1:]
+    SYS_ARGV = sys.argv[1:]
 
     if not nzbToMediaUtil.makeDir(LOG_DIR):
         logger.error("!!! No log folder, logging to screen only!")
@@ -135,13 +135,13 @@ def initialize():
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
     if versionCheck.CheckVersion().check_for_new_version():
         if AUTO_UPDATE == 1:
-            logger.MESSAGE("Auto-Updating nzbToMedia, Please wait ...")
+            logger.info("Auto-Updating nzbToMedia, Please wait ...")
             updated = versionCheck.CheckVersion().update()
             if updated:
                 # restart nzbToMedia
                 restart()
             else:
-                logger.ERROR("Update wasn't successful, not restarting. Check your log for more information.")
+                logger.error("Update wasn't successful, not restarting. Check your log for more information.")
 
     WakeUp()
 
@@ -191,7 +191,7 @@ def restart():
         popen_list = [sys.executable, PROGRAM_DIR]
 
     if popen_list:
-        popen_list += SYSV_ARGS
+        popen_list += SYS_ARGV
         logger.log(u"Restarting nzbToMedia with " + str(popen_list))
         logger.close()
         subprocess.Popen(popen_list, cwd=os.getcwd())
