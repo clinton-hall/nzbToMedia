@@ -337,7 +337,7 @@ def main():
     nzbtomedia.initialize()
 
     # debug command line options
-    logger.debug("Options passed into nzbToMedia: " + sys.argv)
+    logger.debug("Options passed into nzbToMedia: " + str(sys.argv))
 
     # Post-Processing Result
     result = 0
