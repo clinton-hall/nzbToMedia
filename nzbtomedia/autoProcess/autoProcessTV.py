@@ -25,6 +25,10 @@ class autoProcessTV:
                 "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
+        logger.postprocess("#########################################################")
+        logger.postprocess("## ..::[%s]::.. :: CATEGORY:[%s]", section, inputCategory)
+        logger.postprocess("#########################################################")
+
         # auto-detect correct fork
         fork, fork_params = autoFork(inputCategory)
 

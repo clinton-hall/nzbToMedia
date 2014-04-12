@@ -17,6 +17,10 @@ class autoProcessGames:
                 "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
+        logger.postprocess("#########################################################")
+        logger.postprocess("## ..::[%s]::.. :: CATEGORY:[%s]", section, inputCategory)
+        logger.postprocess("#########################################################")
+
         status = int(status)
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
