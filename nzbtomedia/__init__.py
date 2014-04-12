@@ -104,6 +104,7 @@ def initialize():
     sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
     # init preliminaries
+    SYS_ENCODING = None
     SYS_ARGV = sys.argv[1:]
     APP_FILENAME = sys.argv[0]
     PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
@@ -155,7 +156,6 @@ def initialize():
     CFG = config()
 
     # check for newer version
-    restart()
     AUTO_UPDATE = CFG['General']['auto_update']
     versionCheck.CheckVersion().find_installed_version()
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
