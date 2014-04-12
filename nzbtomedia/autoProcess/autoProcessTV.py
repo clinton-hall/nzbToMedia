@@ -28,8 +28,6 @@ class autoProcessTV:
         # auto-detect correct fork
         fork, fork_params = autoFork(inputCategory)
 
-        logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
-
         status = int(failed)
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]

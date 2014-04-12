@@ -52,7 +52,7 @@ class autoProcessMovie:
             return movie_id, imdbid, download_id, movie_status, release_status
 
         while True:
-            url = baseURL + "media.list/?status=active&release_status=snatched&limit_offset=50," + str(offset)
+            url = baseURL + "media.list/?limit_offset=50," + str(offset)
 
             logger.debug("Opening URL: %s", url)
 
@@ -90,13 +90,16 @@ class autoProcessMovie:
             releaselist1 = [item for item in release[index] if item["status"] == "snatched" and "download_info" in item]
             if download_id:
                 releaselist = [item for item in releaselist1 if item["download_info"]["id"].lower() == download_id.lower()]
-            else:
+            elif len(releaselist1) > 0:
                 releaselist = releaselist1
+            else:
+                releaselist = [item for item in release[index] if item["status"] == "downloaded" and "download_info" in item]
 
             if imdbid and library[index] == imdbid:
                 movie_id = str(movieid[index])
                 movie_status = str(moviestatus[index])
                 logger.postprocess("Found movie id %s with status %s in CPS database for movie %s", movie_id, movie_status, imdbid)
+
                 if not download_id and len(releaselist) == 1:
                     download_id = releaselist[0]["download_info"]["id"]
 
@@ -169,8 +172,6 @@ class autoProcessMovie:
                 "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
-        logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
-
         status = int(status)
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
@@ -218,6 +219,10 @@ class autoProcessMovie:
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey + "/"
 
         movie_id, imdbid, download_id, initial_status, initial_release_status = self.get_movie_postprocess(baseURL, imdbid, download_id) # get the CPS database movie id for this movie.
+
+        if initial_release_status == "downloaded":
+            logger.postprocess("This movie has already been post-processed by CouchPotatoServer, skipping ...")
+            return 0
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)

@@ -20,8 +20,6 @@ class autoProcessMusic:
                 "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
             return 1
 
-        logger.postprocess("Loading config from %s", nzbtomedia.CONFIG_FILE)
-
         status = int(status)
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]

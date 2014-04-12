@@ -214,20 +214,20 @@ elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
     result = autoProcessTV().processEpisode(sys.argv[1], sys.argv[2], sys.argv[7], clientAgent, sys.argv[5])
 else:
     result = 0
+    section = "SickBeard"
 
     logger.warning("Invalid number of arguments received from client.")
-    for section, subsection in nzbtomedia.SUBSECTIONS['SickBeard'].items():
-        for category in subsection:
-            if nzbtomedia.CFG[section][category].isenabled():
-                dirNames = get_dirnames(section, category)
-                for dirName in dirNames:
-                    logger.postprocess("nzbToSickBeard running %s:%s as a manual run on folder %s ...", section, category, dirName)
-                    results = autoProcessTV().processEpisode(dirName, os.path.basename(dirName), 0, inputCategory=category)
-                    if results != 0:
-                        result = results
-                        logger.error("A problem was reported when trying to manually run %s:%s on folder %s ...", section, category, dirName)
-            else:
-                logger.postprocess("nzbToSickBeard %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
+    for subsection in nzbtomedia.CFG[section]:
+        if nzbtomedia.CFG[section][subsection].isenabled():
+            dirNames = get_dirnames(section, subsection)
+            for dirName in dirNames:
+                logger.postprocess("nzbToSickBeard running %s:%s as a manual run on folder %s ...", section, subsection, dirName)
+                results = autoProcessTV().processEpisode(dirName, os.path.basename(dirName), 0, inputCategory=subsection)
+                if results != 0:
+                    result = results
+                    logger.error("A problem was reported when trying to manually run %s:%s on folder %s ...", section, subsection, dirName)
+        else:
+            logger.postprocess("nzbToSickBeard %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, subsection)
 
 if result == 0:
     logger.postprocess("The autoProcessTV script completed successfully.")
