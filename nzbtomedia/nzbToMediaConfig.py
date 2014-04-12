@@ -184,21 +184,23 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 process_section(section, subsection)
 
         # create a backup of our old config
-        if os.path.isfile(nzbtomedia.CONFIG_FILE):
-            cfgbak_name = nzbtomedia.CONFIG_FILE + ".old"
-            if os.path.isfile(cfgbak_name):  # remove older backups
-                os.unlink(cfgbak_name)
-            os.rename(nzbtomedia.CONFIG_FILE, cfgbak_name)
+        CFG_OLD.filename = nzbtomedia.CONFIG_FILE + ".old"
+        CFG_OLD.write()
+        CFG_OLD.clear()
 
-        # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
-            CFG_NEW.write(configFile)
+        # write our new config to autoProcessMedia.cfg
+        CFG_NEW.filename = nzbtomedia.CONFIG_FILE
+        CFG_NEW.write()
+        CFG_NEW.clear()
 
         return True
 
     @staticmethod
     def addnzbget():
-        CFG_NEW = nzbtomedia.CFG
+        # load configs into memory
+        CFG_OLD = config(nzbtomedia.CONFIG_FILE)
+        CFG_NEW = CFG_OLD
+
         section = "CouchPotato"
         envCatKey = 'NZBPO_CPSCATEGORY'
         envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
@@ -320,15 +322,15 @@ class ConfigObj(lib.configobj.ConfigObj, Section):
                 CFG_NEW[section][option] = value
 
         # create a backup of our old config
-        if os.path.isfile(nzbtomedia.CONFIG_FILE):
-            cfgbak_name = nzbtomedia.CONFIG_FILE + ".old"
-            if os.path.isfile(cfgbak_name):  # remove older backups
-                os.unlink(cfgbak_name)
-            os.rename(nzbtomedia.CONFIG_FILE, cfgbak_name)
+        CFG_OLD.filename = nzbtomedia.CONFIG_FILE + ".old"
+        CFG_OLD.write()
+        CFG_OLD.clear()
 
-        # writing our configuration file to 'autoProcessMedia.cfg'
-        with open(nzbtomedia.CONFIG_FILE, 'wb') as configFile:
-            CFG_NEW.write(configFile)
+        # write our new config to autoProcessMedia.cfg
+        CFG_NEW.filename = nzbtomedia.CONFIG_FILE
+        CFG_NEW.write()
+        CFG_NEW.clear()
+
 
 lib.configobj.Section = Section
 lib.configobj.ConfigObj = ConfigObj
