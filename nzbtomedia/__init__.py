@@ -1,3 +1,4 @@
+import locale
 import os
 import subprocess
 import sys
@@ -30,6 +31,7 @@ NZBGET_POSTPROCESS_NONE = 95
 # config constants
 CFG = None
 CFG_LOGGING = None
+APP_FILENAME = ''
 PROGRAM_DIR = ''
 LOG_DIR = ''
 LOG_FILE = ''
@@ -37,8 +39,8 @@ CONFIG_FILE = ''
 CONFIG_SPEC_FILE = ''
 CONFIG_MOVIE_FILE = ''
 CONFIG_TV_FILE = ''
-SYS_ENCODING = ''
-SYS_ARGV = ''
+SYS_ENCODING = None
+SYS_ARGV = None
 
 # version constants
 AUTO_UPDATE = None
@@ -93,7 +95,7 @@ def initialize():
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, CLIENTAGENT, USELINK, OUTPUTDIRECTORY, NOFLATTEN, \
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
-        SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, GIT_PATH, GIT_USER, GIT_BRANCH, AUTO_UPDATE
+        SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, GIT_PATH, GIT_USER, GIT_BRANCH, AUTO_UPDATE, APP_FILENAME
 
     if __INITIALIZED__:
         return False
@@ -102,6 +104,8 @@ def initialize():
     sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
     # init preliminaries
+    SYS_ARGV = sys.argv[1:]
+    APP_FILENAME = sys.argv[0]
     PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
     LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
     LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
@@ -109,7 +113,28 @@ def initialize():
     CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.spec")
     CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
     CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
-    SYS_ARGV = sys.argv[1:]
+
+    try:
+        locale.setlocale(locale.LC_ALL, "")
+        SYS_ENCODING = locale.getpreferredencoding()
+    except (locale.Error, IOError):
+        pass
+
+    # For OSes that are poorly configured I'll just randomly force UTF-8
+    if not SYS_ENCODING or SYS_ENCODING in ('ANSI_X3.4-1968', 'US-ASCII', 'ASCII'):
+        SYS_ENCODING = 'UTF-8'
+
+    if not hasattr(sys, "setdefaultencoding"):
+        reload(sys)
+
+    try:
+        # pylint: disable=E1101
+        # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
+        sys.setdefaultencoding(SYS_ENCODING)
+    except:
+        print 'Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
+        print 'or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.'
+        sys.exit(1)
 
     if not nzbToMediaUtil.makeDir(LOG_DIR):
         logger.error("!!! No log folder, logging to screen only!")
@@ -130,11 +155,12 @@ def initialize():
     CFG = config()
 
     # check for newer version
+    restart()
     AUTO_UPDATE = CFG['General']['auto_update']
     versionCheck.CheckVersion().find_installed_version()
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
     if versionCheck.CheckVersion().check_for_new_version():
-        if AUTO_UPDATE == 1:
+        if int(AUTO_UPDATE) == 1:
             logger.info("Auto-Updating nzbToMedia, Please wait ...")
             updated = versionCheck.CheckVersion().update()
             if updated:
@@ -188,7 +214,7 @@ def restart():
     popen_list = []
 
     if install_type in ('git', 'source'):
-        popen_list = [sys.executable, PROGRAM_DIR]
+        popen_list = [sys.executable, APP_FILENAME]
 
     if popen_list:
         popen_list += SYS_ARGV
