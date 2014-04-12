@@ -336,6 +336,10 @@ def main():
     # Initialize the config
     nzbtomedia.initialize()
 
+    logger.postprocess("#########################################################")
+    logger.postprocess("## ..::[%s]::.. :: STARTING", os.path.splitext(os.path.basename(os.path.normpath(os.path.abspath(__file__))))[0])
+    logger.postprocess("#########################################################")
+
     # debug command line options
     logger.debug("Options passed into nzbToMedia: " + str(sys.argv))
 
