@@ -87,8 +87,8 @@ class CheckVersion():
 class UpdateManager():
     def get_github_repo_user(self):
         repo_user = 'clinton-hall'
-        if nzbtomedia.CFG['General']['git_user']:
-            repo_user =  nzbtomedia.CFG['General']['git_user']
+        if nzbtomedia.GIT_USER:
+            repo_user =  nzbtomedia.GIT_USER
         return repo_user
 
     def get_github_repo(self):
@@ -96,8 +96,8 @@ class UpdateManager():
 
     def get_github_branch(self):
         git_branch = 'master'
-        if nzbtomedia.CFG['General']['git_branch']:
-            git_branch =  nzbtomedia.CFG['General']['git_branch']
+        if nzbtomedia.GIT_BRANCH:
+            git_branch =  nzbtomedia.GIT_BRANCH
         return git_branch
 
 class GitUpdateManager(UpdateManager):
