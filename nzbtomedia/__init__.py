@@ -130,16 +130,18 @@ def initialize():
     CFG = config()
 
     # check for newer version
+    AUTO_UPDATE = CFG['General']['auto_update']
     versionCheck.CheckVersion().find_installed_version()
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
-    if CFG['General']['auto_update'] == 1 and versionCheck.CheckVersion().check_for_new_version():
-        logger.MESSAGE("Auto-Updating nzbToMedia, Please wait ...")
-        updated = versionCheck.CheckVersion().update()
-        if updated:
-            # restart nzbToMedia
-            restart()
-        else:
-            logger.ERROR("Update wasn't successful, not restarting. Check your log for more information.")
+    if versionCheck.CheckVersion().check_for_new_version():
+        if AUTO_UPDATE == 1:
+            logger.MESSAGE("Auto-Updating nzbToMedia, Please wait ...")
+            updated = versionCheck.CheckVersion().update()
+            if updated:
+                # restart nzbToMedia
+                restart()
+            else:
+                logger.ERROR("Update wasn't successful, not restarting. Check your log for more information.")
 
     WakeUp()
 
