@@ -58,6 +58,7 @@ class autoProcessMovie:
         media_id = None
         release_status = None
         matched_release = None
+        downloader = None
 
         while(True):
             # find imdbid in nzbName
@@ -104,9 +105,10 @@ class autoProcessMovie:
                 media_id = matched_release['media_id']
                 release_status = matched_release['status']
                 download_id = matched_release['download_info']['id']
+                downloader = matched_release['download_info']['downloader']
             except:pass
 
-        return media_id, download_id, release_id, release_status
+        return media_id, download_id, downloader, release_id, release_status
 
     def get_status(self, baseURL, release_id):
         release_status = None
@@ -180,7 +182,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
+        media_id, download_id, downloader, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
 
         if release_status is None:
             logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
@@ -214,7 +216,8 @@ class autoProcessMovie:
 
             params = {}
             if download_id:
-                params['downloader'] = clientAgent
+                if downloader:
+                    params['downloader'] = downloader or clientAgent
                 params['download_id'] = download_id
 
             if remote_path:
