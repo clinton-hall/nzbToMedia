@@ -88,9 +88,14 @@ class autoProcessMusic:
             url = baseURL
 
             release_status = self.get_status(url, apikey, dirName)
+
+            if release_status is None:
+                logger.error("Could not find a current status for %s on HeadPhones", nzbName)
+                return 1
+
             if release_status != "Unprocessed":
                 logger.error("%s is marked with a status of %s on HeadPhones, skipping ...", nzbName, release_status)
-                return 1
+                return 0
 
             logger.debug("Opening URL: %s", url)
 

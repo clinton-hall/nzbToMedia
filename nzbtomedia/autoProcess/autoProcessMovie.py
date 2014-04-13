@@ -172,6 +172,10 @@ class autoProcessMovie:
 
         media_id, download_id, release_id, release_status = self.find_media_id(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
 
+        if release_status is None:
+            logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
+            return 1
+
         # failed to get a download id
         if release_status != "snatched":
             logger.postprocess("%s has is marked with a status of [%s] by CouchPotatoServer, skipping ...", nzbName, release_status.upper())
