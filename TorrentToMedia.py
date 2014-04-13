@@ -16,10 +16,7 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, cleanup_directories
-from nzbtomedia.synchronousdeluge.client import DelugeClient
-from nzbtomedia.utorrent.client import UTorrentClient
-from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
+    remove_read_only, cleanup_directories, create_torrent_class
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID):
@@ -37,7 +34,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
 
     logger.debug("Determined Directory: %s | Name: %s | Category: %s", inputDirectory, inputName, inputCategory)
 
-    TorrentClass = create_torrent_class(nzbtomedia.CLIENTAGENT, inputHash)
+    TorrentClass = create_torrent_class(nzbtomedia.CLIENTAGENT)
     pause_torrent(nzbtomedia.CLIENTAGENT, TorrentClass, inputHash, inputID, inputName)
 
     processCategories = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
@@ -210,37 +207,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
     resume_torrent(nzbtomedia.CLIENTAGENT, TorrentClass, inputHash, inputID, result, inputName)
     cleanup_directories(inputCategory, processCategories, result, outputDestination)
     return result
-
-def create_torrent_class(clientAgent, inputHash):
-    # Hardlink solution for Torrents
-    TorrentClass = ""
-    if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
-        if clientAgent == 'utorrent':
-            try:
-                logger.debug("Connecting to %s: %s", clientAgent, nzbtomedia.UTORRENTWEBUI)
-                TorrentClass = UTorrentClient(nzbtomedia.UTORRENTWEBUI, nzbtomedia.UTORRENTUSR, nzbtomedia.UTORRENTPWD)
-            except:
-                logger.error("Failed to connect to uTorrent")
-
-        if clientAgent == 'transmission':
-            try:
-                logger.debug("Connecting to %s: http://%s:%s", clientAgent, nzbtomedia.TRANSMISSIONHOST,
-                             nzbtomedia.TRANSMISSIONPORT)
-                TorrentClass = TransmissionClient(nzbtomedia.TRANSMISSIONHOST, nzbtomedia.TRANSMISSIONPORT, nzbtomedia.TRANSMISSIONUSR,
-                                                  nzbtomedia.TRANSMISSIONPWD)
-            except:
-                logger.error("Failed to connect to Transmission")
-
-        if clientAgent == 'deluge':
-            try:
-                logger.debug("Connecting to %s: http://%s:%s", clientAgent, nzbtomedia.DELUGEHOST,
-                             nzbtomedia.DELUGEPORT)
-                TorrentClass = DelugeClient()
-                TorrentClass.connect(host =nzbtomedia.DELUGEHOST, port =nzbtomedia.DELUGEPORT, username =nzbtomedia.DELUGEUSR, password =nzbtomedia.DELUGEPWD)
-            except:
-                logger.error("Failed to connect to deluge")
-
-    return TorrentClass
 
 def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName):
     # if we are using links with Torrents it means we need to pause it in order to access the files

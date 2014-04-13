@@ -10,6 +10,10 @@ import nzbtomedia
 
 from nzbtomedia.linktastic import linktastic
 from nzbtomedia import logger
+from nzbtomedia.synchronousdeluge.client import DelugeClient
+from nzbtomedia.utorrent.client import UTorrentClient
+from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
+
 
 def getDirectorySize(directory):
     dir_size = 0
@@ -443,3 +447,34 @@ def cleanup_directories(inputCategory, processCategories, result, directory):
             logger.info("Directory %s still contains %s media and/or meta files. This directory will not be removed.", directory, num_files_new)
             for item in file_list:
                 logger.debug("media/meta file found: %s", item)
+
+def create_torrent_class(clientAgent):
+    # Hardlink solution for Torrents
+    TorrentClass = ""
+    if clientAgent in ['utorrent', 'transmission', 'deluge']:
+        if clientAgent == 'utorrent':
+            try:
+                logger.debug("Connecting to %s: %s", clientAgent, nzbtomedia.UTORRENTWEBUI)
+                TorrentClass = UTorrentClient(nzbtomedia.UTORRENTWEBUI, nzbtomedia.UTORRENTUSR, nzbtomedia.UTORRENTPWD)
+            except:
+                logger.error("Failed to connect to uTorrent")
+
+        if clientAgent == 'transmission':
+            try:
+                logger.debug("Connecting to %s: http://%s:%s", clientAgent, nzbtomedia.TRANSMISSIONHOST,
+                             nzbtomedia.TRANSMISSIONPORT)
+                TorrentClass = TransmissionClient(nzbtomedia.TRANSMISSIONHOST, nzbtomedia.TRANSMISSIONPORT, nzbtomedia.TRANSMISSIONUSR,
+                                                  nzbtomedia.TRANSMISSIONPWD)
+            except:
+                logger.error("Failed to connect to Transmission")
+
+        if clientAgent == 'deluge':
+            try:
+                logger.debug("Connecting to %s: http://%s:%s", clientAgent, nzbtomedia.DELUGEHOST,
+                             nzbtomedia.DELUGEPORT)
+                TorrentClass = DelugeClient()
+                TorrentClass.connect(host =nzbtomedia.DELUGEHOST, port =nzbtomedia.DELUGEPORT, username =nzbtomedia.DELUGEUSR, password =nzbtomedia.DELUGEPWD)
+            except:
+                logger.error("Failed to connect to deluge")
+
+    return TorrentClass

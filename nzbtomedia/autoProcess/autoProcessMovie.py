@@ -10,19 +10,54 @@ import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, create_torrent_class
 from nzbtomedia import logger
+from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 
 class autoProcessMovie:
     def find_release_info(self, baseURL, download_id, dirName, nzbName):
+        def search_torrents(releases, nzbName):
+            for release in releases:
+                try:
+                    if release['status'] != 'snatched':
+                        continue
+
+                    if download_id:
+                        if download_id == release['download_info']['id']:
+                            return release
+
+                    if imdbid:
+                        if imdbid == release['download_info']['id']:
+                            return release
+
+                    downloader = release['download_info']['downloader'].lower()
+                    tor_client = create_torrent_class(downloader)
+
+                    torrents = []
+                    if downloader == "transmission":
+                        torrents = tor_client.get_torrents()
+                    elif downloader == "deluge":
+                        torrents = tor_client.get_torrents()
+                    elif downloader == "utorrent":
+                        torrents = tor_client.get_torrents()
+
+                    for torrent in torrents:
+                        tor_name = torrent.name
+                        tor_hash = torrent.hashString
+
+                        if download_id:
+                            if download_id == tor_hash:
+                                return release
+
+                        if nzbName == tor_name:
+                            return release
+                except:pass
 
         imdbid = None
-        movie_title = None
         release_id = None
         media_id = None
         release_status = None
-        movies = {}
-        releases_found = {}
+        matched_release = None
 
         while(True):
             # find imdbid in nzbName
@@ -42,26 +77,9 @@ class autoProcessMovie:
                     imdbid = dirName[a:b]
                     logger.postprocess("Found movie id %s in directory", imdbid)
                     break
-
-            # regex match movie title from dirName or nzbName
-            movie_title_results = []
-            movie_title_regex = '(.*?)[ ._-]*([0-9]+)[ ._-](.*?)[ ._-]([^.]+)$'
-            if dirName:
-                movie_title_results.append(re.search(movie_title_regex, os.path.basename(dirName)))
-            if nzbName:
-                movie_title_results.append(re.search(movie_title_regex, nzbName))
-
-            movie_title = [x.group(1) for x in movie_title_results if x]
             break
 
-        if imdbid:
-            section = 'media'
-            url = baseURL + "/media.get/?id=" + imdbid
-        else:
-            section = 'movies'
-            url = baseURL + "/media.list/?status=done&release_status=snatched,downloaded"
-            if movie_title:
-                url = baseURL + "/media.list/?search=" + movie_title[0] + "&status=done&release_status=snatched,downloaded"
+        url = baseURL + "/media.list/?release_status=snatched"
 
         logger.debug("Opening URL: %s", url)
 
@@ -72,27 +90,20 @@ class autoProcessMovie:
             return
 
         results = r.json()
-        for i, movie in enumerate(results[section]):
-            movies[i] = movie
+        for movie in results['movies']:
+            if imdbid:
+                if imdbid != movie['info']['imdb']:
+                    continue
+            matched_release = search_torrents(movie['releases'], nzbName)
+            if matched_release:
+                break
 
-        if len(movies) > 0:
+        if matched_release:
             try:
-                for i, movie in enumerate(movies.values()):
-                    for release in movie['releases']:
-                        if not release['status'] in ['snatched', 'downloaded']:
-                            continue
-                        if download_id and 'download_id' in release['info'].keys():
-                            if download_id != release['info']['download_id']:
-                                continue
-                        releases_found.update({i:release})
-            except:pass
-
-        if len(releases_found) == 1:
-            try:
-                release_id = releases_found[0]['_id']
-                media_id = releases_found[0]['media_id']
-                release_status = releases_found[0]['status']
-                download_id = releases_found[0]['info']['download_id']
+                release_id = matched_release['_id']
+                media_id = matched_release['media_id']
+                release_status = matched_release['status']
+                download_id = matched_release['download_info']['id']
             except:pass
 
         return media_id, download_id, release_id, release_status
@@ -102,11 +113,11 @@ class autoProcessMovie:
 
         logger.debug("Attempting to get current status for release:%s", release_id)
 
-        url = baseURL + "/media.get/?id=" + str(release_id)
+        url = baseURL + "/media.get"
         logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url)
+            r = requests.get(url, params={'id':release_id})
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return None, None
