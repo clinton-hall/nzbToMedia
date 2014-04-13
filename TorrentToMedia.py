@@ -201,7 +201,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
         logger.postprocess("Calling Gamez:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessGames().process(outputDestination, inputName, status, nzbtomedia.CLIENTAGENT, inputCategory)
 
-    if result == 1:
+    if result == 1 and not nzbtomedia.CLIENTAGENT == 'manual':
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
 
     resume_torrent(nzbtomedia.CLIENTAGENT, TorrentClass, inputHash, inputID, result, inputName)
@@ -338,6 +338,7 @@ def main():
 
         # check if this is a manual run
     if inputDirectory is None:
+        nzbtomedia.CLIENTAGENT = 'manual'
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:

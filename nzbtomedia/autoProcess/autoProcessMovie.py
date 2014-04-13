@@ -268,7 +268,7 @@ class autoProcessMovie:
                 delete(dirName)
             return 0 # success
 
-        if not release_id:
+        if not download_id or not release_id:
             if clientAgent in ['utorrent', 'transmission', 'deluge'] :
                 return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
             else:
