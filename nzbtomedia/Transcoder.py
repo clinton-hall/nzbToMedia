@@ -27,12 +27,6 @@ class Transcoder:
                 ffmpeg = 'ffmpeg'
             useNiceness = True
 
-        logger.info("Loading config from %s", nzbtomedia.CONFIG_FILE)
-
-        if not nzbtomedia.CFG:
-            logger.error("You need an autoProcessMedia.cfg file - did you rename and edit the .sample?")
-            return 1 # failure
-
         mediaContainer = (nzbtomedia.CFG["Transcoder"]["duplicate"])
         duplicate = int(nzbtomedia.CFG["Transcoder"]["duplicate"])
         ignoreExtensions = (nzbtomedia.CFG["Transcoder"]["ignoreExtensions"])

@@ -93,8 +93,6 @@ def extract(filePath, outputDestination):
     # Create outputDestination folder
     create_destination(outputDestination)
 
-    logger.info("Loading config from %s", nzbtomedia.CONFIG_FILE)
-
     passwordsfile = nzbtomedia.CFG["passwords"]["PassWordFile"]
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
         passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
