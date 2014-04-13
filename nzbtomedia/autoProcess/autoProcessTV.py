@@ -1,7 +1,6 @@
 import copy
 import json
 import os
-import socket
 import urllib
 import time
 import nzbtomedia
@@ -9,7 +8,7 @@ from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, getDirectorySize, delete
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete
 from nzbtomedia import logger
 
 class autoProcessTV:
@@ -43,7 +42,6 @@ class autoProcessTV:
             apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
         except:
             apikey = ""
-
         try:
             ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
@@ -52,10 +50,6 @@ class autoProcessTV:
             web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
-        try:
-            watch_dir = nzbtomedia.CFG[section][inputCategory]["watch_dir"]
-        except:
-            watch_dir = ""
         try:
             transcode = int(nzbtomedia.CFG["Transcoder"]["transcode"])
         except:
@@ -68,10 +62,6 @@ class autoProcessTV:
             delay = float(nzbtomedia.CFG[section][inputCategory]["delay"])
         except:
             delay = 0
-        try:
-            TimePerGiB = int(nzbtomedia.CFG[section][inputCategory]["TimePerGiB"])
-        except:
-            TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
         try:
             SampleIDs = (nzbtomedia.CFG["Extensions"]["SampleIDs"])
         except:
@@ -88,10 +78,6 @@ class autoProcessTV:
             Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
         except:
             Torrent_NoLink = 0
-
-
-        mediaContainer = (nzbtomedia.CFG["Extensions"]["mediaExtensions"])
-        minSampleSize = int(nzbtomedia.CFG["Extensions"]["minSampleSize"])
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -114,8 +100,8 @@ class autoProcessTV:
                 for file in filenames:
                     filePath = os.path.join(dirpath, file)
                     fileExtension = os.path.splitext(file)[1]
-                    if fileExtension in mediaContainer:  # If the file is a video file
-                        if is_sample(filePath, nzbName, minSampleSize, SampleIDs):
+                    if fileExtension in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
+                        if is_sample(filePath, nzbName, nzbtomedia.MINSAMPLESIZE, SampleIDs):
                             logger.debug("Removing sample file: %s", filePath)
                             os.unlink(filePath)  # remove samples
                         else:
@@ -129,11 +115,6 @@ class autoProcessTV:
                 logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
                 status = int(1)
                 failed = True
-
-        dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
-        TIME_OUT = int(TimePerGiB) * dirSize # SickBeard needs to complete all moving and renaming before returning the log sequence via url.
-        TIME_OUT += 60 # Add an extra minute for over-head/processing/metadata.
-        socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
 
         # configure SB params to pass
         fork_params['quiet'] = 1

@@ -1,10 +1,9 @@
 import time
 import datetime
-import socket
 import urllib
 import nzbtomedia
 from lib import requests
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, getDirectorySize
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessMusic:
@@ -39,10 +38,6 @@ class autoProcessMusic:
             web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
-        try:
-            TimePerGiB = int(nzbtomedia.CFG[section][inputCategory]["TimePerGiB"])
-        except:
-            TimePerGiB = 60 # note, if using Network to transfer on 100Mbit LAN, expect ~ 600 MB/minute.
 
         if ssl:
             protocol = "https://"
@@ -54,11 +49,6 @@ class autoProcessMusic:
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        dirSize = getDirectorySize(dirName) # get total directory size to calculate needed processing time.
-        TIME_OUT = int(TimePerGiB) * dirSize # HeadPhones needs to complete all moving/transcoding and renaming before returning the status.
-        TIME_OUT += 60 # Add an extra minute for over-head/processing/metadata.
-        socket.setdefaulttimeout(int(TIME_OUT)) #initialize socket timeout.
-
         baseURL = protocol + host + ":" + port + web_root + "/api?"
 
         if status == 0:
@@ -68,7 +58,7 @@ class autoProcessMusic:
             params['cmd'] = "forceProcess"
             params['dir'] = dirName
 
-            url = baseURL + urllib.urlencode(params)
+            url = baseURL
 
             logger.postprocess("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
 
@@ -77,7 +67,7 @@ class autoProcessMusic:
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url)
+                r = requests.get(url, data=params)
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure

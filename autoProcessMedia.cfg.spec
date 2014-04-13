@@ -20,12 +20,11 @@
         ssl = 0
         web_root =
         delay = 65
-        TimePerGiB = 60
         method = renamer
         delete_failed = 0
         wait_for = 2
-        #### Set to 1 if CouchPotatoServer is running on a different server to your NZB client
-        remoteCPS = 0
+        #### Set the remote path for CouchPotatoServer if its running on a different server then your download client
+        remote_path =
         watch_dir =
 
 [SickBeard]

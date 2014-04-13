@@ -353,6 +353,7 @@ def main():
 
     # Post-Processing Result
     result = 0
+    status = 0
 
     # NZBGet V11+
     # Check if the script is called from nzbget 11.0 or later
@@ -401,7 +402,7 @@ def main():
             download_id = os.environ['NZBPR_COUCHPOTATO']
 
         # All checks done, now launching the script.
-        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], clientAgent = "nzbget", download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
+        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status, clientAgent = "nzbget", download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
     # SABnzbd Pre 0.7.17
     elif len(sys.argv) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
