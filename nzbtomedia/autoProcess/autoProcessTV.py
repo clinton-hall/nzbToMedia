@@ -9,7 +9,7 @@ from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete, is_subdir
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete
 from nzbtomedia import logger
 
 class autoProcessTV:
