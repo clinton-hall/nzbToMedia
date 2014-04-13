@@ -14,7 +14,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete
 from nzbtomedia import logger
 
 class autoProcessMovie:
-    def find_media_id(self, baseURL, download_id, dirName, nzbName):
+    def find_release_info(self, baseURL, download_id, dirName, nzbName):
 
         imdbid = None
         movie_title = None
@@ -72,9 +72,8 @@ class autoProcessMovie:
             return
 
         results = r.json()
-        if results['success'] and not results['empty']:
-            for i, movie in enumerate(results[section]):
-                movies[i] = movie
+        for i, movie in enumerate(results[section]):
+            movies[i] = movie
 
         if len(movies) > 0:
             try:
@@ -170,7 +169,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status = self.find_media_id(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
+        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
 
         if release_status is None:
             logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
