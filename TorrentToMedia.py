@@ -6,6 +6,7 @@ import re
 import shutil
 import sys
 import nzbtomedia
+import platform
 
 from subprocess import Popen
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
@@ -149,7 +150,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID)
     if not inputCategory in nzbtomedia.NOFLATTEN: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         flatten(outputDestination)
 
-    if os.name == 'nt':  # remove Read Only flag from files in Windows.
+    if platform.system().lower() == 'windows':  # remove Read Only flag from files in Windows.
         remove_read_only(outputDestination)
 
     # Now check if video files exist in destination:
