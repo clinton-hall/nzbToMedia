@@ -3,12 +3,13 @@ import json
 import os
 import urllib
 import time
+import sys
 import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete, is_subdir
 from nzbtomedia import logger
 
 class autoProcessTV:
@@ -58,10 +59,6 @@ class autoProcessTV:
             delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
         except:
             delete_failed = 0
-        try:
-            delay = float(nzbtomedia.CFG[section][inputCategory]["delay"])
-        except:
-            delay = 0
         try:
             SampleIDs = (nzbtomedia.CFG["Extensions"]["SampleIDs"])
         except:
@@ -165,25 +162,20 @@ class autoProcessTV:
 
         url = None
         if section == "SickBeard":
-            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork_params)
+            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode"
         elif section == "NzbDrone":
             url = protocol + host + ":" + port + web_root + "/api/command"
-
-        if clientAgent == "manual":delay = 0
-        logger.postprocess("Waiting for %s seconds to allow %s to process newly extracted files", str(delay), section)
-
-        time.sleep(delay)
 
         logger.debug("Opening URL: %s", url)
 
         try:
             r = None
             if section == "SickBeard":
-                r = requests.get(url, auth=(username, password), stream=True)
+                r = requests.get(url, auth=(username, password), params=fork_params, stream=True)
             elif section == "NzbDrone":
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
+                params = {"name": "DownloadedEpisodesScan", "path": dirName}
                 headers = {"X-Api-Key": apikey}
-                r = requests.get(url, data=data, headers=headers, stream=True)
+                r = requests.get(url, params=params, headers=headers, stream=True)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1 # failure
@@ -191,6 +183,7 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: logger.postprocess("%s", line)
 
-        if status != 0 and delete_failed and not dirName in ['sys.argv[0]','/','']:
+        if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
+            logger.postprocess("Deleting failed files and folder %s", dirName)
             delete(dirName)
         return 0 # Success

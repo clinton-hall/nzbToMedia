@@ -23,7 +23,7 @@
         method = renamer
         delete_failed = 0
         wait_for = 2
-        #### Set the remote path for CouchPotatoServer if its running on a different server then your download client
+        #### # Set to path where completed downloads go on the remote CouchPotatoServer
         remote_path =
         watch_dir =
 
@@ -40,7 +40,6 @@
         web_root =
         ssl = 0
         delay = 0
-        TimePerGiB = 60
         watch_dir =
         fork = auto
         delete_failed = 0
@@ -62,7 +61,6 @@
         web_root =
         ssl = 0
         delay = 0
-        TimePerGiB = 60
         watch_dir =
         delete_failed = 0
         nzbExtractionBy = Downloader
@@ -80,7 +78,6 @@
         ssl = 0
         web_root =
         delay = 65
-        TimePerGiB = 60
         watch_dir =
 
 [Mylar]

@@ -1,3 +1,4 @@
+import os
 import time
 import datetime
 import urllib
@@ -7,6 +8,35 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessMusic:
+    def get_status(self, baseURL, apikey, dirName):
+        release_status = None
+
+        logger.debug("Attempting to get current status for release:%s", os.path.basename(dirName))
+
+        url = baseURL
+
+        params = {}
+        params['apikey'] = apikey
+        params['cmd'] = "getHistory"
+
+        logger.debug("Opening URL: %s", url)
+
+        try:
+            r = requests.get(url, params=params)
+        except requests.ConnectionError:
+            logger.error("Unable to open URL")
+            return None, None
+
+        try:
+            result = r.json()
+            for album in result:
+                if os.path.basename(dirName) == album['FolderName']:
+                    release_status = album["Status"]
+        except:
+            pass
+
+        return release_status
+
     def process(self, dirName, nzbName=None, status=0, clientAgent="manual", inputCategory=None):
         if dirName is None:
             logger.error("No directory was given!")
@@ -43,13 +73,10 @@ class autoProcessMusic:
             protocol = "https://"
         else:
             protocol = "http://"
-        # don't delay when we are calling this script manually.
-        if clientAgent == "manual":
-            delay = 0
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        baseURL = protocol + host + ":" + port + web_root + "/api?"
+        baseURL = protocol + host + ":" + port + web_root + "/api"
 
         if status == 0:
 
@@ -60,14 +87,15 @@ class autoProcessMusic:
 
             url = baseURL
 
-            logger.postprocess("Waiting for %s seconds to allow HeadPhones to process newly extracted files", str(delay))
-
-            time.sleep(delay)
+            release_status = self.get_status(url, apikey, dirName)
+            if release_status != "Unprocessed":
+                logger.error("%s is marked with a status of %s on HeadPhones, skipping ...", nzbName, release_status)
+                return 1
 
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url, data=params)
+                r = requests.get(url, params=params)
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure
@@ -83,16 +111,21 @@ class autoProcessMusic:
             logger.postprocess("The download failed. Nothing to process")
             return 0 # Success (as far as this script is concerned)
 
-        if clientAgent == "manual":
-            return 0 # success
-
         # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
-        ## Hopefully we can use a "getHistory" check in here to confirm processing complete...
-        start = datetime.datetime.now()  # set time for timeout
-        while (datetime.datetime.now() - start) < datetime.timedelta(minutes=1):  # only wait 2 minutes, then return to TorrentToMedia
-            time.sleep(20) # Just stop this looping infinitely and hogging resources for 2 minutes ;)
-        else:  # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
-            logger.postprocess("This album should have completed processing. Please check HeadPhones Logs")
-            # logger.warning("The album does not appear to have changed status after 2 minutes. Please check HeadPhones Logs")
-        # return 1 # failure
-        return 0 # success for now.
+        timeout = time.time() + 60 * 2
+        while (True):  # only wait 2 (default) minutes, then return.
+            if time.time() > timeout:
+                break
+
+            current_status = self.get_status(url, apikey, dirName)
+            if current_status is None:
+                logger.error("Could not find a current status for %s on HeadPhones", nzbName)
+                return 1
+
+            if current_status != release_status:  # Something has changed. CPS must have processed this movie.
+                logger.postprocess("SUCCESS: This release is now marked as status [%s] in HeadPhones",current_status.upper())
+                return 0  # success
+
+        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        logger.warning("The music album does not appear to have changed status after %s minutes. Please check HeadPhones Logs",2)
+        return 1  # failure

@@ -12,6 +12,11 @@
 ##############################################################################
 ### OPTIONS                                                                ###
 
+## General
+#
+# Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
+#auto_update=0
+
 ## CouchPotato
 
 # CouchPotato script category.
@@ -52,11 +57,6 @@
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #cpsdelete_failed=0
-
-# CouchPotato process Time Per GiB
-#
-# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
-#cpsTimePerGiB=60
 
 # CouchPotato wait_for
 #
@@ -102,11 +102,6 @@
 # Set the number of seconds to wait before calling post-process in SickBeard.
 #sbdelay=0
 
-# SickBeard process Time Per GiB
-#
-# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
-#sbTimePerGiB=60
-
 # SickBeard watch directory.
 #
 # set this if SickBeard and nzbGet are on different systems.
@@ -135,26 +130,23 @@
 #ndCategory=tv
 
 # NzbDrone host.
-#ndHost=localhost
+#ndhost=localhost
 
 # NzbDrone port.
-#ndPort=8989
+#ndport=8989
 
 # NzbDrone API key.
-#ndAPIKey=
+#ndapikey=
 
 # NzbDrone uses SSL (0, 1).
 #
 # Set to 1 if using SSL, else set to 0.
-#ndSSL=0
+#ndssl=0
 
 # NzbDrone web root.
 #
 # set this if using a reverse proxy.
-#ndWebRoot=
-
-# Prefer NzbDrone if categories clash (0, 1).
-#ndPrefer=0
+#ndweb_root=
 
 ## HeadPhones
 
@@ -186,11 +178,6 @@
 #
 # set as required to ensure correct processing.
 #hpdelay=65
-
-# HeadPhones process Time Per GiB
-#
-# Set the number of seconds to wait, for each GiB of data, before timing out. If transfering files across drives or network, increase this value as needed.
-#hpTimePerGiB=60
 
 ## Mylar
 

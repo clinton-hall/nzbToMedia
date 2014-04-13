@@ -10,7 +10,7 @@ import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete
 from nzbtomedia import logger
 
 class autoProcessMovie:
@@ -168,14 +168,9 @@ class autoProcessMovie:
         else:
             protocol = "http://"
 
-        # don't delay when we are calling this script manually.
-        if clientAgent == "manual":
-            delay = 0
-
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
         media_id, download_id, release_id, release_status = self.find_media_id(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
-
 
         # failed to get a download id
         if release_status != "snatched":
@@ -217,7 +212,7 @@ class autoProcessMovie:
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url, data=params)
+                r = requests.get(url, params=params)
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1 # failure
@@ -254,12 +249,9 @@ class autoProcessMovie:
                 if line: logger.postprocess("%s", line)
 
             logger.postprocess("%s FAILED!, Trying the next best release on CouchPotatoServer", nzbName)
-            if delete_failed and not dirName in [sys.argv[0],'/','']:
+            if delete_failed and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s", dirName)
-                try:
-                    shutil.rmtree(dirName)
-                except:
-                    logger.error("Unable to delete folder %s", dirName)
+                delete(dirName)
             return 0 # success
 
         if not release_id:
@@ -269,15 +261,20 @@ class autoProcessMovie:
                 return 0  # success
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
+        timeout = time.time() + 60 * int(wait_for)
         while (True):  # only wait 2 (default) minutes, then return.
+            if time.time() > timeout:
+                break
+
             current_status = self.get_status(baseURL, release_id)
             if current_status is None:
-                logger.error("Could not find a current status for %s", nzbName)
+                logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
                 return 1
 
             if current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s] in CouchPotatoServer", current_status.upper())
                 return 0 # success
-            else: # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
-                logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
-                return 1 # failure
+
+        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
+        return 1 # failure
