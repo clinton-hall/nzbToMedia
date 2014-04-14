@@ -20,7 +20,7 @@ class autoProcessMovie:
         release_id = None
         media_id = None
         release_status = None
-        matched_release = None
+        downloader = None
 
         while(True):
             # find imdbid in nzbName
@@ -90,9 +90,10 @@ class autoProcessMovie:
                 media_id = matched_release['media_id']
                 release_status = matched_release['status']
                 download_id = matched_release['download_info']['id']
+                downloader = matched_release['download_info']['downloader']
             except:pass
 
-        return media_id, download_id, release_id, release_status
+        return media_id, download_id, release_id, release_status, downloader
 
     def get_status(self, baseURL, media_id, release_id):
         logger.debug("Attempting to get current status for movie:%s", media_id)
@@ -164,7 +165,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
+        media_id, download_id, release_id, release_status, downloader = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
 
         if release_status:
             if release_status != "snatched":
@@ -192,7 +193,7 @@ class autoProcessMovie:
 
             params = {}
             if download_id:
-                params['downloader'] = nzbtomedia.CLIENTAGENT
+                params['downloader'] = downloader
                 params['download_id'] = download_id
 
             params['media_folder'] = urllib.quote(dirName)
