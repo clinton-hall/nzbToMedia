@@ -171,9 +171,8 @@ class autoProcessMovie:
                 logger.warning("%s is marked with a status of %s on CouchPotato, skipping ...", nzbName, release_status)
                 return 0
         else:
-            if clientAgent != 'manual':
-                logger.error("Could not find a status for %s on CouchPotato, skipping ...", nzbName)
-                return 1
+            logger.error("Could not find a release status for %s on CouchPotato, skipping ...", nzbName)
+            return 1
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
@@ -251,10 +250,7 @@ class autoProcessMovie:
             return 0 # success
 
         if not (download_id or media_id or release_id):
-            if clientAgent != 'manual':
-                return 1
-            else:
-                return 0
+            return 1
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * int(wait_for)
