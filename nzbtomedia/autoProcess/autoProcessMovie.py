@@ -232,12 +232,11 @@ class autoProcessMovie:
                 logger.error("Exiting autoProcessMovie script")
                 return 1 # failure
 
-            url = baseURL + "movie.searcher.try_next/?media_id=" + media_id
-
+            url = baseURL + "/movie.searcher.try_next"
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url, stream=True)
+                r = requests.get(url, params={'media_id':media_id}, stream=True)
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure
