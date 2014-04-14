@@ -225,6 +225,10 @@ class autoProcessMovie:
         else:
             logger.postprocess("Download of %s has failed.", nzbName)
 
+            if delete_failed and not os.path.dirname(dirName) == dirName:
+                logger.postprocess("Deleting failed files and folder %s", dirName)
+                delete(dirName)
+
             if not download_id:
                 logger.warning("Cound not find a movie in the database for release %s", nzbName)
                 logger.warning("Please manually ignore this release and refresh the wanted movie")
@@ -247,29 +251,25 @@ class autoProcessMovie:
                 logger.postprocess("%s has been set to ignored on CouchPotato", nzbName)
             else:
                 logger.warning("Failed to ignore %s on CouchPotato ...", nzbName)
-                
+
             logger.postprocess("Snatching next highest ranked release on CouchPotato ...")
 
             url = baseURL + "/movie.searcher.try_next"
             logger.debug("Opening URL: %s", url)
 
-            for line in r.iter_lines():
-                if line: logger.postprocess("%s", line)
-
             try:
-                r = requests.get(url, params={'media_id':media_id}, stream=True)
+                r = requests.get(url, params={'media_id':media_id})
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure
 
-            for line in r.iter_lines():
-                if line: logger.postprocess("%s", line)
-
-            logger.postprocess("%s FAILED!, Trying the next best release on CouchPotatoServer", nzbName)
-            if delete_failed and not os.path.dirname(dirName) == dirName:
-                logger.postprocess("Deleting failed files and folder %s", dirName)
-                delete(dirName)
-            return 0 # success
+            result = r.json()
+            if result['success']:
+                logger.postprocess("CouchPotato successfully snatched the next highest release ...", nzbName)
+                return 0
+            else:
+                logger.postprocess("CouchPotato was unable to find a higher release then %s to snatch ...", nzbName)
+                return 1
 
         if not (download_id or media_id or release_id):
             return 1
