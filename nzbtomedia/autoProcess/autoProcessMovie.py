@@ -16,42 +16,6 @@ from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 
 class autoProcessMovie:
     def find_release_info(self, baseURL, download_id, dirName, nzbName):
-        def search_torrents(releases, nzbName):
-            tor_hash = None
-
-            try:
-                torrents = []
-                tor_client = create_torrent_class(nzbtomedia.CLIENTAGENT)
-                if nzbtomedia.CLIENTAGENT == "transmission":
-                    torrents = tor_client.get_torrents()
-                elif nzbtomedia.CLIENTAGENT == "deluge":
-                    torrents = tor_client.get_torrents()
-                elif nzbtomedia.CLIENTAGENT == "utorrent":
-                    torrents = tor_client.get_torrents()
-
-                for torrent in torrents:
-                    if download_id:
-                        if download_id == torrent.hashString:
-                            tor_hash = torrent.hashString
-                            break
-
-                    if nzbName == torrent.name:
-                        tor_hash = torrent.hashString
-                        break
-
-                for release in releases:
-                    if release['status'] != 'snatched':
-                        continue
-
-                    if tor_hash:
-                        if release['download_info']['id'] == tor_hash:
-                            return release
-
-                    if download_id:
-                        if release['download_info']['id'] == download_id:
-                            return release
-            except:pass
-
         imdbid = None
         release_id = None
         media_id = None
@@ -89,13 +53,22 @@ class autoProcessMovie:
             return
 
         results = r.json()
-        for movie in results['movies']:
-            if imdbid:
-                if imdbid != movie['identifiers']['imdb']:
-                    continue
-            matched_release = search_torrents(movie['releases'], nzbName)
-            if matched_release:
-                break
+
+        def search_results(results):
+            for movie in results['movies']:
+                if imdbid:
+                    if imdbid != movie['identifiers']['imdb']:
+                        continue
+
+                for release in movie['releases']:
+                    if release['status'] != 'snatched':
+                        continue
+
+                    if download_id:
+                        if release['download_info']['id'] == download_id:
+                            return release
+
+        matched_release = search_results(results)
 
         if matched_release:
             try:
@@ -108,8 +81,6 @@ class autoProcessMovie:
         return media_id, download_id, release_id, release_status
 
     def get_status(self, baseURL, media_id, release_id):
-        release_status = None
-
         logger.debug("Attempting to get current status for movie:%s", media_id)
 
         url = baseURL + "/media.get"
@@ -119,15 +90,14 @@ class autoProcessMovie:
             r = requests.get(url, params={'id':media_id})
         except requests.ConnectionError:
             logger.error("Unable to open URL")
-            return None, None
+            return
 
         try:
             result = r.json()
             for release in result["media"]['releases']:
-                release_status = release["status"]
+                if release['_id'] == release_id:
+                    return release["status"]
         except:pass
-
-        return release_status
 
     def process(self, dirName, nzbName=None, status=0, clientAgent = "manual", download_id = "", inputCategory=None):
         if dirName is None:
@@ -180,21 +150,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
-
-        if release_status is None:
-            logger.error("Could not find the current status for %s on CouchPotatoServer", nzbName)
-            return 1
-
-        # failed to get a download id
-        if release_status != "snatched":
-            logger.postprocess("%s has is marked with a status of [%s] by CouchPotatoServer, skipping ...", nzbName, release_status.upper())
-            return 0
-
-        if not download_id:
-            logger.warning("Could not find a download ID in CouchPotatoServer database for release %s, skipping", nzbName)
-            logger.warning("Please manually ignore this release and try snatching it again")
-            return 1  # failure
+        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName)
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
@@ -217,6 +173,7 @@ class autoProcessMovie:
                 params['downloader'] = nzbtomedia.CLIENTAGENT
                 params['download_id'] = download_id
 
+            params['media_folder'] = urllib.quote(dirName)
             if remote_path:
                 dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
                 params['media_folder'] = urllib.quote(dirName_new)
@@ -232,7 +189,9 @@ class autoProcessMovie:
                 return 1 # failure
 
             result = r.json()
+
             logger.postprocess("CouchPotatoServer returned %s", result)
+
             if result['success']:
                 logger.postprocess("%s scan started on CouchPotatoServer for %s", method, nzbName)
             else:
@@ -268,11 +227,11 @@ class autoProcessMovie:
                 delete(dirName)
             return 0 # success
 
-        if not download_id or not media_id or not release_id:
-            if clientAgent in ['utorrent', 'transmission', 'deluge'] :
-                return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
+        if not (download_id or media_id or release_id):
+            if clientAgent != 'manual':
+                return 1
             else:
-                return 0  # success
+                return 0
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * int(wait_for)
