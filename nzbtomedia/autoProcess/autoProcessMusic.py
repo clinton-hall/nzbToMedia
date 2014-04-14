@@ -118,10 +118,7 @@ class autoProcessMusic:
 
         # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * 2
-        while (True):  # only wait 2 (default) minutes, then return.
-            if time.time() > timeout:
-                break
-
+        while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
             current_status = self.get_status(url, apikey, dirName)
             if current_status is None:
                 logger.error("Could not find a current status for %s on HeadPhones", nzbName)
@@ -130,6 +127,8 @@ class autoProcessMusic:
             if current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s] in HeadPhones",current_status.upper())
                 return 0  # success
+
+            time.sleep(10 * 2)
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
         logger.warning("The music album does not appear to have changed status after %s minutes. Please check HeadPhones Logs",2)

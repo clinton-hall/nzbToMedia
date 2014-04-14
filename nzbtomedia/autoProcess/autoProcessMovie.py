@@ -17,48 +17,46 @@ from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 class autoProcessMovie:
     def find_release_info(self, baseURL, download_id, dirName, nzbName):
         def search_torrents(releases, nzbName):
-            for release in releases:
-                try:
+            tor_hash = None
+
+            try:
+                torrents = []
+                tor_client = create_torrent_class(nzbtomedia.CLIENTAGENT)
+                if nzbtomedia.CLIENTAGENT == "transmission":
+                    torrents = tor_client.get_torrents()
+                elif nzbtomedia.CLIENTAGENT == "deluge":
+                    torrents = tor_client.get_torrents()
+                elif nzbtomedia.CLIENTAGENT == "utorrent":
+                    torrents = tor_client.get_torrents()
+
+                for torrent in torrents:
+                    if download_id:
+                        if download_id == torrent.hashString:
+                            tor_hash = torrent.hashString
+                            break
+
+                    if nzbName == torrent.name:
+                        tor_hash = torrent.hashString
+                        break
+
+                for release in releases:
                     if release['status'] != 'snatched':
                         continue
 
+                    if tor_hash:
+                        if release['download_info']['id'] == tor_hash:
+                            return release
+
                     if download_id:
-                        if download_id == release['download_info']['id']:
+                        if release['download_info']['id'] == download_id:
                             return release
-
-                    if imdbid:
-                        if imdbid == release['download_info']['id']:
-                            return release
-
-                    downloader = release['download_info']['downloader'].lower()
-                    tor_client = create_torrent_class(downloader)
-
-                    torrents = []
-                    if downloader == "transmission":
-                        torrents = tor_client.get_torrents()
-                    elif downloader == "deluge":
-                        torrents = tor_client.get_torrents()
-                    elif downloader == "utorrent":
-                        torrents = tor_client.get_torrents()
-
-                    for torrent in torrents:
-                        tor_name = torrent.name
-                        tor_hash = torrent.hashString
-
-                        if download_id:
-                            if download_id == tor_hash:
-                                return release
-
-                        if nzbName == tor_name:
-                            return release
-                except:pass
+            except:pass
 
         imdbid = None
         release_id = None
         media_id = None
         release_status = None
         matched_release = None
-        downloader = None
 
         while(True):
             # find imdbid in nzbName
@@ -93,7 +91,7 @@ class autoProcessMovie:
         results = r.json()
         for movie in results['movies']:
             if imdbid:
-                if imdbid != movie['info']['imdb']:
+                if imdbid != movie['identifiers']['imdb']:
                     continue
             matched_release = search_torrents(movie['releases'], nzbName)
             if matched_release:
@@ -105,28 +103,28 @@ class autoProcessMovie:
                 media_id = matched_release['media_id']
                 release_status = matched_release['status']
                 download_id = matched_release['download_info']['id']
-                downloader = matched_release['download_info']['downloader']
             except:pass
 
-        return media_id, download_id, downloader, release_id, release_status
+        return media_id, download_id, release_id, release_status
 
-    def get_status(self, baseURL, release_id):
+    def get_status(self, baseURL, media_id, release_id):
         release_status = None
 
-        logger.debug("Attempting to get current status for release:%s", release_id)
+        logger.debug("Attempting to get current status for movie:%s", media_id)
 
         url = baseURL + "/media.get"
         logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url, params={'id':release_id})
+            r = requests.get(url, params={'id':media_id})
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return None, None
 
         try:
             result = r.json()
-            release_status = result["media"]["status"]
+            for release in result["media"]['releases']:
+                release_status = release["status"]
         except:pass
 
         return release_status
@@ -182,10 +180,10 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, downloader, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
+        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName) # get the CPS database movie id for this movie.
 
         if release_status is None:
-            logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
+            logger.error("Could not find the current status for %s on CouchPotatoServer", nzbName)
             return 1
 
         # failed to get a download id
@@ -216,8 +214,7 @@ class autoProcessMovie:
 
             params = {}
             if download_id:
-                if downloader:
-                    params['downloader'] = downloader or clientAgent
+                params['downloader'] = nzbtomedia.CLIENTAGENT
                 params['download_id'] = download_id
 
             if remote_path:
@@ -271,7 +268,7 @@ class autoProcessMovie:
                 delete(dirName)
             return 0 # success
 
-        if not download_id or not release_id:
+        if not download_id or not media_id or not release_id:
             if clientAgent in ['utorrent', 'transmission', 'deluge'] :
                 return 1 # just to be sure TorrentToMedia doesn't start deleting files as we havent verified changed status.
             else:
@@ -279,11 +276,8 @@ class autoProcessMovie:
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * int(wait_for)
-        while (True):  # only wait 2 (default) minutes, then return.
-            if time.time() > timeout:
-                break
-
-            current_status = self.get_status(baseURL, release_id)
+        while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
+            current_status = self.get_status(baseURL, media_id, release_id)
             if current_status is None:
                 logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
                 return 1
@@ -291,6 +285,9 @@ class autoProcessMovie:
             if current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s] in CouchPotatoServer", current_status.upper())
                 return 0 # success
+
+            # pause and let CouchPotatoServer catch its breath
+            time.sleep(10 * int(wait_for))
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
         logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)
