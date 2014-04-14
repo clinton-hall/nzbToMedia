@@ -319,7 +319,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
     else:
         logger.postprocess("We could not find a section with the download category of %s in your autoProcessMedia.cfg. Exiting.", inputCategory)
-        return -1
+        result = -1
 
     if result == 0:
         # Clean up any leftover files

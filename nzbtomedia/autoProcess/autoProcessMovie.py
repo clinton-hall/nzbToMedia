@@ -15,7 +15,7 @@ from nzbtomedia import logger
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 
 class autoProcessMovie:
-    def find_release_info(self, baseURL, download_id, dirName, nzbName):
+    def find_release_info(self, baseURL, download_id, dirName, nzbName, clientAgent):
         imdbid = None
         release_id = None
         media_id = None
@@ -54,21 +54,35 @@ class autoProcessMovie:
 
         results = r.json()
 
-        def search_results(results):
+        def search_results(results, clientAgent):
+            last_edit = {}
             for movie in results['movies']:
                 if imdbid:
                     if imdbid != movie['identifiers']['imdb']:
                         continue
 
-                for release in movie['releases']:
+                for i, release in enumerate(movie['releases']):
                     if release['status'] != 'snatched':
                         continue
+
+                    if clientAgent != 'manual':
+                        if release['download_info']['download'] == clientAgent:
+                            return release
+                    else:
+                        date = datetime.datetime.fromtimestamp(release['last_edit'])
+                        last_edit[date] = {}
+                        last_edit[date].update(release)
 
                     if download_id:
                         if release['download_info']['id'] == download_id:
                             return release
 
-        matched_release = search_results(results)
+            if last_edit:
+                last_edit = sorted(last_edit.items())
+                release = last_edit[0][1]
+                return release
+
+        matched_release = search_results(results, clientAgent)
 
         if matched_release:
             try:
@@ -150,7 +164,7 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName)
+        media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
 
         if release_status:
             if release_status != "snatched":
