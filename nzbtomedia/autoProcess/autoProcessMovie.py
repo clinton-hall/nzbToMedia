@@ -65,20 +65,21 @@ class autoProcessMovie:
                     if release['status'] != 'snatched':
                         continue
 
-                    if clientAgent != 'manual':
-                        if release['download_info']['download'] == clientAgent:
-                            return release
-                    else:
-                        date = datetime.datetime.fromtimestamp(release['last_edit'])
-                        last_edit[date] = {}
-                        last_edit[date].update(release)
-
                     if download_id:
                         if release['download_info']['id'] == download_id:
                             return release
 
+                    # store releases by datetime just incase we need to use this info
+                    last_edit.update({datetime.datetime.fromtimestamp(release['last_edit']):release})
+
             if last_edit:
                 last_edit = sorted(last_edit.items())
+                if clientAgent != 'manual':
+                    for item in last_edit:
+                        release = item[1]
+                        if release['download_info']['downloader'] == clientAgent:
+                            return release
+
                 release = last_edit[0][1]
                 return release
 
