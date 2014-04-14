@@ -152,6 +152,15 @@ class autoProcessMovie:
 
         media_id, download_id, release_id, release_status = self.find_release_info(baseURL, download_id, dirName, nzbName)
 
+        if release_status:
+            if release_status != "snatched":
+                logger.warning("%s is marked with a status of %s on CouchPotato, skipping ...", nzbName, release_status)
+                return 0
+        else:
+            if clientAgent != 'manual':
+                logger.error("Could not find a status for %s on CouchPotato, skipping ...", nzbName)
+                return 1
+
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
@@ -237,11 +246,7 @@ class autoProcessMovie:
         timeout = time.time() + 60 * int(wait_for)
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
             current_status = self.get_status(baseURL, media_id, release_id)
-            if current_status is None:
-                logger.error("Could not find a current status for %s on CouchPotatoServer", nzbName)
-                return 1
-
-            if current_status != release_status:  # Something has changed. CPS must have processed this movie.
+            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s] in CouchPotatoServer", current_status.upper())
                 return 0 # success
 
