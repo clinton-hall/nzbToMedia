@@ -224,7 +224,6 @@ class autoProcessMovie:
 
         else:
             logger.postprocess("Download of %s has failed.", nzbName)
-            logger.postprocess("Trying to re-cue the next highest ranked release")
 
             if not download_id:
                 logger.warning("Cound not find a movie in the database for release %s", nzbName)
@@ -232,8 +231,30 @@ class autoProcessMovie:
                 logger.error("Exiting autoProcessMovie script")
                 return 1 # failure
 
+            logger.postprocess("Ignoring current failed release %s ...", nzbName)
+
+            url = baseURL + "/release.ignore"
+            logger.debug("Opening URL: %s", url)
+
+            try:
+                r = requests.get(url, params={'id':release_id})
+            except requests.ConnectionError:
+                logger.error("Unable to open URL")
+                return 1  # failure
+
+            result = r.json()
+            if result['success']:
+                logger.postprocess("%s has been set to ignored on CouchPotato", nzbName)
+            else:
+                logger.warning("Failed to ignore %s on CouchPotato ...", nzbName)
+                
+            logger.postprocess("Snatching next highest ranked release on CouchPotato ...")
+
             url = baseURL + "/movie.searcher.try_next"
             logger.debug("Opening URL: %s", url)
+
+            for line in r.iter_lines():
+                if line: logger.postprocess("%s", line)
 
             try:
                 r = requests.get(url, params={'media_id':media_id}, stream=True)
