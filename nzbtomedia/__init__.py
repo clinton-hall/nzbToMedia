@@ -159,11 +159,14 @@ def initialize():
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error("Unable to load config from %s", CONFIG_FILE)
+        logger.error("Unable to migrate config file %s, exiting ...", CONFIG_FILE)
         sys.exit(-1)
 
+    # run migrate to convert NzbGet data from old cfg style to new cfg style
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        config.addnzbget()
+        if not config.addnzbget():
+            logger.error("Unable to migrate NzbGet config file %s, exiting ...", CONFIG_FILE)
+            sys.exit(-1)
 
     # load newly migrated config
     logger.info("Loading config from %s", CONFIG_FILE)
