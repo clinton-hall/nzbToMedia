@@ -89,11 +89,7 @@ class autoProcessMusic:
 
             release_status = self.get_status(url, apikey, dirName)
 
-            if release_status is None:
-                logger.error("Could not find a current status for %s on HeadPhones", nzbName)
-                return 1
-
-            if release_status != "Unprocessed":
+            if release_status not in ["Unprocessed", "Snatched"]:
                 logger.error("%s is marked with a status of %s on HeadPhones, skipping ...", nzbName, release_status)
                 return 0
 
@@ -115,6 +111,10 @@ class autoProcessMusic:
         else:
             logger.postprocess("The download failed. Nothing to process")
             return 0 # Success (as far as this script is concerned)
+
+        if release_status is None:
+            logger.error("Could not find a current status for %s on HeadPhones", nzbName)
+            return 1
 
         # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * 2
