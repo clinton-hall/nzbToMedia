@@ -42,7 +42,7 @@ def create_destination(outputDestination):
 def makeDir(path):
     if not os.path.isdir(path):
         try:
-            os.makedirs( path)
+            os.makedirs(path)
         except OSError:
             return False
     return True

@@ -152,7 +152,7 @@ def initialize():
         sys.exit(1)
 
     if not nzbToMediaUtil.makeDir(LOG_DIR):
-        logger.error("!!! No log folder, logging to screen only!")
+        print("!!! No log folder, logging to screen only!")
 
     # init logging
     logger.ntm_log_instance.initLogging()
