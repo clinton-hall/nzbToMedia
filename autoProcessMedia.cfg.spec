@@ -2,7 +2,7 @@
 # For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
 
 [General]
-    verision_notify = 1
+    version_notify = 1
     auto_update = 0
     git_path =
     git_user =

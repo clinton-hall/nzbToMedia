@@ -173,7 +173,7 @@ def initialize():
     CFG = config()
 
     # load git cfg info
-    VERSION_NOTIFY = int(CFG['General']['verision_notify'])
+    VERSION_NOTIFY = int(CFG['General']['version_notify'])
     AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_PATH = CFG['General']['git_path']
     GIT_USER = CFG['General']['git_user']
