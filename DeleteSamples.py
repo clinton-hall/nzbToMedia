@@ -3,9 +3,9 @@
 # adds lib directory to system path
 import os
 import sys
-from nzbtomedia.nzbToMediaConfig import config
-
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
+
+import nzbtomedia
 
 #
 ##############################################################################
