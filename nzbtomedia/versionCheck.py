@@ -81,19 +81,13 @@ class CheckVersion():
 
 class UpdateManager():
     def get_github_repo_user(self):
-        repo_user = 'clinton-hall'
-        if nzbtomedia.GIT_USER:
-            repo_user = nzbtomedia.GIT_USER
-        return repo_user
+        return nzbtomedia.GIT_USER
 
     def get_github_repo(self):
-        return 'nzbToMedia'
+        return nzbtomedia.GIT_REPO
 
     def get_github_branch(self):
-        git_branch = 'dev'
-        if nzbtomedia.GIT_BRANCH:
-            git_branch = nzbtomedia.GIT_BRANCH
-        return git_branch
+        return nzbtomedia.GIT_BRANCH
 
 class GitUpdateManager(UpdateManager):
     def __init__(self):
