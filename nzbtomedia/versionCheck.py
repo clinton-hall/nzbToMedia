@@ -62,9 +62,9 @@ class CheckVersion():
         force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
         """
 
-#        if not nzbtomedia.VERSION_NOTIFY and not force:
-#            logger.log(u"Version checking is disabled, not checking for the newest version")
-#            return False
+        if not nzbtomedia.VERSION_NOTIFY and not force:
+            logger.log(u"Version checking is disabled, not checking for the newest version")
+            return False
 
         logger.log(u"Checking if " + self.install_type + " needs an update")
         if not self.updater.need_update():
@@ -79,11 +79,6 @@ class CheckVersion():
         if self.updater.need_update():
             return self.updater.update()
 
-    def find_installed_version(self):
-        if self.updater._find_installed_version():
-            nzbtomedia.NZBTOMEDIA_VERSION = self.updater._cur_commit_hash
-            nzbtomedia.NZBTOMEDIA_BRANCH = self.updater.branch
-
 class UpdateManager():
     def get_github_repo_user(self):
         repo_user = 'clinton-hall'
@@ -95,7 +90,7 @@ class UpdateManager():
         return 'nzbToMedia'
 
     def get_github_branch(self):
-        git_branch = 'master'
+        git_branch = 'dev'
         if nzbtomedia.GIT_BRANCH:
             git_branch =  nzbtomedia.GIT_BRANCH
         return git_branch
@@ -113,8 +108,7 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_ahead = 0
 
     def _git_error(self):
-        error_message = 'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.'
-        nzbtomedia.NEWEST_VERSION_STRING = error_message
+        logger.error('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
     def _find_working_git(self):
         test_cmd = 'version'
@@ -159,8 +153,7 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u"Not using: " + cur_git, logger.DEBUG)
 
         # Still haven't found a working git
-        error_message = 'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.'
-        nzbtomedia.NEWEST_VERSION_STRING = error_message
+        logger.error('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
         return None
 

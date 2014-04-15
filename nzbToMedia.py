@@ -439,12 +439,13 @@ def main():
     if result == 0:
         logger.postprocess("The nzbToMedia script completed successfully.")
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            return nzbtomedia.NZBGET_POSTPROCESS_SUCCESS
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
         logger.error("A problem was reported in the nzbToMedia script.")
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            return nzbtomedia.NZBGET_POSTPROCESS_ERROR
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
     return result
+
 if __name__ == '__main__':
     exit(main())

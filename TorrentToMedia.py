@@ -198,7 +198,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['HeadPhones'][inputCategory]:
         logger.postprocess("Calling HeadPhones:" + inputCategory + " to post-process: %s", inputName)
-        result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
+        result = autoProcessMusic().process(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['Mylar'][inputCategory]:
         logger.postprocess("Calling Mylar:" + inputCategory + " to post-process: %s", inputName)
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)

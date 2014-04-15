@@ -78,7 +78,7 @@ class autoProcessMusic:
             params = {}
             params['apikey'] = apikey
             params['cmd'] = "forceProcess"
-            params['dir'] = urllib.quote(dirName)
+            params['dir'] = dirName
 
             url = baseURL
 

@@ -45,7 +45,7 @@ SYS_ARGV = None
 
 # version constants
 AUTO_UPDATE = None
-NZBTOMEDIA_VERSION = None
+NZBTOMEDIA_VERSION = '9.3'
 NZBTOMEDIA_BRANCH = None
 NEWEST_VERSION = None
 NEWEST_VERSION_STRING = None
@@ -172,12 +172,16 @@ def initialize():
     logger.info("Loading config from %s", CONFIG_FILE)
     CFG = config()
 
-    # check for newer version
-    AUTO_UPDATE = CFG['General']['auto_update']
-    versionCheck.CheckVersion().find_installed_version()
-    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
+    # load git cfg info
+    VERSION_NOTIFY = int(CFG['General']['verision_notify'])
+    AUTO_UPDATE = int(CFG['General']['auto_update'])
+    GIT_PATH = CFG['General']['git_path']
+    GIT_USER = CFG['General']['git_user']
+    GIT_BRANCH = CFG['General']['git_branch']
+
+    # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():
-        if int(AUTO_UPDATE) == 1:
+        if AUTO_UPDATE == 1:
             logger.info("Auto-Updating nzbToMedia, Please wait ...")
             updated = versionCheck.CheckVersion().update()
             if updated:
@@ -185,6 +189,9 @@ def initialize():
                 restart()
             else:
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
+
+    # Display Current Version
+    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
 
     WakeUp()
 
