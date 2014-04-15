@@ -212,7 +212,8 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"Output doesn't look like a hash, not using it", logger.ERROR)
                 return False
             self._cur_commit_hash = cur_commit_hash
-            nzbtomedia.NZBTOMEDIA_VERSION = self._cur_commit_hash
+            if self._cur_commit_hash:
+                nzbtomedia.NZBTOMEDIA_VERSION = self._cur_commit_hash
             return True
         else:
             return False
