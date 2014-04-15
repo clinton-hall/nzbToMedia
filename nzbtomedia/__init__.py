@@ -172,7 +172,8 @@ def initialize():
     logger.info("Loading config from %s", CONFIG_FILE)
     CFG = config()
 
-    # load git cfg info
+    # Set Version and GIT variables
+    NZBTOMEDIA_VERSION = '9.3'
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
     AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_PATH = CFG['General']['git_path']
@@ -192,7 +193,6 @@ def initialize():
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
 
     # Set Current Version
-    NZBTOMEDIA_VERSION = '9.3'
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + GIT_BRANCH + ' (' + platform.system() + ' ' + platform.release() + ')')
 
     WakeUp()
