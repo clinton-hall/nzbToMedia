@@ -218,6 +218,7 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"Output doesn't look like a hash, not using it", logger.ERROR)
                 return False
             self._cur_commit_hash = cur_commit_hash
+            nzbtomedia.NZBTOMEDIA_VERSION = self._cur_commit_hash
             return True
         else:
             return False
@@ -228,8 +229,8 @@ class GitUpdateManager(UpdateManager):
         if exit_status == 0 and branch_info:
             branch = branch_info.strip().replace('refs/heads/', '', 1)
             if branch:
-                nzbtomedia.NZBTOMEDIA_VERSION = branch
-        return nzbtomedia.NZBTOMEDIA_VERSION
+                nzbtomedia.NZBTOMEDIA_BRANCH = branch
+        return nzbtomedia.NZBTOMEDIA_BRANCH
 
     def _check_github_for_update(self):
         """
@@ -351,6 +352,8 @@ class SourceUpdateManager(UpdateManager):
 
         if not self._cur_commit_hash:
             self._cur_commit_hash = None
+        else:
+            nzbtomedia.NZBTOMEDIA_VERSION = self._cur_commit_hash
 
     def need_update(self):
 
