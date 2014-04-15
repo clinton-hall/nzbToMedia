@@ -13,6 +13,8 @@
 ### OPTIONS                                                                ###
 
 ## General
+
+# Auto Update nzbToMedia (0, 1).
 #
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
 #auto_update=0
@@ -112,7 +114,7 @@
 # set to default or auto to auto-detect the custom fork type.
 #sbfork=auto
 
-# SickBeard Delete Failed Downloads (0, 1)
+# SickBeard Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0

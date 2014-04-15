@@ -13,6 +13,8 @@
 ### OPTIONS                                                                ###
 
 ## General
+
+# Auto Update nzbToMedia (0, 1).
 #
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
 #auto_update=0

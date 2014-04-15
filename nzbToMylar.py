@@ -14,6 +14,8 @@
 ### OPTIONS
 
 ## General
+
+# Auto Update nzbToMedia (0, 1).
 #
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
 #auto_update=0
@@ -46,40 +48,6 @@
 #
 # set this if using a reverse proxy.
 #myweb_root=
-
-## Extensions
-
-# Media Extensions
-#
-# This is a list of media extensions that are used to verify that the download does contain valid media.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
-
-## Transcoder
-
-# Transcode (0, 1).
-#
-# set to 1 to transcode, otherwise set to 0.
-#transcode=0
-
-# create a duplicate, or replace the original (0, 1).
-#
-# set to 1 to cretae a new file or 0 to replace the original
-#duplicate=1
-
-# ignore extensions
-#
-# list of extensions that won't be transcoded.
-#ignoreExtensions=.avi,.mkv
-
-# ffmpeg output settings.
-#outputVideoExtension=.mp4
-#outputVideoCodec=libx264
-#outputVideoPreset=medium
-#outputVideoFramerate=24
-#outputVideoBitrate=800k
-#outputAudioCodec=libmp3lame
-#outputAudioBitrate=128k
-#outputSubtitleCodec=
 
 ## WakeOnLan
 
