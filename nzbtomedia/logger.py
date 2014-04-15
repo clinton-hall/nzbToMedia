@@ -16,7 +16,7 @@ ERROR = logging.ERROR
 WARNING = logging.WARNING
 MESSAGE = logging.INFO
 DEBUG = logging.DEBUG
-POSTPROCESS = 5
+POSTPROCESS = 21
 
 reverseNames = {u'ERROR': ERROR,
                 u'WARNING': WARNING,
@@ -64,12 +64,15 @@ class NTMRotatingLogHandler(object):
             old_handler = self.cur_handler
         else:
             #Add a new logging level POSTPROCESS
-            logging.addLevelName(5, 'POSTPROCESS')
+            logging.addLevelName(21, 'POSTPROCESS')
 
             # only start consoleLogging on first initialize
             if self.console_logging:
                 # define a Handler which writes INFO messages or higher to the sys.stderr
                 console = logging.StreamHandler()
+
+                # log-level
+                console.setLevel(logging.INFO)
 
                 # set a format which is simpler for console use
                 console.setFormatter(DispatchingFormatter(
@@ -102,6 +105,9 @@ class NTMRotatingLogHandler(object):
         """
 
         file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
+
+        file_handler.setLevel(logging.DEBUG)
+
         file_handler.setFormatter(DispatchingFormatter(
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s:: %(message)s', '%Y-%m-%d %H:%M:%S'),
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s:: %(message)s', '%Y-%m-%d %H:%M:%S')

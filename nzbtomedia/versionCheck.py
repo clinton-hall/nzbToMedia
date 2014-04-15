@@ -108,7 +108,7 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_ahead = 0
 
     def _git_error(self):
-        logger.error('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
     def _find_working_git(self):
         test_cmd = 'version'
@@ -153,7 +153,7 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u"Not using: " + cur_git, logger.DEBUG)
 
         # Still haven't found a working git
-        logger.error('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
         return None
 
@@ -162,7 +162,7 @@ class GitUpdateManager(UpdateManager):
         output = err = exit_status = None
 
         if not git_path:
-            logger.log(u"No git specified, can't use git commands", logger.ERROR)
+            logger.log(u"No git specified, can't use git commands", logger.DEBUG)
             exit_status = 1
             return (output, err, exit_status)
 
@@ -188,15 +188,15 @@ class GitUpdateManager(UpdateManager):
             exit_status = 0
 
         elif exit_status == 1:
-            logger.log(cmd + u" returned : " + output, logger.ERROR)
+            logger.log(cmd + u" returned : " + output, logger.DEBUG)
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
-            logger.log(cmd + u" returned : " + output, logger.ERROR)
+            logger.log(cmd + u" returned : " + output, logger.DEBUG)
             exit_status = 128
 
         else:
-            logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.ERROR)
+            logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.DEBUG)
             exit_status = 1
 
         return (output, err, exit_status)
@@ -296,7 +296,9 @@ class GitUpdateManager(UpdateManager):
             return
 
     def need_update(self):
-        self._find_installed_version()
+        if not self._find_installed_version():
+            logger.error("Unable to determine installed version via git, please check your logs!")
+            return False
 
         if not self._cur_commit_hash:
             return True
