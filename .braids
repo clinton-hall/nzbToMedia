@@ -1,8 +1,0 @@
---- 
-linktastic: 
-  branch: master
-  remote: master/braid/linktastic
-  revision: cf644f11cbe26d3d802618977b525135261b7c0f
-  squashed: true
-  type: git
-  url: https://github.com/berkona/linktastic.git
