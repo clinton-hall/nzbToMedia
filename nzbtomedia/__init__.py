@@ -191,7 +191,7 @@ def initialize():
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
 
     # Display Current Version
-    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + platform.system() + '; ' + platform.release() + ')')
+    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + NZBTOMEDIA_BRANCH + ' (' + str(platform.system()) + '-' + str(platform.release()) + ')')
 
     WakeUp()
 
