@@ -272,8 +272,25 @@ class autoProcessMovie:
                 return 1
 
         if not (download_id or media_id or release_id) and imdbid:
-            logger.postprocess("Release not found on CouchPotato but is being manually post-processed, Please check CouchPotato to confirm status manually with imdbID %s...", imdbid)
-            return 0
+            url = baseURL + "/media.get"
+            logger.debug("Opening URL: %s", url)
+
+            # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
+            timeout = time.time() + 60 * int(wait_for)
+            while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
+                try:
+                    r = requests.get(url, params={id:imdbid})
+                except requests.ConnectionError:
+                    logger.error("Unable to open URL")
+                    return 1 # failure
+
+                result = r.json()
+                if result['success']:
+                    logger.postprocess("CouchPotato successfully added %s to it's database ...", nzbName)
+                    return 0
+
+            logger.postprocess("CouchPotato was unable to add %s to its database ...", nzbName)
+            return 1
         elif not (download_id or media_id or release_id):
             return 1
 
