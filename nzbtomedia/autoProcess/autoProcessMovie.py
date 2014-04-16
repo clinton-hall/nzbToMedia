@@ -279,13 +279,13 @@ class autoProcessMovie:
             timeout = time.time() + 60 * int(wait_for)
             while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
                 try:
-                    r = requests.get(url, params={id:imdbid})
+                    r = requests.get(url, params={'id':imdbid})
                 except requests.ConnectionError:
                     logger.error("Unable to open URL")
                     return 1 # failure
 
                 result = r.json()
-                if result['success']:
+                if result['media']['status'] == 'ignored':
                     logger.postprocess("CouchPotato successfully added %s to it's database ...", nzbName)
                     return 0
 
