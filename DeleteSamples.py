@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-
-# adds lib directory to system path
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
-
-import nzbtomedia
-
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -37,6 +29,9 @@ import nzbtomedia
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+import os
+import sys
+import nzbtomedia
 
 def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
     # 200 MB in bytes
@@ -118,7 +113,6 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
                         print "Error: unable to delete file", filePath
                         sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
     sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
-
 else:
     print "This script can only be called from NZBGet (11.0 or later)."
     sys.exit(0)

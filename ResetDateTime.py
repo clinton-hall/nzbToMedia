@@ -1,12 +1,4 @@
 #!/usr/bin/env python
-
-# adds lib directory to system path
-import os
-import sys
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), 'lib')))
-
-import nzbtomedia
-
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -20,6 +12,9 @@ import nzbtomedia
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+import os
+import sys
+import nzbtomedia
 
 if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
     print "Script triggered from NZBGet (11.0 or later)."
