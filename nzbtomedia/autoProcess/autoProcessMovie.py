@@ -24,22 +24,18 @@ class autoProcessMovie:
 
         while(True):
             # find imdbid in nzbName
-            a = nzbName.find('.cp(') + 4
-            b = nzbName[a:].find(')') + a
-            if a > 3:  # a == 3 if not exist
-                if nzbName[a:b]:
-                    imdbid = nzbName[a:b]
-                    logger.postprocess("Found imdbid %s in name", imdbid)
-                    break
+            m = re.search('(tt\d{7})', nzbName)
+            if m:
+                imdbid = m.group(1)
+                logger.postprocess("Found imdbid %s in name", imdbid)
+                break
 
             # find imdbid in dirName
-            a = dirName.find('.cp(') + 4
-            b = dirName[a:].find(')') + a
-            if a > 3:  # a == 3 if not exist
-                if dirName[a:b]:
-                    imdbid = dirName[a:b]
-                    logger.postprocess("Found movie id %s in directory", imdbid)
-                    break
+            m = re.search('(tt\d{7})', dirName)
+            if m:
+                imdbid = m.group(1)
+                logger.postprocess("Found movie id %s in directory", imdbid)
+                break
             break
 
         url = baseURL + "/media.list/?release_status=snatched"
@@ -56,21 +52,23 @@ class autoProcessMovie:
 
         def search_results(results, clientAgent):
             last_edit = {}
-            for movie in results['movies']:
-                if imdbid:
-                    if imdbid != movie['identifiers']['imdb']:
-                        continue
+            try:
+                for movie in results['movies']:
+                    if imdbid:
+                        if imdbid != movie['identifiers']['imdb']:
+                            continue
 
-                for i, release in enumerate(movie['releases']):
-                    if release['status'] != 'snatched':
-                        continue
+                    for i, release in enumerate(movie['releases']):
+                        if release['status'] != 'snatched':
+                            continue
 
-                    if download_id:
-                        if release['download_info']['id'] == download_id:
-                            return release
+                        if download_id:
+                            if release['download_info']['id'] == download_id:
+                                return release
 
-                    # store releases by datetime just incase we need to use this info
-                    last_edit.update({datetime.datetime.fromtimestamp(release['last_edit']):release})
+                        # store releases by datetime just incase we need to use this info
+                        last_edit.update({datetime.datetime.fromtimestamp(release['last_edit']):release})
+            except:pass
 
             if last_edit:
                 last_edit = sorted(last_edit.items())
@@ -94,7 +92,7 @@ class autoProcessMovie:
                 downloader = matched_release['download_info']['downloader']
             except:pass
 
-        return media_id, download_id, release_id, release_status, downloader
+        return media_id, download_id, release_id, imdbid, release_status, downloader
 
     def get_status(self, baseURL, media_id, release_id):
         logger.debug("Attempting to get current status for movie:%s", media_id)
@@ -166,12 +164,14 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, release_status, downloader = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
+        media_id, download_id, release_id, imdbid, release_status, downloader = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
 
         if release_status:
             if release_status != "snatched":
                 logger.warning("%s is marked with a status of %s on CouchPotato, skipping ...", nzbName, release_status)
                 return 0
+        elif imdbid and not (download_id or media_id or release_id):
+            logger.error("Could only find a imdbID for %s, sending folder name to be post-processed by CouchPotato ...", nzbName)
         else:
             logger.error("Could not find a release status for %s on CouchPotato, skipping ...", nzbName)
             return 1
@@ -271,7 +271,10 @@ class autoProcessMovie:
                 logger.postprocess("CouchPotato was unable to find a higher release then %s to snatch ...", nzbName)
                 return 1
 
-        if not (download_id or media_id or release_id):
+        if not (download_id or media_id or release_id) and imdbid:
+            logger.postprocess("Release not found on CouchPotato but is being manually post-processed, Please check CouchPotato to confirm status manually with imdbID %s...", imdbid)
+            return 0
+        elif not (download_id or media_id or release_id):
             return 1
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.

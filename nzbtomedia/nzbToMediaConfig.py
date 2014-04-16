@@ -199,6 +199,16 @@ class ConfigObj(configobj.ConfigObj, Section):
         CFG_NEW = config()
 
         try:
+            section = "General"
+            envKeys = ['AUTO_UPDATE']
+            cfgKeys = ['auto_update']
+            for index in range(len(envKeys)):
+                key = 'NZBPO_' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    CFG_NEW[section][option] = value
+
             section = "CouchPotato"
             envCatKey = 'NZBPO_CPSCATEGORY'
             envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'DELAY', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'TIMEPERGIB']
