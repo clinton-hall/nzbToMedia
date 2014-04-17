@@ -1,117 +1,101 @@
 import os
 import re
 import time
-import datetime
 import urllib
-import shutil
-import sys
-import platform
 import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, create_torrent_class
 from nzbtomedia import logger
-from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 
 class autoProcessMovie:
-    def find_release_info(self, baseURL, download_id, dirName, nzbName, clientAgent):
-        imdbid = None
-        release_id = None
-        media_id = None
-        release_status = None
-        downloader = None
+    def find_imdbid(self, dirName, nzbName):
+        # find imdbid in dirName
+        m = re.search('(tt\d{7})', dirName)
+        if m:
+            imdbid = m.group(1)
+            logger.postprocess("Found movie id %s in directory", imdbid)
+            return imdbid
 
-        while(True):
-            # find imdbid in nzbName
-            m = re.search('(tt\d{7})', nzbName)
-            if m:
-                imdbid = m.group(1)
-                logger.postprocess("Found imdbid %s in name", imdbid)
-                break
+        # find imdbid in nzbName
+        m = re.search('(tt\d{7})', nzbName)
+        if m:
+            imdbid = m.group(1)
+            logger.postprocess("Found imdbid %s in name", imdbid)
+            return imdbid
 
-            # find imdbid in dirName
-            m = re.search('(tt\d{7})', dirName)
-            if m:
-                imdbid = m.group(1)
-                logger.postprocess("Found movie id %s in directory", imdbid)
-                break
-            break
+        m = re.search("^(.+)\W(\d{4})", os.path.basename(dirName))
+        if m:
+            title = m.group(1)
+            year = m.group(2)
 
-        url = baseURL + "/media.list/?release_status=snatched"
+            url = "http://www.omdbapi.com"
 
+            logger.debug("Opening URL: %s", url)
+
+            try:
+                r = requests.get(url, params={'y':year, 't':title})
+            except requests.ConnectionError:
+                logger.error("Unable to open URL")
+                return
+
+            results = r.json()
+            if hasattr(results, 'imdbID'):
+                return results['imdbID']
+
+    def get_releases(self, baseURL, download_id, dirName, nzbName):
+        releases = {}
+        params = {}
+
+        imdbid = self.find_imdbid(dirName, nzbName)
+
+        # determin cmd and params to send to CouchPotato to get our results
+        section = 'movies'
+        cmd = "/media.list"
+        params['status'] = 'active'
+        if imdbid:
+            section = 'media'
+            cmd = "/media.get"
+            params['id'] = imdbid
+        if download_id:
+            params['release_status'] = 'snatched,downloaded'
+
+        url = baseURL + cmd
         logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url)
+            r = requests.get(url, params=params)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return
 
         results = r.json()
 
-        def search_results(results, clientAgent):
-            last_edit = {}
-            try:
-                for movie in results['movies']:
-                    if imdbid:
-                        if imdbid != movie['identifiers']['imdb']:
-                            continue
-
-                    for i, release in enumerate(movie['releases']):
-                        if release['status'] != 'snatched':
-                            continue
-
-                        if download_id:
-                            if release['download_info']['id'] == download_id:
-                                return release
-
-                        # store releases by datetime just incase we need to use this info
-                        last_edit.update({datetime.datetime.fromtimestamp(release['last_edit']):release})
-            except:pass
-
-            if last_edit:
-                last_edit = sorted(last_edit.items())
-                if clientAgent != 'manual':
-                    for item in last_edit:
-                        release = item[1]
-                        if release['download_info']['downloader'] == clientAgent:
-                            return release
-
-                release = last_edit[0][1]
-                return release
-
-        matched_release = search_results(results, clientAgent)
-
-        if matched_release:
-            try:
-                release_id = matched_release['_id']
-                media_id = matched_release['media_id']
-                release_status = matched_release['status']
-                download_id = matched_release['download_info']['id']
-                downloader = matched_release['download_info']['downloader']
-            except:pass
-
-        return media_id, download_id, release_id, imdbid, release_status, downloader
-
-    def get_status(self, baseURL, media_id, release_id):
-        logger.debug("Attempting to get current status for movie:%s", media_id)
-
-        url = baseURL + "/media.get"
-        logger.debug("Opening URL: %s", url)
-
         try:
-            r = requests.get(url, params={'id':media_id})
-        except requests.ConnectionError:
-            logger.error("Unable to open URL")
-            return
+            movies = results[section]
+            if not isinstance(movies, list):
+                movies = [movies]
 
-        try:
-            result = r.json()
-            for release in result["media"]['releases']:
-                if release['_id'] == release_id:
-                    return release["status"]
+            for movie in movies:
+                for release in movie['releases']:
+                    if download_id and download_id != release['download_info']['id']:
+                        continue
+
+                    releases[release['_id']] = release
         except:pass
+
+        return releases
+
+    def releases_diff(self, dict_a, dict_b):
+        return dict([
+            (key, dict_b.get(key, dict_a.get(key)))
+            for key in set(dict_a.keys() + dict_b.keys())
+            if (
+                (key in dict_a and (not key in dict_b or dict_a[key] != dict_b[key])) or
+                (key in dict_b and (not key in dict_a or dict_a[key] != dict_b[key]))
+            )
+        ])
 
     def process(self, dirName, nzbName=None, status=0, clientAgent = "manual", download_id = "", inputCategory=None):
         if dirName is None:
@@ -164,16 +148,10 @@ class autoProcessMovie:
 
         baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
 
-        media_id, download_id, release_id, imdbid, release_status, downloader = self.find_release_info(baseURL, download_id, dirName, nzbName, clientAgent)
+        releases = self.get_releases(baseURL, download_id, dirName, nzbName)
 
-        if release_status:
-            if release_status != "snatched":
-                logger.warning("%s is marked with a status of %s on CouchPotato, skipping ...", nzbName, release_status)
-                return 0
-        elif imdbid and not (download_id or media_id or release_id):
-            logger.error("Could only find a imdbID for %s, sending folder name to be post-processed by CouchPotato ...", nzbName)
-        else:
-            logger.error("Could not find a release status for %s on CouchPotato, skipping ...", nzbName)
+        if not releases:
+            logger.error("Could not find any releases marked as WANTED on CouchPotato to compare changes against %s, skipping ...", nzbName)
             return 1
 
         process_all_exceptions(nzbName.lower(), dirName)
@@ -194,7 +172,7 @@ class autoProcessMovie:
 
             params = {}
             if download_id:
-                params['downloader'] = downloader
+                params['downloader'] = clientAgent
                 params['download_id'] = download_id
 
             params['media_folder'] = urllib.quote(dirName)
@@ -206,6 +184,8 @@ class autoProcessMovie:
 
             logger.debug("Opening URL: %s", url)
 
+            logger.postprocess("Attempting to perform a %s scan on CouchPotato for %s", method, nzbName)
+
             try:
                 r = requests.get(url, params=params)
             except requests.ConnectionError:
@@ -213,13 +193,10 @@ class autoProcessMovie:
                 return 1 # failure
 
             result = r.json()
-
-            logger.postprocess("CouchPotatoServer returned %s", result)
-
             if result['success']:
-                logger.postprocess("%s scan started on CouchPotatoServer for %s", method, nzbName)
+                logger.postprocess("SUCCESS: %s scan started on CouchPotatoServer for %s", method, nzbName)
             else:
-                logger.error("%s scan has NOT started on CouchPotatoServer for %s. Exiting", method, nzbName)
+                logger.error("FAILED: %s scan has NOT started on CouchPotato for %s. Exiting ...", method, nzbName)
                 return 1 # failure
 
         else:
@@ -230,10 +207,12 @@ class autoProcessMovie:
                 delete(dirName)
 
             if not download_id:
-                logger.warning("Cound not find a movie in the database for release %s", nzbName)
-                logger.warning("Please manually ignore this release and refresh the wanted movie")
-                logger.error("Exiting autoProcessMovie script")
+                logger.warning("Could not find a movie in the database for release %s", nzbName)
+                logger.warning("Please manually ignore this release and refresh the wanted movie from CouchPotato, Exiting ...")
                 return 1 # failure
+
+            release_id = releases.keys()[0]
+            media_id = releases[release_id]['media_id']
 
             logger.postprocess("Ignoring current failed release %s ...", nzbName)
 
@@ -241,7 +220,7 @@ class autoProcessMovie:
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url, params={'id':release_id})
+                r = requests.get(url, params={'id': release_id})
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure
@@ -258,48 +237,27 @@ class autoProcessMovie:
             logger.debug("Opening URL: %s", url)
 
             try:
-                r = requests.get(url, params={'media_id':media_id})
+                r = requests.get(url, params={'media_id': media_id})
             except requests.ConnectionError:
                 logger.error("Unable to open URL")
                 return 1  # failure
 
             result = r.json()
             if result['success']:
-                logger.postprocess("CouchPotato successfully snatched the next highest release ...", nzbName)
+                logger.postprocess("CouchPotato successfully snatched the next highest release above %s ...", nzbName)
                 return 0
             else:
                 logger.postprocess("CouchPotato was unable to find a higher release then %s to snatch ...", nzbName)
                 return 1
 
-        if not (download_id or media_id or release_id) and imdbid:
-            url = baseURL + "/media.get"
-            logger.debug("Opening URL: %s", url)
-
-            # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
-            timeout = time.time() + 60 * int(wait_for)
-            while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-                try:
-                    r = requests.get(url, params={'id':imdbid})
-                except requests.ConnectionError:
-                    logger.error("Unable to open URL")
-                    return 1 # failure
-
-                result = r.json()
-                if result['media']['status'] == 'ignored':
-                    logger.postprocess("CouchPotato successfully added %s to it's database ...", nzbName)
-                    return 0
-
-            logger.postprocess("CouchPotato was unable to add %s to its database ...", nzbName)
-            return 1
-        elif not (download_id or media_id or release_id):
-            return 1
-
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * int(wait_for)
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-            current_status = self.get_status(baseURL, media_id, release_id)
-            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-                logger.postprocess("SUCCESS: This release is now marked as status [%s] in CouchPotatoServer", current_status.upper())
+            releases_current = self.get_releases(baseURL, download_id, dirName, nzbName)
+            releasesDiff = self.releases_diff(releases, releases_current)
+            if releasesDiff:  # Something has changed. CPS must have processed this movie.
+                release_status = releasesDiff[releasesDiff.keys()[0]]['status']
+                logger.postprocess("SUCCESS: Release %s marked as [%s] on CouchPotato", nzbName, release_status)
                 return 0 # success
 
             # pause and let CouchPotatoServer catch its breath

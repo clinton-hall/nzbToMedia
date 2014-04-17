@@ -408,19 +408,15 @@ def get_dirnames(section, subsections=None):
         if watch_dir:
             dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
                         os.path.isdir(os.path.join(watch_dir, o))])
-            if not dirNames:
-                logger.warning("%s:%s has no directories identified to scan inside %s", section, subsection, watch_dir)
 
         if outputDirectory:
             dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
                         os.path.isdir(os.path.join(outputDirectory, o))])
-            if not dirNames:
-                logger.warning("%s:%s has no directories identified to scan inside %s", section, subsection, outputDirectory)
 
-        if watch_dir is None and outputDirectory is None:
-            logger.warning("%s:%s has no watch_dir or outputDirectory setup to be Scanned, go fix you autoProcessMedia.cfg file.", section, subsection)
+        if not dirNames:
+            logger.warning("%s:%s has no directories identified for post-processing", section, subsection)
 
-    return dirNames
+    return list(set(dirNames))
 
 def delete(dirName):
     logger.info("Deleting failed files and folder %s", dirName)
