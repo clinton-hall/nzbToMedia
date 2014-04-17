@@ -152,9 +152,13 @@ class autoProcessMovie:
         if not releases:
             logger.error("Could not find any releases marked as WANTED on CouchPotato to compare changes against %s, skipping ...", nzbName)
             return 1
-        
-        release_id = releases.keys()[0]
-        media_id = releases[release_id]['media_id']
+
+        release_id = None
+        media_id = None
+        if len(releases) == 1:
+            release_id = releases.keys()[0]
+            media_id = releases[release_id]['media_id']
+            download_id = releases['download_info']['id']
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
@@ -173,8 +177,6 @@ class autoProcessMovie:
                 command = "/renamer.scan"
 
             params = {}
-            if len(releases) == 1:
-                download_id =
             if download_id:
                 params['downloader'] = clientAgent
                 params['download_id'] = download_id
