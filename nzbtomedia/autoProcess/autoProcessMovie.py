@@ -202,7 +202,7 @@ class autoProcessMovie:
         else:
             logger.postprocess("Download of %s has failed.", nzbName)
 
-            if delete_failed and not os.path.dirname(dirName) == dirName:
+            if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s", dirName)
                 delete(dirName)
 

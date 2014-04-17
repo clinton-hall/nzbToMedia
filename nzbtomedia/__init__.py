@@ -242,10 +242,6 @@ def initialize(section=None):
         USER_DELAY = int(CFG["UserScript"]["delay"])
         USER_SCRIPT_RUNONCE = int(CFG["UserScript"]["user_script_runOnce"])
 
-    GIT_PATH = CFG["General"]["git_path"]
-    GIT_USER = CFG["General"]["git_user"]
-    GIT_BRANCH = CFG["General"]["git_branch"]
-
     __INITIALIZED__ = True
     return True
 

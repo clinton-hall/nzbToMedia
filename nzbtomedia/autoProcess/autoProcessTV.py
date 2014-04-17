@@ -138,14 +138,15 @@ class autoProcessTV:
 
         if status == 0:
             logger.postprocess("The download succeeded. Sending process request to %s", section)
-        elif fork in nzbtomedia.SICKBEARD_FAILED:
-            logger.postprocess("The download failed. Sending 'failed' process request to SickBeard's %s branch", fork)
         else:
-            logger.postprocess("The download failed. SickBeard's %s branch does not handle failed downloads. Nothing to process", fork)
-            if delete_failed and os.path.isdir(dirName) and not dirName in ['sys.argv[0]','/','']:
-                logger.postprocess("Deleting directory: %s", dirName)
-                delete(dirName)
-            return 0 # Success (as far as this script is concerned)
+            if fork in nzbtomedia.SICKBEARD_FAILED:
+                logger.postprocess("The download failed. Sending 'failed' process request to SickBeard's %s branch", fork)
+            else:
+                logger.postprocess("The download failed. SickBeard's %s branch does not handle failed downloads. Nothing to process", fork)
+                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
+                    logger.postprocess("Deleting failed files and folder %s", dirName)
+                    delete(dirName)
+                return 0 # Success (as far as this script is concerned)
 
         if status == 0 and transcode == 1: # only transcode successful downlaods
             result = Transcoder().Transcode_directory(dirName)
