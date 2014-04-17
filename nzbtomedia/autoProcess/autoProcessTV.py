@@ -1,9 +1,5 @@
 import copy
-import json
 import os
-import urllib
-import time
-import sys
 import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
@@ -75,6 +71,10 @@ class autoProcessTV:
             Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
         except:
             Torrent_NoLink = 0
+        try:
+            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+        except:
+            remote_path = None
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -124,6 +124,9 @@ class autoProcessTV:
 
             if param in ["dirName", "dir"]:
                 fork_params[param] = dirName
+                if remote_path:
+                    dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
+                    fork_params[param] = dirName_new
 
             if param == "process_method":
                 if fork in nzbtomedia.SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.

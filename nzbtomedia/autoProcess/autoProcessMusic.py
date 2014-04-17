@@ -1,7 +1,5 @@
 import os
 import time
-import datetime
-import urllib
 import nzbtomedia
 from lib import requests
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
@@ -53,7 +51,7 @@ class autoProcessMusic:
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
-        delay = float(nzbtomedia.CFG[section][inputCategory]["delay"])
+        wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
 
         try:
             ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
@@ -63,6 +61,11 @@ class autoProcessMusic:
             web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
+
+        try:
+            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+        except:
+            remote_path = None
 
         if ssl:
             protocol = "https://"
@@ -78,7 +81,11 @@ class autoProcessMusic:
             params = {}
             params['apikey'] = apikey
             params['cmd'] = "forceProcess"
+
             params['dir'] = os.path.dirname(dirName)
+            if remote_path:
+                dirName_new = os.path.join(remote_path, os.path.basename(os.path.dirname(dirName))).replace("\\", "/")
+                params['dir'] = dirName_new
 
             url = baseURL
 
@@ -112,14 +119,14 @@ class autoProcessMusic:
             return 0 # Success (as far as this script is concerned)
 
         # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
-        timeout = time.time() + 60 * 2
+        timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
             current_status = self.get_status(url, apikey, dirName)
             if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s] in HeadPhones",current_status)
                 return 0
 
-            time.sleep(10 * 2)
+            time.sleep(10 * wait_for)
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
         logger.warning("The music album does not appear to have changed status after %s minutes. Please check HeadPhones Logs",2)

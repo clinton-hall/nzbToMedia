@@ -53,14 +53,9 @@
 # set this if using a reverse proxy.
 #sbweb_root=
 
-# SickBeard delay
-#
-# Set the number of seconds to wait before calling post-process in SickBeard.
-#sbdelay=0
-
 # SickBeard watch directory.
 #
-# set this if SickBeard and nzbGet are on different systems.
+# set this to where your SickBeard completed downloads are.
 #sbwatch_dir=
 
 # SickBeard fork.

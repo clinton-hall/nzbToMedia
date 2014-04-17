@@ -1,7 +1,6 @@
 import os
 import re
 import time
-import urllib
 import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
@@ -153,6 +152,9 @@ class autoProcessMovie:
         if not releases:
             logger.error("Could not find any releases marked as WANTED on CouchPotato to compare changes against %s, skipping ...", nzbName)
             return 1
+        
+        release_id = releases.keys()[0]
+        media_id = releases[release_id]['media_id']
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
@@ -171,14 +173,16 @@ class autoProcessMovie:
                 command = "/renamer.scan"
 
             params = {}
+            if len(releases) == 1:
+                download_id =
             if download_id:
                 params['downloader'] = clientAgent
                 params['download_id'] = download_id
 
-            params['media_folder'] = urllib.quote(dirName)
+            params['media_folder'] = dirName
             if remote_path:
                 dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
-                params['media_folder'] = urllib.quote(dirName_new)
+                params['media_folder'] = dirName_new
 
             url = baseURL + command
 
@@ -210,9 +214,6 @@ class autoProcessMovie:
                 logger.warning("Could not find a movie in the database for release %s", nzbName)
                 logger.warning("Please manually ignore this release and refresh the wanted movie from CouchPotato, Exiting ...")
                 return 1 # failure
-
-            release_id = releases.keys()[0]
-            media_id = releases[release_id]['media_id']
 
             logger.postprocess("Ignoring current failed release %s ...", nzbName)
 
@@ -251,7 +252,7 @@ class autoProcessMovie:
                 return 1
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
-        timeout = time.time() + 60 * int(wait_for)
+        timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
             releases_current = self.get_releases(baseURL, download_id, dirName, nzbName)
             releasesDiff = self.releases_diff(releases, releases_current)
@@ -261,7 +262,7 @@ class autoProcessMovie:
                 return 0 # success
 
             # pause and let CouchPotatoServer catch its breath
-            time.sleep(10 * int(wait_for))
+            time.sleep(10 * wait_for)
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
         logger.warning("The movie does not appear to have changed status after %s minutes. Please check CouchPotato Logs", wait_for)

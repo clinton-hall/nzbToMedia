@@ -1,4 +1,3 @@
-import json
 import nzbtomedia
 from lib import requests
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
@@ -44,29 +43,34 @@ class autoProcessGames:
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        baseURL = protocol + host + ":" + port + web_root + "/api?api_key=" + apikey + "&mode="
+        baseURL = protocol + host + ":" + port + web_root + "/api"
 
         fields = nzbName.split("-")
+
         gamezID = fields[0].replace("[","").replace("]","").replace(" ","")
+
         downloadStatus = 'Wanted'
         if status == 0:
             downloadStatus = 'Downloaded'
 
-        url = baseURL + "UPDATEREQUESTEDSTATUS&db_id=" + gamezID + "&status=" + downloadStatus
+        params = {}
+        params['api_key'] = apikey
+        params['mode'] = 'UPDATEREQUESTEDSTATUS'
+        params['db_id'] = gamezID
+        params['status'] = downloadStatus
+
+        url = baseURL
 
         logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url, stream=True)
+            r = requests.get(url, params=params)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1  # failure
 
-        result = {}
-        for line in r.iter_lines():
-            if line:
-                logger.postprocess("%s", line)
-                result.update(json.load(line))
+        result = r.json()
+        logger.postprocess("%s", result)
 
         if result['success']:
             logger.postprocess("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)

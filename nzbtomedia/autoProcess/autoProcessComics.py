@@ -1,4 +1,4 @@
-import urllib
+import os
 import time
 import nzbtomedia
 from lib import requests
@@ -38,17 +38,18 @@ class autoProcessComics:
             web_root = ""
 
         try:
-            watch_dir = nzbtomedia.CFG[section][inputCategory]["watch_dir"]
+            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
         except:
-            watch_dir = ""
-        params = {}
+            remote_path = None
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        if dirName == "Manual Run" and watch_dir != "":
-            dirName = watch_dir
-
+        params = {}
         params['nzb_folder'] = dirName
+        if remote_path:
+            dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
+            params['nzb_folder'] = dirName_new
+
         if nzbName != None:
             params['nzb_name'] = nzbName
 
@@ -57,12 +58,12 @@ class autoProcessComics:
         else:
             protocol = "http://"
 
-        url = protocol + host + ":" + port + web_root + "/post_process?" + urllib.urlencode(params)
+        url = protocol + host + ":" + port + web_root + "/post_process"
 
         logger.debug("Opening URL: %s", url)
 
         try:
-            r = requests.get(url, auth=(username, password), stream=True)
+            r = requests.get(url, params=params, auth=(username, password), stream=True)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1 # failure

@@ -45,10 +45,15 @@
 # set this if using a reverse proxy.
 #hpweb_root=
 
-# HeadPhones Postprocess Delay.
+# HeadPhones watch directory.
 #
-# set as required to ensure correct processing.
-#hpdelay=65
+# set this to where your HeadPhones completed downloads are.
+#hpwatch_dir=
+
+# HeadPhones wait_for
+#
+# Set the number of minutes to wait after initiating HeadPhones post-processing to check if the album status has changed.
+#hpwait_for=2
 
 ## WakeOnLan
 

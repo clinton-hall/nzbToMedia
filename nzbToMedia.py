@@ -45,11 +45,6 @@
 # set this if using a reverse proxy.
 #cpsweb_root=
 
-# CouchPotato Postprocess Delay.
-#
-# must be at least 60 seconds.
-#cpsdelay=65
-
 # CouchPotato Postprocess Method (renamer, manage).
 #
 # use "renamer" for CPS renamer (default) or "manage" to call a manage update.
@@ -98,11 +93,6 @@
 #
 # set this if using a reverse proxy.
 #sbweb_root=
-
-# SickBeard delay
-#
-# Set the number of seconds to wait before calling post-process in SickBeard.
-#sbdelay=0
 
 # SickBeard watch directory.
 #
@@ -175,11 +165,6 @@
 #
 # set this if using a reverse proxy.
 #hpweb_root=
-
-# HeadPhones Postprocess Delay.
-#
-# set as required to ensure correct processing.
-#hpdelay=65
 
 ## Mylar
 
@@ -338,7 +323,7 @@ def main(args, section=None):
     logger.postprocess("#########################################################")
 
     # debug command line options
-    logger.debug("Options passed into nzbToMedia: " + str(args))
+    logger.debug("Options passed into nzbToMedia: %s", args)
 
     # Post-Processing Result
     result = 0

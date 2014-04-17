@@ -46,6 +46,11 @@
 # set this if using a reverse proxy.
 #gzweb_root=
 
+# Gamez watch directory.
+#
+# set this to where your Gamez completed downloads are.
+#gzwatch_dir=
+
 ## WakeOnLan
 
 # use WOL (0, 1).

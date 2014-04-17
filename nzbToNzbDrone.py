@@ -48,14 +48,9 @@
 # set this if using a reverse proxy.
 #ndweb_root=
 
-# NzbDrone delay
-#
-# Set the number of seconds to wait before calling post-process in NzbDrone.
-#nddelay=0
-
 # NzbDrone watch directory.
 #
-# set this if NzbDrone and nzbGet are on different systems.
+# set this to where your NzbDrone completed downloads are.
 #ndwatch_dir=
 
 ## Extensions

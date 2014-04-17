@@ -49,6 +49,11 @@
 # set this if using a reverse proxy.
 #myweb_root=
 
+# Mylar watch directory.
+#
+# set this to where your Mylar completed downloads are.
+#mywatch_dir=
+
 ## WakeOnLan
 
 # use WOL (0, 1).

@@ -47,13 +47,8 @@
 
 # CouchPotato watch directory.
 #
-# set this if CouchPotato and nzbGet are on different systems.
+# set this to where your CouchPotato completed downloads are.
 #cpswatch_dir=
-
-# CouchPotato Postprocess Delay.
-#
-# must be at least 60 seconds.
-#cpsdelay=65
 
 # CouchPotato Postprocess Method (renamer, manage).
 #

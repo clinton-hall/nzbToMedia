@@ -332,7 +332,7 @@ def main(args):
     logger.postprocess("#########################################################")
 
     # debug command line options
-    logger.debug("Options passed into TorrentToMedia: " + str(args))
+    logger.debug("Options passed into TorrentToMedia: %s", args)
 
     # Post-Processing Result
     result = 0

@@ -20,12 +20,12 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
-        delay = 65
         method = renamer
         delete_failed = 0
         wait_for = 2
-        #### # Set to path where completed downloads go on the remote CouchPotatoServer
+        ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
 [SickBeard]
@@ -40,13 +40,15 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root =
         ssl = 0
-        delay = 0
-        watch_dir =
         fork = auto
         delete_failed = 0
         nzbExtractionBy = Downloader
         Torrent_NoLink = 0
         process_method =
+        ##### Set to path where completed downloads are found on remote server for this category
+        remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
 
 [NzbDrone]
     #### autoProcessing for TV Series
@@ -61,11 +63,13 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root =
         ssl = 0
-        delay = 0
-        watch_dir =
         delete_failed = 0
         nzbExtractionBy = Downloader
         Torrent_NoLink = 0
+        ##### Set to path where completed downloads are found on remote server for this category
+        remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
 
 [HeadPhones]
     #### autoProcessing for Music
@@ -78,7 +82,10 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
-        delay = 65
+        wait_for = 2
+        ##### Set to path where completed downloads are found on remote server for this category
+        remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
 [Mylar]
@@ -93,6 +100,9 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root=
         ssl=0
+        ##### Set to path where completed downloads are found on remote server for this category
+        remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
 [Gamez]
@@ -106,6 +116,9 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        ##### Set to path where completed downloads are found on remote server for this category
+        remote_path =
+        ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
 [Torrent]
