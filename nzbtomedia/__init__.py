@@ -97,7 +97,7 @@ USER_SCRIPT_RUNONCE = None
 
 __INITIALIZED__ = False
 
-def initialize():
+def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS,\
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SICKBEARD_TORRENT, SICKBEARD_FAILED,\
         PROGRAM_DIR, CFG, CFG_LOGGING, CONFIG_FILE, CONFIG_MOVIE_FILE, CONFIG_SPEC_FILE, LOG_DIR, NZBTOMEDIA_BRANCH,\
@@ -222,7 +222,12 @@ def initialize():
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
 
-    SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
+    # check for script-defied section and if None set to allow sections
+    if section:
+        SECTIONS = (section,)
+    else:
+        SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
+
     SUBSECTIONS = CFG[SECTIONS]
     CATEGORIES += SUBSECTIONS.sections
 

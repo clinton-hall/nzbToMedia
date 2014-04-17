@@ -367,7 +367,7 @@ def parse_transmission(args):
     inputID = os.getenv('TR_TORRENT_ID')
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
-def parse_args(clientAgent):
+def parse_args(clientAgent, args):
     clients = {
     'other': parse_other,
     'rtorrent': parse_rtorrent,
@@ -377,7 +377,7 @@ def parse_args(clientAgent):
     }
 
     try:
-        return clients[clientAgent](sys.argv)
+        return clients[clientAgent](args)
     except:return None, None, None, None, None
 
 def get_dirnames(section, subsections=None):

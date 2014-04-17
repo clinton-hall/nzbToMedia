@@ -3,5 +3,6 @@
 *.pyc
 *.pyo
 *.log
+/userscripts/
 /logs/
 /.idea/

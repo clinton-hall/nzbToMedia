@@ -323,7 +323,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
         logger.postprocess("%s files were processed, but %s still remain. outputDirectory will not be cleaned.", num_files, num_files_new)
     return final_result
 
-def main():
+def main(args):
     # Initialize the config
     nzbtomedia.initialize()
 
@@ -332,7 +332,7 @@ def main():
     logger.postprocess("#########################################################")
 
     # debug command line options
-    logger.debug("Options passed into TorrentToMedia: " + str(sys.argv))
+    logger.debug("Options passed into TorrentToMedia: " + str(args))
 
     # Post-Processing Result
     result = 0
@@ -341,7 +341,7 @@ def main():
     clientAgent = nzbtomedia.CLIENTAGENT
 
     try:
-        inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent)
+        inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent, args)
     except:
         logger.error("There was a problem loading variables")
         return -1
@@ -366,7 +366,7 @@ def main():
         result = processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent)
 
     logger.postprocess("All done.")
-    return result
+    sys.exit(result)
 
 if __name__ == "__main__":
-    exit(main())
+    main(sys.argv)

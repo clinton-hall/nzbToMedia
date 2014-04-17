@@ -179,8 +179,8 @@
     user_script_categories = NONE
     #What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
     user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
-    #Specify the path of the script
-    user_script_path = /media/test/script/script.sh
+    #Specify the path to your custom script
+    user_script_path = /nzbToMedia/userscripts/script.sh
     #Specify the argument(s) passed to script, comma separated in order.
     #for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
     #So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r

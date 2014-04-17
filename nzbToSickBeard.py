@@ -130,13 +130,8 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
-
-# Stub file to call nzbToMedia
+import sys
 import nzbToMedia
 
-def main():
-    # call nzbToMedia
-    nzbToMedia.main()
-
-if __name__ == "__main__":
-    exit(main())
+section = "SickBeard"
+nzbToMedia.main(sys.argv, section)

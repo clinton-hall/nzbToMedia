@@ -329,16 +329,16 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
 
     return result
 
-def main():
+def main(args, section=None):
     # Initialize the config
-    nzbtomedia.initialize()
+    nzbtomedia.initialize(section)
 
     logger.postprocess("#########################################################")
     logger.postprocess("## ..::[%s]::.. :: STARTING", os.path.splitext(os.path.basename(os.path.normpath(os.path.abspath(__file__))))[0])
     logger.postprocess("#########################################################")
 
     # debug command line options
-    logger.debug("Options passed into nzbToMedia: " + str(sys.argv))
+    logger.debug("Options passed into nzbToMedia: " + str(args))
 
     # Post-Processing Result
     result = 0
@@ -393,7 +393,7 @@ def main():
         # All checks done, now launching the script.
         result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status, clientAgent = "nzbget", download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
     # SABnzbd Pre 0.7.17
-    elif len(sys.argv) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
+    elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
         # 1 The final directory of the job (full path)
         # 2 The original name of the NZB file
@@ -403,9 +403,9 @@ def main():
         # 6 Group that the NZB was posted in e.g. alt.binaries.x
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         logger.postprocess("Script triggered from SABnzbd")
-        result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent = "sabnzbd", download_id='')
     # SABnzbd 0.7.17+
-    elif len(sys.argv) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
+    elif len(args) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
         # SABnzbd argv:
         # 1 The final directory of the job (full path)
         # 2 The original name of the NZB file
@@ -416,7 +416,7 @@ def main():
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         # 8 Failure URL
         logger.postprocess("Script triggered from SABnzbd 0.7.17+")
-        result = process(sys.argv[1], inputName=sys.argv[2], status=sys.argv[7], inputCategory=sys.argv[5], clientAgent = "sabnzbd", download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent = "sabnzbd", download_id='')
     else:
         # Perform Manual Run
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
@@ -437,15 +437,15 @@ def main():
                     logger.postprocess("nzbToMedia %s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
 
     if result == 0:
-        logger.postprocess("The nzbToMedia script completed successfully.")
+        logger.postprocess("The %s script completed successfully.", args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
-        logger.error("A problem was reported in the nzbToMedia script.")
+        logger.error("A problem was reported in the nzbToMedia script.", args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
-    return result
+    sys.exit(result)
 
 if __name__ == '__main__':
-    exit(main())
+    main(sys.argv)
