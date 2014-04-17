@@ -78,8 +78,9 @@ class autoProcessMovie:
 
             for movie in movies:
                 for release in movie['releases']:
-                    if download_id and download_id != release['download_info']['id']:
-                        continue
+                    if download_id and hasattr(release, 'download_info'):
+                        if download_id != release['download_info']['id']:
+                            continue
 
                     releases[release['_id']] = release
         except:pass
@@ -158,7 +159,8 @@ class autoProcessMovie:
         if len(releases) == 1:
             release_id = releases.keys()[0]
             media_id = releases[release_id]['media_id']
-            download_id = releases['download_info']['id']
+            if hasattr(releases, 'download_info'):
+                download_id = releases['download_info']['id']
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
