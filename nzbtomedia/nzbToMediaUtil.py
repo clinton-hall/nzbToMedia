@@ -350,11 +350,11 @@ def parse_utorrent(args):
 
 def parse_deluge(args):
     # Deluge usage: call TorrentToMedia.py TORRENT_ID TORRENT_NAME TORRENT_DIR
-    inputDirectory = os.path.normpath(sys.argv[3])
-    inputName = sys.argv[2]
+    inputDirectory = os.path.normpath(args[3])
+    inputName = args[2]
     inputCategory = ''  # We dont have a category yet
-    inputHash = sys.argv[1]
-    inputID = sys.argv[1]
+    inputHash = args[1]
+    inputID = args[1]
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
