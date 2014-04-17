@@ -92,7 +92,7 @@ class NTMRotatingLogHandler(object):
         logging.getLogger('nzbtomedia').addHandler(self.cur_handler)
         logging.getLogger('postprocess').addHandler(self.cur_handler)
 
-        logging.getLogger('nzbtomedia').setLevel(logging.INFO)
+        logging.getLogger('nzbtomedia').setLevel(logging.DEBUG)
         logging.getLogger('postprocess').setLevel(POSTPROCESS)
 
         # already logging in new log folder, close the old handler
