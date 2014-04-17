@@ -419,7 +419,7 @@ def get_dirnames(section, subsections=None):
     return list(set(dirNames))
 
 def delete(dirName):
-    logger.info("Deleting failed files and folder %s", dirName)
+    logger.info("Deleting %s", dirName)
     try:
         shutil.rmtree(dirName, True)
     except:

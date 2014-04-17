@@ -52,7 +52,7 @@ class autoProcessMovie:
         # determin cmd and params to send to CouchPotato to get our results
         section = 'movies'
         cmd = "/media.list"
-        params['status'] = 'active'
+        params['status'] = 'active,done'
         if imdbid:
             section = 'media'
             cmd = "/media.get"
@@ -71,19 +71,20 @@ class autoProcessMovie:
 
         results = r.json()
 
-        try:
-            movies = results[section]
-            if not isinstance(movies, list):
-                movies = [movies]
+        movies = results[section]
+        if not isinstance(movies, list):
+            movies = [movies]
 
-            for movie in movies:
-                for release in movie['releases']:
-                    if download_id and hasattr(release, 'download_info'):
+        for movie in movies:
+            for release in movie['releases']:
+                if download_id:
+                    try:
                         if download_id != release['download_info']['id']:
-                            continue
+                                continue
+                    except:continue
 
-                    releases[release['_id']] = release
-        except:pass
+                id = release['_id']
+                releases[id] = release
 
         return releases
 
@@ -154,13 +155,15 @@ class autoProcessMovie:
             logger.error("Could not find any releases marked as WANTED on CouchPotato to compare changes against %s, skipping ...", nzbName)
             return 1
 
+        # try to get release_id, media_id, and download_id if one was not passed in
         release_id = None
         media_id = None
         if len(releases) == 1:
-            release_id = releases.keys()[0]
-            media_id = releases[release_id]['media_id']
-            if hasattr(releases, 'download_info'):
+            try:
+                release_id = releases.keys()[0]
+                media_id = releases[release_id]['media_id']
                 download_id = releases['download_info']['id']
+            except:pass
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
