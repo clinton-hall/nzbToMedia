@@ -112,17 +112,23 @@ class autoProcessMovie:
             logger.error("Could not find any releases marked as WANTED matching %s, skipping ..." % nzbName, section)
             return 1
 
-        # try to get release_id, media_id, and download_id if one was not passed in
+        # pull info from release found if available
         release_id = None
         media_id = None
         downloader = None
+        release_status = None
         if len(releases) == 1:
             try:
                 release_id = releases.keys()[0]
                 media_id = releases[release_id]['media_id']
                 download_id = releases[release_id]['download_info']['id']
                 downloader = releases[release_id]['download_info']['downloader']
+                release_status = releases[release_id]['status']
             except:pass
+        
+        if release_status and release_status == 'downloaded':
+            logger.warning("%s currently has a status of [%s], skipping ..." % (release_status), section)
+            return 0
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
