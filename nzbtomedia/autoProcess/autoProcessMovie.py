@@ -121,7 +121,7 @@ class autoProcessMovie:
                 release_id = releases.keys()[0]
                 media_id = releases[release_id]['media_id']
                 download_id = releases[release_id]['download_info']['id']
-                downloader = releases[release_id]['download_info']['id']
+                downloader = releases[release_id]['download_info']['downloader']
             except:pass
 
         process_all_exceptions(nzbName.lower(), dirName)
