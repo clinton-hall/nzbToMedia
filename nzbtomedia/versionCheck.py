@@ -225,7 +225,7 @@ class GitUpdateManager(UpdateManager):
             branch = branch_info.strip().replace('refs/heads/', '', 1)
             if branch:
                 nzbtomedia.NZBTOMEDIA_BRANCH = branch
-        return nzbtomedia.NZBTOMEDIA_BRANCH
+        return nzbtomedia.GIT_BRANCH
 
     def _check_github_for_update(self):
         """
@@ -273,7 +273,7 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
                 return
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u", newest_commit = " + str(self._newest_commit_hash)
+        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
                    + u", num_commits_behind = " + str(self._num_commits_behind) + u", num_commits_ahead = " + str(
             self._num_commits_ahead), logger.DEBUG)
 
@@ -405,7 +405,7 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u", newest_commit = " + str(self._newest_commit_hash)
+        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
                    + u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
 
     def set_newest_text(self):

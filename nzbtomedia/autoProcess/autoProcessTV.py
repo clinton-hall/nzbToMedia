@@ -10,20 +10,12 @@ from nzbtomedia import logger
 
 class autoProcessTV:
     def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
-        if dirName is None:
-            logger.error("No directory was given!")
-            return 1  # failure
-
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
             logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
             return 1
-
-        logger.postprocess("#########################################################")
-        logger.postprocess("## ..::[%s]::.. :: CATEGORY:[%s]", section, inputCategory)
-        logger.postprocess("#########################################################")
 
         # auto-detect correct fork
         fork, fork_params = autoFork(inputCategory)
@@ -48,17 +40,9 @@ class autoProcessTV:
         except:
             web_root = ""
         try:
-            transcode = int(nzbtomedia.CFG["Transcoder"]["transcode"])
-        except:
-            transcode = 0
-        try:
             delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
         except:
             delete_failed = 0
-        try:
-            SampleIDs = (nzbtomedia.CFG["Extensions"]["SampleIDs"])
-        except:
-            SampleIDs = ['sample','-s.']
         try:
             nzbExtractionBy = nzbtomedia.CFG[section][inputCategory]["nzbExtractionBy"]
         except:
@@ -98,18 +82,18 @@ class autoProcessTV:
                     filePath = os.path.join(dirpath, file)
                     fileExtension = os.path.splitext(file)[1]
                     if fileExtension in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
-                        if is_sample(filePath, nzbName, nzbtomedia.MINSAMPLESIZE, SampleIDs):
-                            logger.debug("Removing sample file: %s", filePath)
+                        if is_sample(filePath, nzbName, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
+                            logger.debug("Removing sample file: %s" % (filePath), section)
                             os.unlink(filePath)  # remove samples
                         else:
                             video = video + 1
             if video > 0:  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
             elif clientAgent == "manual":
-                logger.warning("No media files found in directory %s to manually process.", dirName)
+                logger.warning("No media files found in directory %s to manually process." % (dirName), section)
                 return 0  # Success (as far as this script is concerned)
             else:
-                logger.warning("No media files found in directory %s. Processing this as a failed download", dirName)
+                logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
                 status = int(1)
                 failed = True
 
@@ -140,29 +124,28 @@ class autoProcessTV:
         [fork_params.pop(k) for k,v in fork_params.items() if v is None]
 
         if status == 0:
-            logger.postprocess("The download succeeded. Sending process request to %s", section)
+            logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
             if fork in nzbtomedia.SICKBEARD_FAILED:
-                logger.postprocess("The download failed. Sending 'failed' process request to SickBeard's %s branch", fork)
+                logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             else:
-                logger.postprocess("The download failed. SickBeard's %s branch does not handle failed downloads. Nothing to process", fork)
+                logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
-                    logger.postprocess("Deleting failed files and folder %s", dirName)
+                    logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
                     delete(dirName)
                 return 0 # Success (as far as this script is concerned)
 
-        if status == 0 and transcode == 1: # only transcode successful downlaods
+        if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
             result = Transcoder().Transcode_directory(dirName)
             if result == 0:
-                logger.debug("Transcoding succeeded for files in %s", dirName)
+                logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
             else:
-                logger.warning("Transcoding failed for files in %s", dirName)
+                logger.warning("FAILED: Transcoding failed for files in %s" % (dirName), section)
 
         if ssl:
             protocol = "https://"
         else:
             protocol = "http://"
-
 
         url = None
         if section == "SickBeard":
@@ -170,7 +153,7 @@ class autoProcessTV:
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
 
-        logger.debug("Opening URL: %s", url)
+        logger.debug("Opening URL: %s" % (url),section)
 
         try:
             r = None
@@ -181,13 +164,13 @@ class autoProcessTV:
                 headers = {"X-Api-Key": apikey}
                 r = requests.get(url, params=params, headers=headers, stream=True)
         except requests.ConnectionError:
-            logger.error("Unable to open URL")
+            logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure
 
         for line in r.iter_lines():
-            if line: logger.postprocess("%s", line)
+            if line: logger.postprocess("%s" % (line))
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
-            logger.postprocess("Deleting failed files and folder %s", dirName)
+            logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             delete(dirName)
         return 0 # Success

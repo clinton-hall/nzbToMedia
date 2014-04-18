@@ -7,20 +7,12 @@ from nzbtomedia import logger
 
 class autoProcessComics:
     def processEpisode(self, dirName, nzbName=None, status=0, clientAgent='manual', inputCategory=None):
-        if dirName is None:
-            logger.error("No directory was given!")
-            return 1  # failure
-
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
             logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
             return 1
-
-        logger.postprocess("#########################################################")
-        logger.postprocess("## ..::[%s]::.. :: CATEGORY:[%s]", section, inputCategory)
-        logger.postprocess("#########################################################")
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -59,16 +51,16 @@ class autoProcessComics:
             protocol = "http://"
 
         url = "%s%s:%s%s/post_process" % (protocol, host, port, web_root)
-        logger.debug("Opening URL: %s", url)
+        logger.debug("Opening URL: %s" % (url), section)
 
         try:
             r = requests.get(url, params=params, auth=(username, password), stream=True)
         except requests.ConnectionError:
-            logger.error("Unable to open URL")
+            logger.error("Unable to open URL", section)
             return 1 # failure
 
         for line in r.iter_lines():
-            if line: logger.postprocess("%s", line)
+            if line: logger.postprocess("%s" % (line), section)
 
         time.sleep(60) #wait 1 minute for now... need to see just what gets logged and how long it takes to process
         return 0 # Success

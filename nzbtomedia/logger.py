@@ -76,8 +76,8 @@ class NTMRotatingLogHandler(object):
 
                 # set a format which is simpler for console use
                 console.setFormatter(DispatchingFormatter(
-                    {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)s:: %(message)s', '%H:%M:%S'),
-                     'postprocess': logging.Formatter('%(asctime)s %(levelname)s:: %(message)s', '%H:%M:%S')
+                    {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                     'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
                     },
                     logging.Formatter('%(message)s'), ))
 
@@ -109,8 +109,8 @@ class NTMRotatingLogHandler(object):
         file_handler.setLevel(logging.DEBUG)
 
         file_handler.setFormatter(DispatchingFormatter(
-            {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s:: %(message)s', '%Y-%m-%d %H:%M:%S'),
-             'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s:: %(message)s', '%Y-%m-%d %H:%M:%S')
+            {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+             'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
             },
             logging.Formatter('%(message)s'), ))
 
@@ -166,7 +166,7 @@ class NTMRotatingLogHandler(object):
         ntm_logger.addHandler(new_file_handler)
         pp_logger.addHandler(new_file_handler)
 
-    def log(self, toLog, logLevel=MESSAGE):
+    def log(self, toLog, logLevel=MESSAGE, section='MAIN'):
 
         with self.log_lock:
 
@@ -178,7 +178,7 @@ class NTMRotatingLogHandler(object):
             else:
                 self.writes_since_check += 1
 
-            message = u"" + toLog
+            message = u"%s:: %s" % (str(section).upper(), toLog)
 
             out_line = message
 
@@ -188,7 +188,8 @@ class NTMRotatingLogHandler(object):
 
             try:
                 if logLevel == DEBUG:
-                    ntm_logger.debug(out_line)
+                    if nzbtomedia.LOG_DEBUG == 1:
+                        ntm_logger.debug(out_line)
                 elif logLevel == MESSAGE:
                     ntm_logger.info(out_line)
                 elif logLevel == WARNING:
@@ -221,31 +222,26 @@ class DispatchingFormatter:
 
 ntm_log_instance = NTMRotatingLogHandler("nzbtomedia.log", NUM_LOGS, LOG_SIZE)
 
-def log(toLog, logLevel=MESSAGE):
-    ntm_log_instance.log(toLog, logLevel)
+def log(toLog, logLevel=MESSAGE, section='MAIN'):
+    ntm_log_instance.log(toLog, logLevel, section)
 
-def info(toLog, *args):
-    toLog = toLog % args
-    ntm_log_instance.log(toLog, MESSAGE)
+def info(toLog, section='MAIN'):
+    log(toLog, MESSAGE, section)
 
-def error(toLog, *args):
-    toLog = toLog % args
-    ntm_log_instance.log(toLog, ERROR)
+def error(toLog, section='MAIN'):
+    log(toLog, ERROR, section)
 
-def warning(toLog, *args):
-    toLog = toLog % args
-    ntm_log_instance.log(toLog, WARNING)
+def warning(toLog, section='MAIN'):
+    log(toLog, WARNING, section)
 
-def debug(toLog, *args):
-    toLog = toLog % args
-    ntm_log_instance.log(toLog, DEBUG)
+def debug(toLog, section='MAIN'):
+    log(toLog, DEBUG, section)
+
+def postprocess(toLog, section='MAIN'):
+    log(toLog, POSTPROCESS, section)
 
 def log_error_and_exit(error_msg):
     ntm_log_instance.log_error_and_exit(error_msg)
-
-def postprocess(toLog, *args):
-    toLog = toLog % args
-    ntm_log_instance.log(toLog, POSTPROCESS)
 
 def close():
     ntm_log_instance.close_log()

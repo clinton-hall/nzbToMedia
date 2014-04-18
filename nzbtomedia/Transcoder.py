@@ -11,15 +11,15 @@ class Transcoder:
             ffmpeg = os.path.join(os.path.dirname(sys.argv[0]), 'ffmpeg\\bin\\ffmpeg.exe') # note, will need to package in this dir.
             useNiceness = False
             if not os.path.isfile(ffmpeg): # problem
-                logger.error("ffmpeg not found. ffmpeg needs to be located at: %s", ffmpeg)
-                logger.info("Cannot transcode files in folder %s", dirName)
+                logger.error("ffmpeg not found. ffmpeg needs to be located at: %s" % (ffmpeg))
+                logger.info("Cannot transcode files in folder %s" % (dirName))
                 return 1 # failure
         else:
             if call(['which', 'ffmpeg']) != 0:
                 res = call([os.path.join(os.path.dirname(sys.argv[0]),'getffmpeg.sh')])
                 if res or call(['which', 'ffmpeg']) != 0: # did not install or ffmpeg still not found.
                     logger.error("Failed to install ffmpeg. Please install manually")
-                    logger.info("Cannot transcode files in folder %s", dirName)
+                    logger.info("Cannot transcode files in folder %s" % (dirName))
                     return 1 # failure
                 else:
                     ffmpeg = 'ffmpeg'
@@ -41,7 +41,7 @@ class Transcoder:
                 name, ext = os.path.splitext(filePath)
                 if ext in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
                     if ext in nzbtomedia.IGNOREEXTENSIONS:
-                        logger.info("No need to transcode video type %s", ext)
+                        logger.info("No need to transcode video type %s" % (ext))
                         continue
                     if ext == outputVideoExtension: # we need to change the name to prevent overwriting itself.
                         outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
@@ -96,26 +96,26 @@ class Transcoder:
                         os.remove(newfilePath)
                     except OSError, e:
                         if e.errno != errno.ENOENT: # Ignore the error if it's just telling us that the file doesn't exist
-                            logger.debug("Error when removing transcoding target: %s", e)
+                            logger.debug("Error when removing transcoding target: %s" % (e))
                     except Exception, e:
-                        logger.debug("Error when removing transcoding target: %s", e)
+                        logger.debug("Error when removing transcoding target: %s" % (e))
 
-                    logger.info("Transcoding video: %s", file)
+                    logger.info("Transcoding video: %s" % (file))
                     cmd = ""
                     for item in command:
                         cmd = cmd + " " + item
-                    logger.debug("calling command:%s", cmd)
+                    logger.debug("calling command:%s" % (cmd))
                     result = 1 # set result to failed in case call fails.
                     try:
                         result = call(command)
                     except:
-                        logger.error("Transcoding of video %s has failed", filePath)
+                        logger.error("Transcoding of video %s has failed" % (filePath))
                     if result == 0:
-                        logger.info("Transcoding of video %s to %s succeeded", filePath, newfilePath)
+                        logger.info("Transcoding of video %s to %s succeeded" % (filePath, newfilePath))
                         if nzbtomedia.DUPLICATE == 0: # we get rid of the original file
                             os.unlink(filePath)
                     else:
-                        logger.error("Transcoding of video %s to %s failed", filePath, newfilePath)
+                        logger.error("Transcoding of video %s to %s failed" % (filePath, newfilePath))
                     # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
                     final_result = final_result + result
         return final_result

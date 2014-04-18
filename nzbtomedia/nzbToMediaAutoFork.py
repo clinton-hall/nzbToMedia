@@ -7,7 +7,7 @@ def autoFork(inputCategory):
     section = nzbtomedia.CFG.findsection(inputCategory)
     if not section:
         logger.error(
-            "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+            "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
         return 1
 
     # config settings
@@ -47,9 +47,9 @@ def autoFork(inputCategory):
 
     detected = False
     if fork == "auto":
-        logger.info("Attempting to auto-detect " + section + " fork")
+        logger.info("Attempting to auto-detect %s fork" % inputCategory)
         for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=False):
-            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode?" + urllib.urlencode(fork[1])
+            url = "%s%s:%s%s/home/postprocess/processEpisode?%s" % (protocol,host,port,web_root,urllib.urlencode(fork[1]))
 
             # attempting to auto-detect fork
             try:
@@ -58,7 +58,7 @@ def autoFork(inputCategory):
                 else:
                     r = requests.get(url)
             except requests.ConnectionError:
-                logger.info("Could not connect to " + section + ":" + inputCategory + " to perform auto-fork detection!")
+                logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
                 break
 
             if r.ok:
@@ -66,10 +66,10 @@ def autoFork(inputCategory):
                 break
 
         if detected:
-            logger.info("" + section + ":" + inputCategory + " fork auto-detection successful ...")
+            logger.info("%s:%s fork auto-detection successful ..." % (section, inputCategory))
         else:
-            logger.info("" + section + ":" + inputCategory + " fork auto-detection failed")
+            logger.info("%s:%s fork auto-detection failed" % (section, inputCategory))
             fork = nzbtomedia.FORKS.items()[nzbtomedia.FORKS.keys().index(nzbtomedia.FORK_DEFAULT)]
 
-    logger.info("" + section + ":" + inputCategory + " fork set to %s", fork[0])
+    logger.info("%s:%s inputCategory fork set to %s" % (section, inputCategory, fork[0]))
     return fork[0], fork[1]

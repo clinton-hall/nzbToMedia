@@ -8,7 +8,8 @@
     git_user =
     git_branch =
     force_clean = 0
-
+    log_debug = 0
+    
 [CouchPotato]
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS

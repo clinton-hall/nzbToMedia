@@ -31,15 +31,16 @@ NZBGET_POSTPROCESS_NONE = 95
 # config constants
 CFG = None
 CFG_LOGGING = None
-APP_FILENAME = ''
-APP_NAME = ''
-PROGRAM_DIR = ''
-LOG_DIR = ''
-LOG_FILE = ''
-CONFIG_FILE = ''
-CONFIG_SPEC_FILE = ''
-CONFIG_MOVIE_FILE = ''
-CONFIG_TV_FILE = ''
+APP_FILENAME = None
+APP_NAME = None
+PROGRAM_DIR = None
+LOG_DIR = None
+LOG_FILE = None
+LOG_DEBUG = None
+CONFIG_FILE = None
+CONFIG_SPEC_FILE = None
+CONFIG_MOVIE_FILE = None
+CONFIG_TV_FILE = None
 SYS_ENCODING = None
 SYS_ARGV = None
 
@@ -129,13 +130,10 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, MEDIAEXTENSIONS
+        NICENESS, MEDIAEXTENSIONS, LOG_DEBUG
 
     if __INITIALIZED__:
         return False
-
-    # add our custom libs to the system path
-    sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
     # init preliminaries
     SYS_ARGV = sys.argv[1:]
@@ -144,10 +142,13 @@ def initialize(section=None):
     PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
     LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
     LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
-    CONFIG_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg")
-    CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, "autoProcessMedia.cfg.spec")
-    CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, "autoProcessMovie.cfg")
-    CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, "autoProcessTv.cfg")
+    CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
+    CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
+    CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
+    CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
+
+    # add our custom libs to the system path
+    sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
     try:
         locale.setlocale(locale.LC_ALL, "")
@@ -179,18 +180,21 @@ def initialize(section=None):
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error("Unable to migrate config file %s, exiting ...", CONFIG_FILE)
+        logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
         sys.exit(-1)
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         if not config.addnzbget():
-            logger.error("Unable to migrate NzbGet config file %s, exiting ...", CONFIG_FILE)
+            logger.error("Unable to migrate NzbGet config file %s, exiting ..." % (CONFIG_FILE))
             sys.exit(-1)
 
     # load newly migrated config
-    logger.info("Loading config from %s", CONFIG_FILE)
+    logger.info("Loading config from %s" % CONFIG_FILE)
     CFG = config()
+
+    # Enable/Disable DEBUG Logging
+    LOG_DEBUG = int(CFG['General']['log_debug'])
 
     # Set Version and GIT variables
     NZBTOMEDIA_VERSION = '9.3'

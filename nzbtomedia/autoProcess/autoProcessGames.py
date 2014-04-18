@@ -13,12 +13,8 @@ class autoProcessGames:
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
             logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file.", inputCategory)
+                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
             return 1
-
-        logger.postprocess("#########################################################")
-        logger.postprocess("## ..::[%s]::.. :: CATEGORY:[%s]", section, inputCategory)
-        logger.postprocess("#########################################################")
 
         status = int(status)
 
@@ -59,7 +55,7 @@ class autoProcessGames:
         params['db_id'] = gamezID
         params['status'] = downloadStatus
 
-        logger.debug("Opening URL: %s", url)
+        logger.debug("Opening URL: %s" % (url),section)
 
         try:
             r = requests.get(url, params=params)
@@ -68,11 +64,11 @@ class autoProcessGames:
             return 1  # failure
 
         result = r.json()
-        logger.postprocess("%s", result)
+        logger.postprocess("%s" % (result),section)
 
         if result['success']:
-            logger.postprocess("Status for %s has been set to %s in Gamez", gamezID, downloadStatus)
+            logger.postprocess("SUCCESS: Status for %s has been set to %s in Gamez" % (gamezID, downloadStatus),section)
             return 0 # Success
         else:
-            logger.error("Status for %s has NOT been updated in Gamez", gamezID)
+            logger.error("FAILED: Status for %s has NOT been updated in Gamez" % (gamezID),section)
             return 1 # failure
