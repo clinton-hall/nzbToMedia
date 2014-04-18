@@ -108,10 +108,6 @@ class autoProcessMovie:
         imdbid = find_imdbid(dirName,nzbName)
         releases = self.get_releases(baseURL, imdbid, download_id)
 
-        if not releases:
-            logger.error("Could not find any releases marked as WANTED matching %s, skipping ..." % nzbName, section)
-            return 1
-
         # pull info from release found if available
         release_id = None
         media_id = None
