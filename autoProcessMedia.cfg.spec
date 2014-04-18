@@ -121,6 +121,14 @@
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
+[Nzb]
+    ###### clientAgent - Supported clients: sabnzbd, nzbget
+    clientAgent = sabnzbd
+    ###### SabNZBD (You must edit this if your using nzbToMedia.py with SabNZBD)
+    sabnzbd_host = localhost
+    sabnzbd_port = 8080
+    sabnzbd_apikey =
+
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, other
     clientAgent = other

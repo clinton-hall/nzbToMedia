@@ -2,7 +2,7 @@ import os
 import sys
 import nzbtomedia
 from subprocess import call, Popen
-from nzbtomedia.nzbToMediaUtil import create_destination
+from nzbtomedia.nzbToMediaUtil import makeDir
 from nzbtomedia import logger
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
@@ -91,7 +91,7 @@ def extract(filePath, outputDestination):
             return False
 
     # Create outputDestination folder
-    create_destination(outputDestination)
+    makeDir(outputDestination)
 
     passwordsfile = nzbtomedia.CFG["passwords"]["PassWordFile"]
     if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):

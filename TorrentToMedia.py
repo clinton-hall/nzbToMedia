@@ -16,7 +16,7 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, safeName, is_sample, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, cleanup_directories, create_torrent_class
+    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
@@ -215,41 +215,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     cleanup_directories(inputCategory, processCategories, result, outputDestination)
     return result
 
-def pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName):
-    # if we are using links with Torrents it means we need to pause it in order to access the files
-    logger.debug("Stoping torrent %s in %s while processing", inputName, clientAgent)
-    if clientAgent == 'utorrent' and TorrentClass != "":
-        TorrentClass.stop(inputHash)
-    if clientAgent == 'transmission' and TorrentClass !="":
-        TorrentClass.stop_torrent(inputID)
-    if clientAgent == 'deluge' and TorrentClass != "":
-        TorrentClass.core.pause_torrent([inputID])
-    time.sleep(5)  # Give Torrent client some time to catch up with the change
-
-def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName):
-    # Hardlink solution for uTorrent, need to implent support for deluge, transmission
-    if clientAgent in ['utorrent', 'transmission', 'deluge']  and inputHash:
-        # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if (int(nzbtomedia.CFG["Torrent"]["deleteOriginal"]) is 1 and result != 1) or nzbtomedia.USELINK == 'move': # if we move files, nothing to resume seeding.
-            logger.debug("Deleting torrent %s from %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and TorrentClass != "":
-                TorrentClass.removedata(inputHash)
-                TorrentClass.remove(inputHash)
-            if clientAgent == 'transmission' and TorrentClass !="":
-                TorrentClass.remove_torrent(inputID, True)
-            if clientAgent == 'deluge' and TorrentClass != "":
-                TorrentClass.core.remove_torrent(inputID, True)
-        # we always want to resume seeding, for now manually find out what is wrong when extraction fails
-        else:
-            logger.debug("Starting torrent %s in %s", inputName, clientAgent)
-            if clientAgent == 'utorrent' and TorrentClass != "":
-                TorrentClass.start(inputHash)
-            if clientAgent == 'transmission' and TorrentClass !="":
-                TorrentClass.start_torrent(inputID)
-            if clientAgent == 'deluge' and TorrentClass != "":
-                TorrentClass.core.resume_torrent([inputID])
-        time.sleep(5)
-
 def external_script(outputDestination, torrentName, torrentLabel):
 
     final_result = int(0) # start at 0.
@@ -327,8 +292,11 @@ def main(args):
     # Initialize the config
     nzbtomedia.initialize()
 
+    # clientAgent for Torrents
+    clientAgent = nzbtomedia.TORRENT_CLIENTAGENT
+
     logger.postprocess("#########################################################")
-    logger.postprocess("## ..::[%s]::.. :: STARTING", os.path.splitext(os.path.basename(os.path.normpath(os.path.abspath(__file__))))[0])
+    logger.postprocess("## ..::[%s]::.. CLIENT:%s ## STARTING", args[0], clientAgent)
     logger.postprocess("#########################################################")
 
     # debug command line options
@@ -337,8 +305,6 @@ def main(args):
     # Post-Processing Result
     result = 0
 
-    # clientAgent for Torrents
-    clientAgent = nzbtomedia.CLIENTAGENT
 
     try:
         inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent, args)
@@ -346,10 +312,14 @@ def main(args):
         logger.error("There was a problem loading variables")
         return -1
 
-        # check if this is a manual run
-    if inputDirectory is None:
-        clientAgent = 'manual'
+    if inputDirectory and inputName and inputHash and inputID:
+        result = processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent)
+    else:
+        # Perform Manual Run
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
+
+        # Loop and auto-process
+        clientAgent = 'manual'
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
@@ -362,10 +332,12 @@ def main(args):
                             logger.error("A problem was reported when trying to manually run %s:%s.", section, category)
                 else:
                     logger.warning("%s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ...", section, category)
-    else:
-        result = processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent)
 
-    logger.postprocess("All done.")
+    if result == 0:
+        logger.postprocess("The %s script completed successfully.", args[0])
+    else:
+        logger.error("A problem was reported in the %s script.", args[0])
+
     sys.exit(result)
 
 if __name__ == "__main__":

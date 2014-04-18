@@ -318,8 +318,11 @@ def main(args, section=None):
     # Initialize the config
     nzbtomedia.initialize(section)
 
+    # clientAgent for NZBs
+    clientAgent = nzbtomedia.NZB_CLIENTAGENT
+
     logger.postprocess("#########################################################")
-    logger.postprocess("## ..::[%s]::.. :: STARTING", os.path.splitext(os.path.basename(os.path.normpath(os.path.abspath(__file__))))[0])
+    logger.postprocess("## ..::[%s]::.. CLIENT:%s ## STARTING", args[0], clientAgent)
     logger.postprocess("#########################################################")
 
     # debug command line options
@@ -328,6 +331,7 @@ def main(args, section=None):
     # Post-Processing Result
     result = 0
     status = 0
+
 
     # NZBGet V11+
     # Check if the script is called from nzbget 11.0 or later
@@ -376,7 +380,8 @@ def main(args, section=None):
             download_id = os.environ['NZBPR_COUCHPOTATO']
 
         # All checks done, now launching the script.
-        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status, clientAgent = "nzbget", download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
+        clientAgent = 'nzbget'
+        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status, clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
     # SABnzbd Pre 0.7.17
     elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -387,8 +392,9 @@ def main(args, section=None):
         # 5 User-defined category
         # 6 Group that the NZB was posted in e.g. alt.binaries.x
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
+        clientAgent = 'sabnzbd'
         logger.postprocess("Script triggered from SABnzbd")
-        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent = "sabnzbd", download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent, download_id='')
     # SABnzbd 0.7.17+
     elif len(args) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -400,20 +406,22 @@ def main(args, section=None):
         # 6 Group that the NZB was posted in e.g. alt.binaries.x
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         # 8 Failure URL
+        clientAgent = 'sabnzbd'
         logger.postprocess("Script triggered from SABnzbd 0.7.17+")
-        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent = "sabnzbd", download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent, download_id='')
     else:
         # Perform Manual Run
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
         # Loop and auto-process
+        clientAgent = 'manual'
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
                     dirNames = get_dirnames(section, category)
                     for dirName in dirNames:
                         logger.postprocess("nzbToMedia running %s:%s as a manual run on folder %s ...", section, category, dirName)
-                        results = process(dirName, os.path.basename(dirName), 0, inputCategory=category)
+                        results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent, inputCategory=category)
                         if results != 0:
                             logger.error("A problem was reported when trying to manually run %s:%s.", section, category)
                             result = results
@@ -426,7 +434,7 @@ def main(args, section=None):
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
-        logger.error("A problem was reported in the nzbToMedia script.", args[0])
+        logger.error("A problem was reported in the %s script.", args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
