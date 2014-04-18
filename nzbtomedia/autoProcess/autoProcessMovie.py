@@ -38,7 +38,7 @@ class autoProcessMovie:
                 continue
             releases = movie['releases']
             for release in releases:
-                if release['status'] not in ['snatched']:
+                if release['status'] not in ['snatched','done']:
                     continue
                 try:
                     if download_id:
@@ -150,7 +150,7 @@ class autoProcessMovie:
 
             logger.debug("Opening URL: %s" % (url), section)
 
-            logger.postprocess("Attempting to perform a %s scan for %s" % (method, nzbName), section)
+            logger.postprocess("Starting %s scan for %s" % (method, nzbName), section)
 
             try:
                 r = requests.get(url, params=params)
@@ -160,9 +160,9 @@ class autoProcessMovie:
 
             result = r.json()
             if result['success']:
-                logger.postprocess("SUCCESS: Started %s scan on folder %s, please wait ..." % (method, dirName), section)
+                logger.postprocess("SUCCESS: Finished %s scan for folder %s" % (method, dirName), section)
             else:
-                logger.error("FAILED: %s scan was unable to start for folder %s. exiting!" % (method, dirName), section)
+                logger.error("FAILED: %s scan was unable to finish for folder %s. exiting!" % (method, dirName), section)
                 return 1 # failure
 
         else:
