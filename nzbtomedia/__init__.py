@@ -44,17 +44,16 @@ CONFIG_TV_FILE = None
 SYS_ENCODING = None
 SYS_ARGV = None
 
-# version constants
 AUTO_UPDATE = None
 NZBTOMEDIA_VERSION = None
 NEWEST_VERSION = None
 NEWEST_VERSION_STRING = None
 VERSION_NOTIFY = None
-
 GIT_PATH = None
 GIT_USER = None
 GIT_BRANCH = None
 GIT_REPO = None
+FORCE_CLEAN = None
 
 NZB_CLIENTAGENT = None
 SABNZBDHOST = None
@@ -82,7 +81,6 @@ DELUGEUSR = None
 DELUGEPWD = None
 
 COMPRESSEDCONTAINER = None
-MEDIAEXTENSIONS = None
 MEDIACONTAINER = None
 METACONTAINER = None
 MINSAMPLESIZE = None
@@ -105,6 +103,7 @@ OUTPUTSUBTITLECODEC = None
 OUTPUTFASTSTART = None
 OUTPUTQUALITYPERCENT = None
 NICENESS = None
+
 USER_SCRIPT_CATEGORIES = None
 USER_SCRIPT_MEDIAEXTENSIONS = None
 USER_SCRIPT = None
@@ -130,7 +129,7 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, MEDIAEXTENSIONS, LOG_DEBUG
+        NICENESS, LOG_DEBUG, FORCE_CLEAN
 
     if __INITIALIZED__:
         return False
@@ -190,7 +189,7 @@ def initialize(section=None):
             sys.exit(-1)
 
     # load newly migrated config
-    logger.info("Loading config from %s" % CONFIG_FILE)
+    logger.info("Loading config from [%s]" % (CONFIG_FILE))
     CFG = config()
 
     # Enable/Disable DEBUG Logging
@@ -200,10 +199,11 @@ def initialize(section=None):
     NZBTOMEDIA_VERSION = '9.3'
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
     AUTO_UPDATE = int(CFG['General']['auto_update'])
+    GIT_REPO = 'nzbToMedia'
     GIT_PATH = CFG['General']['git_path']
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
     GIT_BRANCH = CFG['General']['git_branch'] or 'dev'
-    GIT_REPO = 'nzbToMedia'
+    FORCE_CLEAN = CFG["General"]["force_clean"]
 
     # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():
@@ -247,11 +247,11 @@ def initialize(section=None):
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
 
     COMPRESSEDCONTAINER = (CFG["Extensions"]["compressedExtensions"])  # .zip,.rar,.7z
-    MEDIAEXTENSIONS = [ 'mkv', 'avi', 'divx', 'xvid', 'mov', 'wmv','mp4', 'mpg', 'mpeg', 'iso' ]
     MEDIACONTAINER = (CFG["Extensions"]["mediaExtensions"])  # .mkv,.avi,.divx
     METACONTAINER = (CFG["Extensions"]["metaExtensions"])  # .nfo,.sub,.srt
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
+
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
@@ -267,14 +267,6 @@ def initialize(section=None):
     OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
     NICENESS = int(CFG["Transcoder"]["niceness"])
 
-    # check for script-defied section and if None set to allow sections
-    SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
-    if section:
-        SECTIONS = (section,)
-
-    SUBSECTIONS = CFG[SECTIONS]
-    CATEGORIES += SUBSECTIONS.sections
-
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
     if not "NONE" in USER_SCRIPT_CATEGORIES:
         USER_SCRIPT_MEDIAEXTENSIONS = (CFG["UserScript"]["user_script_mediaExtensions"])
@@ -284,6 +276,13 @@ def initialize(section=None):
         USER_SCRIPT_CLEAN = int(CFG["UserScript"]["user_script_clean"])
         USER_DELAY = int(CFG["UserScript"]["delay"])
         USER_SCRIPT_RUNONCE = int(CFG["UserScript"]["user_script_runOnce"])
+
+    # check for script-defied section and if None set to allow sections
+    SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
+    if section:SECTIONS = (section,)
+
+    SUBSECTIONS = CFG[SECTIONS]
+    CATEGORIES += SUBSECTIONS.sections
 
     __INITIALIZED__ = True
     return True

@@ -2,10 +2,11 @@ import os
 import sys
 import nzbtomedia
 import TorrentToMedia
-from nzbtomedia.nzbToMediaUtil import find_download, clean_nzbname, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import find_download, isMediaFile
 
 nzbtomedia.initialize()
 
+test = isMediaFile('test.mp4')
 download_id = 'SABnzbd_nzo_qhoQ7m'
 if find_download('sabnzbd', download_id):
     print 'found'

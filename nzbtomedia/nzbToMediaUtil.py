@@ -39,7 +39,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
     try:
         inputCategory = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
-        logger.debug("SEARCH: Found Category: %s in directory structure", inputCategory)
+        logger.debug("SEARCH: Found Category: %s in directory structure" % (inputCategory))
     except IndexError:
         inputCategory = ""
         logger.debug("SEARCH: Could not find a category in the directory structure")
@@ -53,17 +53,17 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         logger.info(
             "SEARCH: Found category directory %s in input directory directory %s" % (inputCategory, inputDirectory))
         inputDirectory = os.path.join(inputDirectory, inputCategory)
-        logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
+        logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
     if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
         inputDirectory = os.path.join(inputDirectory, inputName)
-        logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
+        logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
     if inputName and os.path.isdir(os.path.join(inputDirectory, safeName(inputName))):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
             safeName(inputName), inputDirectory))
         inputDirectory = os.path.join(inputDirectory, safeName(inputName))
-        logger.info("SEARCH: Setting inputDirectory to %s", inputDirectory)
+        logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
 
     imdbid = [item for item in pathlist if '.cp(tt' in item]  # This looks for the .cp(tt imdb id in the path.
@@ -76,14 +76,14 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             index = pathlist.index(inputCategory)
             if index + 1 < len(pathlist):
                 tordir = True
-                logger.info("SEARCH: Found a unique directory %s in the category directory", pathlist[index + 1])
+                logger.info("SEARCH: Found a unique directory %s in the category directory" % (pathlist[index + 1]))
                 if not inputName: inputName = pathlist[index + 1]
         except ValueError:
             pass
 
     if inputName and not tordir:
         if inputName in pathlist or safeName(inputName) in pathlist:
-            logger.info("SEARCH: Found torrent directory %s in the directory structure", inputName)
+            logger.info("SEARCH: Found torrent directory %s in the directory structure" % (inputName))
             tordir = True
         else:
             root = 1
@@ -155,7 +155,7 @@ def copy_link(filePath, targetDirectory, useLink, outputDestination):
 
 
 def flatten(outputDestination):
-    logger.info("FLATTEN: Flattening directory: %s", outputDestination)
+    logger.info("FLATTEN: Flattening directory: %s" % (outputDestination))
     for dirpath, dirnames, filenames in os.walk(
             outputDestination):  # Flatten out the directory to make postprocessing easier
         if dirpath == outputDestination:
@@ -166,12 +166,12 @@ def flatten(outputDestination):
             try:
                 shutil.move(source, target)
             except:
-                logger.error("FLATTEN: Could not flatten %s", source)
+                logger.error("FLATTEN: Could not flatten %s" % (source))
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
 
 def removeEmptyFolders(path):
-    logger.info("REMOVER: Removing empty folders in: %s", path)
+    logger.info("REMOVER: Removing empty folders in: %s" % (path))
     if not os.path.isdir(path):
         return
 
@@ -186,7 +186,7 @@ def removeEmptyFolders(path):
     # If folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0:
-        logger.debug("REMOVER: Removing empty folder: %s", path)
+        logger.debug("REMOVER: Removing empty folder: %s" % (path))
         os.rmdir(path)
 
 
@@ -195,7 +195,7 @@ def remove_read_only(path):
         return
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
-            logger.debug("Removing Read Only Flag for: %s", filename)
+            logger.debug("Removing Read Only Flag for: %s" % (filename))
             os.chmod(os.path.join(dirpath, filename), stat.S_IWRITE)
 
 
@@ -234,23 +234,23 @@ def WakeUp():
     wake = int(nzbtomedia.CFG["WakeOnLan"]["wake"])
     if wake == 0:  # just return if we don't need to wake anything.
         return
-    logger.info(("Loading WakeOnLan config from %s", nzbtomedia.CONFIG_FILE))
+    logger.info(("Loading WakeOnLan config from %s" % (nzbtomedia.CONFIG_FILE)))
     host = nzbtomedia.CFG["WakeOnLan"]["host"]
     port = int(nzbtomedia.CFG["WakeOnLan"]["port"])
     mac = nzbtomedia.CFG["WakeOnLan"]["mac"]
 
     i = 1
     while TestCon(host, port) == "Down" and i < 4:
-        logger.info(("Sending WakeOnLan Magic Packet for mac: %s", mac))
+        logger.info(("Sending WakeOnLan Magic Packet for mac: %s" % (mac)))
         WakeOnLan(mac)
         time.sleep(20)
         i = i + 1
 
     if TestCon(host, port) == "Down":  # final check.
-        logger.warning("System with mac: %s has not woken after 3 attempts. Continuing with the rest of the script.",
-                       mac)
+        logger.warning("System with mac: %s has not woken after 3 attempts. Continuing with the rest of the script." % (
+        mac))
     else:
-        logger.info("System with mac: %s has been woken. Continuing with the rest of the script.", mac)
+        logger.info("System with mac: %s has been woken. Continuing with the rest of the script." % (mac))
 
 
 def convert_to_ascii(nzbName, dirName):
@@ -375,7 +375,7 @@ def get_dirnames(section, subsections=None):
             watch_dir = None
 
         try:
-            outputDirectory = os.path.join(nzbtomedia.CFG["Torrent"]["outputDirectory"], subsection)
+            outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
             if not os.path.exists(outputDirectory):
                 outputDirectory = None
         except:
@@ -414,11 +414,11 @@ def get_dirnames(section, subsections=None):
 
 
 def delete(dirName):
-    logger.info("Deleting %s", dirName)
+    logger.info("Deleting %s" % (dirName))
     try:
         shutil.rmtree(dirName, True)
     except:
-        logger.error("Unable to delete folder %s", dirName)
+        logger.error("Unable to delete folder %s" % (dirName))
 
 
 def cleanup_directories(inputCategory, processCategories, result, directory):
@@ -433,14 +433,14 @@ def cleanup_directories(inputCategory, processCategories, result, directory):
                     num_files_new += 1
                     file_list.append(file)
         if num_files_new is 0 or int(nzbtomedia.CFG["General"]["force_clean"]) == 1:
-            logger.info("All files have been processed. Cleaning directory %s", directory)
+            logger.info("All files have been processed. Cleaning directory %s" % (directory))
             shutil.rmtree(directory)
         else:
             logger.info(
                 "Directory %s still contains %s media and/or meta files. This directory will not be removed." % (
                     directory, num_files_new))
             for item in file_list:
-                logger.debug("media/meta file found: %s", item)
+                logger.debug("media/meta file found: %s" % (item))
 
 
 def create_torrent_class(clientAgent):
@@ -516,7 +516,7 @@ def resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputN
 def find_download(clientAgent, download_id):
     tc = create_torrent_class(clientAgent)
 
-    logger.debug("Searching for Download on %s ...", clientAgent)
+    logger.debug("Searching for Download on %s ..." % (clientAgent))
     if clientAgent == 'utorrent':
         torrents = tc.list()[1]['torrents']
         for torrent in torrents:
@@ -581,7 +581,7 @@ def isMediaFile(filename):
     if re.search('extras?$', sepFile[0], re.I):
         return False
 
-    if sepFile[2].lower() in nzbtomedia.MEDIAEXTENSIONS:
+    if sepFile[2].lower() in [i.replace(".","") for i in nzbtomedia.MEDIACONTAINER]:
         return True
     else:
         return False
