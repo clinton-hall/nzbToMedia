@@ -10,7 +10,10 @@ from nzbtomedia import logger
 
 class autoProcessMovie:
     def find_imdbid(self, dirName, nzbName):
+        imdbid = None
+
         nzbName = clean_nzbname(nzbName)
+
         # find imdbid in dirName
         m = re.search('(tt\d{7})', dirName)
         if m:
@@ -41,8 +44,13 @@ class autoProcessMovie:
                 return
 
             results = r.json()
-            if hasattr(results, 'imdbID'):
-                return results['imdbID']
+
+            try:
+                imdbid = results['imdbID']
+            except:pass
+
+            if imdbid:
+                return imdbid
 
     def get_releases(self, baseURL, download_id, dirName, nzbName):
         releases = {}
@@ -71,21 +79,22 @@ class autoProcessMovie:
             return
 
         results = r.json()
-
         movies = results[section]
         if not isinstance(movies, list):
             movies = [movies]
-
         for movie in movies:
-            for release in movie['releases']:
-                if download_id:
-                    try:
+            releases = movie['releases']
+            if not isinstance(releases, list):
+                releases = [releases]
+            for release in releases:
+                try:
+                    if download_id:
                         if download_id != release['download_info']['id']:
                                 continue
-                    except:continue
 
-                id = release['_id']
-                releases[id] = release
+                    id = release['_id']
+                    releases[id] = release
+                except:continue
 
         return releases
 
