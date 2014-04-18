@@ -5,11 +5,12 @@ import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, create_torrent_class
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, create_torrent_class, clean_nzbname
 from nzbtomedia import logger
 
 class autoProcessMovie:
     def find_imdbid(self, dirName, nzbName):
+        nzbName = clean_nzbname(nzbName)
         # find imdbid in dirName
         m = re.search('(tt\d{7})', dirName)
         if m:

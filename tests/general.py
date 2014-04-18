@@ -2,18 +2,26 @@ import os
 import sys
 import nzbtomedia
 import TorrentToMedia
-from nzbtomedia.nzbToMediaUtil import find_download
+from nzbtomedia.nzbToMediaUtil import find_download, clean_nzbname, listMediaFiles
 
 os.environ['TR_TORRENT_DIR']="z:/downloads/complete/movie/The.Art.of.the.Steal.2013.LIMITED.1080p.BRRip.h264.AAC-RARBG"
 os.environ['TR_TORRENT_NAME']="The.Art.of.the.Steal.2013.LIMITED.1080p.BRRip.h264.AAC-RARBG"
 os.environ['TR_TORRENT_ID']="154206e6390a03bbf01e61f013e1a52494a52dfa"
 os.environ['TR_TORRENT_HASH']="154206e6390a03bbf01e61f013e1a52494a52dfa"
 #TorrentToMedia.main(sys.argv)
+test = 'The.Art.of.the.Steal.2013.LIMITED.1080p.BRRip.h264.AAC-RARBG'
+cleaned = clean_nzbname(test)
 
 # Initialize the config
 nzbtomedia.initialize()
 
-clientAgent = nzbtomedia.NZB_CLIENTAGENT
+dirName = 'Z:/complete/tv/'
+test = listMediaFiles('Z:/complete/tv/')
+for filename in test:
+    parentDir = os.path.dirname(filename)
+    if parentDir == dirName:
+        pass
+    clientAgent = nzbtomedia.NZB_CLIENTAGENT
 nzbName = 'Anger.Management.S02E57.HDTV.x264-KILLERS'
 #download_id = '51C9B415382894727C5C7D8442554D3AC08B390F'
 

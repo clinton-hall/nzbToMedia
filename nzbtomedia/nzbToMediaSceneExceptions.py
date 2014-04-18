@@ -1,6 +1,6 @@
 import os
 import logging
-from nzbtomedia.nzbToMediaUtil import iterate_media_files
+from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
 Logger = logging.getLogger()
 
@@ -11,17 +11,18 @@ def process_all_exceptions(name, dirname):
         process_exception(exception, name, dirname)
 
 def process_exception(exception, name, dirname):
-    for parentDir, filename in iterate_media_files(dirname):
+    for filename in listMediaFiles(dirname):
+        parentDir = os.path.dirname(filename)
         exception(filename, parentDir)
 
 def process_qoq(filename, dirname):
-    logger.debug("Reversing the file name for a QoQ release %s", filename)
+    logging.debug("Reversing the file name for a QoQ release %s", filename)
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     newname = head[::-1]
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     os.rename(filename, newfilePath)
-    logger.debug("New file name is %s", newfile)
+    logging.debug("New file name is %s", newfile)
 
 # dict for custom groups
 # we can add more to this list

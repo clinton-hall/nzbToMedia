@@ -188,17 +188,6 @@ def remove_read_only(path):
             logger.debug("Removing Read Only Flag for: %s", filename)
             os.chmod(os.path.join(dirpath, filename), stat.S_IWRITE)
 
-def iterate_media_files(dirname):
-    mediaContainer = [ '.mkv', '.avi', '.divx', '.xvid', '.mov', '.wmv',
-        '.mp4', '.mpg', '.mpeg', '.iso' ]
-
-    for dirpath, dirnames, filenames in os.walk(dirname):
-        for filename in filenames:
-            fileExtension = os.path.splitext(filename)[1]
-            if not (fileExtension in mediaContainer):
-                continue
-            yield dirpath, os.path.join(dirpath, filename)
-
 #Wake function
 def WakeOnLan(ethernet_address):
 
@@ -374,10 +363,28 @@ def get_dirnames(section, subsections=None):
             outputDirectory = None
 
         if watch_dir:
+            # search for single files and move them into there own folder for post-processing
+            for mediafile in listMediaFiles(watch_dir):
+                parentDir = os.path.dirname(mediafile)
+                if parentDir == watch_dir:
+                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
+                    if not os.path.exists(p):
+                        os.mkdir(p)
+                        shutil.move(mediafile, p)
+
             dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
-                        os.path.isdir(os.path.join(watch_dir, o))])
+                             os.path.isdir(os.path.join(watch_dir, o))])
 
         if outputDirectory:
+            # search for single files and move them into there own folder for post-processing
+            for mediafile in listMediaFiles(outputDirectory):
+                parentDir = os.path.dirname(mediafile)
+                if parentDir == outputDirectory:
+                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
+                    if not os.path.exists(p):
+                        os.mkdir(p)
+                    shutil.move(mediafile, p)
+
             dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
                         os.path.isdir(os.path.join(outputDirectory, o))])
 
@@ -511,3 +518,57 @@ def find_download(clientAgent, nzbName, download_id):
 
         result = r.json()
         pass
+
+
+def clean_nzbname(nzbname):
+    """Cleans up nzb name by removing any . and _
+    characters, along with any trailing hyphens.
+
+    Is basically equivalent to replacing all _ and . with a
+    space, but handles decimal numbers in string, for example:
+    """
+
+    nzbname = re.sub("(\D)\.(?!\s)(\D)", "\\1 \\2", nzbname)
+    nzbname = re.sub("(\d)\.(\d{4})", "\\1 \\2", nzbname)  # if it ends in a year then don't keep the dot
+    nzbname = re.sub("(\D)\.(?!\s)", "\\1 ", nzbname)
+    nzbname = re.sub("\.(?!\s)(\D)", " \\1", nzbname)
+    nzbname = nzbname.replace("_", " ")
+    nzbname = re.sub("-$", "", nzbname)
+    nzbname = re.sub("^\[.*\]", "", nzbname)
+    return nzbname.strip()
+
+def isMediaFile(filename):
+    # ignore samples
+    if re.search('(^|[\W_])(sample\d*)[\W_]', filename, re.I):
+        return False
+
+    # ignore MAC OS's retarded "resource fork" files
+    if filename.startswith('._'):
+        return False
+
+    sepFile = filename.rpartition(".")
+
+    if re.search('extras?$', sepFile[0], re.I):
+        return False
+
+    if sepFile[2].lower() in nzbtomedia.MEDIAEXTENSIONS:
+        return True
+    else:
+        return False
+
+def listMediaFiles(path):
+    if not dir or not os.path.isdir(path):
+        return []
+
+    files = []
+    for curFile in os.listdir(path):
+        fullCurFile = os.path.join(path, curFile)
+
+        # if it's a folder do it recursively
+        if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':
+            files += listMediaFiles(fullCurFile)
+
+        elif isMediaFile(curFile):
+            files.append(fullCurFile)
+
+    return files

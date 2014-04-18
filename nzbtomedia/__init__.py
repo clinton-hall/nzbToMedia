@@ -81,6 +81,7 @@ DELUGEUSR = None
 DELUGEPWD = None
 
 COMPRESSEDCONTAINER = None
+MEDIAEXTENSIONS = None
 MEDIACONTAINER = None
 METACONTAINER = None
 MINSAMPLESIZE = None
@@ -90,7 +91,19 @@ SECTIONS = []
 SUBSECTIONS = {}
 
 TRANSCODE = None
-
+DUPLICATE = None
+IGNOREEXTENSIONS = None
+OUTPUTVIDEOEXTENSION = None
+OUTPUTVIDEOCODEC = None
+OUTPUTVIDEOPRESET = None
+OUTPUTVIDEOFRAMERATE = None
+OUTPUTVIDEOBITRATE = None
+OUTPUTAUDIOCODEC = None
+OUTPUTAUDIOBITRATE = None
+OUTPUTSUBTITLECODEC = None
+OUTPUTFASTSTART = None
+OUTPUTQUALITYPERCENT = None
+NICENESS = None
 USER_SCRIPT_CATEGORIES = None
 USER_SCRIPT_MEDIAEXTENSIONS = None
 USER_SCRIPT = None
@@ -99,6 +112,7 @@ USER_SCRIPT_SUCCESSCODES = None
 USER_SCRIPT_CLEAN = None
 USER_DELAY = None
 USER_SCRIPT_RUNONCE = None
+
 
 __INITIALIZED__ = False
 
@@ -112,8 +126,10 @@ def initialize(section=None):
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
         SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, USER_SCRIPT_RUNONCE, \
         APP_NAME,USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN, \
-        TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY
-
+        TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
+        DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
+        OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
+        NICENESS, MEDIAEXTENSIONS
 
     if __INITIALIZED__:
         return False
@@ -227,11 +243,25 @@ def initialize(section=None):
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
 
     COMPRESSEDCONTAINER = (CFG["Extensions"]["compressedExtensions"])  # .zip,.rar,.7z
+    MEDIAEXTENSIONS = [ 'mkv', 'avi', 'divx', 'xvid', 'mov', 'wmv','mp4', 'mpg', 'mpeg', 'iso' ]
     MEDIACONTAINER = (CFG["Extensions"]["mediaExtensions"])  # .mkv,.avi,.divx
     METACONTAINER = (CFG["Extensions"]["metaExtensions"])  # .nfo,.sub,.srt
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
+    DUPLICATE = int(CFG["Transcoder"]["duplicate"])
+    IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
+    OUTPUTVIDEOEXTENSION = CFG["Transcoder"]["outputVideoExtension"].strip()
+    OUTPUTVIDEOCODEC = CFG["Transcoder"]["outputVideoCodec"].strip()
+    OUTPUTVIDEOPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
+    OUTPUTVIDEOFRAMERATE = CFG["Transcoder"]["outputVideoFramerate"].strip()
+    OUTPUTVIDEOBITRATE = CFG["Transcoder"]["outputVideoBitrate"].strip()
+    OUTPUTAUDIOCODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
+    OUTPUTAUDIOBITRATE = CFG["Transcoder"]["outputAudioBitrate"].strip()
+    OUTPUTSUBTITLECODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
+    OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
+    OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
+    NICENESS = int(CFG["Transcoder"]["niceness"])
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
