@@ -74,7 +74,7 @@ class autoProcessMusic:
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        baseURL = protocol + host + ":" + port + web_root + "/api"
+        url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 
         if status == 0:
 
@@ -87,7 +87,6 @@ class autoProcessMusic:
                 dirName_new = os.path.join(remote_path, os.path.basename(os.path.dirname(dirName))).replace("\\", "/")
                 params['dir'] = dirName_new
 
-            url = baseURL
 
             release_status = self.get_status(url, apikey, dirName)
 

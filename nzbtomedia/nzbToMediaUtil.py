@@ -6,6 +6,7 @@ import struct
 import shutil
 import sys
 import time
+from lib import requests
 import nzbtomedia
 
 from nzbtomedia.linktastic import linktastic
@@ -495,4 +496,18 @@ def find_download(clientAgent, nzbName, download_id):
     if clientAgent == 'deluge':
         pass
     if clientAgent == 'sabnzbd':
+        baseURL = "http://%s:%s/api" % (nzbtomedia.SABNZBDHOST, nzbtomedia.SABNZBDPORT)
+        url = baseURL
+        params = {}
+        params['apikey'] = nzbtomedia.SABNZBDAPIKEY
+        params['mode'] = "history"
+        params['output'] = 'json'
+
+        try:
+            r = requests.get(url, params=params)
+        except requests.ConnectionError:
+            logger.error("Unable to open URL")
+            return 1  # failure
+
+        result = r.json()
         pass

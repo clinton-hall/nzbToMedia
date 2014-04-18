@@ -58,8 +58,7 @@ class autoProcessComics:
         else:
             protocol = "http://"
 
-        url = protocol + host + ":" + port + web_root + "/post_process"
-
+        url = "%s%s:%s%s/post_process" % (protocol, host, port, web_root)
         logger.debug("Opening URL: %s", url)
 
         try:

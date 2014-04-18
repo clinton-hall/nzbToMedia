@@ -9,7 +9,6 @@ and maintain connections.
 """
 
 import socket
-import copy
 
 from .models import Response
 from .packages.urllib3.poolmanager import PoolManager, proxy_from_url
@@ -63,7 +62,7 @@ class HTTPAdapter(BaseAdapter):
 
     Usage::
 
-      >>> import lib.requests
+      >>> import requests
       >>> s = requests.Session()
       >>> a = requests.adapters.HTTPAdapter(max_retries=3)
       >>> s.mount('http://', a)

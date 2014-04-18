@@ -43,7 +43,7 @@ class autoProcessGames:
 
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
-        baseURL = protocol + host + ":" + port + web_root + "/api"
+        url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
 
         fields = nzbName.split("-")
 
@@ -58,8 +58,6 @@ class autoProcessGames:
         params['mode'] = 'UPDATEREQUESTEDSTATUS'
         params['db_id'] = gamezID
         params['status'] = downloadStatus
-
-        url = baseURL
 
         logger.debug("Opening URL: %s", url)
 

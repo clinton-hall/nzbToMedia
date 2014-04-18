@@ -13,10 +13,11 @@ os.environ['TR_TORRENT_HASH']="154206e6390a03bbf01e61f013e1a52494a52dfa"
 # Initialize the config
 nzbtomedia.initialize()
 
-clientAgent = nzbtomedia.TORRENT_CLIENTAGENT
-nzbName = 'Ron.White.A.Little.Unprofessional.2012.DVDRip.XViD-IGUANA[rarbg]'
-download_id = '51C9B415382894727C5C7D8442554D3AC08B390F'
+clientAgent = nzbtomedia.NZB_CLIENTAGENT
+nzbName = 'Anger.Management.S02E57.HDTV.x264-KILLERS'
+#download_id = '51C9B415382894727C5C7D8442554D3AC08B390F'
 
+download_id = 'SABnzbd_nzo_uBYaGb'
 if find_download(clientAgent, nzbName, download_id):
     print 'found'
 else:

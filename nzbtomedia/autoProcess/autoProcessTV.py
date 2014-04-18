@@ -166,9 +166,9 @@ class autoProcessTV:
 
         url = None
         if section == "SickBeard":
-            url = protocol + host + ":" + port + web_root + "/home/postprocess/processEpisode"
+            url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
         elif section == "NzbDrone":
-            url = protocol + host + ":" + port + web_root + "/api/command"
+            url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
 
         logger.debug("Opening URL: %s", url)
 

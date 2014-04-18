@@ -147,7 +147,7 @@ class autoProcessMovie:
         else:
             protocol = "http://"
 
-        baseURL = protocol + host + ":" + port + web_root + "/api/" + apikey
+        baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
 
         releases = self.get_releases(baseURL, download_id, dirName, nzbName)
 
