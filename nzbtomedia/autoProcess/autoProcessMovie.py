@@ -115,11 +115,13 @@ class autoProcessMovie:
         # try to get release_id, media_id, and download_id if one was not passed in
         release_id = None
         media_id = None
+        downloader = None
         if len(releases) == 1:
             try:
                 release_id = releases.keys()[0]
                 media_id = releases[release_id]['media_id']
                 download_id = releases[release_id]['download_info']['id']
+                downloader = releases[release_id]['download_info']['id']
             except:pass
 
         process_all_exceptions(nzbName.lower(), dirName)
@@ -140,7 +142,7 @@ class autoProcessMovie:
 
             params = {}
             if download_id:
-                params['downloader'] = clientAgent
+                params['downloader'] = downloader or clientAgent
                 params['download_id'] = download_id
 
             params['media_folder'] = dirName
