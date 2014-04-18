@@ -38,7 +38,7 @@ class autoProcessMovie:
                 continue
             releases = movie['releases']
             for release in releases:
-                if release['status'] not in ['snatched','downloaded']:
+                if release['status'] not in ['snatched']:
                     continue
                 try:
                     if download_id:
@@ -116,19 +116,13 @@ class autoProcessMovie:
         release_id = None
         media_id = None
         downloader = None
-        release_status = None
         if len(releases) == 1:
             try:
                 release_id = releases.keys()[0]
                 media_id = releases[release_id]['media_id']
                 download_id = releases[release_id]['download_info']['id']
                 downloader = releases[release_id]['download_info']['downloader']
-                release_status = releases[release_id]['status']
             except:pass
-
-        if release_status and release_status == 'downloaded':
-            logger.warning("%s currently has a status of [%s], skipping ..." % (nzbName, release_status), section)
-            return 0
 
         process_all_exceptions(nzbName.lower(), dirName)
         nzbName, dirName = convert_to_ascii(nzbName, dirName)
