@@ -622,28 +622,18 @@ def listMediaFiles(path):
 def find_imdbid(dirName, nzbName):
     imdbid = None
 
-    nzbName = clean_nzbname(nzbName)
-
     logger.info('Attemping imdbID lookup for %s' % (nzbName))
 
     # find imdbid in dirName
-    logger.info('Searching folder name for imdbID ...')
-    m = re.search('(tt\d{7})', dirName)
+    logger.info('Searching folder and file names for imdbID ...')
+    m = re.search('(tt\d{7})', dirName+nzbName)
     if m:
         imdbid = m.group(1)
-        logger.info("Found imdbID %s in directory" % imdbid)
-        return imdbid
-
-    # find imdbid in nzbName
-    logger.info('Searching filename for imdbID ...')
-    m = re.search('(tt\d{7})', nzbName)
-    if m:
-        imdbid = m.group(1)
-        logger.info("Found imdbID %s in filename" % imdbid)
+        logger.info("Found imdbID [%s]" % imdbid)
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
-    guess = guessit.guess_movie_info(nzbName)
+    guess = guessit.guess_video_info(dirName)
     if guess:
         # Movie Title
         title = None
@@ -673,7 +663,7 @@ def find_imdbid(dirName, nzbName):
             pass
 
         if imdbid:
-            logger.info("Found imdbID %s on IMDB" % imdbid)
+            logger.info("Found imdbID [%s]" % imdbid)
             return imdbid
-        else:
-            logger.warning('Unable to find a imdbID for %s' % (nzbName))
+
+    logger.warning('Unable to find a imdbID for %s' % (nzbName))
