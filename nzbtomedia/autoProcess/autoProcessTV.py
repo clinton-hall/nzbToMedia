@@ -168,7 +168,7 @@ class autoProcessTV:
             return 1 # failure
 
         for line in r.iter_lines():
-            if line: logger.postprocess("%s" % (line))
+            if line: logger.postprocess("%s" % (line), section)
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
