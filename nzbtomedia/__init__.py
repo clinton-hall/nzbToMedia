@@ -94,6 +94,7 @@ SECTIONS = []
 SUBSECTIONS = {}
 
 TRANSCODE = None
+FFMPEG_PATH = None
 DUPLICATE = None
 IGNOREEXTENSIONS = None
 OUTPUTVIDEOEXTENSION = None
@@ -106,6 +107,8 @@ OUTPUTAUDIOBITRATE = None
 OUTPUTSUBTITLECODEC = None
 OUTPUTFASTSTART = None
 OUTPUTQUALITYPERCENT = None
+FFMPEG = None
+FFPROBE = None
 NICENESS = None
 
 USER_SCRIPT_CATEGORIES = None
@@ -132,7 +135,7 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN
+        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE
 
     if __INITIALIZED__:
         return False
@@ -242,6 +245,7 @@ def initialize(section=None):
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
 
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
+    FFMPEG_PATH = CFG["Transcoder"]["ffmpeg_path"]
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
     OUTPUTVIDEOEXTENSION = CFG["Transcoder"]["outputVideoExtension"].strip()
@@ -255,6 +259,40 @@ def initialize(section=None):
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
     OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
     NICENESS = int(CFG["Transcoder"]["niceness"])
+
+    # Setup FFMPEG and FFPROBE locations
+    if platform.system() == 'Windows':
+        FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
+        FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
+        if TRANSCODE and not os.path.isfile(FFMPEG): # problem
+            logger.error("%s not found, insure that it does exist and that you've set the correct ffmpeg_path in your autoProcessMedia.cfg" % FFMPEG)
+            logger.error("Cannot transcode files, disabling transcoding!")
+            TRANSCODE = 0
+            FFMPEG = None
+
+        if not os.path.isfile(FFPROBE):  # problem
+            logger.error(
+                "%s not found, insure that it does exist and that you've set the correct ffmpeg_path in your autoProcessMedia.cfg" % FFPROBE)
+            logger.error("Cannot detect corrupt video files, disabling!")
+            FFPROBE = None
+
+    else:
+        FFMPEG = 'ffmpeg'
+        FFPROBE = 'ffprobe'
+        if subprocess.call(['which', 'ffmpeg']) != 0:
+            res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')])
+            if res or subprocess.call(['which', 'ffmpeg']) != 0: # did not install or ffmpeg still not found.
+                logger.error("Failed to install ffmpeg. Please install manually")
+                logger.info("Cannot transcode video files, disabling transcoding!")
+                TRANSCODE = 0
+                FFMPEG = None
+
+        if subprocess.call(['which', 'ffprobe']) != 0:
+            res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')])
+            if res or subprocess.call(['which', 'ffprobe']) != 0:
+                logger.error("Failed to install ffprobe. Please install manually")
+                logger.info("Cannot detect corrupt video files, disabling corrupt video detection!")
+                FFPROBE = None
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
     if not "NONE" in USER_SCRIPT_CATEGORIES:

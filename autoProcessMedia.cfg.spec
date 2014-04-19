@@ -169,6 +169,8 @@
 
 [Transcoder]
     transcode = 0
+    # Set ffmpeg_path to the location where ffmpeg is located
+    ffmpeg_path =
     ###### duplicate =1 will cretae a new file. =0 will replace the original
     duplicate = 1
     # Only works on Linux. Highest priority is -20, lowest priority is 19.

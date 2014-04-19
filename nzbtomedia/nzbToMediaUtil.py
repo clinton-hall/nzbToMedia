@@ -67,20 +67,20 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
         return inputDirectory, inputName, inputCategory, root, single
 
-    if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
+    if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory).replace("\\","/")):
         logger.info(
             "SEARCH: Found category directory %s in input directory directory %s" % (inputCategory, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputCategory)
+        inputDirectory = os.path.join(inputDirectory, inputCategory).replace("\\","/")
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
-    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName).replace("\\","/")):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputName)
+        inputDirectory = os.path.join(inputDirectory, inputName).replace("\\","/")
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
-    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeFileName(inputName))):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeFileName(inputName)).replace("\\","/")):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
             sanitizeFileName(inputName), inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, sanitizeFileName(inputName))
+        inputDirectory = os.path.join(inputDirectory, sanitizeFileName(inputName).replace("\\","/"))
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
 
@@ -179,8 +179,8 @@ def flatten(outputDestination):
         if dirpath == outputDestination:
             continue  # No need to try and move files in the root destination directory
         for filename in filenames:
-            source = os.path.join(dirpath, filename)
-            target = os.path.join(outputDestination, filename)
+            source = os.path.join(dirpath, filename).replace("\\","/")
+            target = os.path.join(outputDestination, filename).replace("\\","/")
             try:
                 shutil.move(source, target)
             except:
@@ -197,7 +197,7 @@ def removeEmptyFolders(path):
     files = os.listdir(path)
     if len(files):
         for f in files:
-            fullpath = os.path.join(path, f)
+            fullpath = os.path.join(path, f).replace("\\","/")
             if os.path.isdir(fullpath):
                 removeEmptyFolders(fullpath)
 
@@ -214,7 +214,7 @@ def remove_read_only(path):
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
             logger.debug("Removing Read Only Flag for: %s" % (filename))
-            os.chmod(os.path.join(dirpath, filename), stat.S_IWRITE)
+            os.chmod(os.path.join(dirpath, filename).replace("\\","/"), stat.S_IWRITE)
 
 
 #Wake function
@@ -389,7 +389,7 @@ def get_dirnames(section, subsections=None):
             watch_dir = None
 
         try:
-            outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
+            outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection).replace("\\","/")
             if not os.path.exists(outputDirectory):
                 outputDirectory = None
         except:
@@ -400,26 +400,26 @@ def get_dirnames(section, subsections=None):
             for mediafile in listMediaFiles(watch_dir):
                 parentDir = os.path.dirname(mediafile)
                 if parentDir == watch_dir:
-                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
+                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0])).replace("\\","/")
                     if not os.path.exists(p):
                         os.mkdir(p)
                         shutil.move(mediafile, p)
 
-            dirNames.extend([os.path.join(watch_dir, o) for o in os.listdir(watch_dir) if
-                             os.path.isdir(os.path.join(watch_dir, o))])
+            dirNames.extend([os.path.join(watch_dir, o).replace("\\","/") for o in os.listdir(watch_dir) if
+                             os.path.isdir(os.path.join(watch_dir, o).replace("\\","/"))])
 
         if outputDirectory:
             # search for single files and move them into there own folder for post-processing
             for mediafile in listMediaFiles(outputDirectory):
                 parentDir = os.path.dirname(mediafile)
                 if parentDir == outputDirectory:
-                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
+                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]).replace("\\","/"))
                     if not os.path.exists(p):
                         os.mkdir(p)
                     shutil.move(mediafile, p)
 
-            dirNames.extend([os.path.join(outputDirectory, o) for o in os.listdir(outputDirectory) if
-                             os.path.isdir(os.path.join(outputDirectory, o))])
+            dirNames.extend([os.path.join(outputDirectory, o).replace("\\","/") for o in os.listdir(outputDirectory) if
+                             os.path.isdir(os.path.join(outputDirectory, o).replace("\\","/"))])
 
         if not dirNames:
             logger.warning("%s:%s has no directories identified for post-processing" % (section, subsection))
@@ -441,7 +441,7 @@ def cleanup_directories(inputCategory, processCategories, result, directory):
         file_list = []
         for dirpath, dirnames, filenames in os.walk(directory):
             for file in filenames:
-                filePath = os.path.join(dirpath, file)
+                filePath = os.path.join(dirpath, file).replace("\\","/")
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in nzbtomedia.MEDIACONTAINER or fileExtension in nzbtomedia.METACONTAINER:
                     num_files_new += 1
@@ -607,7 +607,7 @@ def listMediaFiles(path):
 
     files = []
     for curFile in os.listdir(path):
-        fullCurFile = os.path.join(path, curFile)
+        fullCurFile = os.path.join(path, curFile).replace("\\","/")
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':

@@ -276,18 +276,17 @@
 import os
 import sys
 import nzbtomedia
+from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories
+from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories, listMediaFiles
 from nzbtomedia import logger
 
 # post-processing
 def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
-    result = 0
-
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
@@ -296,8 +295,16 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
 
     if nzbtomedia.CFG["CouchPotato"][inputCategory]:
+        # Check video files for corruption
+        for video in listMediaFiles(nzbDir):
+            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
+                status = 1
         result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
     elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
+        # Check video files for corruption
+        for video in listMediaFiles(nzbDir):
+            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
+                status = 1
         result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
         result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
@@ -305,6 +312,8 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         result = autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["Gamez"][inputCategory]:
         result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
+    else:
+        result = -1
 
     if result == 0:
         # Clean up any leftover files
