@@ -5,9 +5,9 @@ import stat
 import struct
 import shutil
 import time
-from lib import requests
 import nzbtomedia
 
+from lib import requests
 from nzbtomedia.linktastic import linktastic
 from nzbtomedia import logger
 from nzbtomedia.synchronousdeluge.client import DelugeClient

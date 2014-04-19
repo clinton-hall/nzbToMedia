@@ -9,17 +9,17 @@ from nzbtomedia import logger
 
 
 class autoProcessMovie:
-    def get_release(self, baseURL, imdbid=None, download_id=None, release_status='snatched'):
+    def get_release(self, baseURL, imdbid=None, download_id=None, release_id=None):
         results = {}
         params = {}
 
         # determin cmd and params to send to CouchPotato to get our results
         section = 'movies'
         cmd = "/media.list"
-        if imdbid:
+        if release_id or imdbid:
             section = 'media'
             cmd = "/media.get"
-            params['id'] = imdbid
+            params['id'] = release_id or imdbid
 
         url = baseURL + cmd
         logger.debug("Opening URL: %s" % url)
@@ -31,6 +31,16 @@ class autoProcessMovie:
             return
 
         result = r.json()
+
+        # Gather release info and return it back, no need to narrow results
+        if release_id:
+            try:
+                id = result[section]['_id']
+                results[id] = result[section]
+                return results
+            except:pass
+
+        # Gather release info and proceed with trying to narrow results to one release choice
         movies = result[section]
         if not isinstance(movies, list):
             movies = [movies]
@@ -39,8 +49,6 @@ class autoProcessMovie:
                 continue
             releases = movie['releases']
             for release in releases:
-                if release['status'] not in release_status:
-                    continue
                 try:
                     if download_id:
                         if download_id != release['download_info']['id']:
@@ -116,14 +124,14 @@ class autoProcessMovie:
         release_id = None
         media_id = None
         downloader = None
-        release_status = None
+        release_status_old = None
         if len(release) == 1:
             try:
                 release_id = release.keys()[0]
                 media_id = release[release_id]['media_id']
                 download_id = release[release_id]['download_info']['id']
                 downloader = release[release_id]['download_info']['downloader']
-                release_status = release[release_id]['status']
+                release_status_old = release[release_id]['status']
             except:
                 pass
 
@@ -225,13 +233,15 @@ class autoProcessMovie:
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-            release = self.get_release(baseURL, imdbid, download_id, 'downloaded,done')
             logger.postprocess("Checking for status change, please stand by ...", section)
+            release = self.get_release(baseURL, imdbid, download_id, release_id)
             if release:
                 try:
-                    logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
-                        nzbName, str(release['status']).upper()), section)
-                    return 0  # success
+                    release_status_new = release[release_id]['status']
+                    if release_status_new != release_status_old:
+                        logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
+                            nzbName, str(release_status_new).upper()), section)
+                        return 0  # success
                 except:
                     pass
 
