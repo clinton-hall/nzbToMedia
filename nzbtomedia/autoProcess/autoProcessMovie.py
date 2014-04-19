@@ -224,11 +224,10 @@ class autoProcessMovie:
         timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
             releases_current = self.get_releases(baseURL, imdbid, download_id)
-            releasesDiff = self.releases_diff(releases, releases_current)
             logger.postprocess("Checking for status change, please stand by ...", section)
-            if releasesDiff:  # Something has changed. CPS must have processed this movie.
+            if len(releases) > len(releases_current):  # Something has changed. CPS must have processed this movie.
                 try:
-                    release_status = releasesDiff[releasesDiff.keys()[0]]['status']
+                    release_status = releases_current['status']
                     logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
                         nzbName, str(release_status).upper()), section)
                     return 0  # success

@@ -15,9 +15,26 @@ from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 
 
-def safeName(name):
-    return re.sub(r"[\/\\\:\*\?\"\<\>\|]", "", name)  #make this name safe for use in directories for windows etc.
+def sanitizeFileName(name):
+    '''
+    >>> sanitizeFileName('a/b/c')
+    'a-b-c'
+    >>> sanitizeFileName('abc')
+    'abc'
+    >>> sanitizeFileName('a"b')
+    'ab'
+    >>> sanitizeFileName('.a.b..')
+    'a.b'
+    '''
 
+    # remove bad chars from the filename
+    name = re.sub(r'[\\/\*]', '-', name)
+    name = re.sub(r'[:"<>|?]', '', name)
+
+    # remove leading/trailing periods and spaces
+    name = name.strip(' .')
+
+    return name
 
 def makeDir(path):
     if not os.path.isdir(path):
@@ -59,10 +76,10 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         inputDirectory = os.path.join(inputDirectory, inputName)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
-    if inputName and os.path.isdir(os.path.join(inputDirectory, safeName(inputName))):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeFileName(inputName))):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
-            safeName(inputName), inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, safeName(inputName))
+            sanitizeFileName(inputName), inputDirectory))
+        inputDirectory = os.path.join(inputDirectory, sanitizeFileName(inputName))
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
 
@@ -82,7 +99,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             pass
 
     if inputName and not tordir:
-        if inputName in pathlist or safeName(inputName) in pathlist:
+        if inputName in pathlist or sanitizeFileName(inputName) in pathlist:
             logger.info("SEARCH: Found torrent directory %s in the directory structure" % (inputName))
             tordir = True
         else:
@@ -617,7 +634,7 @@ def find_imdbid(dirName, nzbName):
     m = re.search('(tt\d{7})', dirName)
     if m:
         imdbid = m.group(1)
-        logger.info("Found movie id %s in directory" % imdbid)
+        logger.info("Found imdbID %s in directory" % imdbid)
         return imdbid
 
     # find imdbid in nzbName
@@ -625,7 +642,7 @@ def find_imdbid(dirName, nzbName):
     m = re.search('(tt\d{7})', nzbName)
     if m:
         imdbid = m.group(1)
-        logger.info("Found imdbid %s in name" % imdbid)
+        logger.info("Found imdbID %s in filename" % imdbid)
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
@@ -652,6 +669,7 @@ def find_imdbid(dirName, nzbName):
             pass
 
         if imdbid:
+            logger.info("Found imdbID %s on IMDB" % imdbid)
             return imdbid
         else:
             logger.warning('Unable to find a imdbID for %s' % (nzbName))
