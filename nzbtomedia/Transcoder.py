@@ -43,9 +43,9 @@ class Transcoder:
                     if ext in nzbtomedia.IGNOREEXTENSIONS:
                         logger.info("No need to transcode video type %s" % (ext))
                         continue
-                    if ext == outputVideoExtension: # we need to change the name to prevent overwriting itself.
-                        outputVideoExtension = '-transcoded' + outputVideoExtension # adds '-transcoded.ext'
-                    newfilePath = os.path.normpath(name + outputVideoExtension)
+                    if ext == nzbtomedia.OUTPUTVIDEOEXTENSION: # we need to change the name to prevent overwriting itself.
+                        nzbtomedia.OUTPUTVIDEOEXTENSION = '-transcoded' + nzbtomedia.OUTPUTVIDEOEXTENSION # adds '-transcoded.ext'
+                    newfilePath = os.path.normpath(name + nzbtomedia.OUTPUTVIDEOEXTENSION)
 
                     command = [ffmpeg, '-loglevel', 'warning', '-i', filePath, '-map', '0'] # -map 0 takes all input streams
 
