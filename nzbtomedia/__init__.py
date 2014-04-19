@@ -3,6 +3,22 @@ import os
 import subprocess
 import sys
 import platform
+
+# init preliminaries
+SYS_ARGV = sys.argv[1:]
+APP_FILENAME = sys.argv[0]
+APP_NAME = os.path.basename(APP_FILENAME)
+PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
+LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
+LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
+CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
+CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
+CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
+CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
+
+# add our custom libs to the system path
+sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
+
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir
@@ -28,21 +44,9 @@ NZBGET_POSTPROCESS_SUCCESS = 93
 NZBGET_POSTPROCESS_ERROR = 94
 NZBGET_POSTPROCESS_NONE = 95
 
-# config constants
 CFG = None
-CFG_LOGGING = None
-APP_FILENAME = None
-APP_NAME = None
-PROGRAM_DIR = None
-LOG_DIR = None
-LOG_FILE = None
 LOG_DEBUG = None
-CONFIG_FILE = None
-CONFIG_SPEC_FILE = None
-CONFIG_MOVIE_FILE = None
-CONFIG_TV_FILE = None
 SYS_ENCODING = None
-SYS_ARGV = None
 
 AUTO_UPDATE = None
 NZBTOMEDIA_VERSION = None
@@ -119,8 +123,7 @@ __INITIALIZED__ = False
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SICKBEARD_TORRENT, SICKBEARD_FAILED, \
-        PROGRAM_DIR, CFG, CFG_LOGGING, CONFIG_FILE, CONFIG_MOVIE_FILE, CONFIG_SPEC_FILE, LOG_DIR, NZBTOMEDIA_BRANCH, \
-        CONFIG_TV_FILE, LOG_FILE, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, \
+        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, CFG, \
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENTAGENT, USELINK, OUTPUTDIRECTORY, NOFLATTEN, \
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
@@ -133,21 +136,6 @@ def initialize(section=None):
 
     if __INITIALIZED__:
         return False
-
-    # init preliminaries
-    SYS_ARGV = sys.argv[1:]
-    APP_FILENAME = sys.argv[0]
-    APP_NAME = os.path.basename(APP_FILENAME)
-    PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
-    LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
-    LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
-    CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
-    CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
-    CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
-    CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
-
-    # add our custom libs to the system path
-    sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
     try:
         locale.setlocale(locale.LC_ALL, "")
@@ -219,7 +207,8 @@ def initialize(section=None):
     # Set Current Version
     logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + GIT_BRANCH + ' (' + platform.system() + ' ' + platform.release() + ')')
 
-    WakeUp()
+    if int(CFG["WakeOnLan"]["wake"]) == 1:
+        WakeUp()
 
     NZB_CLIENTAGENT = CFG["Nzb"]["clientAgent"]  # sabnzbd
     SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]

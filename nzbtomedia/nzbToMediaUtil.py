@@ -8,6 +8,7 @@ import time
 import nzbtomedia
 
 from lib import requests
+from lib import guessit
 from nzbtomedia.linktastic import linktastic
 from nzbtomedia import logger
 from nzbtomedia.synchronousdeluge.client import DelugeClient
@@ -248,10 +249,6 @@ def TestCon(host, port):
 
 
 def WakeUp():
-    wake = int(nzbtomedia.CFG["WakeOnLan"]["wake"])
-    if wake == 0:  # just return if we don't need to wake anything.
-        return
-    logger.info(("Loading WakeOnLan config from %s" % (nzbtomedia.CONFIG_FILE)))
     host = nzbtomedia.CFG["WakeOnLan"]["host"]
     port = int(nzbtomedia.CFG["WakeOnLan"]["port"])
     mac = nzbtomedia.CFG["WakeOnLan"]["mac"]
@@ -646,10 +643,17 @@ def find_imdbid(dirName, nzbName):
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
-    m = re.search("^(.+)(\d{4})\W", nzbName)
-    if m:
-        title = m.group(1)
-        year = m.group(2)
+    guess = guessit.guess_movie_info(nzbName)
+    if guess:
+        # Movie Title
+        title = None
+        if 'title' in guess:
+            title = guess['title']
+
+        # Movie Year
+        year = None
+        if 'year' in guess:
+            year = guess['year']
 
         url = "http://www.omdbapi.com"
 
