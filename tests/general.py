@@ -1,41 +1,12 @@
 import os
 import sys
-import nzbtomedia
 import TorrentToMedia
-from nzbtomedia.nzbToMediaUtil import find_download, isMediaFile
+import nzbToMedia
 
-nzbtomedia.initialize()
+os.environ['TR_TORRENT_DIR']="z:/downloads/complete/movie/The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_0166_-_The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_yEn.cp(tt1490017)"
+os.environ['TR_TORRENT_NAME']="The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_0166_-_The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_yEn.cp(tt1490017)"
+os.environ['TR_TORRENT_ID']="7855bb5c20189a73ea45aaf80c2541dfcf897f9d"
+os.environ['TR_TORRENT_HASH']="7855bb5c20189a73ea45aaf80c2541dfcf897f9d"
 
-test = isMediaFile('test.mp4')
-download_id = 'SABnzbd_nzo_qhoQ7m'
-if find_download('sabnzbd', download_id):
-    print 'found'
-else:
-    print 'no luck'
-
-print nzbtomedia.CFG['SickBear','NzbDrone']['tv'].isenabled()
-print nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
-
-if nzbtomedia.CFG['SickBeard', 'NzbDrone', 'CouchPotato']['tv']:
-    print True
-else:
-    print False
-
-if nzbtomedia.CFG['SickBeard']['tv']:
-    print True
-else:
-    print False
-
-print
-print nzbtomedia.SUBSECTIONS["SickBeard"]
-print
-print nzbtomedia.CFG.findsection('tv')
-print
-print nzbtomedia.CFG.sections
-print
-sections = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
-print nzbtomedia.CFG[sections].sections
-print nzbtomedia.CFG['SickBeard'].sections
-print
-print nzbtomedia.CFG['SickBeard','NzbDrone']
-print nzbtomedia.CFG['SickBeard']
+# Initialize the config
+nzbToMedia.main(sys.argv)

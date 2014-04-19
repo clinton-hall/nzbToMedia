@@ -9,7 +9,7 @@ from nzbtomedia import logger
 
 
 class autoProcessMovie:
-    def get_releases(self, baseURL, imdbid=None, download_id=None):
+    def get_release(self, baseURL, imdbid=None, download_id=None, release_status='snatched'):
         results = {}
         params = {}
 
@@ -39,7 +39,7 @@ class autoProcessMovie:
                 continue
             releases = movie['releases']
             for release in releases:
-                if release['status'] not in ['snatched', 'done']:
+                if release['status'] not in release_status:
                     continue
                 try:
                     if download_id:
@@ -51,6 +51,16 @@ class autoProcessMovie:
                 except:
                     continue
 
+        # Narrow results by removing old releases by comparing there last_edit field
+        if len(results) > 1:
+            for id1, x1 in results.items():
+                for id2, x2 in results.items():
+                    try:
+                        if x2["last_edit"] > x1["last_edit"]:
+                            results.pop(id1)
+                    except:
+                        continue
+
         # Search downloads on clients for a match to try and narrow our results down to 1
         if len(results) > 1:
             for id, x in results.items():
@@ -61,16 +71,6 @@ class autoProcessMovie:
                     continue
 
         return results
-
-    def releases_diff(self, dict_a, dict_b):
-        return dict([
-            (key, dict_b.get(key, dict_a.get(key)))
-            for key in set(dict_a.keys() + dict_b.keys())
-            if (
-                (key in dict_a and (not key in dict_b or dict_a[key] != dict_b[key])) or
-                (key in dict_b and (not key in dict_a or dict_a[key] != dict_b[key]))
-            )
-        ])
 
     def process(self, dirName, nzbName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
         # auto-detect correct section
@@ -110,18 +110,20 @@ class autoProcessMovie:
         baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
 
         imdbid = find_imdbid(dirName, nzbName)
-        releases = self.get_releases(baseURL, imdbid, download_id)
+        release = self.get_release(baseURL, imdbid, download_id)
 
         # pull info from release found if available
         release_id = None
         media_id = None
         downloader = None
-        if len(releases) == 1:
+        release_status = None
+        if len(release) == 1:
             try:
-                release_id = releases.keys()[0]
-                media_id = releases[release_id]['media_id']
-                download_id = releases[release_id]['download_info']['id']
-                downloader = releases[release_id]['download_info']['downloader']
+                release_id = release.keys()[0]
+                media_id = release[release_id]['media_id']
+                download_id = release[release_id]['download_info']['id']
+                downloader = release[release_id]['download_info']['downloader']
+                release_status = release[release_id]['status']
             except:
                 pass
 
@@ -223,13 +225,12 @@ class autoProcessMovie:
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-            releases_current = self.get_releases(baseURL, imdbid, download_id)
+            release = self.get_release(baseURL, imdbid, download_id, 'downloaded,done')
             logger.postprocess("Checking for status change, please stand by ...", section)
-            if len(releases) != len(releases_current):  # Something has changed. CPS must have processed this movie.
+            if release:
                 try:
-                    release_status = releases_current['status']
                     logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
-                        nzbName, str(release_status).upper()), section)
+                        nzbName, str(release['status']).upper()), section)
                     return 0  # success
                 except:
                     pass
