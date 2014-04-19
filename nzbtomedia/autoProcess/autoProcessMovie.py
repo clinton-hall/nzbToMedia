@@ -50,6 +50,8 @@ class autoProcessMovie:
             releases = movie['releases']
             for release in releases:
                 try:
+                    if release['status'] not in ['snatched', 'downloaded', 'done']:
+                        continue
                     if download_id:
                         if download_id != release['download_info']['id']:
                             continue
