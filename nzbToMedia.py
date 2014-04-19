@@ -290,21 +290,19 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
+        # Check video files for corruption
+        for video in listMediaFiles(nzbDir):
+            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
+                status = 1
+
         logger.info("Sending %s to %s for post-processing ..." % (inputName, str(section).upper()))
     else:
         logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
+        return -1
 
     if nzbtomedia.CFG["CouchPotato"][inputCategory]:
-        # Check video files for corruption
-        for video in listMediaFiles(nzbDir):
-            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
-                status = 1
         result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
     elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
-        # Check video files for corruption
-        for video in listMediaFiles(nzbDir):
-            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
-                status = 1
         result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
         result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)

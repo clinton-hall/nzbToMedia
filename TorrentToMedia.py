@@ -55,7 +55,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             for video in listMediaFiles(inputDirectory):
                 if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
                     status = 1
-                    
+
             logger.info("Calling autoProcessTV to post-process: %s",inputName)
             result = autoProcessTV().processEpisode(inputDirectory, inputName, status, clientAgent=clientAgent, inputCategory=inputCategory)
             if result != 0:
