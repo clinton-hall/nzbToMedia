@@ -581,6 +581,37 @@ def clean_nzbname(nzbname):
     return nzbname.strip()
 
 
+def isArchiveFile(filename):
+    # ignore samples
+
+    # ignore MAC OS's retarded "resource fork" files
+    if filename.startswith('._'):
+        return False
+
+    sepFile = filename.rpartition(".")
+
+    if sepFile[2].lower() in [i.replace(".","") for i in nzbtomedia.COMPRESSEDCONTAINER]:
+        return True
+    else:
+        return False
+
+def listArchiveFiles(path):
+    if not dir or not os.path.isdir(path):
+        return []
+
+    files = []
+    for curFile in os.listdir(path):
+        fullCurFile = os.path.join(path, curFile).replace("\\","/")
+
+        # if it's a folder do it recursively
+        if os.path.isdir(fullCurFile) and not curFile.startswith('.'):
+            files += listMediaFiles(fullCurFile)
+
+        elif isMediaFile(curFile):
+            files.append(fullCurFile)
+
+    return files
+
 def isMediaFile(filename):
     # ignore samples
     if re.search('(^|[\W_])(sample\d*)[\W_]', filename, re.I):
@@ -600,7 +631,6 @@ def isMediaFile(filename):
     else:
         return False
 
-
 def listMediaFiles(path):
     if not dir or not os.path.isdir(path):
         return []
@@ -617,7 +647,6 @@ def listMediaFiles(path):
             files.append(fullCurFile)
 
     return files
-
 
 def find_imdbid(dirName, nzbName):
     imdbid = None

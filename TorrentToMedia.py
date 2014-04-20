@@ -17,15 +17,16 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, is_sample, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles
+    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, \
+    listArchiveFiles
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = int(1)  # 1 = failed | 0 = success
-    root = int(0)
-    video = int(0)
-    archive = int(0)
-    foundFile = int(0)
+    root = 0
+    video = 0
+    archive = 0
+    foundFile = 0
     extracted_folder = []
     copy_list = []
 
@@ -87,7 +88,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if single: inputDirectory,filename = os.path.split(inputDirectory)
     for dirpath, dirnames, filenames in os.walk(inputDirectory):
         if single:
-            dirnames[:] = [] 
+            dirnames[:] = []
             filenames[:] = [filenames]  # we just want to work with this one file if single = True
         logger.debug("Found %s files in %s" % (str(len(filenames)), dirpath))
         for file in filenames:
@@ -104,7 +105,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             targetDirectory = os.path.join(outputDestination, file)
 
             if root == 1:
-                if foundFile == int(0):
+                if foundFile == 0:
                     logger.debug("Looking for %s in: %s" % (inputName, file))
                 if (sanitizeFileName(inputName) in sanitizeFileName(file)) or (sanitizeFileName(fileName) in sanitizeFileName(inputName)):
                     #pass  # This file does match the Torrent name
@@ -114,7 +115,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                     continue  # This file does not match the Torrent name, skip it
 
             if root == 2:
-                if foundFile == int(0):
+                if foundFile == 0:
                     logger.debug("Looking for files with modified/created dates less than 5 minutes old.")
                 mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(os.path.join(dirpath, file)))
                 ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(os.path.join(dirpath, file)))
@@ -164,35 +165,29 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     # Now check if video files exist in destination:
     if nzbtomedia.CFG["SickBeard","NzbDrone", "CouchPotato"][inputCategory]:
-        for dirpath, dirnames, filenames in os.walk(outputDestination):
-            for file in filenames:
-                filePath = os.path.join(dirpath, file)
-                fileName, fileExtension = os.path.splitext(file)
-                if fileExtension in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
-                    logger.debug("Found media file: %s" % (filePath))
-                    video += 1
-                if fileExtension in nzbtomedia.COMPRESSEDCONTAINER:  # If the file is an archive file
-                    archive += 1
-        if video > int(0):  # Check that media files exist
-            logger.debug("Found %s media files" % (str(video)))
-            status = int(0)
-        elif not (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination") and archive > int(0):
-            logger.debug("Found %s archive files to be extracted by SickBeard" % (str(archive)))
-            status = int(0)
-        else:
-            logger.warning("Found no media files in output.")
+        for videofile in listMediaFiles(outputDestination):
+            logger.debug("Found media file: %s" % (videofile))
+            video += 1
+        for archivefile in listArchiveFiles(outputDestination):
+            logger.debug("Found archive file: %s" % (archivefile))
+            archive += 1
 
+        if video > 0:
+            logger.debug("Found %s media files" % (str(video)))
+            status = 0
+        elif archive > 0 and not nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination":
+            logger.debug("Found %s archive files to be extracted by SickBeard" % (str(archive)))
+            status = 0
+        else:
+            logger.warning("Found no media files in %s" % outputDestination)
+
+    result = 0
     if (inputCategory in nzbtomedia.USER_SCRIPT_CATEGORIES and not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES) or ("ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES and not inputCategory in processCategories):
         logger.info("Processing user script %s." % (nzbtomedia.USER_SCRIPT))
         result = external_script(outputDestination,inputName,inputCategory)
-    elif status == int(0) or (nzbtomedia.CFG['HeadPhones','Mylar','Gamez'][inputCategory]): # if movies linked/extracted or for other categories.
-        logger.debug("Calling autoProcess script for successful download.")
-        status = int(0) # hp, my, gz don't support failed.
-    else:
+    elif status != 0:
         logger.error("Something failed! Please check logs. Exiting")
         return status
-
-    result = 0
 
     # Check video files for corruption
     for video in listMediaFiles(inputDirectory):
@@ -210,19 +205,20 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.info("Calling NzbDrone:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['HeadPhones'][inputCategory]:
+        status = 0 #Failed Handling Not Supported
         logger.info("Calling HeadPhones:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessMusic().process(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['Mylar'][inputCategory]:
+        status = 0 #Failed Handling Not Supported
         logger.info("Calling Mylar:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessComics().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['Gamez'][inputCategory]:
+        status = 0 #Failed Handling Not Supported
         logger.info("Calling Gamez:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessGames().process(outputDestination, inputName, status, clientAgent, inputCategory)
 
-    if result == 1 and clientAgent != 'manual':
+    if result != 0 and clientAgent != 'manual':
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-
-    if clientAgent != 'manual':
         resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
 
     cleanup_directories(inputCategory, processCategories, result, outputDestination)
@@ -230,8 +226,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
 def external_script(outputDestination, torrentName, torrentLabel):
 
-    final_result = int(0) # start at 0.
-    num_files = int(0)
+    final_result = 0 # start at 0.
+    num_files = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
 
@@ -274,7 +270,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
                     res = p.wait()
                     if str(res) in nzbtomedia.USER_SCRIPT_SUCCESSCODES: # Linux returns 0 for successful.
                         logger.info("UserScript %s was successfull" % (command[0]))
-                        result = int(0)
+                        result = 0
                     else:
                         logger.error("UserScript %s has failed with return code: %s" % (command[0], res))
                         logger.info("If the UserScript completed successfully you should add %s to the user_script_successCodes" % (res))
@@ -285,7 +281,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
                 final_result = final_result + result
 
     time.sleep(nzbtomedia.USER_DELAY)
-    num_files_new = int(0)
+    num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
             filePath = os.path.join(dirpath, file)
@@ -294,10 +290,10 @@ def external_script(outputDestination, torrentName, torrentLabel):
             if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
                 num_files_new = num_files_new + 1
 
-    if nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new == int(0) and final_result == int(0):
+    if nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
         logger.info("All files have been processed. Cleaning outputDirectory %s" % (outputDestination))
         shutil.rmtree(outputDestination)
-    elif nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new != int(0):
+    elif nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned." % (num_files, num_files_new))
     return final_result
 
@@ -317,7 +313,6 @@ def main(args):
 
     # Post-Processing Result
     result = 0
-
 
     try:
         inputDirectory, inputName, inputCategory, inputHash, inputID = parse_args(clientAgent, args)
