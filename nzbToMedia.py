@@ -290,7 +290,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
-        if nzbtomedia.CFG[section]['extract']:
+        if nzbtomedia.CFG[section][inputCategory]['extract']:
             logger.debug('Checking for archives to extract in directory: %s' % (nzbDir))
             extractFiles(nzbDir)
 

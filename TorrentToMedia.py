@@ -36,7 +36,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
-        if nzbtomedia.CFG[section]['extract']:
+        if nzbtomedia.CFG[section][inputCategory]['extract']:
             logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
             extractFiles(inputDirectory)
     else:
