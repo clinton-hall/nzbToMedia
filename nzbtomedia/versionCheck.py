@@ -14,6 +14,8 @@ import gh_api as github
 
 import nzbtomedia
 from nzbtomedia import logger
+from nzbtomedia.nzbToMediaUtil import joinPath
+
 
 class CheckVersion():
     """
@@ -46,7 +48,7 @@ class CheckVersion():
         """
 
         # check if we're a windows build
-        if os.path.isdir(os.path.join(nzbtomedia.PROGRAM_DIR, u'.git')):
+        if os.path.isdir(joinPath(nzbtomedia.PROGRAM_DIR, u'.git')):
             install_type = 'git'
         else:
             install_type = 'source'
@@ -335,7 +337,7 @@ class SourceUpdateManager(UpdateManager):
 
     def _find_installed_version(self):
 
-        version_file = os.path.join(nzbtomedia.PROGRAM_DIR, u'version.txt')
+        version_file = joinPath(nzbtomedia.PROGRAM_DIR, u'version.txt')
 
         if not os.path.isfile(version_file):
             self._cur_commit_hash = None
@@ -431,11 +433,11 @@ class SourceUpdateManager(UpdateManager):
         """
         base_url = 'https://github.com/' + self.github_repo_user + '/' + self.github_repo
         tar_download_url = base_url + '/tarball/' + self.branch
-        version_path = os.path.join(nzbtomedia.PROGRAM_DIR, u'version.txt')
+        version_path = joinPath(nzbtomedia.PROGRAM_DIR, u'version.txt')
 
         try:
             # prepare the update dir
-            sb_update_dir = os.path.join(nzbtomedia.PROGRAM_DIR, u'sb-update')
+            sb_update_dir = joinPath(nzbtomedia.PROGRAM_DIR, u'sb-update')
 
             if os.path.isdir(sb_update_dir):
                 logger.log(u"Clearing out update folder " + sb_update_dir + " before extracting")
@@ -446,7 +448,7 @@ class SourceUpdateManager(UpdateManager):
 
             # retrieve file
             logger.log(u"Downloading update from " + repr(tar_download_url))
-            tar_download_path = os.path.join(sb_update_dir, u'nzbtomedia-update.tar')
+            tar_download_path = joinPath(sb_update_dir, u'nzbtomedia-update.tar')
             urllib.urlretrieve(tar_download_url, tar_download_path)
 
             if not os.path.isfile(tar_download_path):
@@ -469,19 +471,19 @@ class SourceUpdateManager(UpdateManager):
 
             # find update dir name
             update_dir_contents = [x for x in os.listdir(sb_update_dir) if
-                                   os.path.isdir(os.path.join(sb_update_dir, x))]
+                                   os.path.isdir(joinPath(sb_update_dir, x))]
             if len(update_dir_contents) != 1:
                 logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.ERROR)
                 return False
-            content_dir = os.path.join(sb_update_dir, update_dir_contents[0])
+            content_dir = joinPath(sb_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
             logger.log(u"Moving files from " + content_dir + " to " + nzbtomedia.PROGRAM_DIR)
             for dirname, dirnames, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
-                    old_path = os.path.join(content_dir, dirname, curfile)
-                    new_path = os.path.join(nzbtomedia.PROGRAM_DIR, dirname, curfile)
+                    old_path = joinPath(content_dir, dirname, curfile)
+                    new_path = joinPath(nzbtomedia.PROGRAM_DIR, dirname, curfile)
 
                     #Avoid DLL access problem on WIN32/64
                     #These files needing to be updated manually

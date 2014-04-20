@@ -45,6 +45,8 @@ def makeDir(path):
             return False
     return True
 
+def joinPath(path, *paths):
+    return os.path.join(path, *paths).replace('\\','/')
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     single = False
@@ -67,20 +69,20 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
         return inputDirectory, inputName, inputCategory, root, single
 
-    if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory).replace("\\","/")):
+    if inputCategory and os.path.isdir(joinPath(inputDirectory, inputCategory)):
         logger.info(
             "SEARCH: Found category directory %s in input directory directory %s" % (inputCategory, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputCategory).replace("\\","/")
+        inputDirectory = joinPath(inputDirectory, inputCategory)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
-    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName).replace("\\","/")):
+    if inputName and os.path.isdir(joinPath(inputDirectory, inputName)):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputName).replace("\\","/")
+        inputDirectory = joinPath(inputDirectory, inputName)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
-    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeFileName(inputName)).replace("\\","/")):
+    if inputName and os.path.isdir(joinPath(inputDirectory, sanitizeFileName(inputName))):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
             sanitizeFileName(inputName), inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, sanitizeFileName(inputName).replace("\\","/"))
+        inputDirectory = joinPath(inputDirectory, sanitizeFileName(inputName))
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
 
@@ -115,53 +117,50 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     return inputDirectory, inputName, inputCategory, root, single
 
 
-def is_sample(filePath, inputName, minSampleSize, SampleIDs):
+def is_sample(inputName, minSampleSize, SampleIDs):
     # 200 MB in bytes
     SIZE_CUTOFF = minSampleSize * 1024 * 1024
-    if os.path.getsize(filePath) < SIZE_CUTOFF:
+    if os.path.getsize(inputName) < SIZE_CUTOFF:
         if 'SizeOnly' in SampleIDs:
             return True
-        # Ignore 'sample' in files unless 'sample' in Torrent Name
+        # Ignore 'sample' in files
         for ident in SampleIDs:
-            if ident.lower() in filePath.lower() and not ident.lower() in inputName.lower():
+            if re.search(ident,inputName,flags=re.I):
                 return True
     # Return False if none of these were met.
     return False
 
-
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     if os.path.isfile(targetDirectory):
-        logger.info("COPYLINK: target file already exists. Nothing to be done")
+        logger.info("Target file already exists. Nothing to be done", 'COPYLINK')
         return True
 
     makeDir(outputDestination)
     if useLink == "hard":
         try:
-            logger.info("COPYLINK: Hard linking %s to %s" % (filePath, targetDirectory))
+            logger.info("Hard linking %s to %s" % (filePath, targetDirectory), 'COPYLINK')
             linktastic.link(filePath, targetDirectory)
         except:
-            logger.error("COPYLINK")
             if os.path.isfile(targetDirectory):
                 logger.warning(
-                    "COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+                    "Something went wrong in linktastic.link, but the destination file was created", 'COPYLINK')
             else:
-                logger.warning("COPYLINK: Something went wrong in linktastic.link, copying instead")
-                logger.debug("COPYLINK: Copying %s to %s" % (filePath, targetDirectory))
+                logger.warning("Something went wrong in linktastic.link, copying instead", 'COPYLINK')
+                logger.debug("Copying %s to %s" % (filePath, targetDirectory), 'COPYLINK')
                 shutil.copy(filePath, targetDirectory)
     elif useLink == "sym":
         try:
-            logger.info("COPYLINK: Moving %s to %s before sym linking" % (filePath, targetDirectory))
+            logger.info("Moving %s to %s before sym linking" % (filePath, targetDirectory), 'COPYLINK')
             shutil.move(filePath, targetDirectory)
-            logger.info("COPYLINK: Sym linking %s to %s" % (targetDirectory, filePath))
+            logger.info("Sym linking %s to %s" % (targetDirectory, filePath), 'COPYLINK')
             linktastic.symlink(targetDirectory, filePath)
         except:
-            logger.error("COPYLINK")
             if os.path.isfile(targetDirectory):
                 logger.warning(
-                    "COPYLINK: Something went wrong in linktastic.link, but the destination file was created")
+                    "Something went wrong in linktastic.link, but the destination file was created", 'COPYLINK')
             else:
-                logger.info("COPYLINK: Something went wrong in linktastic.link, copying instead")
-                logger.debug("COPYLINK: Copying %s to %s" % (filePath, targetDirectory))
+                logger.info("Something went wrong in linktastic.link, copying instead", 'COPYLINK')
+                logger.debug("Copying %s to %s" % (filePath, targetDirectory), 'COPYLINK')
                 shutil.copy(filePath, targetDirectory)
     elif useLink == "move":
         logger.debug("Moving %s to %s" % (filePath, targetDirectory))
@@ -174,22 +173,24 @@ def copy_link(filePath, targetDirectory, useLink, outputDestination):
 
 def flatten(outputDestination):
     logger.info("FLATTEN: Flattening directory: %s" % (outputDestination))
-    for dirpath, dirnames, filenames in os.walk(
-            outputDestination):  # Flatten out the directory to make postprocessing easier
-        if dirpath == outputDestination:
-            continue  # No need to try and move files in the root destination directory
-        for filename in filenames:
-            source = os.path.join(dirpath, filename).replace("\\","/")
-            target = os.path.join(outputDestination, filename).replace("\\","/")
-            try:
-                shutil.move(source, target)
-            except:
-                logger.error("FLATTEN: Could not flatten %s" % (source))
+    for outputFile in listMediaFiles(outputDestination):
+        dirPath = os.path.dirname(outputFile)
+        fileName = os.path.basename(outputFile)
+
+        if dirPath == outputDestination:
+            continue
+
+        target = joinPath(outputDestination, fileName)
+
+        try:
+            shutil.move(outputFile, target)
+        except:
+            logger.error("Could not flatten %s" % (outputFile), 'FLATTEN')
+
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
-
 def removeEmptyFolders(path):
-    logger.info("REMOVER: Removing empty folders in: %s" % (path))
+    logger.info("Removing empty folders in: %s" % (path), 'REMOVER')
     if not os.path.isdir(path):
         return
 
@@ -197,14 +198,14 @@ def removeEmptyFolders(path):
     files = os.listdir(path)
     if len(files):
         for f in files:
-            fullpath = os.path.join(path, f).replace("\\","/")
+            fullpath = joinPath(path, f)
             if os.path.isdir(fullpath):
                 removeEmptyFolders(fullpath)
 
     # If folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0:
-        logger.debug("REMOVER: Removing empty folder: %s" % (path))
+        logger.debug("Removing empty folder: %s" % (path), 'REMOVER')
         os.rmdir(path)
 
 
@@ -214,7 +215,7 @@ def remove_read_only(path):
     for dirpath, dirnames, filenames in os.walk(path):
         for filename in filenames:
             logger.debug("Removing Read Only Flag for: %s" % (filename))
-            os.chmod(os.path.join(dirpath, filename).replace("\\","/"), stat.S_IWRITE)
+            os.chmod(joinPath(dirpath, filename), stat.S_IWRITE)
 
 
 #Wake function
@@ -389,7 +390,7 @@ def get_dirnames(section, subsections=None):
             watch_dir = None
 
         try:
-            outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection).replace("\\","/")
+            outputDirectory = joinPath(nzbtomedia.OUTPUTDIRECTORY, subsection)
             if not os.path.exists(outputDirectory):
                 outputDirectory = None
         except:
@@ -400,26 +401,26 @@ def get_dirnames(section, subsections=None):
             for mediafile in listMediaFiles(watch_dir):
                 parentDir = os.path.dirname(mediafile)
                 if parentDir == watch_dir:
-                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0])).replace("\\","/")
+                    p = joinPath(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
                     if not os.path.exists(p):
                         os.mkdir(p)
                         shutil.move(mediafile, p)
 
-            dirNames.extend([os.path.join(watch_dir, o).replace("\\","/") for o in os.listdir(watch_dir) if
-                             os.path.isdir(os.path.join(watch_dir, o).replace("\\","/"))])
+            dirNames.extend([joinPath(watch_dir, o) for o in os.listdir(watch_dir) if
+                             os.path.isdir(joinPath(watch_dir, o))])
 
         if outputDirectory:
             # search for single files and move them into there own folder for post-processing
             for mediafile in listMediaFiles(outputDirectory):
                 parentDir = os.path.dirname(mediafile)
                 if parentDir == outputDirectory:
-                    p = os.path.join(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]).replace("\\","/"))
+                    p = joinPath(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
                     if not os.path.exists(p):
                         os.mkdir(p)
                     shutil.move(mediafile, p)
 
-            dirNames.extend([os.path.join(outputDirectory, o).replace("\\","/") for o in os.listdir(outputDirectory) if
-                             os.path.isdir(os.path.join(outputDirectory, o).replace("\\","/"))])
+            dirNames.extend([joinPath(outputDirectory, o) for o in os.listdir(outputDirectory) if
+                             os.path.isdir(joinPath(outputDirectory, o))])
 
         if not dirNames:
             logger.warning("%s:%s has no directories identified for post-processing" % (section, subsection))
@@ -441,7 +442,7 @@ def cleanup_directories(inputCategory, processCategories, result, directory):
         file_list = []
         for dirpath, dirnames, filenames in os.walk(directory):
             for file in filenames:
-                filePath = os.path.join(dirpath, file).replace("\\","/")
+                filePath = joinPath(dirpath, file)
                 fileName, fileExtension = os.path.splitext(file)
                 if fileExtension in nzbtomedia.MEDIACONTAINER or fileExtension in nzbtomedia.METACONTAINER:
                     num_files_new += 1
@@ -580,43 +581,7 @@ def clean_nzbname(nzbname):
     nzbname = re.sub("^\[.*\]", "", nzbname)
     return nzbname.strip()
 
-
-def isArchiveFile(filename):
-    # ignore samples
-
-    # ignore MAC OS's retarded "resource fork" files
-    if filename.startswith('._'):
-        return False
-
-    sepFile = filename.rpartition(".")
-
-    if sepFile[2].lower() in [i.replace(".","") for i in nzbtomedia.COMPRESSEDCONTAINER]:
-        return True
-    else:
-        return False
-
-def listArchiveFiles(path):
-    if not dir or not os.path.isdir(path):
-        return []
-
-    files = []
-    for curFile in os.listdir(path):
-        fullCurFile = os.path.join(path, curFile).replace("\\","/")
-
-        # if it's a folder do it recursively
-        if os.path.isdir(fullCurFile) and not curFile.startswith('.'):
-            files += listMediaFiles(fullCurFile)
-
-        elif isMediaFile(curFile):
-            files.append(fullCurFile)
-
-    return files
-
 def isMediaFile(filename):
-    # ignore samples
-    if re.search('(^|[\W_])(sample\d*)[\W_]', filename, re.I):
-        return False
-
     # ignore MAC OS's retarded "resource fork" files
     if filename.startswith('._'):
         return False
@@ -624,26 +589,32 @@ def isMediaFile(filename):
     sepFile = filename.rpartition(".")
 
     if re.search('extras?$', sepFile[0], re.I):
+        logger.info("Ignoring extras file: %s  " % (filename))
         return False
 
-    if sepFile[2].lower() in [i.replace(".","") for i in nzbtomedia.MEDIACONTAINER]:
+    if sepFile[2].lower() in [i.replace(".","") for i in
+                              (nzbtomedia.MEDIACONTAINER + nzbtomedia.AUDIOCONTAINER + nzbtomedia.COMPRESSEDCONTAINER)]:
         return True
     else:
         return False
 
-def listMediaFiles(path):
+def listMediaFiles(path, ignoreSample=True):
     if not dir or not os.path.isdir(path):
         return []
 
     files = []
     for curFile in os.listdir(path):
-        fullCurFile = os.path.join(path, curFile).replace("\\","/")
+        fullCurFile = joinPath(path, curFile)
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':
             files += listMediaFiles(fullCurFile)
 
         elif isMediaFile(curFile):
+            # Optionally ignore sample files
+            if ignoreSample and is_sample(fullCurFile, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
+                continue
+
             files.append(fullCurFile)
 
     return files

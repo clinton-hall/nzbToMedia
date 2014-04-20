@@ -15,6 +15,7 @@
 import os
 import sys
 import nzbtomedia
+from nzbtomedia.nzbToMediaUtil import joinPath
 
 if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
     print "Script triggered from NZBGet (11.0 or later)."
@@ -66,7 +67,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     directory = os.path.normpath(os.environ['NZBPP_DIRECTORY'])
     for dirpath, dirnames, filenames in os.walk(directory):
         for file in filenames:
-            filepath = os.path.join(dirpath, file)
+            filepath = joinPath(dirpath, file)
             print "reseting datetime for file", filepath
             try:
                 os.utime(filepath, None)

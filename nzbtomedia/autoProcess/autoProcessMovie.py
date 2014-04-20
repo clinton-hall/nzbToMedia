@@ -4,7 +4,7 @@ import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, find_imdbid, find_download
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, find_imdbid, find_download, joinPath
 from nzbtomedia import logger
 
 
@@ -160,7 +160,7 @@ class autoProcessMovie:
 
             params['media_folder'] = dirName
             if remote_path:
-                dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
+                dirName_new = joinPath(remote_path, os.path.basename(dirName)).replace("\\", "/")
                 params['media_folder'] = dirName_new
 
             url = "%s%s" % (baseURL, command)

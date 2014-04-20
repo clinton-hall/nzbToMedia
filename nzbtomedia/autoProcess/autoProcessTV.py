@@ -5,7 +5,7 @@ from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete, joinPath
 from nzbtomedia import logger
 
 class autoProcessTV:
@@ -63,7 +63,7 @@ class autoProcessTV:
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
-        SpecificPath = os.path.join(dirName, str(nzbName))
+        SpecificPath = joinPath(dirName, str(nzbName))
         cleanName = os.path.splitext(SpecificPath)
         if cleanName[1] == ".nzb":
             SpecificPath = cleanName[0]
@@ -79,7 +79,7 @@ class autoProcessTV:
             video = int(0)
             for dirpath, dirnames, filenames in os.walk(dirName):
                 for file in filenames:
-                    filePath = os.path.join(dirpath, file)
+                    filePath = joinPath(dirpath, file)
                     fileExtension = os.path.splitext(file)[1]
                     if fileExtension in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
                         if is_sample(filePath, nzbName, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
@@ -109,7 +109,7 @@ class autoProcessTV:
             if param in ["dirName", "dir"]:
                 fork_params[param] = dirName
                 if remote_path:
-                    dirName_new = os.path.join(remote_path, os.path.basename(dirName)).replace("\\", "/")
+                    dirName_new = joinPath(remote_path, os.path.basename(dirName)).replace("\\", "/")
                     fork_params[param] = dirName_new
 
             if param == "process_method":

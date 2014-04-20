@@ -2,7 +2,7 @@ import os
 import time
 import nzbtomedia
 from lib import requests
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
 from nzbtomedia import logger
 
 class autoProcessMusic:
@@ -76,7 +76,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                dirName_new = os.path.join(remote_path, os.path.basename(os.path.dirname(dirName))).replace("\\", "/")
+                dirName_new = joinPath(remote_path, os.path.basename(os.path.dirname(dirName))).replace("\\", "/")
                 params['dir'] = dirName_new
 
 

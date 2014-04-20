@@ -1,6 +1,6 @@
 import os
 import logging
-from nzbtomedia.nzbToMediaUtil import listMediaFiles
+from nzbtomedia.nzbToMediaUtil import listMediaFiles, joinPath
 
 Logger = logging.getLogger()
 
@@ -20,7 +20,7 @@ def process_qoq(filename, dirname):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     newname = head[::-1]
     newfile = newname + fileExtension
-    newfilePath = os.path.join(dirname, newfile)
+    newfilePath = joinPath(dirname, newfile)
     os.rename(filename, newfilePath)
     logging.debug("New file name is %s", newfile)
 

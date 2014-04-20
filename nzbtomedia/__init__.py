@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir
+from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -86,6 +86,7 @@ DELUGEPWD = None
 
 COMPRESSEDCONTAINER = None
 MEDIACONTAINER = None
+AUDIOCONTAINER = None
 METACONTAINER = None
 MINSAMPLESIZE = None
 SAMPLEIDS = None
@@ -135,7 +136,7 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE
+        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER
 
     if __INITIALIZED__:
         return False
@@ -241,6 +242,7 @@ def initialize(section=None):
 
     COMPRESSEDCONTAINER = (CFG["Extensions"]["compressedExtensions"])  # .zip,.rar,.7z
     MEDIACONTAINER = (CFG["Extensions"]["mediaExtensions"])  # .mkv,.avi,.divx
+    AUDIOCONTAINER = (CFG["Extensions"]["audioExtensions"])
     METACONTAINER = (CFG["Extensions"]["metaExtensions"])  # .nfo,.sub,.srt
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
@@ -262,8 +264,8 @@ def initialize(section=None):
 
     # Setup FFMPEG and FFPROBE locations
     if platform.system() == 'Windows':
-        FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
-        FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
+        FFMPEG = joinPath(FFMPEG_PATH, 'ffmpeg.exe')
+        FFPROBE = joinPath(FFMPEG_PATH, 'ffprobe.exe')
 
         if not (os.path.isfile(FFMPEG) or os.path.isfile(FFMPEG)): # problem
             FFMPEG = None
@@ -276,7 +278,7 @@ def initialize(section=None):
 
         if not (FFMPEG or FFPROBE):
             # Auto-install FFMPEG and FFPROBE
-            res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
+            res = subprocess.call([joinPath(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
             if res == 0: # did not install or ffmpeg still not found.
                 FFMPEG = subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket)
                 FFPROBE = subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket)

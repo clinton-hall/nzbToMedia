@@ -32,6 +32,8 @@
 import os
 import sys
 import nzbtomedia
+from nzbtomedia.nzbToMediaUtil import joinPath
+
 
 def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
     # 200 MB in bytes
@@ -101,7 +103,7 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
     for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
         for file in filenames:
 
-            filePath = os.path.join(dirpath, file)
+            filePath = joinPath(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in mediaContainer:  # If the file is a video file

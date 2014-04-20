@@ -2,7 +2,7 @@ import os
 import sys
 import nzbtomedia
 from subprocess import call, Popen
-from nzbtomedia.nzbToMediaUtil import makeDir
+from nzbtomedia.nzbToMediaUtil import makeDir, joinPath
 from nzbtomedia import logger
 
 # which() and os_platform() breaks when running in Transmission (has to do with os.environ)
@@ -26,14 +26,14 @@ def extract(filePath, outputDestination):
         else:
             platform = 'x86'
         if not os.path.dirname(sys.argv[0]):
-            chplocation = os.path.normpath(os.path.join(os.getcwd(), 'nzbtomedia/extractor/bin/chp.exe'))
+            chplocation = os.path.normpath(joinPath(os.getcwd(), 'nzbtomedia/extractor/bin/chp.exe'))
             sevenzipLocation = os.path.normpath(
-                os.path.join(os.getcwd(), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
+                joinPath(os.getcwd(), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
         else:
             chplocation = os.path.normpath(
-                os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/chp.exe'))
+                joinPath(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/chp.exe'))
             sevenzipLocation = os.path.normpath(
-                os.path.join(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
+                joinPath(os.path.dirname(sys.argv[0]), 'nzbtomedia/extractor/bin/' + platform + '/7z.exe'))
         if not os.path.exists(sevenzipLocation):
             logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
