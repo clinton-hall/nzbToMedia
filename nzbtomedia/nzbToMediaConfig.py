@@ -147,18 +147,21 @@ class ConfigObj(configobj.ConfigObj, Section):
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
 
-                # remove any options that we no longer use or need from new config
-                def find_key(d, key):
-                    for k, v in d.items():
-                        if isinstance(v, dict):
-                            p = find_key(v, key)
-                            if p:
-                                return [k] + p
-                        elif v == key:
-                            return [k]
+                # remove any options that we no longer need so they don't migrate into our new config
+                def find_key(node, kv):
+                    if isinstance(node, list):
+                        for i in node:
+                            for x in find_key(i, kv):
+                                yield x
+                    elif isinstance(node, dict):
+                        if kv in node:
+                            yield node[kv]
+                        for j in node.values():
+                            for x in find_key(j, kv):
+                                yield x
 
-                #if not find_key(CFG_NEW, option):
-                #    values.pop(option)
+                if not list(find_key(CFG_NEW, option)):
+                    values.pop(option)
 
             return values
 
