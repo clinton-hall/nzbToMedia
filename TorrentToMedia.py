@@ -53,7 +53,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             status = 0
             # Check video files for corruption
             for video in listMediaFiles(inputDirectory):
-                if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
+                if nzbtomedia.FFPROBE and not Transcoder().isVideoGood(video):
                     status = 1
 
             logger.info("Calling autoProcessTV to post-process: %s",inputName)
@@ -193,21 +193,17 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         return status
 
     result = 0
-    if nzbtomedia.CFG['CouchPotato'][inputCategory]:
-        # Check video files for corruption
-        for video in listMediaFiles(inputDirectory):
-            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
-                status = 1
 
+    # Check video files for corruption
+    for video in listMediaFiles(inputDirectory):
+        if nzbtomedia.FFPROBE and not Transcoder().isVideoGood(video):
+            status = 1
+
+    if nzbtomedia.CFG['CouchPotato'][inputCategory]:
         logger.info("Calling CouchPotato:" + inputCategory + " to post-process: %s" % (inputName))
         download_id = inputHash
         result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
     elif nzbtomedia.CFG['SickBeard'][inputCategory]:
-        # Check video files for corruption
-        for video in listMediaFiles(inputDirectory):
-            if not nzbtomedia.FFPROBE and Transcoder().isVideoGood(video):
-                status = 1
-
         logger.info("Calling Sick-Beard:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
     elif nzbtomedia.CFG['NzbDrone'][inputCategory]:
