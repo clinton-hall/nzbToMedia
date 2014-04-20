@@ -245,10 +245,10 @@ def initialize(section=None):
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
-    if not isinstance(COMPRESSEDCONTAINER, list):COMPRESSEDCONTAINER = [COMPRESSEDCONTAINER]
-    if not isinstance(MEDIACONTAINER, list): MEDIACONTAINER = [MEDIACONTAINER]
-    if not isinstance(AUDIOCONTAINER, list): AUDIOCONTAINER = [AUDIOCONTAINER]
-    if not isinstance(METACONTAINER, list): METACONTAINER = [METACONTAINER]
+    if isinstance(COMPRESSEDCONTAINER, str):COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
+    if isinstance(MEDIACONTAINER, str): MEDIACONTAINER = MEDIACONTAINER.split(',')
+    if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
+    if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
 
     EXTCONTAINER = [y for x in COMPRESSEDCONTAINER,MEDIACONTAINER,AUDIOCONTAINER,METACONTAINER for y in x]
 
