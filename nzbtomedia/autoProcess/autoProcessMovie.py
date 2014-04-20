@@ -4,7 +4,7 @@ import nzbtomedia
 from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, delete, find_imdbid, find_download, joinPath
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, joinPath
 from nzbtomedia import logger
 
 
@@ -96,7 +96,7 @@ class autoProcessMovie:
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
         method = nzbtomedia.CFG[section][inputCategory]["method"]
-        delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
+        rmDir_failed = int(nzbtomedia.CFG[section][inputCategory]["rmDir_failed"])
         wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
 
         try:
@@ -186,9 +186,9 @@ class autoProcessMovie:
         else:
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (nzbName), section)
 
-            if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
+            if rmDir_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s" % dirName, section)
-                delete(dirName)
+                rmDir(dirName)
 
             if not download_id:
                 logger.error("Could not find a downloaded movie in the database matching %s, exiting!" % nzbName,

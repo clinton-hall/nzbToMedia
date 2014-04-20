@@ -2,8 +2,7 @@ import errno
 import os
 import platform
 import nzbtomedia
-from subprocess import call, Popen
-from lib import guessit
+from subprocess import call
 from nzbtomedia import logger
 from nzbToMediaUtil import listMediaFiles
 

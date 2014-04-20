@@ -428,13 +428,12 @@ def get_dirnames(section, subsections=None):
     return list(set(dirNames))
 
 
-def delete(dirName):
+def rmDir(dirName):
     logger.info("Deleting %s" % (dirName))
     try:
         shutil.rmtree(dirName, True)
     except:
         logger.error("Unable to delete folder %s" % (dirName))
-
 
 def cleanup_directories(inputCategory, processCategories, result, directory):
     if inputCategory in processCategories and result == 0 and os.path.isdir(directory):
@@ -612,6 +611,10 @@ def listMediaFiles(path, ignoreSample=True):
         elif isMediaFile(curFile):
             # Optionally ignore sample files
             if ignoreSample and is_sample(fullCurFile, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
+                try:
+                    os.unlink(fullCurFile)
+                    logger.debug('Sample file %s has been removed.' % (curFile))
+                except:continue
                 continue
 
             files.append(fullCurFile)

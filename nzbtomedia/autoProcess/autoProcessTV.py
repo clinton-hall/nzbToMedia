@@ -5,7 +5,7 @@ from lib import requests
 from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, is_sample, flatten, delete, joinPath
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, joinPath, listMediaFiles
 from nzbtomedia import logger
 
 class autoProcessTV:
@@ -40,9 +40,9 @@ class autoProcessTV:
         except:
             web_root = ""
         try:
-            delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
+            rmDir_failed = int(nzbtomedia.CFG[section][inputCategory]["rmDir_failed"])
         except:
-            delete_failed = 0
+            rmDir_failed = 0
         try:
             nzbExtractionBy = nzbtomedia.CFG[section][inputCategory]["nzbExtractionBy"]
         except:
@@ -76,17 +76,15 @@ class autoProcessTV:
                 nzbName, dirName = convert_to_ascii(nzbName, dirName)
 
             # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
-            video = int(0)
-            for dirpath, dirnames, filenames in os.walk(dirName):
-                for file in filenames:
-                    filePath = joinPath(dirpath, file)
-                    fileExtension = os.path.splitext(file)[1]
-                    if fileExtension in nzbtomedia.MEDIACONTAINER:  # If the file is a video file
-                        if is_sample(filePath, nzbName, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
-                            logger.debug("Removing sample file: %s" % (filePath), section)
-                            os.unlink(filePath)  # remove samples
-                        else:
-                            video = video + 1
+            video = 0
+            for dirFile in listMediaFiles(dirName):
+                fullFileName = os.path.basename(dirFile)
+                fileName, fileExt = os.path.splitext(fullFileName)
+
+                if fileExt in nzbtomedia.MEDIACONTAINER:
+                    logger.debug("Found media file: %s" % (fullFileName))
+                    video += 1
+
             if video > 0:  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
             elif clientAgent == "manual":
@@ -94,7 +92,7 @@ class autoProcessTV:
                 return 0  # Success (as far as this script is concerned)
             else:
                 logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
-                status = int(1)
+                status = 1
                 failed = True
 
         # configure SB params to pass
@@ -120,7 +118,7 @@ class autoProcessTV:
                 else:
                     del fork_params[param]
 
-        # delete any unused params so we don't pass them to SB by mistake
+        # rmDir any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k,v in fork_params.items() if v is None]
 
         if status == 0:
@@ -130,9 +128,9 @@ class autoProcessTV:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             else:
                 logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
-                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
+                if rmDir_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                     logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
-                    delete(dirName)
+                    rmDir(dirName)
                 return 0 # Success (as far as this script is concerned)
 
         if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
@@ -170,7 +168,7 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
 
-        if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
+        if status != 0 and rmDir_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
-            delete(dirName)
+            rmDir(dirName)
         return 0 # Success
