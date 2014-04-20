@@ -283,7 +283,7 @@ def initialize(section=None):
         FFPROBE = 'ffprobe'
         if subprocess.call(['which', 'ffmpeg']) != 0:
             res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res or subprocess.call(['which', 'ffmpeg']) != 0: # did not install or ffmpeg still not found.
+            if res or subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0: # did not install or ffmpeg still not found.
                 logger.error("Failed to install ffmpeg. Please install manually")
                 logger.info("Cannot transcode video files, disabling transcoding!")
                 TRANSCODE = 0
@@ -291,7 +291,7 @@ def initialize(section=None):
 
         if subprocess.call(['which', 'ffprobe']) != 0:
             res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res or subprocess.call(['which', 'ffprobe']) != 0:
+            if res or subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
                 logger.error("Failed to install ffprobe. Please install manually")
                 logger.info("Cannot detect corrupt video files, disabling corrupt video detection!")
                 FFPROBE = None
