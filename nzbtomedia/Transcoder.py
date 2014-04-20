@@ -8,6 +8,10 @@ from nzbToMediaUtil import listMediaFiles
 
 class Transcoder:
     def isVideoGood(self, videofile):
+        fileName, fileExt = os.path.splitext(videofile)
+        if fileExt not in nzbtomedia.MEDIACONTAINER:
+            return True
+
         if platform.system() == 'Windows':
             bitbucket = open('NUL')
         else:

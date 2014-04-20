@@ -20,7 +20,11 @@ class autoProcessTV:
         # auto-detect correct fork
         fork, fork_params = autoFork(inputCategory)
 
+        # Check video files for corruption
         status = int(failed)
+        for video in listMediaFiles(dirName):
+            if not Transcoder().isVideoGood(video):
+                status = 1
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -40,9 +44,9 @@ class autoProcessTV:
         except:
             web_root = ""
         try:
-            rmDir_failed = int(nzbtomedia.CFG[section][inputCategory]["rmDir_failed"])
+            delete_failed = int(nzbtomedia.CFG[section][inputCategory]["rmDir_failed"])
         except:
-            rmDir_failed = 0
+            delete_failed = 0
         try:
             nzbExtractionBy = nzbtomedia.CFG[section][inputCategory]["nzbExtractionBy"]
         except:
@@ -128,7 +132,7 @@ class autoProcessTV:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             else:
                 logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
-                if rmDir_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
+                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                     logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
                     rmDir(dirName)
                 return 0 # Success (as far as this script is concerned)
@@ -168,7 +172,7 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
 
-        if status != 0 and rmDir_failed and not os.path.dirname(dirName) == dirName:
+        if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             rmDir(dirName)
         return 0 # Success

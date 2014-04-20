@@ -146,6 +146,20 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == "forceClean":
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
+
+                # remove any options that we no longer use or need from new config
+                def find_key(d, key):
+                    for k, v in d.items():
+                        if isinstance(v, dict):
+                            p = find_key(v, key)
+                            if p:
+                                return [k] + p
+                        elif v == key:
+                            return [k]
+
+                #if not find_key(CFG_NEW, option):
+                #    values.pop(option)
+
             return values
 
         def process_section(section, subsections=None):

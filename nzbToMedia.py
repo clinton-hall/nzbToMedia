@@ -282,7 +282,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories, listMediaFiles, extractFiles
 from nzbtomedia import logger
 
 # post-processing
@@ -290,32 +290,31 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
-        # Check video files for corruption
-        for video in listMediaFiles(nzbDir):
-            if not Transcoder().isVideoGood(video):
-                status = 1
+        if nzbtomedia.CFG[section]['extract']:
+            logger.debug('Checking for archives to extract in directory: %s' % (nzbDir))
+            extractFiles(nzbDir)
 
         logger.info("Sending %s to %s for post-processing ..." % (inputName, str(section).upper()))
+
+        if nzbtomedia.CFG["CouchPotato"][inputCategory]:
+            result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
+        elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
+            result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+        elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
+            result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
+        elif nzbtomedia.CFG["Mylar"][inputCategory]:
+            result = autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+        elif nzbtomedia.CFG["Gamez"][inputCategory]:
+            result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
+        else:
+            result = -1
     else:
         logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
-        return -1
-
-    if nzbtomedia.CFG["CouchPotato"][inputCategory]:
-        result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
-    elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
-        result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
-        result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["Mylar"][inputCategory]:
-        result = autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["Gamez"][inputCategory]:
-        result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
-    else:
         result = -1
 
     if result == 0:
-        # Clean up any leftover files
-        cleanup_directories(inputCategory, section, result, nzbDir)
+            # Clean up any leftover files
+            cleanup_directories(inputCategory, section, result, nzbDir)
 
     return result
 

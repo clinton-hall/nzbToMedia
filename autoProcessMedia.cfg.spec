@@ -32,6 +32,7 @@
         method = renamer
         delete_failed = 0
         wait_for = 2
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -51,9 +52,9 @@
         ssl = 0
         fork = auto
         delete_failed = 0
-        nzbExtractionBy = Downloader
         Torrent_NoLink = 0
         process_method =
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -73,8 +74,8 @@
         web_root =
         ssl = 0
         delete_failed = 0
-        nzbExtractionBy = Downloader
         Torrent_NoLink = 0
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -92,6 +93,7 @@
         ssl = 0
         web_root =
         wait_for = 2
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -109,6 +111,7 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root=
         ssl=0
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -125,6 +128,7 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category

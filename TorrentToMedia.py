@@ -17,16 +17,15 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, joinPath
+    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
+    extractFiles
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
-    status = int(1)  # 1 = failed | 0 = success
+    status = 1  # 1 = failed | 0 = success
     root = 0
     video = 0
-    archive = 0
     foundFile = 0
-    extracted_folder = []
     copy_list = []
 
     logger.debug("Received Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
@@ -34,6 +33,16 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     inputDirectory, inputName, inputCategory, root, single = category_search(inputDirectory, inputName, inputCategory, root, nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure
 
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
+
+    section = nzbtomedia.CFG.findsection(inputCategory)
+    if section:
+        if nzbtomedia.CFG[section]['extract']:
+            logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
+            extractFiles(inputDirectory)
+    else:
+        logger.error(
+            "We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
+        return -1
 
     TorrentClass = None
     if clientAgent != 'manual':
@@ -50,14 +59,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if nzbtomedia.CFG["SickBeard"][inputCategory]:
         Torrent_NoLink = int(nzbtomedia.CFG["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
         if Torrent_NoLink == 1:
-            status = 0
-            # Check video files for corruption
-            for video in listMediaFiles(inputDirectory):
-                if not Transcoder().isVideoGood(video):
-                    status = 1
-
             logger.info("Calling autoProcessTV to post-process: %s",inputName)
-            result = autoProcessTV().processEpisode(inputDirectory, inputName, status, clientAgent=clientAgent, inputCategory=inputCategory)
+            result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
             if result != 0:
                 logger.error("A problem was reported in the autoProcessTV script.")
 
@@ -121,25 +124,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             else:
                 continue  # This file has not been recently moved or created, skip it
 
-        if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
-            if not (nzbtomedia.CFG["SickBeard"][inputCategory] and nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination"):
-                # find part numbers in second "extension" from right, if we have more than 1 compressed file in the same directory.
-                if re.search(r'\d+', os.path.splitext(fileName)[1]) and fileDirPath in extracted_folder and not any(item in os.path.splitext(fileName)[1] for item in ['.720p','.1080p','.x264']):
-                    part = int(re.search(r'\d+', os.path.splitext(fileName)[1]).group())
-                    if part == 1: # we only want to extract the primary part.
-                        logger.debug("Found primary part of a multi-part archive %s. Extracting" % (fullFileName))
-                    else:
-                        logger.debug("Found part %s of a multi-part archive %s. Ignoring" % (part, fullFileName))
-                        continue
-                logger.info("Found compressed archive %s for file %s" % (fileExt, inputFile))
-                try:
-                    extractor.extract(inputFile, outputDestination)
-                    extractionSuccess = True # we use this variable to determine if we need to pause a torrent or not in uTorrent (don't need to pause archived content)
-                    extracted_folder.append(fileDirPath)
-                except:
-                    logger.error("Extraction failed for: %s" % (fullFileName))
-                continue
-
         try:
             copy_link(inputFile, targetDirectory, nzbtomedia.USELINK, outputDestination)
             copy_list.append([inputFile, joinPath(outputDestination, fullFileName)])
@@ -162,18 +146,17 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             if fileExt in nzbtomedia.MEDIACONTAINER:
                 logger.debug("Found media file: %s" % (fullFileName))
                 video += 1
-            if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
-                logger.debug("Found archive file: %s" % (fullFileName))
-                archive += 1
 
         if video > 0:
             logger.debug("Found %s media files" % (str(video)))
             status = 0
-        elif archive > 0 and not nzbtomedia.CFG["SickBeard"][inputCategory]["nzbExtractionBy"] == "Destination":
-            logger.debug("Found %s archive files to be extracted by SickBeard" % (str(archive)))
-            status = 0
         else:
             logger.warning("Found no media files in %s" % outputDestination)
+
+
+    # Only these sections can handling failed downloads so make sure everything else gets through without the check for failed
+    if not nzbtomedia.CFG['CouchPotato','SickBeard','NzbDrone'][inputCategory]:
+        status = 0
 
     result = 0
     if (inputCategory in nzbtomedia.USER_SCRIPT_CATEGORIES and not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES) or ("ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES and not inputCategory in processCategories):
@@ -182,11 +165,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     elif status != 0:
         logger.error("Something failed! Please check logs. Exiting")
         return status
-
-    # Check video files for corruption
-    for video in listMediaFiles(inputDirectory):
-        if not Transcoder().isVideoGood(video):
-            status = 1
 
     if nzbtomedia.CFG['CouchPotato'][inputCategory]:
         logger.info("Calling CouchPotato:" + inputCategory + " to post-process: %s" % (inputName))

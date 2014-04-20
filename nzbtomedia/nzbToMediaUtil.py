@@ -9,6 +9,7 @@ import nzbtomedia
 
 from lib import requests
 from lib import guessit
+from nzbtomedia.extractor import extractor
 from nzbtomedia.linktastic import linktastic
 from nzbtomedia import logger
 from nzbtomedia.synchronousdeluge.client import DelugeClient
@@ -669,3 +670,40 @@ def find_imdbid(dirName, nzbName):
             return imdbid
 
     logger.warning('Unable to find a imdbID for %s' % (nzbName))
+
+def extractFiles(src, dst=None):
+    extracted_folder = []
+
+    for inputFile in listMediaFiles(src):
+        dirPath = os.path.dirname(inputFile)
+        fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
+        fullFileName = os.path.basename(inputFile)
+
+        if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
+            if re.search('part\d+', fullFileName):
+                if not re.search('^((?!\.part(?!0*1\.rar$)\d+\.rar$).)*\.(?:rar|r?0*1)$', fullFileName):
+                    continue
+
+            logger.info("Found compressed archive %s for file %s" % (fileExt, fullFileName))
+
+            while(True):
+                try:
+                    extractor.extract(inputFile, dst or dirPath)
+                    extracted_folder.append(dst or dirPath)
+                    break
+                except:
+                    logger.error("Extraction failed for: %s" % (fullFileName))
+
+    if extracted_folder:
+        for folder in extracted_folder:
+            for inputFile in listMediaFiles(folder):
+                fullFileName = os.path.basename(inputFile)
+                fileName, fileExt = os.path.splitext(fullFileName)
+
+                if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
+                    logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
+                    try:
+                        os.remove(inputFile)
+                        time.sleep(1)
+                    except:
+                        logger.debug("Unable to remove file %s" % (inputFile))
