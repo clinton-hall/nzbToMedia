@@ -292,7 +292,7 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
     if section:
         # Check video files for corruption
         for video in listMediaFiles(nzbDir):
-            if nzbtomedia.FFPROBE and not Transcoder().isVideoGood(video):
+            if not Transcoder().isVideoGood(video):
                 status = 1
 
         logger.info("Sending %s to %s for post-processing ..." % (inputName, str(section).upper()))

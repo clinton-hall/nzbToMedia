@@ -195,6 +195,7 @@ def initialize(section=None):
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
     GIT_BRANCH = CFG['General']['git_branch'] or 'dev'
     FORCE_CLEAN = CFG["General"]["force_clean"]
+    FFMPEG_PATH = CFG["General"]["ffmpeg_path"]
 
     # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():
@@ -245,7 +246,6 @@ def initialize(section=None):
     SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
 
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
-    FFMPEG_PATH = CFG["Transcoder"]["ffmpeg_path"]
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
     OUTPUTVIDEOEXTENSION = CFG["Transcoder"]["outputVideoExtension"].strip()
@@ -265,35 +265,24 @@ def initialize(section=None):
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
         if TRANSCODE and not os.path.isfile(FFMPEG): # problem
-            logger.error("%s not found, insure that it does exist and that you've set the correct ffmpeg_path in your autoProcessMedia.cfg" % FFMPEG)
-            logger.error("Cannot transcode files, disabling transcoding!")
-            TRANSCODE = 0
             FFMPEG = None
 
         if not os.path.isfile(FFPROBE):  # problem
-            logger.error(
-                "%s not found, insure that it does exist and that you've set the correct ffmpeg_path in your autoProcessMedia.cfg" % FFPROBE)
-            logger.error("Cannot detect corrupt video files, disabling!")
             FFPROBE = None
-
     else:
         bitbucket = open('/dev/null')
 
         FFMPEG = 'ffmpeg'
         FFPROBE = 'ffprobe'
-        if subprocess.call(['which', 'ffmpeg']) != 0:
+        if TRANSCODE and subprocess.call(['which', 'ffmpeg']) != 0 or subprocess.call(['which', 'ffprobe']) != 0:
             res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res or subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0: # did not install or ffmpeg still not found.
+            if res: # did not install or ffmpeg still not found.
                 logger.error("Failed to install ffmpeg. Please install manually")
-                logger.info("Cannot transcode video files, disabling transcoding!")
-                TRANSCODE = 0
+
+            if subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0:
                 FFMPEG = None
 
-        if subprocess.call(['which', 'ffprobe']) != 0:
-            res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res or subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
-                logger.error("Failed to install ffprobe. Please install manually")
-                logger.info("Cannot detect corrupt video files, disabling corrupt video detection!")
+            if subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
                 FFPROBE = None
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]

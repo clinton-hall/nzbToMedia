@@ -53,7 +53,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             status = 0
             # Check video files for corruption
             for video in listMediaFiles(inputDirectory):
-                if nzbtomedia.FFPROBE and not Transcoder().isVideoGood(video):
+                if not Transcoder().isVideoGood(video):
                     status = 1
 
             logger.info("Calling autoProcessTV to post-process: %s",inputName)
@@ -196,7 +196,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     # Check video files for corruption
     for video in listMediaFiles(inputDirectory):
-        if nzbtomedia.FFPROBE and not Transcoder().isVideoGood(video):
+        if not Transcoder().isVideoGood(video):
             status = 1
 
     if nzbtomedia.CFG['CouchPotato'][inputCategory]:

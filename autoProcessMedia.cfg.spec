@@ -2,14 +2,22 @@
 # For more information, visit https://github.com/clinton-hall/nzbToMedia/wiki
 
 [General]
+    # Enable/Disable update notifications
     version_notify = 1
+    # Enable/Disable automatic updates
     auto_update = 0
+    # Set to where your git executable is located
     git_path =
+    # GitHUB user for repo
     git_user =
+    # GitHUB branch for repo
     git_branch =
     force_clean = 0
+    # Enable/Disable logging debug messages to nzbtomedia.log
     log_debug = 0
-    
+    # Set to where your ffmpeg/ffprobe executables are located
+    ffmpeg_path =
+
 [CouchPotato]
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS
@@ -169,8 +177,6 @@
 
 [Transcoder]
     transcode = 0
-    # Set ffmpeg_path to the location where ffmpeg is located
-    ffmpeg_path =
     ###### duplicate =1 will cretae a new file. =0 will replace the original
     duplicate = 1
     # Only works on Linux. Highest priority is -20, lowest priority is 19.

@@ -14,6 +14,10 @@ class Transcoder:
         else:
             bitbucket = open('/dev/null')
 
+        if not nzbtomedia.FFPROBE:
+            logger.error("Cannot detect corrupt video files!, set your ffmpeg_path in your autoProcessMedia.cfg ...")
+            return False
+
         command = [nzbtomedia.FFPROBE, videofile]
         try:
             logger.info('Checking if %s has any corruption, please stand by ...' % (videofile))
@@ -34,6 +38,10 @@ class Transcoder:
             bitbucket = open('NUL')
         else:
             bitbucket = open('/dev/null')
+
+        if not nzbtomedia.FFMPEG:
+            logger.error("Cannot transcode files!, set your ffmpeg_path in your autoProcessMedia.cfg ...")
+            return 1
 
         logger.info("Checking for files to be transcoded")
         final_result = 0 # initialize as successful
