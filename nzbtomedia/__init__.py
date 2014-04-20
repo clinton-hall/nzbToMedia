@@ -274,7 +274,8 @@ def initialize(section=None):
 
         FFMPEG = 'ffmpeg'
         FFPROBE = 'ffprobe'
-        if TRANSCODE and subprocess.call(['which', 'ffmpeg']) != 0 or subprocess.call(['which', 'ffprobe']) != 0:
+        if TRANSCODE and subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0 \
+                or subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
             res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
             if res: # did not install or ffmpeg still not found.
                 logger.error("Failed to install ffmpeg. Please install manually")
