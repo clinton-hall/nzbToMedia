@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath
+from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -250,8 +250,6 @@ def initialize(section=None):
     if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
     if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
 
-    EXTCONTAINER = [y for x in COMPRESSEDCONTAINER,MEDIACONTAINER,AUDIOCONTAINER,METACONTAINER for y in x]
-
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
     SAMPLEIDS = CFG["Extensions"]["SampleIDs"]
 
@@ -312,7 +310,9 @@ def initialize(section=None):
     SUBSECTIONS = CFG[SECTIONS]
     CATEGORIES += SUBSECTIONS.sections
 
-    __INITIALIZED__ = True
+    # cleanup our processing folders of any misc unwanted files and empty directories
+    cleanProcDirs()
+
     return True
 
 def restart():

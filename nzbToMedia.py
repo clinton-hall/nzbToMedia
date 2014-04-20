@@ -276,13 +276,12 @@
 import os
 import sys
 import nzbtomedia
-from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames, cleanup_directories, listMediaFiles, extractFiles
+from nzbtomedia.nzbToMediaUtil import get_dirnames, extractFiles, cleanProcDirs
 from nzbtomedia import logger
 
 # post-processing
@@ -311,10 +310,6 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
     else:
         logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
         result = -1
-
-    if result == 0:
-            # Clean up any leftover files
-            cleanup_directories(inputCategory, section, result, nzbDir)
 
     return result
 
@@ -432,6 +427,9 @@ def main(args, section=None):
                     logger.debug("nzbToMedia %s:%s is DISABLED" % (section, category))
 
     if result == 0:
+        # cleanup our processing folders of any misc unwanted files and empty directories
+        cleanProcDirs()
+
         logger.info("The %s script completed successfully." % args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)

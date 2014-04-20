@@ -209,7 +209,6 @@ def removeEmptyFolders(path):
         logger.debug("Removing empty folder: %s" % (path), 'REMOVER')
         os.rmdir(path)
 
-
 def remove_read_only(path):
     if not os.path.isdir(path):
         return
@@ -436,27 +435,22 @@ def rmDir(dirName):
     except:
         logger.error("Unable to delete folder %s" % (dirName))
 
-def cleanup_directories(inputCategory, processCategories, result, directory):
-    if inputCategory in processCategories and result == 0 and os.path.isdir(directory):
-        num_files_new = int(0)
-        file_list = []
-        for dirpath, dirnames, filenames in os.walk(directory):
-            for file in filenames:
-                filePath = joinPath(dirpath, file)
-                fileName, fileExtension = os.path.splitext(file)
-                if fileExtension in nzbtomedia.MEDIACONTAINER or fileExtension in nzbtomedia.METACONTAINER:
-                    num_files_new += 1
-                    file_list.append(file)
-        if num_files_new is 0 or int(nzbtomedia.CFG["General"]["force_clean"]) == 1:
-            logger.info("All files have been processed. Cleaning directory %s" % (directory))
-            shutil.rmtree(directory)
-        else:
-            logger.info(
-                "Directory %s still contains %s media and/or meta files. This directory will not be removed." % (
-                    directory, num_files_new))
-            for item in file_list:
-                logger.debug("media/meta file found: %s" % (item))
+def cleanProcDirs():
+    logger.info('Cleaning processing directories ...', 'CLEANDIRS')
+    for section, subsection in nzbtomedia.SUBSECTIONS.items():
+        for category in subsection:
+            if nzbtomedia.CFG[section][category].isenabled():
+                dirNames = get_dirnames(section, category)
+                for dirName in dirNames:
+                    num_files = len(listMediaFiles(dirName, archives=False))
+                    if num_files > 0:
+                        logger.info(
+                            "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
+                            'CLEANDIRS')
+                        continue
 
+                    logger.info("Directory %s has already been processed, removing ..." % (dirName), 'CLEANDIRS')
+                    shutil.rmtree(dirName)
 
 def create_torrent_class(clientAgent):
     # Hardlink solution for Torrents
@@ -564,7 +558,7 @@ def find_download(clientAgent, download_id):
             return True
 
 
-def clean_nzbname(nzbname):
+def cleanFileName(filename):
     """Cleans up nzb name by removing any . and _
     characters, along with any trailing hyphens.
 
@@ -572,16 +566,16 @@ def clean_nzbname(nzbname):
     space, but handles decimal numbers in string, for example:
     """
 
-    nzbname = re.sub("(\D)\.(?!\s)(\D)", "\\1 \\2", nzbname)
-    nzbname = re.sub("(\d)\.(\d{4})", "\\1 \\2", nzbname)  # if it ends in a year then don't keep the dot
-    nzbname = re.sub("(\D)\.(?!\s)", "\\1 ", nzbname)
-    nzbname = re.sub("\.(?!\s)(\D)", " \\1", nzbname)
-    nzbname = nzbname.replace("_", " ")
-    nzbname = re.sub("-$", "", nzbname)
-    nzbname = re.sub("^\[.*\]", "", nzbname)
-    return nzbname.strip()
+    filename = re.sub("(\D)\.(?!\s)(\D)", "\\1 \\2", filename)
+    filename = re.sub("(\d)\.(\d{4})", "\\1 \\2", filename)  # if it ends in a year then don't keep the dot
+    filename = re.sub("(\D)\.(?!\s)", "\\1 ", filename)
+    filename = re.sub("\.(?!\s)(\D)", " \\1", filename)
+    filename = filename.replace("_", " ")
+    filename = re.sub("-$", "", filename)
+    filename = re.sub("^\[.*\]", "", filename)
+    return filename.strip()
 
-def isMediaFile(mediafile):
+def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     fileName, fileExt = os.path.splitext(mediafile)
 
     # ignore MAC OS's retarded "resource fork" files
@@ -592,12 +586,15 @@ def isMediaFile(mediafile):
         logger.info("Ignoring extras file: %s  " % (mediafile))
         return False
 
-    if fileExt.lower() in nzbtomedia.EXTCONTAINER:
+    if (media and fileExt.lower() in nzbtomedia.MEDIACONTAINER)\
+        or (audio and fileExt.lower() in nzbtomedia.AUDIOCONTAINER)\
+        or (meta and fileExt.lower() in nzbtomedia.METACONTAINER)\
+        or (archives and fileExt.lower() in nzbtomedia.COMPRESSEDCONTAINER):
         return True
     else:
         return False
 
-def listMediaFiles(path, ignoreSample=True):
+def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignoreSample=True):
     if not dir or not os.path.isdir(path):
         return []
 
@@ -607,9 +604,9 @@ def listMediaFiles(path, ignoreSample=True):
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':
-            files += listMediaFiles(fullCurFile)
+            files += listMediaFiles(fullCurFile, media, audio, meta, archives)
 
-        elif isMediaFile(curFile):
+        elif isMediaFile(curFile, media, audio, meta, archives):
             # Optionally ignore sample files
             if ignoreSample and is_sample(fullCurFile, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
                 try:

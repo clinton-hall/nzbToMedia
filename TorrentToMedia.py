@@ -2,23 +2,20 @@
 import datetime
 import os
 import time
-import re
 import shutil
 import sys
 import nzbtomedia
 import platform
 
 from subprocess import Popen
-from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.extractor import extractor
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, cleanup_directories, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
-    extractFiles
+    remove_read_only, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
+    extractFiles, cleanProcDirs
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
@@ -67,7 +64,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             if clientAgent != 'manual':
                 resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
 
-            cleanup_directories(inputCategory, processCategories, result, outputDestination)
             return result
 
     processOnly = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
@@ -193,7 +189,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
         resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
 
-    cleanup_directories(inputCategory, processCategories, result, outputDestination)
     return result
 
 def external_script(outputDestination, torrentName, torrentLabel):
@@ -314,6 +309,9 @@ def main(args):
                     logger.warning("%s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ..." % (section, category))
 
     if result == 0:
+        # cleanup our processing folders of any misc unwanted files and empty directories
+        cleanProcDirs()
+
         logger.info("The %s script completed successfully." % (args[0]))
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))
