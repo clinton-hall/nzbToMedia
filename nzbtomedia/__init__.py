@@ -84,6 +84,7 @@ DELUGEPORT = None
 DELUGEUSR = None
 DELUGEPWD = None
 
+EXTCONTAINER = None
 COMPRESSEDCONTAINER = None
 MEDIACONTAINER = None
 AUDIOCONTAINER = None
@@ -136,7 +137,7 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER
+        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER
 
     if __INITIALIZED__:
         return False
@@ -240,12 +241,19 @@ def initialize(section=None):
     DELUGEUSR = CFG["Torrent"]["DelugeUSR"]  # mysecretusr
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
 
-    COMPRESSEDCONTAINER = (CFG["Extensions"]["compressedExtensions"])  # .zip,.rar,.7z
-    MEDIACONTAINER = (CFG["Extensions"]["mediaExtensions"])  # .mkv,.avi,.divx
-    AUDIOCONTAINER = (CFG["Extensions"]["audioExtensions"])
-    METACONTAINER = (CFG["Extensions"]["metaExtensions"])  # .nfo,.sub,.srt
+    COMPRESSEDCONTAINER = CFG["Extensions"]["compressedExtensions"]
+    MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
+    AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
+    METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
+    if not isinstance(COMPRESSEDCONTAINER, list):COMPRESSEDCONTAINER = [COMPRESSEDCONTAINER]
+    if not isinstance(MEDIACONTAINER, list): MEDIACONTAINER = [MEDIACONTAINER]
+    if not isinstance(AUDIOCONTAINER, list): AUDIOCONTAINER = [AUDIOCONTAINER]
+    if not isinstance(METACONTAINER, list): METACONTAINER = [METACONTAINER]
+
+    EXTCONTAINER = [y for x in COMPRESSEDCONTAINER,MEDIACONTAINER,AUDIOCONTAINER,METACONTAINER for y in x]
+
     MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
-    SAMPLEIDS = (CFG["Extensions"]["SampleIDs"])  # sample,-s.
+    SAMPLEIDS = CFG["Extensions"]["SampleIDs"]
 
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])

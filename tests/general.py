@@ -19,6 +19,23 @@ copy_list = []
 # Initialize the config
 nzbtomedia.initialize()
 
+EXTCONTAINER = []
+
+try:
+    EXTCONTAINER += nzbtomedia.COMPRESSEDCONTAINER.split(',')
+except:
+    EXTCONTAINER.extend(nzbtomedia.COMPRESSEDCONTAINER)
+
+try:
+    EXTCONTAINER += nzbtomedia.MEDIACONTAINER.split(',')
+except:
+    EXTCONTAINER.extend(nzbtomedia.MEDIACONTAINER)
+
+try:
+    EXTCONTAINER += nzbtomedia.AUDIOCONTAINER.split(',')
+except:
+    EXTCONTAINER.extend(nzbtomedia.AUDIOCONTAINER)
+
 inputDirectory = "Z:\complete\movie\The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_0166_-_The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_yEn.cp(tt1490017)"
 inputName = "The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_0166_-_The.Lego.Movie.2014.R5.x264.English.XviD-vTg.nfo_yEn.cp(tt1490017)"
 inputCategory = 'movie'

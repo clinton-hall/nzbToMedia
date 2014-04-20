@@ -581,19 +581,18 @@ def clean_nzbname(nzbname):
     nzbname = re.sub("^\[.*\]", "", nzbname)
     return nzbname.strip()
 
-def isMediaFile(filename):
+def isMediaFile(mediafile):
+    fileName, fileExt = os.path.splitext(mediafile)
+
     # ignore MAC OS's retarded "resource fork" files
-    if filename.startswith('._'):
+    if fileName.startswith('._'):
         return False
 
-    sepFile = filename.rpartition(".")
-
-    if re.search('extras?$', sepFile[0], re.I):
-        logger.info("Ignoring extras file: %s  " % (filename))
+    if re.search('extras?$', fileName, re.I):
+        logger.info("Ignoring extras file: %s  " % (mediafile))
         return False
 
-    if sepFile[2].lower() in [i.replace(".","") for i in
-                              (nzbtomedia.MEDIACONTAINER + nzbtomedia.AUDIOCONTAINER + nzbtomedia.COMPRESSEDCONTAINER)]:
+    if fileExt.lower() in nzbtomedia.EXTCONTAINER:
         return True
     else:
         return False
