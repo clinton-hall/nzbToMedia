@@ -264,26 +264,25 @@ def initialize(section=None):
     if platform.system() == 'Windows':
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
-        if TRANSCODE and not os.path.isfile(FFMPEG): # problem
-            FFMPEG = None
 
-        if not os.path.isfile(FFPROBE):  # problem
+        if not (os.path.isfile(FFMPEG) or os.path.isfile(FFMPEG)): # problem
+            FFMPEG = None
             FFPROBE = None
     else:
         bitbucket = open('/dev/null')
 
-        FFMPEG = 'ffmpeg'
-        FFPROBE = 'ffprobe'
-        if TRANSCODE and subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0 \
-                or subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
+        FFMPEG = subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket)
+        FFPROBE = subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket)
+
+        if not (FFMPEG or FFPROBE):
+            # Auto-install FFMPEG and FFPROBE
             res = subprocess.call([os.path.join(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res: # did not install or ffmpeg still not found.
+            if res == 0: # did not install or ffmpeg still not found.
+                FFMPEG = subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket)
+                FFPROBE = subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket)
+            else:
                 logger.error("Failed to install ffmpeg. Please install manually")
-
-            if subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket) != 0:
                 FFMPEG = None
-
-            if subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket) != 0:
                 FFPROBE = None
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
