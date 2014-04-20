@@ -21,7 +21,7 @@ class Transcoder:
         command = [nzbtomedia.FFPROBE, videofile]
         try:
             logger.info('Checking if %s has any corruption, please stand by ...' % (videofile))
-            result = call(command, stderr=bitbucket)
+            result = call(command, stdout=bitbucket, stderr=bitbucket)
         except:
             logger.error("Checking video %s for corruption has failed" % (videofile))
             return False
