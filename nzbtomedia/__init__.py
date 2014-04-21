@@ -280,15 +280,15 @@ def initialize(section=None):
     else:
         bitbucket = open('/dev/null')
 
-        FFMPEG = subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket)
-        FFPROBE = subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket)
+        FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0]
+        FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0]
 
         if not (FFMPEG or FFPROBE):
             # Auto-install FFMPEG and FFPROBE
             res = subprocess.call([joinPath(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res == 0: # did not install or ffmpeg still not found.
-                FFMPEG = subprocess.call(['which', 'ffmpeg'], stdout=bitbucket, stderr=bitbucket)
-                FFPROBE = subprocess.call(['which', 'ffprobe'], stdout=bitbucket, stderr=bitbucket)
+            if res == 0:
+                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0]
+                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0]
             else:
                 logger.error("Failed to install ffmpeg. Please install manually")
                 FFMPEG = None
