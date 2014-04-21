@@ -1,12 +1,13 @@
 import copy
 import os
+
 import nzbtomedia
 from lib import requests
-from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, joinPath, listMediaFiles
 from nzbtomedia import logger
+from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
     def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
@@ -23,7 +24,7 @@ class autoProcessTV:
         # Check video files for corruption
         status = int(failed)
         for video in listMediaFiles(dirName):
-            if not Transcoder().isVideoGood(video):
+            if not transcoder.isVideoGood(video):
                 status = 1
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
@@ -138,7 +139,7 @@ class autoProcessTV:
                 return 0 # Success (as far as this script is concerned)
 
         if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
-            result = Transcoder().Transcode_directory(dirName)
+            result = transcoder.Transcode_directory(dirName)
             if result == 0:
                 logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
             else:

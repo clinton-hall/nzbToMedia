@@ -21,7 +21,8 @@ sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs, create_torrent_class
+from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs, create_torrent_class, listMediaFiles
+from nzbtomedia.transcoder import transcoder
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -278,15 +279,12 @@ def initialize(section=None):
             FFMPEG = None
             FFPROBE = None
     else:
-        bitbucket = open('/dev/null')
-
         FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
         FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
 
         if not (FFMPEG or FFPROBE):
             # Auto-install FFMPEG and FFPROBE
-            res = subprocess.call([joinPath(PROGRAM_DIR, 'getffmpeg.sh')], stdout=bitbucket, stderr=bitbucket)
-            if res == 0:
+            if transcoder.install_ffmpeg():
                 FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
                 FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
             else:

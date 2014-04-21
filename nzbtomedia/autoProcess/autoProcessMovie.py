@@ -1,11 +1,12 @@
 import os
 import time
+
 import nzbtomedia
 from lib import requests
-from nzbtomedia.Transcoder import Transcoder
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, joinPath, listMediaFiles
 from nzbtomedia import logger
+from nzbtomedia.transcoder import transcoder
 
 
 class autoProcessMovie:
@@ -93,7 +94,7 @@ class autoProcessMovie:
         # Check video files for corruption
         status = int(status)
         for video in listMediaFiles(dirName):
-            if not Transcoder().isVideoGood(video):
+            if not transcoder.isVideoGood(video):
                 status = 1
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
@@ -146,7 +147,7 @@ class autoProcessMovie:
 
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:
-                result = Transcoder().Transcode_directory(dirName)
+                result = transcoder.Transcode_directory(dirName)
                 if result == 0:
                     logger.debug("Transcoding succeeded for files in %s" % (dirName), section)
                 else:
