@@ -29,6 +29,8 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
         method = renamer
         delete_failed = 0
         wait_for = 2
@@ -52,6 +54,7 @@
         ssl = 0
         fork = auto
         delete_failed = 0
+        # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         process_method =
         extract = 1
@@ -74,6 +77,7 @@
         web_root =
         ssl = 0
         delete_failed = 0
+        # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
@@ -93,6 +97,8 @@
         ssl = 0
         web_root =
         wait_for = 2
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
         extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
@@ -111,6 +117,8 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root=
         ssl=0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
         extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
@@ -128,6 +136,8 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
         extract = 1
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =

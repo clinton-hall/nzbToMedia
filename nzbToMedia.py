@@ -311,6 +311,10 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
         result = -1
 
+    if result == 0:
+        # cleanup our processing folders of any misc unwanted files and empty directories
+        cleanProcDirs()
+
     return result
 
 def main(args, section=None):
@@ -423,13 +427,13 @@ def main(args, section=None):
                         if results != 0:
                             logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (section, category))
                             result = results
+
+                    if len(dirNames) == 0:
+                        logger.info('[%s] - No directories found to post-process ...' % (str(category).upper()), section)
                 else:
                     logger.debug("nzbToMedia %s:%s is DISABLED" % (section, category))
 
     if result == 0:
-        # cleanup our processing folders of any misc unwanted files and empty directories
-        cleanProcDirs()
-
         logger.info("The %s script completed successfully." % args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)

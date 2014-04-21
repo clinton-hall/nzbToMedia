@@ -14,7 +14,7 @@ from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, create_torrent_class, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
+    remove_read_only, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
     extractFiles, cleanProcDirs
 from nzbtomedia import logger
 
@@ -41,10 +41,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             "We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
         return -1
 
-    TorrentClass = None
+    Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
+
     if clientAgent != 'manual':
-        TorrentClass = create_torrent_class(clientAgent)
-        pause_torrent(clientAgent, TorrentClass, inputHash, inputID, inputName)
+        pause_torrent(clientAgent, inputHash, inputID, inputName)
 
     processCategories = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
 
@@ -52,19 +52,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         inputCategory = "UNCAT"
     outputDestination = os.path.normpath(joinPath(nzbtomedia.OUTPUTDIRECTORY, inputCategory, sanitizeFileName(inputName)))
     logger.info("Output directory set to: %s" % (outputDestination))
-
-    if nzbtomedia.CFG["SickBeard"][inputCategory]:
-        Torrent_NoLink = int(nzbtomedia.CFG["SickBeard"][inputCategory]["Torrent_NoLink"])  # 0
-        if Torrent_NoLink == 1:
-            logger.info("Calling autoProcessTV to post-process: %s",inputName)
-            result = autoProcessTV().processEpisode(inputDirectory, inputName, 0, clientAgent=clientAgent, inputCategory=inputCategory)
-            if result != 0:
-                logger.error("A problem was reported in the autoProcessTV script.")
-
-            if clientAgent != 'manual':
-                resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
-
-            return result
 
     processOnly = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES: # if None, we only process the 5 listed.
@@ -120,13 +107,15 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             else:
                 continue  # This file has not been recently moved or created, skip it
 
-        try:
-            copy_link(inputFile, targetDirectory, nzbtomedia.USELINK, outputDestination)
-            copy_list.append([inputFile, joinPath(outputDestination, fullFileName)])
-        except:
-            logger.error("Failed to link file: %s" % (fullFileName))
+        if Torrent_NoLink == 0:
+            try:
+                copy_link(inputFile, targetDirectory, nzbtomedia.USELINK, outputDestination)
+                copy_list.append([inputFile, joinPath(outputDestination, fullFileName)])
+            except:
+                logger.error("Failed to link file: %s" % (fullFileName))
 
     outputDestination = outputDestinationMaster # Reset here.
+
     if not inputCategory in nzbtomedia.NOFLATTEN: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         flatten(outputDestination)
 
@@ -187,7 +176,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if result != 0 and clientAgent != 'manual':
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-        resume_torrent(clientAgent, TorrentClass, inputHash, inputID, result, inputName)
+        resume_torrent(clientAgent, inputHash, inputID, result, inputName)
+    else:
+        # cleanup our processing folders of any misc unwanted files and empty directories
+        cleanProcDirs()
 
     return result
 
@@ -309,9 +301,6 @@ def main(args):
                     logger.warning("%s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ..." % (section, category))
 
     if result == 0:
-        # cleanup our processing folders of any misc unwanted files and empty directories
-        cleanProcDirs()
-
         logger.info("The %s script completed successfully." % (args[0]))
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))

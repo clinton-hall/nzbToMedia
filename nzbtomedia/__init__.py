@@ -21,7 +21,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
 
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs
+from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs, create_torrent_class
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -65,6 +65,7 @@ SABNZBDPORT = None
 SABNZBDAPIKEY = None
 
 TORRENT_CLIENTAGENT = None
+TORRENT_CLASS = None
 USELINK = None
 OUTPUTDIRECTORY = None
 CATEGORIES = []
@@ -137,7 +138,7 @@ def initialize(section=None):
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER
+        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS
 
     if __INITIALIZED__:
         return False
@@ -309,6 +310,9 @@ def initialize(section=None):
 
     SUBSECTIONS = CFG[SECTIONS]
     CATEGORIES += SUBSECTIONS.sections
+
+    # create torrent class
+    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENTAGENT)
 
     # cleanup our processing folders of any misc unwanted files and empty directories
     cleanProcDirs()
