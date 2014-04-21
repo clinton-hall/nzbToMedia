@@ -305,7 +305,7 @@ def main(args):
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))
 
-    sys.exit(result)
+    return result
 
 if __name__ == "__main__":
-    main(sys.argv)
+    exit(main(sys.argv))

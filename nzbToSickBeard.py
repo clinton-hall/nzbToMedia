@@ -125,10 +125,8 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
-import os
 import sys
 import nzbToMedia
-import nzbtomedia
 
 section = "SickBeard"
 result = nzbToMedia.main(sys.argv, section)

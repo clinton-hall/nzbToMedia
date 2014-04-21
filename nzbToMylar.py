@@ -76,4 +76,5 @@ import sys
 import nzbToMedia
 
 section = "Mylar"
-nzbToMedia.main(sys.argv, section)
+result = nzbToMedia.main(sys.argv, section)
+sys.exit(result)
