@@ -32,11 +32,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
     section = nzbtomedia.CFG.findsection(inputCategory)
-    if section:
-        if nzbtomedia.CFG[section][inputCategory]['extract']:
-            logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
-            extractFiles(inputDirectory)
-    else:
+    if not section:
         logger.error(
             "We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
         return -1
@@ -121,6 +117,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if platform.system() == 'Windows':  # remove Read Only flag from files in Windows.
         remove_read_only(outputDestination)
+
+    if nzbtomedia.CFG[section][inputCategory]['extract']:
+        logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
+        extractFiles(outputDestination)
 
     # Now check if video files exist in destination:
     if nzbtomedia.CFG["SickBeard","NzbDrone", "CouchPotato"][inputCategory]:
