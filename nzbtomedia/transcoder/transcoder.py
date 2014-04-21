@@ -194,9 +194,9 @@ def install_ffmpeg():
 
 
     # build x264
-    prepare_package("ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2")
+    prepare_package("ftp://ftp.videolan.org/pub/x264/snapshots/x264-snapshot-20140420-2245-stable.tar.bz2")
     my_exec("""
-        cd %s/last_stable_x264
+        cd %s/x264-snapshot-20140420-2245-stable
         ./configure --enable-static'
         make
         make install
