@@ -32,6 +32,9 @@ class autoProcessMovie:
             return
 
         result = r.json()
+        if not result['success']:
+            logger.error(str(result['error']))
+            return results
 
         # Gather release info and return it back, no need to narrow results
         if release_id:
@@ -42,6 +45,7 @@ class autoProcessMovie:
             except:pass
 
         # Gather release info and proceed with trying to narrow results to one release choice
+
         movies = result[section]
         if not isinstance(movies, list):
             movies = [movies]
@@ -126,6 +130,9 @@ class autoProcessMovie:
 
         imdbid = find_imdbid(dirName, nzbName)
         release = self.get_release(baseURL, imdbid, download_id)
+        if not release:
+            logger.error('Unable to find %s in your wanted list, skipping ...' % (nzbName), section)
+            return 1
 
         # pull info from release found if available
         release_id = None
