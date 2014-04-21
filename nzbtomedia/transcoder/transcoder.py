@@ -20,7 +20,7 @@ def isVideoGood(videofile):
 
     if not nzbtomedia.FFPROBE:
         logger.error("Cannot detect corrupt video files!, set your ffmpeg_path in your autoProcessMedia.cfg ...", 'TRANSCODER')
-        return False
+        return True
 
     command = [nzbtomedia.FFPROBE, videofile]
     try:

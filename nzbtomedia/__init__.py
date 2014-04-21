@@ -284,7 +284,7 @@ def initialize(section=None):
 
         if not (FFMPEG or FFPROBE):
             # Auto-install FFMPEG and FFPROBE
-            if transcoder.install_ffmpeg():
+            if subprocess.Popen(['which', 'make'], stdout=subprocess.PIPE).communicate()[0].strip() and transcoder.install_ffmpeg():
                 FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
                 FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
             else:
