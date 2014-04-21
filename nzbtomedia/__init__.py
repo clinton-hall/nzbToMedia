@@ -294,7 +294,7 @@ def initialize(section=None):
             logger.warning("Failed to locate ffmpeg, transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not FFMPEG:
+        if not FFPROBE:
             FFPROBE = None
             logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
