@@ -436,13 +436,13 @@ def main(args, section=None):
     if result == 0:
         logger.info("The %s script completed successfully." % args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
+            return(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
         logger.error("A problem was reported in the %s script." % args[0])
         if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+            return(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
-    sys.exit(result)
+    return(result)
 
 if __name__ == '__main__':
-    main(sys.argv)
+    exit(main(sys.argv))
