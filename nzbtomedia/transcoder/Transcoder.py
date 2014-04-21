@@ -196,7 +196,7 @@ def install_ffmpeg():
     # build x264
     prepare_package("ftp://ftp.videolan.org/pub/x264/snapshots/last_stable_x264.tar.bz2")
     my_exec("""
-        cd %s/x264-snapshot-20120302-2245-stable
+        cd %s/last_stable_x264
         ./configure --enable-static'
         make
         make install
@@ -205,7 +205,7 @@ def install_ffmpeg():
     # build ffmpeg
     prepare_package("http://ffmpeg.org/releases/ffmpeg-2.2.1.tar.bz2")
     my_exec("""
-        cd %s/ffmpeg-0.10
+        cd %s/ffmpeg-2.2.1
         ./configure \
             --enable-gpl --enable-nonfree \
             --disable-ffserver \
