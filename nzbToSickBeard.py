@@ -125,8 +125,19 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+import os
 import sys
 import nzbToMedia
+import nzbtomedia
 
 section = "SickBeard"
-nzbToMedia.main(sys.argv, section)
+result = nzbToMedia.main(sys.argv, section)
+
+if result == 0:
+    if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
+else:
+    if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+
+sys.exit(result)
