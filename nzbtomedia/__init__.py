@@ -275,22 +275,29 @@ def initialize(section=None):
         FFMPEG = joinPath(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = joinPath(FFMPEG_PATH, 'ffprobe.exe')
 
-        if not (os.path.isfile(FFMPEG) or os.path.isfile(FFMPEG)): # problem
-            logger.warning("Failed to locate ffmpeg or ffprobe, Transcoding features disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable transcoding features ...")
-
+        if not (os.path.isfile(FFMPEG)): # problem
             FFMPEG = None
+            logger.warning("Failed to locate %s, transcoding disabled!" % (FFMPEG))
+            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+
+        if not (os.path.isfile(FFPROBE)): # problem
             FFPROBE = None
+            logger.warning("Failed to locate %s, video corruption detection disabled!" % (FFPROBE))
+            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+
     else:
         FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
         FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
 
-        if not (FFMPEG or FFPROBE):
-            logger.warning("Failed to locate ffmpeg or ffprobe, Transcoding features disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable transcoding features ...")
-
+        if not FFMPEG:
             FFMPEG = None
+            logger.warning("Failed to locate ffmpeg, transcoding disabled!")
+            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+
+        if not FFMPEG:
             FFPROBE = None
+            logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
+            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
     if not "NONE" in USER_SCRIPT_CATEGORIES:
