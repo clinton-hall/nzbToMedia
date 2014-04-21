@@ -195,6 +195,9 @@ class autoProcessMovie:
                              section)
                 return 1  # failure
 
+            # Added a releease that was not in the wanted list so no way to check status, exit without errors
+            if not release:
+                return 0
         else:
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (nzbName), section)
 
