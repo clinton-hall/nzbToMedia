@@ -429,7 +429,8 @@ def main(args, section=None):
                             result = results
 
                     if len(dirNames) == 0:
-                        logger.info('[%s] - No directories found to post-process ...' % (str(category).upper()), section)
+                        logger.info('[%s] - No directories found to post-process ...' % (str(category).upper()),
+                                    section)
                 else:
                     logger.debug("nzbToMedia %s:%s is DISABLED" % (section, category))
 

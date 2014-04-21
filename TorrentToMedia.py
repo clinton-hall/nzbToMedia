@@ -297,6 +297,10 @@ def main(args):
                         if results != 0:
                             result = results
                             logger.error("A problem was reported when trying to manually run %s:%s." % (section, category))
+
+                    if len(dirNames) == 0:
+                        logger.info('[%s] - No directories found to post-process ...' % (str(category).upper()),
+                                    section)
                 else:
                     logger.warning("%s:%s is DISABLED, you can enable this in autoProcessMedia.cfg ..." % (section, category))
 
