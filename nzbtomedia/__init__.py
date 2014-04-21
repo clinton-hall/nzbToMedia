@@ -276,6 +276,9 @@ def initialize(section=None):
         FFPROBE = joinPath(FFMPEG_PATH, 'ffprobe.exe')
 
         if not (os.path.isfile(FFMPEG) or os.path.isfile(FFMPEG)): # problem
+            logger.warning("Failed to locate ffmpeg or ffprobe, Transcoding features disabled!")
+            logger.warning("Install ffmpeg with x264 support to enable transcoding features ...")
+
             FFMPEG = None
             FFPROBE = None
     else:
@@ -283,14 +286,11 @@ def initialize(section=None):
         FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
 
         if not (FFMPEG or FFPROBE):
-            # Auto-install FFMPEG and FFPROBE
-            if subprocess.Popen(['which', 'make'], stdout=subprocess.PIPE).communicate()[0].strip() and transcoder.install_ffmpeg():
-                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
-                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-            else:
-                logger.error("Failed to install ffmpeg. Please install manually")
-                FFMPEG = None
-                FFPROBE = None
+            logger.warning("Failed to locate ffmpeg or ffprobe, Transcoding features disabled!")
+            logger.warning("Install ffmpeg with x264 support to enable transcoding features ...")
+
+            FFMPEG = None
+            FFPROBE = None
 
     USER_SCRIPT_CATEGORIES = CFG["UserScript"]["user_script_categories"]
     if not "NONE" in USER_SCRIPT_CATEGORIES:

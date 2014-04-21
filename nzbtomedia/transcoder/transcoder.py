@@ -1,11 +1,13 @@
 import errno
 import os
 import platform
+import subprocess
 import urllib2
 import traceback
 import nzbtomedia
 from subprocess import call
 from nzbtomedia import logger
+from nzbtomedia.extractor import extractor
 
 def isVideoGood(videofile):
     fileNameExt = os.path.basename(videofile)
@@ -19,7 +21,6 @@ def isVideoGood(videofile):
         bitbucket = open('/dev/null')
 
     if not nzbtomedia.FFPROBE:
-        logger.error("Cannot detect corrupt video files!, set your ffmpeg_path in your autoProcessMedia.cfg ...", 'TRANSCODER')
         return True
 
     command = [nzbtomedia.FFPROBE, videofile]
@@ -44,7 +45,6 @@ def Transcode_directory(dirName):
         bitbucket = open('/dev/null')
 
     if not nzbtomedia.FFMPEG:
-        logger.error("Cannot transcode files!, set your ffmpeg_path in your autoProcessMedia.cfg ...")
         return 1
 
     logger.info("Checking for files to be transcoded")
@@ -130,90 +130,3 @@ def Transcode_directory(dirName):
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
     return final_result
-
-def install_ffmpeg():
-    # goto script folder
-    os.chdir(os.path.join(os.getcwd(), os.path.dirname(__file__)))
-
-    # path relative to this script file
-    # where will the dependency packages be downloaded
-    DOWNLOAD_DIR = "download"
-
-    def my_mkdir(path):
-        if os.path.exists(path) == False:
-            os.makedirs(path)
-
-    def my_remove(path):
-        if os.path.exists(path):
-            os.remove(path)
-
-    def my_exec(cmd):
-        print "[cmd] %s" % cmd
-        os.system(cmd)
-
-    def prepare_package(pkg_url):
-        ret = True
-        my_mkdir(DOWNLOAD_DIR)
-        pkg_name = os.path.basename(urllib2.urlparse.urlparse(pkg_url).path)
-        pkg_fpath = os.path.join(DOWNLOAD_DIR, pkg_name)
-        tmp_fpath = os.path.join(DOWNLOAD_DIR, pkg_name + ".downloading")
-        my_remove(tmp_fpath)
-        if os.path.exists(pkg_fpath):
-            print "%s already downloaded" % pkg_name
-        else:
-            f = open(tmp_fpath, "wb")
-            try:
-                print "downloading %s from %s" % (pkg_name, pkg_url)
-                f.write(urllib2.urlopen(pkg_url).read())
-                os.rename(tmp_fpath, pkg_fpath)
-            except:
-                traceback.print_exc()
-                my_remove(tmp_fpath)
-                exit(1)
-            finally:
-                f.close()
-        if ret == True:
-            if pkg_name.endswith(".tar.bz2"):
-                if os.path.exists(os.path.join(DOWNLOAD_DIR, pkg_name[:-8])) == False:
-                    print "extracting %s" % pkg_name
-                    my_exec("cd '%s' ; tar xjf %s" % (DOWNLOAD_DIR, pkg_name))
-            if pkg_name.endswith(".tar.gz"):
-                if os.path.exists(os.path.join(DOWNLOAD_DIR, pkg_name[:-7])) == False:
-                    print "extracting %s" % pkg_name
-                    my_exec("cd '%s' ; tar xzf %s" % (DOWNLOAD_DIR, pkg_name))
-        return ret
-
-    # build yasm
-    prepare_package("http://www.tortall.net/projects/yasm/releases/yasm-1.2.0.tar.gz")
-    my_exec("""
-        cd %s/yasm-1.2.0
-        ./configure
-        make
-        make install
-    """ % (DOWNLOAD_DIR))
-
-
-    # build x264
-    prepare_package("ftp://ftp.videolan.org/pub/x264/snapshots/x264-snapshot-20140420-2245-stable.tar.bz2")
-    my_exec("""
-        cd %s/x264-snapshot-20140420-2245-stable
-        ./configure --enable-static
-        make
-        make install
-    """ % (DOWNLOAD_DIR))
-
-    # build ffmpeg
-    prepare_package("http://ffmpeg.org/releases/ffmpeg-2.2.1.tar.bz2")
-    my_exec("""
-        cd %s/ffmpeg-2.2.1
-        ./configure \
-            --enable-gpl --enable-nonfree \
-            --disable-ffserver \
-            --disable-shared --enable-static \
-            --extra-cflags='-static' \
-            --enable-libx264 --enable-pthreads
-        make
-        make install
-    """ % (DOWNLOAD_DIR))
-
-    return True
