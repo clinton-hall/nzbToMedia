@@ -60,14 +60,13 @@ class Transcoder:
 
             command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', file, '-map', '0'] # -map 0 takes all input streams
             if platform.system() != 'Windows':
-
                 command = ['nice', '-%d' % nzbtomedia.NICENESS] + command
 
             if len(nzbtomedia.OUTPUTVIDEOCODEC) > 0:
                 command.append('-c:v')
                 command.append(nzbtomedia.OUTPUTVIDEOCODEC)
                 if nzbtomedia.OUTPUTVIDEOCODEC == 'libx264' and nzbtomedia.OUTPUTVIDEOPRESET:
-                    command.append('-preset')
+                    command.append('-pre')
                     command.append(nzbtomedia.OUTPUTVIDEOPRESET)
             else:
                 command.append('-c:v')
@@ -121,6 +120,7 @@ class Transcoder:
                 result = call(command, stdout=bitbucket, stderr=bitbucket)
             except:
                 logger.error("Transcoding of video %s has failed" % (file))
+
             if result == 0:
                 logger.info("Transcoding of video %s to %s succeeded" % (file, newfilePath))
                 if nzbtomedia.DUPLICATE == 0: # we get rid of the original file
