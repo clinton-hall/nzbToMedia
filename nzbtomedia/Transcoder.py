@@ -8,7 +8,8 @@ from nzbToMediaUtil import listMediaFiles
 
 class Transcoder:
     def isVideoGood(self, videofile):
-        fileName, fileExt = os.path.splitext(videofile)
+        fileNameExt = os.path.basename(videofile)
+        fileName, fileExt = os.path.splitext(fileNameExt)
         if fileExt not in nzbtomedia.MEDIACONTAINER:
             return True
 
@@ -18,22 +19,22 @@ class Transcoder:
             bitbucket = open('/dev/null')
 
         if not nzbtomedia.FFPROBE:
-            logger.error("Cannot detect corrupt video files!, set your ffmpeg_path in your autoProcessMedia.cfg ...")
+            logger.error("Cannot detect corrupt video files!, set your ffmpeg_path in your autoProcessMedia.cfg ...", 'TRANSCODER')
             return False
 
         command = [nzbtomedia.FFPROBE, videofile]
         try:
-            logger.info('Checking if %s has any corruption, please stand by ...' % (videofile))
+            logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
             result = call(command, stdout=bitbucket, stderr=bitbucket)
         except:
-            logger.error("Checking video %s for corruption has failed" % (videofile))
+            logger.error("Checking [%s] for corruption has failed" % (fileNameExt), 'TRANSCODER')
             return False
 
         if result == 0:
-            logger.info("Video %s has no corruption." % (videofile))
+            logger.info("SUCCESS: [%s] has no corruption." % (fileNameExt), 'TRANSCODER')
             return True
         else:
-            logger.error("Video %s is corrupted!" % (videofile))
+            logger.error("FAILED: [%s] is corrupted!" % (fileNameExt), 'TRANSCODER')
             return False
 
     def Transcode_directory(self, dirName):

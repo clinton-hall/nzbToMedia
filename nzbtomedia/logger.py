@@ -178,7 +178,7 @@ class NTMRotatingLogHandler(object):
             else:
                 self.writes_since_check += 1
 
-            message = u"%s:: %s" % (str(section).upper(), toLog)
+            message = u"%s: %s" % (str(section).upper(), toLog)
 
             out_line = message
 
