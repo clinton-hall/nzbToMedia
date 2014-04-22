@@ -117,19 +117,14 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
     return inputDirectory, inputName, inputCategory, root, single
 
+def is_minSize(inputName, minSize):
+    if os.path.getsize(inputName) < minSize * 1048576:
+        return True
 
-def is_sample(inputName, minSampleSize, SampleIDs):
-    # 200 MB in bytes
-    SIZE_CUTOFF = minSampleSize * 1024 * 1024
-    if os.path.getsize(inputName) < SIZE_CUTOFF:
-        if 'SizeOnly' in SampleIDs:
-            return True
-        # Ignore 'sample' in files
-        for ident in SampleIDs:
-            if re.search(ident,inputName,flags=re.I):
-                return True
-    # Return False if none of these were met.
-    return False
+def is_sample(inputName):
+    # Ignore 'sample' in files
+    if re.search('(^|[\W_])sample\d*[\W_]', inputName.lower()):
+        return True
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     if os.path.isfile(targetDirectory):
@@ -442,7 +437,10 @@ def cleanProcDirs():
             if nzbtomedia.CFG[section][category].isenabled():
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    num_files = len(listMediaFiles(dirName))
+                    try:
+                        minSize = nzbtomedia.CFG[section][category]['minSize']
+                    except:minSize = 200
+                    num_files = len(listMediaFiles(dirName, minSize=minSize))
                     if num_files > 0:
                         logger.info(
                             "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
@@ -591,7 +589,7 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     else:
         return False
 
-def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignoreSample=True):
+def listMediaFiles(path, minSize=200, media=True, audio=True, meta=True, archives=True, ignoreSample=True):
     if not dir or not os.path.isdir(path):
         return []
 
@@ -605,14 +603,13 @@ def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignor
 
         elif isMediaFile(curFile, media, audio, meta, archives):
             # Optionally ignore sample files
-            if ignoreSample and is_sample(fullCurFile, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
+            if is_sample(fullCurFile) or not is_minSize(fullCurFile, minSize):
                 try:
                     os.unlink(fullCurFile)
                     logger.debug('Sample file %s has been removed.' % (curFile))
                 except:continue
-                continue
-
-            files.append(fullCurFile)
+            else:
+                files.append(fullCurFile)
 
     return files
 

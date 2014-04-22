@@ -37,6 +37,8 @@
         delete_failed = 0
         wait_for = 2
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -60,6 +62,8 @@
         Torrent_NoLink = 0
         process_method =
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -82,6 +86,8 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -102,6 +108,8 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -122,6 +130,8 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -141,6 +151,8 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB, eg 200mb)
+        minSize = 200
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
@@ -187,10 +199,6 @@
     mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v
     audioExtensions = .mp3, .aac, .ogg, .ape, .m4a, .asf, .wma, .flac
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
-    ###### minSampleSize - Minimum required size to consider a media file not a sample file (in MB, eg 200mb)
-    minSampleSize = 200
-    ###### SampleIDs - a list of common sample identifiers. Use SizeOnly to ignore this and delete all media files less than minSampleSize
-    SampleIDs = sample,-s.
 
 [Transcoder]
     transcode = 0
