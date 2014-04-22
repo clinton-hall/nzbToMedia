@@ -1,8 +1,8 @@
 import copy
 import os
-
+import requests
 import nzbtomedia
-from lib import requests
+
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, joinPath, listMediaFiles

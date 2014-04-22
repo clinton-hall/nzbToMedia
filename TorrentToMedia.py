@@ -4,8 +4,8 @@ import os
 import time
 import shutil
 import sys
-import nzbtomedia
 import platform
+import nzbtomedia
 
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
@@ -308,11 +308,11 @@ def main(args):
                         inputID = None
 
                         logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                        downloadInfo = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)[0]
+                        downloadInfo = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
-                            clientAgent = str(downloadInfo['client_agent'])
-                            inputHash = str(downloadInfo['input_hash'])
-                            inputID = str(downloadInfo['input_id'])
+                            clientAgent = str(downloadInfo['client_agent'][0])
+                            inputHash = str(downloadInfo['input_hash'][0])
+                            inputID = str(downloadInfo['input_id'][0])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Running %s:%s as a manual run for folder %s ..." % (section, category, dirName))

@@ -1,8 +1,8 @@
 import os
 import time
-
+import requests
 import nzbtomedia
-from lib import requests
+
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, joinPath, listMediaFiles
 from nzbtomedia import logger

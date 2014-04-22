@@ -20,7 +20,7 @@ import sys
 from codecs import BOM_UTF8, BOM_UTF16, BOM_UTF16_BE, BOM_UTF16_LE
 
 # imported lazily to avoid startup performance hit if it isn't used
-from lib import six
+import six
 
 compiler = None
 

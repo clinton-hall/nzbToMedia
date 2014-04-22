@@ -1,7 +1,8 @@
 import urllib
 import nzbtomedia
-from lib import requests
+import requests
 from nzbtomedia import logger
+
 def autoFork(inputCategory):
     # auto-detect correct section
     section = nzbtomedia.CFG.findsection(inputCategory)

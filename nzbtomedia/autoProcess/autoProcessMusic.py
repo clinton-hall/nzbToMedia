@@ -1,7 +1,8 @@
 import os
 import time
+import requests
 import nzbtomedia
-from lib import requests
+
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
 from nzbtomedia import logger
 

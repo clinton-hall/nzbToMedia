@@ -1,7 +1,8 @@
 import os
 import shutil
 import nzbtomedia
-from lib.configobj import *
+from configobj import *
+
 from itertools import chain
 
 class Sections(dict):

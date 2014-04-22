@@ -1,5 +1,5 @@
 import json
-from lib import requests
+import requests
 
 class GitHub(object):
     """

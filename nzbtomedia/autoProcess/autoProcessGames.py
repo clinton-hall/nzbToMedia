@@ -1,5 +1,5 @@
 import nzbtomedia
-from lib import requests
+import requests
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
