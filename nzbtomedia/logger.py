@@ -210,7 +210,8 @@ class NTMRotatingLogHandler(object):
                 elif logLevel == POSTPROCESS:
                     pp_logger.postprocess(out_line)
                 elif logLevel == DB:
-                    db_logger.db(out_line)
+                    if nzbtomedia.LOG_DB == 1:
+                        db_logger.db(out_line)
                 else:
                     ntm_logger.info(logLevel, out_line)
             except ValueError:
