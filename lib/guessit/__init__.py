@@ -71,10 +71,10 @@ else:
         return x.encode('hex')
 
 
-from guessit.guess import Guess, merge_all
-from guessit.language import Language
-from guessit.matcher import IterativeMatcher
-from guessit.textutils import clean_string
+from lib.guessit.guess import Guess, merge_all
+from lib.guessit.language import Language
+from lib.guessit.matcher import IterativeMatcher
+from lib.guessit.textutils import clean_string
 import logging
 import json
 
@@ -219,7 +219,7 @@ def guess_file_info(filename, filetype, info=None):
             result.append(_guess_filename(filename, filetype))
 
         elif infotype == 'hash_mpc':
-            from guessit.hash_mpc import hash_file
+            from lib.guessit.hash_mpc import hash_file
             try:
                 result.append(Guess({'hash_mpc': hash_file(filename)},
                                     confidence=1.0))
@@ -227,7 +227,7 @@ def guess_file_info(filename, filetype, info=None):
                 log.warning('Could not compute MPC-style hash because: %s' % e)
 
         elif infotype == 'hash_ed2k':
-            from guessit.hash_ed2k import hash_file
+            from lib.guessit.hash_ed2k import hash_file
             try:
                 result.append(Guess({'hash_ed2k': hash_file(filename)},
                                     confidence=1.0))
