@@ -20,6 +20,8 @@ CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 # add our custom libs to the system path
 sys.path.insert(0, LIBS_DIR)
 
+import requests
+import guessit
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
