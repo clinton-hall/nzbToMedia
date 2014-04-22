@@ -316,11 +316,11 @@ def main(args):
                         inputID = None
 
                         logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
+                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)[0]
                         if downloadInfo:
-                            clientAgent = downloadInfo['client_agent']
-                            inputHash = downloadInfo['input_hash']
-                            inputID = downloadInfo['input_id']
+                            clientAgent = str(downloadInfo['client_agent'])
+                            inputHash = str(downloadInfo['input_hash'])
+                            inputID = str(downloadInfo['input_id'])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Running %s:%s as a manual run for folder %s ..." % (section, category, dirName))

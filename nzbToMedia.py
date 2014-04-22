@@ -443,10 +443,10 @@ def main(args, section=None):
                         download_id = None
 
                         logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
+                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)[0]
                         if downloadInfo:
-                            clientAgent = downloadInfo['client_agent']
-                            download_id = downloadInfo['input_id']
+                            clientAgent = str(downloadInfo['client_agent'])
+                            download_id = str(downloadInfo['input_id'])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
