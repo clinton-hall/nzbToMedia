@@ -10,10 +10,10 @@ import nzbtomedia
 
 from nzbtomedia.extractor import extractor
 from nzbtomedia.linktastic import linktastic
-from nzbtomedia import logger, nzbToMediaDB
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
+from nzbtomedia import logger, nzbToMediaDB
 
 def sanitizeFileName(name):
     '''
