@@ -6,6 +6,8 @@ import struct
 import shutil
 import time
 import datetime
+import guessit
+import requests
 import nzbtomedia
 
 from nzbtomedia.extractor import extractor
@@ -543,8 +545,8 @@ def find_download(clientAgent, download_id):
         params['output'] = 'json'
         params['value'] = download_id
         try:
-            r = nzbtomedia.requests.get(url, params=params)
-        except nzbtomedia.requests.ConnectionError:
+            r = requests.get(url, params=params)
+        except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1  # failure
 
@@ -628,7 +630,7 @@ def find_imdbid(dirName, inputName):
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
-    guess = nzbtomedia.guessit.guess_movie_info(inputName)
+    guess = guessit.guess_movie_info(inputName)
     if guess:
         # Movie Title
         title = None
@@ -645,8 +647,8 @@ def find_imdbid(dirName, inputName):
         logger.debug("Opening URL: %s" % url)
 
         try:
-            r = nzbtomedia.requests.get(url, params={'y': year, 't': title})
-        except nzbtomedia.requests.ConnectionError:
+            r = requests.get(url, params={'y': year, 't': title})
+        except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
             return
 
