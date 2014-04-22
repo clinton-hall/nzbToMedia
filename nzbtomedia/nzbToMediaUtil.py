@@ -501,8 +501,7 @@ def resume_torrent(clientAgent, inputHash, inputID, result, inputName):
     # Hardlink solution for uTorrent, need to implent support for deluge, transmission
     if clientAgent in ['utorrent', 'transmission', 'deluge'] and inputHash:
         # Delete torrent and torrentdata from Torrent client if processing was successful.
-        if (int(nzbtomedia.CFG["Torrent"][
-            "deleteOriginal"]) is 1 and result != 1) or nzbtomedia.USELINK == 'move':  # if we move files, nothing to resume seeding.
+        if (nzbtomedia.DELETE_ORIGINAL == 1 and result != 1) or nzbtomedia.USELINK == 'move':  # if we move files, nothing to resume seeding.
             logger.debug("Deleting torrent %s from %s" % (inputName, clientAgent))
             if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
                 nzbtomedia.TORRENT_CLASS.removedata(inputHash)
