@@ -47,9 +47,11 @@ class NTMRotatingLogHandler(object):
         if handler:
             ntm_logger = logging.getLogger('nzbtomedia')
             pp_logger = logging.getLogger('postprocess')
+            db_logger = logging.getLogger('db')
 
             ntm_logger.removeHandler(handler)
             pp_logger.removeHandler(handler)
+            db_logger.removeHandler(handler)
 
             handler.flush()
             handler.close()
@@ -75,7 +77,7 @@ class NTMRotatingLogHandler(object):
                 console = logging.StreamHandler()
 
                 # log-level
-                console.setLevel(logging.INFO)
+                console.setLevel(DB)
 
                 # set a format which is simpler for console use
                 console.setFormatter(DispatchingFormatter(
@@ -100,7 +102,7 @@ class NTMRotatingLogHandler(object):
 
         logging.getLogger('nzbtomedia').setLevel(logging.DEBUG)
         logging.getLogger('postprocess').setLevel(POSTPROCESS)
-        logging.getLogger('db').setLevel(POSTPROCESS)
+        logging.getLogger('db').setLevel(DB)
 
         # already logging in new log folder, close the old handler
         if old_handler:
@@ -113,7 +115,7 @@ class NTMRotatingLogHandler(object):
 
         file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
 
-        file_handler.setLevel(logging.DEBUG)
+        file_handler.setLevel(DB)
 
         file_handler.setFormatter(DispatchingFormatter(
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
@@ -174,6 +176,7 @@ class NTMRotatingLogHandler(object):
 
         ntm_logger.addHandler(new_file_handler)
         pp_logger.addHandler(new_file_handler)
+        db_logger.addHandler(new_file_handler)
 
     def log(self, toLog, logLevel=MESSAGE, section='MAIN'):
 
