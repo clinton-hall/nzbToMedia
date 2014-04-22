@@ -702,3 +702,6 @@ def extractFiles(src, dst=None):
                         time.sleep(1)
                     except:
                         logger.debug("Unable to remove file %s" % (inputFile))
+
+def append_downloadID(dirName, download_id):
+    return '%s.downloadID(%s)' % (dirName,download_id)

@@ -15,7 +15,7 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
     remove_read_only, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
-    extractFiles, cleanProcDirs
+    extractFiles, cleanProcDirs, append_downloadID
 from nzbtomedia import logger
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
@@ -48,6 +48,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if inputCategory == "":
         inputCategory = "UNCAT"
     outputDestination = os.path.normpath(joinPath(nzbtomedia.OUTPUTDIRECTORY, inputCategory, sanitizeFileName(inputName)))
+
+    # Add torrent info hash to folder name incase we need it later on
+    if clientAgent != 'manual':
+        logger.debug('Added torrent info hash %s to output directory %s' % (inputHash, outputDestination))
+        outputDestination = append_downloadID(outputDestination, inputHash)
+
     logger.info("Output directory set to: %s" % (outputDestination))
 
     processOnly = nzbtomedia.CFG[nzbtomedia.SECTIONS].sections
@@ -152,10 +158,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error("Something failed! Please check logs. Exiting")
         return status
 
+
     if nzbtomedia.CFG['CouchPotato'][inputCategory]:
         logger.info("Calling CouchPotato:" + inputCategory + " to post-process: %s" % (inputName))
-        download_id = inputHash
-        result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, download_id, inputCategory)
+        result = autoProcessMovie().process(outputDestination, inputName, status, clientAgent, inputHash, inputCategory)
     elif nzbtomedia.CFG['SickBeard'][inputCategory]:
         logger.info("Calling Sick-Beard:" + inputCategory + " to post-process: %s" % (inputName))
         result = autoProcessTV().processEpisode(outputDestination, inputName, status, clientAgent, inputCategory)
