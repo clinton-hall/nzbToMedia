@@ -268,6 +268,9 @@ def initialize(section=None):
     if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
     if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
 
+    MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
+    SAMPLEIDS = CFG["Extensions"]["SampleIDs"]
+
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
