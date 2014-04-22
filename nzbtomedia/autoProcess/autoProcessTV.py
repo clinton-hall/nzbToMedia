@@ -45,7 +45,7 @@ class autoProcessTV:
         except:
             web_root = ""
         try:
-            delete_failed = int(nzbtomedia.CFG[section][inputCategory]["rmDir_failed"])
+            delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
         except:
             delete_failed = 0
         try:
@@ -108,8 +108,7 @@ class autoProcessTV:
             if param in ["dirName", "dir"]:
                 fork_params[param] = dirName
                 if remote_path:
-                    dirName_new = joinPath(remote_path, os.path.basename(dirName)).replace("\\", "/")
-                    fork_params[param] = dirName_new
+                    fork_params[param] = joinPath(remote_path, os.path.basename(dirName))
 
             if param == "process_method":
                 if process_method:
@@ -117,7 +116,7 @@ class autoProcessTV:
                 else:
                     del fork_params[param]
 
-        # rmDir any unused params so we don't pass them to SB by mistake
+        # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k,v in fork_params.items() if v is None]
 
         if status == 0:

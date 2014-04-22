@@ -39,8 +39,7 @@ class autoProcessComics:
         params = {}
         params['nzb_folder'] = dirName
         if remote_path:
-            dirName_new = joinPath(remote_path, os.path.basename(dirName)).replace("\\", "/")
-            params['nzb_folder'] = dirName_new
+            params['nzb_folder'] = joinPath(remote_path, os.path.basename(dirName))
 
         if nzbName != None:
             params['nzb_name'] = nzbName

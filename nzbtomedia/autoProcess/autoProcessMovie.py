@@ -169,8 +169,7 @@ class autoProcessMovie:
 
             params['media_folder'] = dirName
             if remote_path:
-                dirName_new = joinPath(remote_path, os.path.basename(dirName)).replace("\\", "/")
-                params['media_folder'] = dirName_new
+                params['media_folder'] = joinPath(remote_path, os.path.basename(dirName))
 
             url = "%s%s" % (baseURL, command)
 

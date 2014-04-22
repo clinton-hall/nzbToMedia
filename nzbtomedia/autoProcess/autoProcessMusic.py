@@ -76,9 +76,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                dirName_new = joinPath(remote_path, os.path.basename(os.path.dirname(dirName))).replace("\\", "/")
-                params['dir'] = dirName_new
-
+                params['dir'] = joinPath(remote_path, os.path.basename(os.path.dirname(dirName)))
 
             release_status = self.get_status(url, apikey, dirName)
 
