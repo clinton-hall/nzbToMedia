@@ -117,19 +117,28 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
     return inputDirectory, inputName, inputCategory, root, single
 
+def getDirSize(inputPath):
+   from functools import partial
+   prepend = partial(os.path.join, inputPath)
+   return sum([(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(inputPath))])
 
-def is_sample(inputName, minSampleSize, SampleIDs):
-    # 200 MB in bytes
-    SIZE_CUTOFF = minSampleSize * 1024 * 1024
-    if os.path.getsize(inputName) < SIZE_CUTOFF:
-        if 'SizeOnly' in SampleIDs:
-            return True
-        # Ignore 'sample' in files
-        for ident in SampleIDs:
-            if re.search(ident,inputName,flags=re.I):
-                return True
-    # Return False if none of these were met.
-    return False
+def is_minSize(inputName, minSize):
+    fileName, fileExt = os.path.splitext(os.path.basename(inputName))
+
+
+    # audio files we need to check directory size not file size
+    inputSize = os.path.getsize(inputName)
+    if fileExt in (nzbtomedia.AUDIOCONTAINER):
+        inputSize = getDirSize(os.path.dirname(inputName))
+
+    # Ignore files under a certain size
+    if inputSize < minSize * 1048576:
+        return True
+
+def is_sample(inputName):
+    # Ignore 'sample' in files
+    if re.search('(^|[\W_])sample\d*[\W_]', inputName.lower()):
+        return True
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     if os.path.isfile(targetDirectory):
@@ -442,7 +451,13 @@ def cleanProcDirs():
             if nzbtomedia.CFG[section][category].isenabled():
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    num_files = len(listMediaFiles(dirName))
+                    try:
+                        minSize = int(nzbtomedia.CFG[section][category]['minSize'])
+                    except:minSize = 0
+                    try:
+                        delete_ignored = int(nzbtomedia.CFG[section][category]['delete_ignored'])
+                    except:delete_ignored = 0
+                    num_files = len(listMediaFiles(dirName, minSize=minSize, delete_ignored=delete_ignored))
                     if num_files > 0:
                         logger.info(
                             "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
@@ -579,10 +594,6 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     if fileName.startswith('._'):
         return False
 
-    if re.search('extras?$', fileName, re.I):
-        logger.info("Ignoring extras file: %s  " % (mediafile))
-        return False
-
     if (media and fileExt.lower() in nzbtomedia.MEDIACONTAINER)\
         or (audio and fileExt.lower() in nzbtomedia.AUDIOCONTAINER)\
         or (meta and fileExt.lower() in nzbtomedia.METACONTAINER)\
@@ -591,7 +602,7 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     else:
         return False
 
-def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignoreSample=True):
+def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True):
     if not dir or not os.path.isdir(path):
         return []
 
@@ -601,15 +612,16 @@ def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignor
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':
-            files += listMediaFiles(fullCurFile, media, audio, meta, archives)
+            files += listMediaFiles(fullCurFile, minSize, delete_ignored, media, audio, meta, archives)
 
         elif isMediaFile(curFile, media, audio, meta, archives):
             # Optionally ignore sample files
-            if ignoreSample and is_sample(fullCurFile, nzbtomedia.MINSAMPLESIZE, nzbtomedia.SAMPLEIDS):
-                try:
-                    os.unlink(fullCurFile)
-                    logger.debug('Sample file %s has been removed.' % (curFile))
-                except:continue
+            if is_sample(fullCurFile) or not is_minSize(fullCurFile, minSize):
+                if delete_ignored == 1:
+                    try:
+                        os.unlink(fullCurFile)
+                        logger.debug('Ignored file %s has been removed ...' % (curFile))
+                    except:pass
                 continue
 
             files.append(fullCurFile)

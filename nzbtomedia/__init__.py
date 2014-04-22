@@ -268,9 +268,6 @@ def initialize(section=None):
     if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
     if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
 
-    MINSAMPLESIZE = int(CFG["Extensions"]["minSampleSize"])  # 200 (in MB)
-    SAMPLEIDS = CFG["Extensions"]["SampleIDs"]
-
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
@@ -293,12 +290,12 @@ def initialize(section=None):
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
-            logger.warning("Failed to locate %s, transcoding disabled!" % (FFMPEG))
+            logger.warning("Failed to locate ffmpeg.exe, transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
         if not (os.path.isfile(FFPROBE)):  # problem
             FFPROBE = None
-            logger.warning("Failed to locate %s, video corruption detection disabled!" % (FFPROBE))
+            logger.warning("Failed to locate ffprobe.exe, video corruption detection disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     else:
