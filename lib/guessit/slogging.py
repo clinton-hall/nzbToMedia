@@ -1,28 +1,28 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 #
-# GuessIt - A library for guessing information from filenames
-# Copyright (c) 2013 Nicolas Wack <wackou@gmail.com>
+# Smewt - A smart collection manager
+# Copyright (c) 2011 Nicolas Wack <wackou@gmail.com>
 #
-# GuessIt is free software; you can redistribute it and/or modify it under
-# the terms of the Lesser GNU General Public License as published by
+# Smewt is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
 #
-# GuessIt is distributed in the hope that it will be useful,
+# Smewt is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# Lesser GNU General Public License for more details.
+# GNU General Public License for more details.
 #
-# You should have received a copy of the Lesser GNU General Public License
+# You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 
-from __future__ import absolute_import, division, print_function, unicode_literals
-
+from __future__ import unicode_literals
 import logging
 import sys
-import os
+import os, os.path
+
 
 GREEN_FONT = "\x1B[0;32m"
 YELLOW_FONT = "\x1B[0;33m"
@@ -31,7 +31,7 @@ RED_FONT = "\x1B[0;31m"
 RESET_FONT = "\x1B[0m"
 
 
-def setupLogging(colored=True, with_time=False, with_thread=False, filename=None, with_lineno=False):  # pragma: no cover
+def setupLogging(colored=True, with_time=False, with_thread=False, filename=None, with_lineno=False):
     """Set up a nice colored logger as the main application logger."""
 
     class SimpleFormatter(logging.Formatter):
