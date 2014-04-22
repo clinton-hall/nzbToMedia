@@ -329,7 +329,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     if result == 0:
         # update download status in our DB
-        update_downloadInfoStatus(inputDirectory, 1)
+        update_downloadInfoStatus(inputName, 1)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
         cleanProcDirs()
@@ -442,12 +442,12 @@ def main(args, section=None):
                         clientAgent = 'manual'
                         download_id = None
 
-                        logger.info("Checking database for download info ...")
-                        downloadInfo = get_downloadInfo(dirName, 0)
+                        logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
+                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
                             clientAgent = downloadInfo['client_agent']
                             download_id = downloadInfo['input_id']
-                            logger.info("Found download info for directory %s, setting variables now ..." % (dirName))
+                            logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
                         results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent, download_id=download_id, inputCategory=category)

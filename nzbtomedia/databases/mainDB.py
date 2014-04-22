@@ -25,7 +25,7 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
         if not self.hasTable("history") and not self.hasTable("db_version"):
             queries = [
                 "CREATE TABLE db_version (db_version INTEGER);",
-                "CREATE TABLE downloads (input_directory TEXT PRIMARY KEY, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC);",
+                "CREATE TABLE downloads (input_directory TEXT, input_name TEXT PRIMARY KEY, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC);",
                 "INSERT INTO db_version (db_version) VALUES (1);"
             ]
             for query in queries:

@@ -730,19 +730,19 @@ def backupVersionedFile(old_file, version):
     return True
 
 
-def update_downloadInfoStatus(inputDirectory, status):
-    logger.db("Updating status of our download in the DB to %s" % (status))
+def update_downloadInfoStatus(inputName, status):
+    logger.db("Updating status of our download %s in the DB to %s" % (inputName, status))
 
     myDB = nzbToMediaDB.DBConnection()
-    myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_directory=?",
-                [status, datetime.date.today().toordinal(), inputDirectory])
+    myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
+                [status, datetime.date.today().toordinal(), inputName])
 
 
-def get_downloadInfo(inputDirectory, status):
-    logger.db("Getting download info from the DB for directory %s" % (inputDirectory))
+def get_downloadInfo(inputName, status):
+    logger.db("Getting download info for %s from the DB" % (inputName))
 
     myDB = nzbToMediaDB.DBConnection()
-    sqlResults = myDB.select("SELECT * FROM downloads WHERE input_directory=? AND status=?",
-                             [inputDirectory, status])
+    sqlResults = myDB.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
+                             [inputName, status])
 
     return sqlResults

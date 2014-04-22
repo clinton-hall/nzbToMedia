@@ -197,7 +197,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         resume_torrent(clientAgent, inputHash, inputID, result, inputName)
     else:
         # update download status in our DB
-        update_downloadInfoStatus(inputDirectory, 1)
+        update_downloadInfoStatus(inputName, 1)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
         cleanProcDirs()
@@ -315,13 +315,13 @@ def main(args):
                         inputHash = None
                         inputID = None
 
-                        logger.info("Checking database for download info ...")
-                        downloadInfo = get_downloadInfo(dirName, 0)
+                        logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
+                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
                             clientAgent = downloadInfo['client_agent']
                             inputHash = downloadInfo['input_hash']
                             inputID = downloadInfo['input_id']
-                            logger.info("Found download info for directory %s, setting variables now ..." % (dirName))
+                            logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Running %s:%s as a manual run for folder %s ..." % (section, category, dirName))
                         results = processTorrent(dirName, os.path.basename(dirName), category, inputHash, inputID, clientAgent)
