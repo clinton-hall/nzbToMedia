@@ -126,9 +126,6 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == "failed_fork":  # change this old format
                         values['failed'] = 'auto'
                         values.pop(option)
-                    if option == "Torrent_ForceLink":
-                        values['Torrent_NoLink'] = value
-                        values.pop(option)
                     if option == "outputDirectory":  # move this to new location format
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)

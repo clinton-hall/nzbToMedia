@@ -57,10 +57,6 @@ class autoProcessTV:
         except:
             process_method = None
         try:
-            Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
-        except:
-            Torrent_NoLink = 0
-        try:
             remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
         except:
             remote_path = None
@@ -116,7 +112,7 @@ class autoProcessTV:
                     fork_params[param] = dirName_new
 
             if param == "process_method":
-                if fork in nzbtomedia.SICKBEARD_TORRENT and Torrent_NoLink == 1 and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
+                if fork in nzbtomedia.SICKBEARD_TORRENT and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
                     del fork_params[param]
                 if process_method:
                     fork_params[param] = process_method

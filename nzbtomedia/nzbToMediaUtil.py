@@ -442,7 +442,7 @@ def cleanProcDirs():
             if nzbtomedia.CFG[section][category].isenabled():
                 dirNames = get_dirnames(section, category)
                 for dirName in dirNames:
-                    num_files = len(listMediaFiles(dirName, archives=False))
+                    num_files = len(listMediaFiles(dirName))
                     if num_files > 0:
                         logger.info(
                             "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
@@ -631,7 +631,7 @@ def find_imdbid(dirName, nzbName):
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
-    guess = guessit.guess_video_info(dirName)
+    guess = guessit.guess_movie_info(nzbName)
     if guess:
         # Movie Title
         title = None

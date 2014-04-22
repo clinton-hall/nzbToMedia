@@ -37,7 +37,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             "We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
         return -1
 
-    Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"]) or 0
+    try:Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
+    except:Torrent_NoLink = 0
 
     if clientAgent != 'manual':
         pause_torrent(clientAgent, inputHash, inputID, inputName)

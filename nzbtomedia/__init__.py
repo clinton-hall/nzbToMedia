@@ -9,6 +9,7 @@ SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
 APP_NAME = os.path.basename(APP_FILENAME)
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
+LIBS_DIR = os.path.join(PROGRAM_DIR, 'lib')
 LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
 CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
@@ -17,7 +18,7 @@ CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
 CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 
 # add our custom libs to the system path
-sys.path.insert(0, os.path.abspath(os.path.join(PROGRAM_DIR, 'lib')))
+sys.path.insert(0, LIBS_DIR)
 
 from nzbtomedia import logger, versionCheck
 from nzbtomedia.nzbToMediaConfig import config
