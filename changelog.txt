@@ -145,7 +145,7 @@ Impacts Torrents
 Fixed an import error when extracting
 
 Impacts NZBs
-Fixed passthrough of nzbName from NZBGet to pass the .nzb extension (required for SickBeard's failed fork)
+Fixed passthrough of inputName from NZBGet to pass the .nzb extension (required for SickBeard's failed fork)
 
 
 V8.0 28/04/2013

@@ -275,36 +275,52 @@
 ##############################################################################
 import os
 import sys
+import datetime
 import nzbtomedia
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames, extractFiles, cleanProcDirs
-from nzbtomedia import logger
+from nzbtomedia.nzbToMediaUtil import get_dirnames, extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo
+from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
-def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
+def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
+    if clientAgent != 'manual':
+        logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
+
+        myDB = nzbToMediaDB.DBConnection()
+
+        controlValueDict = {"input_directory": inputDirectory}
+        newValueDict = {"input_name": inputName,
+                        "input_hash": download_id,
+                        "input_id": download_id,
+                        "client_agent": clientAgent,
+                        "status": 0,
+                        "last_update": datetime.date.today().toordinal()
+        }
+        myDB.upsert("downloads", newValueDict, controlValueDict)
+
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
     if section:
         if nzbtomedia.CFG[section][inputCategory]['extract']:
-            logger.debug('Checking for archives to extract in directory: %s' % (nzbDir))
-            extractFiles(nzbDir)
+            logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
+            extractFiles(inputDirectory)
 
         logger.info("Sending %s to %s for post-processing ..." % (inputName, str(section).upper()))
 
         if nzbtomedia.CFG["CouchPotato"][inputCategory]:
-            result = autoProcessMovie().process(nzbDir, inputName, status, clientAgent, download_id, inputCategory)
+            result = autoProcessMovie().process(inputDirectory, inputName, status, clientAgent, download_id, inputCategory)
         elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
-            result = autoProcessTV().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+            result = autoProcessTV().processEpisode(inputDirectory, inputName, status, clientAgent, inputCategory)
         elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
-            result = autoProcessMusic().process(nzbDir, inputName, status, clientAgent, inputCategory)
+            result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
         elif nzbtomedia.CFG["Mylar"][inputCategory]:
-            result = autoProcessComics().processEpisode(nzbDir, inputName, status, clientAgent, inputCategory)
+            result = autoProcessComics().processEpisode(inputDirectory, inputName, status, clientAgent, inputCategory)
         elif nzbtomedia.CFG["Gamez"][inputCategory]:
-            result = autoProcessGames().process(nzbDir, inputName, status, clientAgent, inputCategory)
+            result = autoProcessGames().process(inputDirectory, inputName, status, clientAgent, inputCategory)
         else:
             result = -1
     else:
@@ -312,6 +328,9 @@ def process(nzbDir, inputName=None, status=0, clientAgent='manual', download_id=
         result = -1
 
     if result == 0:
+        # update download status in our DB
+        update_downloadInfoStatus(inputDirectory, 1)
+
         # cleanup our processing folders of any misc unwanted files and empty directories
         cleanProcDirs()
 
@@ -412,18 +431,26 @@ def main(args, section=None):
         logger.info("Script triggered from SABnzbd 0.7.17+")
         result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent, download_id='')
     else:
-        # Perform Manual Run
+        # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        # Loop and auto-process
-        clientAgent = 'manual'
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
                     dirNames = get_dirnames(section, category)
                     for dirName in dirNames:
+                        clientAgent = 'manual'
+                        download_id = None
+
+                        logger.info("Checking database for download info ...")
+                        downloadInfo = get_downloadInfo(dirName, 0)
+                        if downloadInfo:
+                            clientAgent = downloadInfo['client_agent']
+                            download_id = downloadInfo['input_id']
+                            logger.info("Found download info for directory %s, setting variables now ..." % (dirName))
+
                         logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
-                        results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent, inputCategory=category)
+                        results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent, download_id=download_id, inputCategory=category)
                         if results != 0:
                             logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (section, category))
                             result = results

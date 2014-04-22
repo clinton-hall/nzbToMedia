@@ -87,7 +87,7 @@ class autoProcessMovie:
 
         return results
 
-    def process(self, dirName, nzbName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
+    def process(self, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
@@ -128,7 +128,7 @@ class autoProcessMovie:
 
         baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
 
-        imdbid = find_imdbid(dirName, nzbName)
+        imdbid = find_imdbid(dirName, inputName)
         release = self.get_release(baseURL, imdbid, download_id)
 
         # pull info from release found if available
@@ -146,8 +146,8 @@ class autoProcessMovie:
             except:
                 pass
 
-        process_all_exceptions(nzbName.lower(), dirName)
-        nzbName, dirName = convert_to_ascii(nzbName, dirName)
+        process_all_exceptions(inputName.lower(), dirName)
+        inputName, dirName = convert_to_ascii(inputName, dirName)
 
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:
@@ -175,7 +175,7 @@ class autoProcessMovie:
 
             logger.debug("Opening URL: %s" % (url), section)
 
-            logger.postprocess("Starting %s scan for %s" % (method, nzbName), section)
+            logger.postprocess("Starting %s scan for %s" % (method, inputName), section)
 
             try:
                 r = requests.get(url, params=params)
@@ -195,18 +195,18 @@ class autoProcessMovie:
             if not release:
                 return 0
         else:
-            logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (nzbName), section)
+            logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s" % dirName, section)
                 rmDir(dirName)
 
             if not download_id:
-                logger.error("Could not find a downloaded movie in the database matching %s, exiting!" % nzbName,
+                logger.error("Could not find a downloaded movie in the database matching %s, exiting!" % inputName,
                              section)
                 return 1  # failure
 
-            logger.postprocess("Setting failed release %s to ignored ..." % (nzbName), section)
+            logger.postprocess("Setting failed release %s to ignored ..." % (inputName), section)
 
             url = baseURL + "/release.ignore"
             logger.debug("Opening URL: %s" % (url), section)
@@ -219,9 +219,9 @@ class autoProcessMovie:
 
             result = r.json()
             if result['success']:
-                logger.postprocess("SUCCESS: %s has been set to ignored ..." % (nzbName), section)
+                logger.postprocess("SUCCESS: %s has been set to ignored ..." % (inputName), section)
             else:
-                logger.warning("FAILED: Unable to set %s to ignored!" % (nzbName), section)
+                logger.warning("FAILED: Unable to set %s to ignored!" % (inputName), section)
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
@@ -239,7 +239,7 @@ class autoProcessMovie:
                 logger.postprocess("SUCCESS: Snatched the next highest release ...", section)
                 return 0
             else:
-                logger.postprocess("FAILED: Unable to find a higher ranked release then %s to snatch!" % (nzbName),
+                logger.postprocess("FAILED: Unable to find a higher ranked release then %s to snatch!" % (inputName),
                                    section)
                 return 1
 
@@ -253,7 +253,7 @@ class autoProcessMovie:
                     release_status_new = release[release_id]['status']
                     if release_status_new != release_status_old:
                         logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
-                            nzbName, str(release_status_new).upper()), section)
+                            inputName, str(release_status_new).upper()), section)
                         return 0  # success
                 except:
                     pass
@@ -263,6 +263,6 @@ class autoProcessMovie:
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
         logger.warning(
-            "%s does not appear to have changed status after %s minutes, Please check your logs." % (nzbName, wait_for),
+            "%s does not appear to have changed status after %s minutes, Please check your logs." % (inputName, wait_for),
             section)
         return 1  # failure

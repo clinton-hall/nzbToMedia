@@ -17,12 +17,14 @@ WARNING = logging.WARNING
 MESSAGE = logging.INFO
 DEBUG = logging.DEBUG
 POSTPROCESS = 21
+DB = 5
 
 reverseNames = {u'ERROR': ERROR,
                 u'WARNING': WARNING,
                 u'INFO': MESSAGE,
                 u'DEBUG': DEBUG,
-                u'POSTPROCESS': POSTPROCESS}
+                u'POSTPROCESS': POSTPROCESS,
+                u'DB': DB}
 
 class NTMRotatingLogHandler(object):
     def __init__(self, log_file, num_files, num_bytes):
@@ -63,8 +65,9 @@ class NTMRotatingLogHandler(object):
         if self.cur_handler:
             old_handler = self.cur_handler
         else:
-            #Add a new logging level POSTPROCESS
+            #Add a new logging levels
             logging.addLevelName(21, 'POSTPROCESS')
+            logging.addLevelName(5, 'DB')
 
             # only start consoleLogging on first initialize
             if self.console_logging:
@@ -77,13 +80,15 @@ class NTMRotatingLogHandler(object):
                 # set a format which is simpler for console use
                 console.setFormatter(DispatchingFormatter(
                     {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
+                     'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
                     },
                     logging.Formatter('%(message)s'), ))
 
                 # add the handler to the root logger
                 logging.getLogger('nzbtomedia').addHandler(console)
                 logging.getLogger('postprocess').addHandler(console)
+                logging.getLogger('db').addHandler(console)
 
         self.log_file_path = os.path.join(nzbtomedia.LOG_DIR, self.log_file)
 
@@ -91,9 +96,11 @@ class NTMRotatingLogHandler(object):
 
         logging.getLogger('nzbtomedia').addHandler(self.cur_handler)
         logging.getLogger('postprocess').addHandler(self.cur_handler)
+        logging.getLogger('db').addHandler(self.cur_handler)
 
         logging.getLogger('nzbtomedia').setLevel(logging.DEBUG)
         logging.getLogger('postprocess').setLevel(POSTPROCESS)
+        logging.getLogger('db').setLevel(POSTPROCESS)
 
         # already logging in new log folder, close the old handler
         if old_handler:
@@ -110,7 +117,8 @@ class NTMRotatingLogHandler(object):
 
         file_handler.setFormatter(DispatchingFormatter(
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
+             'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
             },
             logging.Formatter('%(message)s'), ))
 
@@ -142,6 +150,7 @@ class NTMRotatingLogHandler(object):
 
         ntm_logger = logging.getLogger('nzbtomedia')
         pp_logger = logging.getLogger('postprocess')
+        db_logger = logging.getLogger('db')
 
         # delete the old handler
         if self.cur_handler:
@@ -184,7 +193,9 @@ class NTMRotatingLogHandler(object):
 
             ntm_logger = logging.getLogger('nzbtomedia')
             pp_logger = logging.getLogger('postprocess')
+            db_logger = logging.getLogger('db')
             setattr(pp_logger, 'postprocess', lambda *args: pp_logger.log(POSTPROCESS, *args))
+            setattr(db_logger, 'db', lambda *args: db_logger.log(DB, *args))
 
             try:
                 if logLevel == DEBUG:
@@ -198,6 +209,8 @@ class NTMRotatingLogHandler(object):
                     ntm_logger.error(out_line)
                 elif logLevel == POSTPROCESS:
                     pp_logger.postprocess(out_line)
+                elif logLevel == DB:
+                    db_logger.db(out_line)
                 else:
                     ntm_logger.info(logLevel, out_line)
             except ValueError:
@@ -237,8 +250,11 @@ def warning(toLog, section='MAIN'):
 def debug(toLog, section='MAIN'):
     log(toLog, DEBUG, section)
 
-def postprocess(toLog, section='MAIN'):
+def postprocess(toLog, section='POSTPROCESS'):
     log(toLog, POSTPROCESS, section)
+
+def db(toLog, section='DB'):
+    log(toLog, DB, section)
 
 def log_error_and_exit(error_msg):
     ntm_log_instance.log_error_and_exit(error_msg)

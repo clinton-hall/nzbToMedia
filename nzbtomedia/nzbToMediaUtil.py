@@ -5,17 +5,17 @@ import stat
 import struct
 import shutil
 import time
+import datetime
 import nzbtomedia
 
 from lib import requests
 from lib import guessit
 from nzbtomedia.extractor import extractor
 from nzbtomedia.linktastic import linktastic
-from nzbtomedia import logger
+from nzbtomedia import logger, nzbToMediaDB
 from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
-
 
 def sanitizeFileName(name):
     '''
@@ -268,12 +268,12 @@ def WakeUp():
         logger.info("System with mac: %s has been woken. Continuing with the rest of the script." % (mac))
 
 
-def convert_to_ascii(nzbName, dirName):
+def convert_to_ascii(inputName, dirName):
     ascii_convert = int(nzbtomedia.CFG["ASCII"]["convert"])
     if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and "\" is replaced!.
-        return nzbName, dirName
+        return inputName, dirName
 
-    nzbName2 = str(nzbName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
+    inputName2 = str(inputName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
     if dirName != dirName2:
         logger.info("Renaming directory:%s  to: %s." % (dirName, dirName2))
@@ -284,9 +284,9 @@ def convert_to_ascii(nzbName, dirName):
             if filename != filename2:
                 logger.info("Renaming file:%s  to: %s." % (filename, filename2))
                 shutil.move(filename, filename2)
-    nzbName = nzbName2
+    inputName = inputName2
     dirName = dirName2
-    return nzbName, dirName
+    return inputName, dirName
 
 
 def parse_other(args):
@@ -616,21 +616,21 @@ def listMediaFiles(path, media=True, audio=True, meta=True, archives=True, ignor
 
     return files
 
-def find_imdbid(dirName, nzbName):
+def find_imdbid(dirName, inputName):
     imdbid = None
 
-    logger.info('Attemping imdbID lookup for %s' % (nzbName))
+    logger.info('Attemping imdbID lookup for %s' % (inputName))
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search('(tt\d{7})', dirName+nzbName)
+    m = re.search('(tt\d{7})', dirName+inputName)
     if m:
         imdbid = m.group(1)
         logger.info("Found imdbID [%s]" % imdbid)
         return imdbid
 
     logger.info('Searching IMDB for imdbID ...')
-    guess = guessit.guess_movie_info(nzbName)
+    guess = guessit.guess_movie_info(inputName)
     if guess:
         # Movie Title
         title = None
@@ -663,7 +663,7 @@ def find_imdbid(dirName, nzbName):
             logger.info("Found imdbID [%s]" % imdbid)
             return imdbid
 
-    logger.warning('Unable to find a imdbID for %s' % (nzbName))
+    logger.warning('Unable to find a imdbID for %s' % (inputName))
 
 def extractFiles(src, dst=None):
     extracted_folder = []
@@ -702,5 +702,47 @@ def extractFiles(src, dst=None):
                     except:
                         logger.debug("Unable to remove file %s" % (inputFile))
 
-def append_downloadID(dirName, download_id):
-    return '%s.downloadID(%s)' % (dirName,download_id)
+def backupVersionedFile(old_file, version):
+    numTries = 0
+
+    new_file = old_file + '.' + 'v' + str(version)
+
+    while not os.path.isfile(new_file):
+        if not os.path.isfile(old_file):
+            logger.log(u"Not creating backup, " + old_file + " doesn't exist", logger.DEBUG)
+            break
+
+        try:
+            logger.log(u"Trying to back up " + old_file + " to " + new_file, logger.DEBUG)
+            shutil.copy(old_file, new_file)
+            logger.log(u"Backup done", logger.DEBUG)
+            break
+        except Exception, e:
+            logger.log(u"Error while trying to back up " + old_file + " to " + new_file + " : " + str(e), logger.WARNING)
+            numTries += 1
+            time.sleep(1)
+            logger.log(u"Trying again.", logger.DEBUG)
+
+        if numTries >= 10:
+            logger.log(u"Unable to back up " + old_file + " to " + new_file + " please do it manually.", logger.ERROR)
+            return False
+
+    return True
+
+
+def update_downloadInfoStatus(inputDirectory, status):
+    logger.db("Updating status of our download in the DB to %s" % (status))
+
+    myDB = nzbToMediaDB.DBConnection()
+    myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_directory=?",
+                [status, datetime.date.today().toordinal(), inputDirectory])
+
+
+def get_downloadInfo(inputDirectory, status):
+    logger.db("Getting download info from the DB for directory %s" % (inputDirectory))
+
+    myDB = nzbToMediaDB.DBConnection()
+    sqlResults = myDB.select("SELECT * FROM downloads WHERE input_directory=? AND status=?",
+                             [inputDirectory, status])
+
+    return sqlResults

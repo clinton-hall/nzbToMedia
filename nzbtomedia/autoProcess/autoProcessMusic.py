@@ -30,7 +30,7 @@ class autoProcessMusic:
                      return album["Status"].lower()
         except:pass
 
-    def process(self, dirName, nzbName=None, status=0, clientAgent="manual", inputCategory=None):
+    def process(self, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if len(section) == 0:
@@ -64,7 +64,7 @@ class autoProcessMusic:
         else:
             protocol = "http://"
 
-        nzbName, dirName = convert_to_ascii(nzbName, dirName)
+        inputName, dirName = convert_to_ascii(inputName, dirName)
 
         url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 
@@ -82,10 +82,10 @@ class autoProcessMusic:
 
             if release_status:
                 if release_status not in ["unprocessed", "snatched"]:
-                    logger.warning("%s is marked with a status of %s, skipping ..." % (nzbName, release_status),section)
+                    logger.warning("%s is marked with a status of %s, skipping ..." % (inputName, release_status),section)
                     return 0
             else:
-                logger.error("Could not find a status for %s" % (nzbName),section)
+                logger.error("Could not find a status for %s" % (inputName),section)
                 return 1
 
             logger.debug("Opening URL: %s" % (url),section)
@@ -98,9 +98,9 @@ class autoProcessMusic:
 
             logger.debug("Result: %s" % (r.text),section)
             if r.text == "OK":
-                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (nzbName, dirName),section)
+                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section)
             else:
-                logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (nzbName, dirName),section)
+                logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (inputName, dirName),section)
                 return 1 # failure
 
         else:

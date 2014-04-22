@@ -6,7 +6,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
 from nzbtomedia import logger
 
 class autoProcessComics:
-    def processEpisode(self, dirName, nzbName=None, status=0, clientAgent='manual', inputCategory=None):
+    def processEpisode(self, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
@@ -34,15 +34,15 @@ class autoProcessComics:
         except:
             remote_path = None
 
-        nzbName, dirName = convert_to_ascii(nzbName, dirName)
+        inputName, dirName = convert_to_ascii(inputName, dirName)
 
         params = {}
         params['nzb_folder'] = dirName
         if remote_path:
             params['nzb_folder'] = joinPath(remote_path, os.path.basename(dirName))
 
-        if nzbName != None:
-            params['nzb_name'] = nzbName
+        if inputName != None:
+            params['nzb_name'] = inputName
 
         if ssl:
             protocol = "https://"

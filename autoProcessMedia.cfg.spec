@@ -15,6 +15,8 @@
     force_clean = 0
     # Enable/Disable logging debug messages to nzbtomedia.log
     log_debug = 0
+    # Enable/Disable logging database messages to nzbtomedia.log
+    log_db = 0
     # Set to where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
 

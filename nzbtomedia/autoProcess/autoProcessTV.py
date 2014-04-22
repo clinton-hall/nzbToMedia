@@ -10,7 +10,7 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
-    def processEpisode(self, dirName, nzbName=None, failed=False, clientAgent = "manual", inputCategory=None):
+    def processEpisode(self, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
         # auto-detect correct section
         section = nzbtomedia.CFG.findsection(inputCategory)
         if not section:
@@ -64,7 +64,7 @@ class autoProcessTV:
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
-        SpecificPath = joinPath(dirName, str(nzbName))
+        SpecificPath = joinPath(dirName, str(inputName))
         cleanName = os.path.splitext(SpecificPath)
         if cleanName[1] == ".nzb":
             SpecificPath = cleanName[0]
@@ -72,9 +72,9 @@ class autoProcessTV:
             dirName = SpecificPath
 
         if fork not in nzbtomedia.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
-            if nzbName:
-                process_all_exceptions(nzbName.lower(), dirName)
-                nzbName, dirName = convert_to_ascii(nzbName, dirName)
+            if inputName:
+                process_all_exceptions(inputName.lower(), dirName)
+                inputName, dirName = convert_to_ascii(inputName, dirName)
 
             # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
             video = 0
@@ -98,8 +98,8 @@ class autoProcessTV:
 
         # configure SB params to pass
         fork_params['quiet'] = 1
-        if nzbName is not None:
-            fork_params['nzbName'] = nzbName
+        if inputName is not None:
+            fork_params['inputName'] = inputName
 
         for param in copy.copy(fork_params):
             if param == "failed":

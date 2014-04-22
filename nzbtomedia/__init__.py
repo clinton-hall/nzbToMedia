@@ -20,10 +20,11 @@ CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 # add our custom libs to the system path
 sys.path.insert(0, LIBS_DIR)
 
-from nzbtomedia import logger, versionCheck
+from nzbtomedia import logger, versionCheck, nzbToMediaDB
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs, create_torrent_class, listMediaFiles
 from nzbtomedia.transcoder import transcoder
+from nzbtomedia.databases import mainDB
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -48,6 +49,7 @@ NZBGET_POSTPROCESS_NONE = 95
 
 CFG = None
 LOG_DEBUG = None
+LOG_DB = None
 SYS_ENCODING = None
 
 AUTO_UPDATE = None
@@ -139,7 +141,7 @@ def initialize(section=None):
         SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, USER_SCRIPT_RUNONCE, \
         APP_NAME,USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN, \
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
-        DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, \
+        DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, LOG_DB, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, DELETE_ORIGINAL
 
@@ -184,13 +186,16 @@ def initialize(section=None):
         if not config.addnzbget():
             logger.error("Unable to migrate NzbGet config file %s, exiting ..." % (CONFIG_FILE))
             sys.exit(-1)
-
     # load newly migrated config
     logger.info("Loading config from [%s]" % (CONFIG_FILE))
     CFG = config()
 
     # Enable/Disable DEBUG Logging
     LOG_DEBUG = int(CFG['General']['log_debug'])
+    LOG_DB = int(CFG['General']['log_db'])
+
+    # initialize the main SB database
+    nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
 
     # Set Version and GIT variables
     NZBTOMEDIA_VERSION = '9.3'

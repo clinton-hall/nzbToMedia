@@ -15,8 +15,8 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
     remove_read_only, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
-    extractFiles, cleanProcDirs, append_downloadID
-from nzbtomedia import logger
+    extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo
+from nzbtomedia import logger, nzbToMediaDB
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
@@ -25,12 +25,28 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     foundFile = 0
     copy_list = []
 
+    if clientAgent != 'manual':
+        logger.debug('Adding TORRENT download info for directory %s to database' % (inputDirectory))
+
+        myDB = nzbToMediaDB.DBConnection()
+
+        controlValueDict = {"input_directory": inputDirectory}
+        newValueDict = {"input_name": inputName,
+                        "input_hash": inputHash,
+                        "input_id": inputID,
+                        "client_agent": clientAgent,
+                        "status": 0,
+                        "last_update": datetime.date.today().toordinal()
+        }
+        myDB.upsert("downloads", newValueDict, controlValueDict)
+
     logger.debug("Received Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
     inputDirectory, inputName, inputCategory, root, single = category_search(inputDirectory, inputName, inputCategory, root, nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure
 
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
+    # Add torrent info hash to folder name incase we need it later on
     section = nzbtomedia.CFG.findsection(inputCategory)
     if not section:
         logger.error(
@@ -48,11 +64,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if inputCategory == "":
         inputCategory = "UNCAT"
     outputDestination = os.path.normpath(joinPath(nzbtomedia.OUTPUTDIRECTORY, inputCategory, sanitizeFileName(inputName)))
-
-    # Add torrent info hash to folder name incase we need it later on
-    if clientAgent != 'manual':
-        logger.debug('Added torrent info hash %s to output directory %s' % (inputHash, outputDestination))
-        outputDestination = append_downloadID(outputDestination, inputHash)
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
@@ -185,6 +196,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
         resume_torrent(clientAgent, inputHash, inputID, result, inputName)
     else:
+        # update download status in our DB
+        update_downloadInfoStatus(inputDirectory, 1)
+
         # cleanup our processing folders of any misc unwanted files and empty directories
         cleanProcDirs()
 
@@ -289,16 +303,26 @@ def main(args):
     if inputDirectory and inputName and inputHash and inputID:
         result = processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent)
     else:
-        # Perform Manual Run
+        # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        # Loop and auto-process
-        clientAgent = 'manual'
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
                     dirNames = get_dirnames(section, category)
                     for dirName in dirNames:
+                        clientAgent = 'manual'
+                        inputHash = None
+                        inputID = None
+
+                        logger.info("Checking database for download info ...")
+                        downloadInfo = get_downloadInfo(dirName, 0)
+                        if downloadInfo:
+                            clientAgent = downloadInfo['client_agent']
+                            inputHash = downloadInfo['input_hash']
+                            inputID = downloadInfo['input_id']
+                            logger.info("Found download info for directory %s, setting variables now ..." % (dirName))
+
                         logger.info("Running %s:%s as a manual run for folder %s ..." % (section, category, dirName))
                         results = processTorrent(dirName, os.path.basename(dirName), category, inputHash, inputID, clientAgent)
                         if results != 0:

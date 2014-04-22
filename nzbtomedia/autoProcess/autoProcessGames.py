@@ -4,7 +4,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessGames:
-    def process(self, dirName, nzbName=None, status=0, clientAgent='manual', inputCategory=None):
+    def process(self, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         if dirName is None:
             logger.error("No directory was given!")
             return 1  # failure
@@ -37,11 +37,11 @@ class autoProcessGames:
         else:
             protocol = "http://"
 
-        nzbName, dirName = convert_to_ascii(nzbName, dirName)
+        inputName, dirName = convert_to_ascii(inputName, dirName)
 
         url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
 
-        fields = nzbName.split("-")
+        fields = inputName.split("-")
 
         gamezID = fields[0].replace("[","").replace("]","").replace(" ","")
 
