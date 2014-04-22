@@ -112,8 +112,6 @@ class autoProcessTV:
                     fork_params[param] = dirName_new
 
             if param == "process_method":
-                if fork in nzbtomedia.SICKBEARD_TORRENT and not clientAgent in ['nzbget','sabnzbd']: #use default SickBeard settings here.
-                    del fork_params[param]
                 if process_method:
                     fork_params[param] = process_method
                 else:

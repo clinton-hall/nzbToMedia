@@ -71,5 +71,5 @@ def autoFork(inputCategory):
             logger.info("%s:%s fork auto-detection failed" % (section, inputCategory))
             fork = nzbtomedia.FORKS.items()[nzbtomedia.FORKS.keys().index(nzbtomedia.FORK_DEFAULT)]
 
-    logger.info("%s:%s inputCategory fork set to %s" % (section, inputCategory, fork[0]))
+    logger.info("%s:%s fork set to %s" % (section, inputCategory, fork[0]))
     return fork[0], fork[1]
