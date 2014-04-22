@@ -20,9 +20,17 @@ CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 # add our custom libs to the system path
 sys.path.insert(0, LIBS_DIR)
 
+from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
+from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
+from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
+from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
+from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia import logger, versionCheck, nzbToMediaDB
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import WakeUp, makeDir, joinPath, cleanProcDirs, create_torrent_class, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
+    remove_read_only, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
+    extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, joinPath, cleanProcDirs, \
+    create_torrent_class, listMediaFiles
 from nzbtomedia.transcoder import transcoder
 from nzbtomedia.databases import mainDB
 
@@ -128,8 +136,8 @@ USER_SCRIPT_CLEAN = None
 USER_DELAY = None
 USER_SCRIPT_RUNONCE = None
 
-
 __INITIALIZED__ = False
+
 
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
@@ -139,7 +147,7 @@ def initialize(section=None):
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
         SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, USER_SCRIPT_RUNONCE, \
-        APP_NAME,USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN, \
+        APP_NAME, USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN, \
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, LOG_DB, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
@@ -220,7 +228,8 @@ def initialize(section=None):
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
 
     # Set Current Version
-    logger.info('nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + GIT_BRANCH + ' (' + platform.system() + ' ' + platform.release() + ')')
+    logger.info(
+        'nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + GIT_BRANCH + ' (' + platform.system() + ' ' + platform.release() + ')')
 
     if int(CFG["WakeOnLan"]["wake"]) == 1:
         WakeUp()
@@ -254,7 +263,7 @@ def initialize(section=None):
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
-    if isinstance(COMPRESSEDCONTAINER, str):COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
+    if isinstance(COMPRESSEDCONTAINER, str): COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
     if isinstance(MEDIACONTAINER, str): MEDIACONTAINER = MEDIACONTAINER.split(',')
     if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
     if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
@@ -282,12 +291,12 @@ def initialize(section=None):
         FFMPEG = joinPath(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = joinPath(FFMPEG_PATH, 'ffprobe.exe')
 
-        if not (os.path.isfile(FFMPEG)): # problem
+        if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
             logger.warning("Failed to locate %s, transcoding disabled!" % (FFMPEG))
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not (os.path.isfile(FFPROBE)): # problem
+        if not (os.path.isfile(FFPROBE)):  # problem
             FFPROBE = None
             logger.warning("Failed to locate %s, video corruption detection disabled!" % (FFPROBE))
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
@@ -318,7 +327,7 @@ def initialize(section=None):
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
-    if section:SECTIONS = (section,)
+    if section: SECTIONS = (section,)
 
     SUBSECTIONS = CFG[SECTIONS]
     CATEGORIES += SUBSECTIONS.sections
@@ -330,6 +339,7 @@ def initialize(section=None):
     cleanProcDirs()
 
     return True
+
 
 def restart():
     install_type = versionCheck.CheckVersion().install_type
