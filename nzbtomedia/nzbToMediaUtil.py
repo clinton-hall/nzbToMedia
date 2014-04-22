@@ -6,10 +6,10 @@ import struct
 import shutil
 import time
 import datetime
+import requests
+import guessit
 import nzbtomedia
 
-from lib import requests
-from lib import guessit
 from nzbtomedia.extractor import extractor
 from nzbtomedia.linktastic import linktastic
 from nzbtomedia import logger, nzbToMediaDB

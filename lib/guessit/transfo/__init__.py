@@ -19,9 +19,9 @@
 #
 
 from __future__ import unicode_literals
-from lib.guessit import base_text_type, Guess
-from lib.guessit.patterns import canonical_form
-from lib.guessit.textutils import clean_string
+from guessit import base_text_type, Guess
+from guessit.patterns import canonical_form
+from guessit.textutils import clean_string
 import logging
 
 log = logging.getLogger(__name__)
