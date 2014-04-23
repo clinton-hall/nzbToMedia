@@ -99,7 +99,7 @@ class autoProcessTV:
         # configure SB params to pass
         fork_params['quiet'] = 1
         if inputName is not None:
-            fork_params['inputName'] = inputName
+            fork_params['nzbName'] = inputName
 
         for param in copy.copy(fork_params):
             if param == "failed":

@@ -163,6 +163,8 @@
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
+        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        delete_ignored = 0
         ##### Set to path where completed downloads are found on remote server for this category
         remote_path =
         ##### Set to path where download client places completed downloads locally for this category
