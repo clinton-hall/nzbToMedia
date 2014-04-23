@@ -184,13 +184,17 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.info("Calling Gamez:" + inputCategory + " to post-process: %s" % (inputName))
         result = nzbtomedia.autoProcessGames().process(outputDestination, inputName, status, clientAgent, inputCategory)
 
-    if result != 0 and clientAgent != 'manual':
-        logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-        nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, result, inputName)
+    if result != 0:
+        if clientAgent != 'manual':
+            logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
+            nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, inputName)
     else:
         if clientAgent != 'manual':
             # update download status in our DB
             nzbtomedia.update_downloadInfoStatus(inputName, 1)
+
+            # remove torrent
+            nzbtomedia.remove_torrent(clientAgent,inputHash,inputID,inputName)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
         nzbtomedia.cleanProcDirs()

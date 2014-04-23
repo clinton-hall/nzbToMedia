@@ -28,7 +28,7 @@ from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia import logger, versionCheck, nzbToMediaDB
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, pause_torrent, resume_torrent, listMediaFiles, joinPath, \
+    remove_read_only, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, joinPath, \
     extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, joinPath, cleanProcDirs, \
     create_torrent_class, listMediaFiles
 from nzbtomedia.transcoder import transcoder
@@ -335,9 +335,6 @@ def initialize(section=None):
 
     # create torrent class
     TORRENT_CLASS = create_torrent_class(TORRENT_CLIENTAGENT)
-
-    # cleanup our processing folders of any misc unwanted files and empty directories
-    cleanProcDirs()
 
     return True
 
