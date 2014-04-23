@@ -311,9 +311,13 @@ def main(args):
                         downloadInfo = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
                             clientAgent = str(downloadInfo['client_agent'][0])
+                            if not clientAgent.lower() in nzbtomedia.TORRENT_CLIENTS:
+                                continue
+
                             inputHash = str(downloadInfo['input_hash'][0])
                             inputID = str(downloadInfo['input_id'][0])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
+
 
                         logger.info("Running %s:%s as a manual run for folder %s ..." % (section, category, dirName))
                         results = processTorrent(dirName, os.path.basename(dirName), category, inputHash, inputID, clientAgent)

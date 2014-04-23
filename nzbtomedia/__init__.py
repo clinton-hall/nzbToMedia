@@ -34,6 +34,10 @@ from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_li
 from nzbtomedia.transcoder import transcoder
 from nzbtomedia.databases import mainDB
 
+# Client Agents
+NZB_CLIENTS = ['sabnzbd','nzbget']
+TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent']
+
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
 SABNZB_0717_NO_OF_ARGUMENTS = 9

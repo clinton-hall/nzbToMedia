@@ -446,6 +446,9 @@ def main(args, section=None):
                         downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
                             clientAgent = str(downloadInfo['client_agent'][0])
+                            if not clientAgent.lower() in nzbtomedia.NZB_CLIENTS:
+                                continue
+
                             download_id = str(downloadInfo['input_id'][0])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
