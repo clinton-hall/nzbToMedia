@@ -53,7 +53,7 @@ class autoProcessComics:
         logger.debug("Opening URL: %s" % (url), section)
 
         try:
-            r = requests.get(url, params=params, auth=(username, password), stream=True)
+            r = requests.get(url, params=params, auth=(username, password), stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL", section)
             return 1 # failure

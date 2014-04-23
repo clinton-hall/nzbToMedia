@@ -7,22 +7,20 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
 from nzbtomedia import logger
 
 class autoProcessMusic:
-    def get_status(self, baseURL, apikey, dirName):
+    def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))
-
-        url = baseURL
 
         params = {}
         params['apikey'] = apikey
         params['cmd'] = "getHistory"
 
-        logger.debug("Opening URL: %s" % (url))
+        logger.debug("Opening URL: %s with PARAMS: %s" % (url, params))
 
         try:
-            r = requests.get(url, params=params)
-        except requests.ConnectionError:
+            r = requests.get(url, params=params, verify=False)
+        except Exception, e:
             logger.error("Unable to open URL")
-            return None, None
+            return
 
         try:
             result = r.json()
@@ -80,21 +78,16 @@ class autoProcessMusic:
                 params['dir'] = joinPath(remote_path, os.path.basename(os.path.dirname(dirName)))
 
             release_status = self.get_status(url, apikey, dirName)
-
-            if release_status:
-                if release_status not in ["unprocessed", "snatched"]:
-                    logger.warning("%s is marked with a status of %s, skipping ..." % (inputName, release_status),section)
-                    return 0
-            else:
-                logger.error("Could not find a status for %s" % (inputName),section)
+            if not release_status:
+                logger.error("Could not find a status for %s, is it in the wanted list ?" % (inputName),section)
                 return 1
 
-            logger.debug("Opening URL: %s" % (url),section)
+            logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
             try:
-                r = requests.get(url, params=params)
+                r = requests.get(url, params=params, verify=False)
             except requests.ConnectionError:
-                logger.error("Unable to open URL %s" % (url),section)
+                logger.error("Unable to open URL %s" % (url) ,section)
                 return 1  # failure
 
             logger.debug("Result: %s" % (r.text),section)

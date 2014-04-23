@@ -145,11 +145,11 @@ class autoProcessTV:
         try:
             r = None
             if section == "SickBeard":
-                r = requests.get(url, auth=(username, password), params=fork_params, stream=True)
+                r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
                 params = {"name": "DownloadedEpisodesScan", "path": dirName}
                 headers = {"X-Api-Key": apikey}
-                r = requests.get(url, params=params, headers=headers, stream=True)
+                r = requests.get(url, params=params, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure

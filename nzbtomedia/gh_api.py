@@ -22,7 +22,7 @@ class GitHub(object):
         if params and type(params) is dict:
             url += '?' + '&'.join([str(x) + '=' + str(params[x]) for x in params.keys()])
 
-        data = requests.get(url)
+        data = requests.get(url, verify=False)
 
         if data.ok:
             json_data = data.json()

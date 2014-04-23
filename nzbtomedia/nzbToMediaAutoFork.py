@@ -55,9 +55,9 @@ def autoFork(inputCategory):
             # attempting to auto-detect fork
             try:
                 if username and password:
-                    r = requests.get(url, auth=(username, password))
+                    r = requests.get(url, auth=(username, password), verify=False)
                 else:
-                    r = requests.get(url)
+                    r = requests.get(url, verify=False)
             except requests.ConnectionError:
                 logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
                 break

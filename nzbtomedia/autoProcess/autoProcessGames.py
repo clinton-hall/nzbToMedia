@@ -58,7 +58,7 @@ class autoProcessGames:
         logger.debug("Opening URL: %s" % (url),section)
 
         try:
-            r = requests.get(url, params=params)
+            r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1  # failure

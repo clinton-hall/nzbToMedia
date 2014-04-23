@@ -26,7 +26,7 @@ class autoProcessMovie:
         logger.debug("Opening URL: %s" % url)
 
         try:
-            r = requests.get(url, params=params)
+            r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
             return
@@ -173,12 +173,12 @@ class autoProcessMovie:
 
             url = "%s%s" % (baseURL, command)
 
-            logger.debug("Opening URL: %s" % (url), section)
+            logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
             logger.postprocess("Starting %s scan for %s" % (method, inputName), section)
 
             try:
-                r = requests.get(url, params=params)
+                r = requests.get(url, params=params, verify=False)
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
                 return 1  # failure
@@ -209,10 +209,12 @@ class autoProcessMovie:
             logger.postprocess("Setting failed release %s to ignored ..." % (inputName), section)
 
             url = baseURL + "/release.ignore"
-            logger.debug("Opening URL: %s" % (url), section)
+            params = {'id': release_id}
+
+            logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
             try:
-                r = requests.get(url, params={'id': release_id})
+                r = requests.get(url, params=params, verify=False)
             except requests.ConnectionError:
                 logger.error("Unable to open URL %s" % (url), section)
                 return 1  # failure

@@ -563,7 +563,7 @@ def find_download(clientAgent, download_id):
         params['output'] = 'json'
         params['value'] = download_id
         try:
-            r = requests.get(url, params=params)
+            r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return 1  # failure
@@ -662,7 +662,7 @@ def find_imdbid(dirName, inputName):
         logger.debug("Opening URL: %s" % url)
 
         try:
-            r = requests.get(url, params={'y': year, 't': title})
+            r = requests.get(url, params={'y': year, 't': title}, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
             return
