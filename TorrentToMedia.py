@@ -128,7 +128,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if platform.system() == 'Windows':  # remove Read Only flag from files in Windows.
         nzbtomedia.remove_read_only(outputDestination)
 
-    if nzbtomedia.CFG[section][inputCategory]['extract']:
+    if nzbtomedia.CFG[section][inputCategory]['extract'] == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
         nzbtomedia.extractFiles(outputDestination)
 
