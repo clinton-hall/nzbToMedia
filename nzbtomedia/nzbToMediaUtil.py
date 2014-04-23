@@ -132,7 +132,7 @@ def is_minSize(inputName, minSize):
         inputSize = getDirSize(os.path.dirname(inputName))
 
     # Ignore files under a certain size
-    if inputSize < minSize * 1048576:
+    if inputSize > minSize * 1048576:
         return True
 
 def is_sample(inputName):
@@ -611,7 +611,7 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
         fullCurFile = joinPath(path, curFile)
 
         # if it's a folder do it recursively
-        if os.path.isdir(fullCurFile) and not curFile.startswith('.') and not curFile == 'Extras':
+        if os.path.isdir(fullCurFile) and not curFile.startswith('.'):
             files += listMediaFiles(fullCurFile, minSize, delete_ignored, media, audio, meta, archives)
 
         elif isMediaFile(curFile, media, audio, meta, archives):

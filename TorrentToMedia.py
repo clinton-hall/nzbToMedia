@@ -188,8 +188,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error("A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
         nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, result, inputName)
     else:
-        # update download status in our DB
-        nzbtomedia.update_downloadInfoStatus(inputName, 1)
+        if clientAgent != 'manual':
+            # update download status in our DB
+            nzbtomedia.update_downloadInfoStatus(inputName, 1)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
         nzbtomedia.cleanProcDirs()

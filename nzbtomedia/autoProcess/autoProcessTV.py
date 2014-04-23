@@ -77,16 +77,7 @@ class autoProcessTV:
                 inputName, dirName = convert_to_ascii(inputName, dirName)
 
             # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
-            video = 0
-            for dirFile in listMediaFiles(dirName):
-                fullFileName = os.path.basename(dirFile)
-                fileName, fileExt = os.path.splitext(fullFileName)
-
-                if fileExt in nzbtomedia.MEDIACONTAINER:
-                    logger.debug("Found media file: %s" % (fullFileName))
-                    video += 1
-
-            if video > 0:  # Check that a video exists. if not, assume failed.
+            if listMediaFiles(dirName):  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
             elif clientAgent == "manual":
                 logger.warning("No media files found in directory %s to manually process." % (dirName), section)
@@ -94,7 +85,7 @@ class autoProcessTV:
             else:
                 logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
                 status = 1
-                failed = True
+                failed = 1
 
         # configure SB params to pass
         fork_params['quiet'] = 1

@@ -328,8 +328,9 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         result = -1
 
     if result == 0:
-        # update download status in our DB
-        update_downloadInfoStatus(inputName, 1)
+        if clientAgent != 'manual':
+            # update download status in our DB
+            update_downloadInfoStatus(inputName, 1)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
         cleanProcDirs()
