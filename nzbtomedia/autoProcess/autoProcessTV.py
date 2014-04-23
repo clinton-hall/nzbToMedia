@@ -163,6 +163,10 @@ class autoProcessTV:
             logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure
 
+        if not r.ok:
+            logger.error('FAILED: Something went wrong!, check your logs ...', section)
+            return 1
+
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
 
