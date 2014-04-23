@@ -142,7 +142,7 @@ def is_sample(inputName):
 
 def copy_link(filePath, targetDirectory, useLink, outputDestination):
     if os.path.isfile(targetDirectory):
-        logger.info("Target file already exists. Nothing to be done", 'COPYLINK')
+        logger.info("%s already exists. skipping ..." % (targetDirectory), 'COPYLINK')
         return True
 
     makeDir(outputDestination)
