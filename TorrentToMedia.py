@@ -311,12 +311,12 @@ def main(args):
                         logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
                         downloadInfo = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
-                            clientAgent = str(downloadInfo['client_agent'][0])
+                            clientAgent = str(downloadInfo[0]['client_agent'])
                             if not clientAgent.lower() in nzbtomedia.TORRENT_CLIENTS:
                                 continue
 
-                            inputHash = str(downloadInfo['input_hash'][0])
-                            inputID = str(downloadInfo['input_id'][0])
+                            inputHash = str(downloadInfo[0]['input_hash'])
+                            inputID = str(downloadInfo[0]['input_id'])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
 

@@ -446,11 +446,11 @@ def main(args, section=None):
                         logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
                         downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
                         if downloadInfo:
-                            clientAgent = str(downloadInfo['client_agent'][0])
+                            clientAgent = str(downloadInfo[0]['client_agent'])
                             if not clientAgent.lower() in nzbtomedia.NZB_CLIENTS:
                                 continue
 
-                            download_id = str(downloadInfo['input_id'][0])
+                            download_id = str(downloadInfo[0]['input_id'])
                             logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
 
                         logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
