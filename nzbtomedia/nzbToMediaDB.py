@@ -17,7 +17,7 @@ def dbFilename(filename="nzbtomedia.db", suffix=None):
     """
     if suffix:
         filename = "%s.%s" % (filename, suffix)
-    return nzbtomedia.joinPath(nzbtomedia.PROGRAM_DIR, filename)
+    return nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, filename)
 
 
 class DBConnection:

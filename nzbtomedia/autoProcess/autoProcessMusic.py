@@ -3,7 +3,7 @@ import time
 import requests
 import nzbtomedia
 
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessMusic:
@@ -75,7 +75,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                params['dir'] = joinPath(remote_path, os.path.basename(os.path.dirname(dirName)))
+                params['dir'] = os.path.join(remote_path, os.path.basename(os.path.dirname(dirName)))
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:

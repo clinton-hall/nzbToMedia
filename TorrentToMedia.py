@@ -4,7 +4,6 @@ import os
 import time
 import shutil
 import sys
-import platform
 import nzbtomedia
 
 from subprocess import Popen
@@ -55,7 +54,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if inputCategory == "":
         inputCategory = "UNCAT"
-    outputDestination = os.path.normpath(nzbtomedia.joinPath(nzbtomedia. OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeFileName(inputName)))
+    outputDestination = os.path.normpath(nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeName(inputName)))
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
@@ -74,27 +73,25 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if nzbtomedia.CFG["HeadPhones"][inputCategory]:
         nzbtomedia.NOFLATTEN.extend(nzbtomedia.CFG["HeadPhones"].sections) # Make sure we preserve folder structure for HeadPhones.
 
-    outputDestinationMaster = outputDestination # Save the original, so we can change this within the loop below, and reset afterwards.
     now = datetime.datetime.now()
 
     inputFiles = nzbtomedia.listMediaFiles(inputDirectory)
     logger.debug("Found %s files in %s" % (str(len(inputFiles)), inputDirectory))
     for inputFile in inputFiles:
-        fileDirPath = os.path.dirname(inputFile)
+        filePath = os.path.dirname(inputFile)
         fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
         fullFileName = os.path.basename(inputFile)
 
+        targetFile = nzbtomedia.os.path.join(outputDestination, fullFileName)
         if inputCategory in nzbtomedia.NOFLATTEN:
-            if not fileDirPath == outputDestinationMaster:
-                outputDestination = nzbtomedia.joinPath(outputDestinationMaster, fileDirPath) # join this extra directory to output.
-                logger.debug("Setting outputDestination to %s to preserve folder structure" % (outputDestination))
-
-        targetDirectory = nzbtomedia.joinPath(outputDestination, fullFileName)
+            if not os.path.basename(filePath) in outputDestination:
+                targetFile = nzbtomedia.os.path.join(nzbtomedia.os.path.join(outputDestination, os.path.basename(filePath)), fullFileName)
+                logger.debug("Setting outputDestination to %s to preserve folder structure" % (os.path.dirname(targetFile)))
 
         if root == 1:
             if not foundFile:
                 logger.debug("Looking for %s in: %s" % (inputName, fullFileName))
-            if (nzbtomedia.sanitizeFileName(inputName) in nzbtomedia.sanitizeFileName(fullFileName)) or (nzbtomedia.sanitizeFileName(fileName) in nzbtomedia.sanitizeFileName(inputName)):
+            if (nzbtomedia.sanitizeName(inputName) in nzbtomedia.sanitizeName(fullFileName)) or (nzbtomedia.sanitizeName(fileName) in nzbtomedia.sanitizeName(inputName)):
                 foundFile = True
                 logger.debug("Found file %s that matches Torrent Name %s" % (fullFileName, inputName))
             else:
@@ -115,18 +112,13 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         if Torrent_NoLink == 0:
             try:
-                nzbtomedia.copy_link(inputFile, targetDirectory, nzbtomedia.USELINK, outputDestination)
-                copy_list.append([inputFile, nzbtomedia.joinPath(outputDestination, fullFileName)])
+                nzbtomedia.copy_link(inputFile, targetFile, nzbtomedia.USELINK)
+                nzbtomedia.rmReadOnly(targetFile)
             except:
-                logger.error("Failed to link file: %s" % (fullFileName))
-
-    outputDestination = outputDestinationMaster # Reset here.
+                logger.error("Failed to link: %s to %s" % (inputFile, targetFile))
 
     if not inputCategory in nzbtomedia.NOFLATTEN: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         nzbtomedia.flatten(outputDestination)
-
-    if platform.system() == 'Windows':  # remove Read Only flag from files in Windows.
-        nzbtomedia.remove_read_only(outputDestination)
 
     if nzbtomedia.CFG[section][inputCategory]['extract'] == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
@@ -147,7 +139,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             status = 0
         else:
             logger.warning("Found no media files in %s" % outputDestination)
-
 
     # Only these sections can handling failed downloads so make sure everything else gets through without the check for failed
     if not nzbtomedia.CFG['CouchPotato','SickBeard','NzbDrone'][inputCategory]:
@@ -208,7 +199,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
 
-            filePath = nzbtomedia.joinPath(dirpath, file)
+            filePath = nzbtomedia.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS:
@@ -261,7 +252,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
     num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
-            filePath = nzbtomedia.joinPath(dirpath, file)
+            filePath = nzbtomedia.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
@@ -306,7 +297,7 @@ def main(args):
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
-                    dirNames = nzbtomedia.get_dirnames(section, category)
+                    dirNames = nzbtomedia.getDirs(section, category)
                     for dirName in dirNames:
                         clientAgent = 'manual'
                         inputHash = None

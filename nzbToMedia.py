@@ -282,7 +282,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import get_dirnames, extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo
+from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
@@ -438,7 +438,7 @@ def main(args, section=None):
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
                 if nzbtomedia.CFG[section][category].isenabled():
-                    dirNames = get_dirnames(section, category)
+                    dirNames = getDirs(section, category)
                     for dirName in dirNames:
                         clientAgent = 'manual'
                         download_id = None

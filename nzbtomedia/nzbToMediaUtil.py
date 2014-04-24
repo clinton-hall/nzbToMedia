@@ -7,6 +7,7 @@ import shutil
 import time
 import datetime
 import guessit
+import beets
 import requests
 import nzbtomedia
 
@@ -17,15 +18,15 @@ from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 from nzbtomedia import logger, nzbToMediaDB
 
-def sanitizeFileName(name):
+def sanitizeName(name):
     '''
-    >>> sanitizeFileName('a/b/c')
+    >>> sanitizeName('a/b/c')
     'a-b-c'
-    >>> sanitizeFileName('abc')
+    >>> sanitizeName('abc')
     'abc'
-    >>> sanitizeFileName('a"b')
+    >>> sanitizeName('a"b')
     'ab'
-    >>> sanitizeFileName('.a.b..')
+    >>> sanitizeName('.a.b..')
     'a.b'
     '''
 
@@ -42,12 +43,9 @@ def makeDir(path):
     if not os.path.isdir(path):
         try:
             os.makedirs(path)
-        except OSError:
+        except Exception, e:
             return False
     return True
-
-def joinPath(path, *paths):
-    return os.path.join(path, *paths).replace('\\','/')
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     single = False
@@ -70,20 +68,20 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
         return inputDirectory, inputName, inputCategory, root, single
 
-    if inputCategory and os.path.isdir(joinPath(inputDirectory, inputCategory)):
+    if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
         logger.info(
             "SEARCH: Found category directory %s in input directory directory %s" % (inputCategory, inputDirectory))
-        inputDirectory = joinPath(inputDirectory, inputCategory)
+        inputDirectory = os.path.join(inputDirectory, inputCategory)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
-    if inputName and os.path.isdir(joinPath(inputDirectory, inputName)):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
-        inputDirectory = joinPath(inputDirectory, inputName)
+        inputDirectory = os.path.join(inputDirectory, inputName)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
-    if inputName and os.path.isdir(joinPath(inputDirectory, sanitizeFileName(inputName))):
+    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeName(inputName))):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
-            sanitizeFileName(inputName), inputDirectory))
-        inputDirectory = joinPath(inputDirectory, sanitizeFileName(inputName))
+            sanitizeName(inputName), inputDirectory))
+        inputDirectory = os.path.join(inputDirectory, sanitizeName(inputName))
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
 
@@ -103,7 +101,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             pass
 
     if inputName and not tordir:
-        if inputName in pathlist or sanitizeFileName(inputName) in pathlist:
+        if inputName in pathlist or sanitizeName(inputName) in pathlist:
             logger.info("SEARCH: Found torrent directory %s in the directory structure" % (inputName))
             tordir = True
         else:
@@ -140,44 +138,44 @@ def is_sample(inputName):
     if re.search('(^|[\W_])sample\d*[\W_]', inputName.lower()):
         return True
 
-def copy_link(filePath, targetDirectory, useLink, outputDestination):
-    if os.path.isfile(targetDirectory):
-        logger.info("%s already exists. skipping ..." % (targetDirectory), 'COPYLINK')
+def copy_link(src, targetLink, useLink):
+    if os.path.exists(targetLink):
+        logger.info("%s already exists. skipping ..." % (os.path.basename(targetLink)), 'COPYLINK')
         return True
 
-    makeDir(outputDestination)
-    if useLink == "hard":
-        try:
-            logger.info("Hard linking %s to %s" % (filePath, targetDirectory), 'COPYLINK')
-            linktastic.link(filePath, targetDirectory)
-        except:
-            if os.path.isfile(targetDirectory):
-                logger.warning(
-                    "Something went wrong in linktastic.link, but the destination file was created", 'COPYLINK')
-            else:
-                logger.warning("Something went wrong in linktastic.link, copying instead", 'COPYLINK')
-                logger.debug("Copying %s to %s" % (filePath, targetDirectory), 'COPYLINK')
-                shutil.copy(filePath, targetDirectory)
-    elif useLink == "sym":
-        try:
-            logger.info("Moving %s to %s before sym linking" % (filePath, targetDirectory), 'COPYLINK')
-            shutil.move(filePath, targetDirectory)
-            logger.info("Sym linking %s to %s" % (targetDirectory, filePath), 'COPYLINK')
-            linktastic.symlink(targetDirectory, filePath)
-        except:
-            if os.path.isfile(targetDirectory):
-                logger.warning(
-                    "Something went wrong in linktastic.link, but the destination file was created", 'COPYLINK')
-            else:
-                logger.info("Something went wrong in linktastic.link, copying instead", 'COPYLINK')
-                logger.debug("Copying %s to %s" % (filePath, targetDirectory), 'COPYLINK')
-                shutil.copy(filePath, targetDirectory)
-    elif useLink == "move":
-        logger.debug("Moving %s to %s" % (filePath, targetDirectory))
-        shutil.move(filePath, targetDirectory)
-    else:
-        logger.debug("Copying %s to %s" % (filePath, targetDirectory))
-        shutil.copy(filePath, targetDirectory)
+    makeDir(os.path.dirname(targetLink))
+
+    try:
+        if useLink == 'dir':
+            logger.info("Directory linking %s to %s" % (src, targetLink), 'COPYLINK')
+            linktastic.dirlink(src, targetLink)
+            return True
+        if useLink == 'junction':
+            logger.info("Directory junction linking %s to %s" % (src, targetLink), 'COPYLINK')
+            linktastic.dirlink(src, targetLink)
+            return True
+        elif useLink == "hard":
+            logger.info("Hard linking %s to %s" % (src, targetLink), 'COPYLINK')
+            linktastic.link(src, targetLink)
+            return True
+        elif useLink == "sym":
+            logger.info("Moving %s to %s before sym linking" % (src, targetLink), 'COPYLINK')
+            shutil.move(src, targetLink)
+            logger.info("Sym linking %s to %s" % (targetLink, src), 'COPYLINK')
+            linktastic.symlink(targetLink, src)
+            return True
+        elif useLink == "move":
+            logger.debug("Moving %s to %s" % (src, targetLink))
+            shutil.move(src, targetLink)
+            return True
+    except Exception, e:
+        logger.warning("Error: %s, copying instead ... " % (e), 'COPYLINK')
+        logger.debug("Copying %s to %s" % (src, targetLink), 'COPYLINK')
+        shutil.copy(src, targetLink)
+
+    logger.debug("Copying %s to %s" % (src, targetLink))
+    shutil.copy(src, targetLink)
+
     return True
 
 
@@ -190,7 +188,7 @@ def flatten(outputDestination):
         if dirPath == outputDestination:
             continue
 
-        target = joinPath(outputDestination, fileName)
+        target = os.path.join(outputDestination, fileName)
 
         try:
             shutil.move(outputFile, target)
@@ -208,7 +206,7 @@ def removeEmptyFolders(path):
     files = os.listdir(path)
     if len(files):
         for f in files:
-            fullpath = joinPath(path, f)
+            fullpath = os.path.join(path, f)
             if os.path.isdir(fullpath):
                 removeEmptyFolders(fullpath)
 
@@ -218,14 +216,17 @@ def removeEmptyFolders(path):
         logger.debug("Removing empty folder: %s" % (path), 'REMOVER')
         os.rmdir(path)
 
-def remove_read_only(path):
-    if not os.path.isdir(path):
-        return
-    for dirpath, dirnames, filenames in os.walk(path):
-        for filename in filenames:
-            logger.debug("Removing Read Only Flag for: %s" % (filename))
-            os.chmod(joinPath(dirpath, filename), stat.S_IWRITE)
-
+def rmReadOnly(filename):
+    if os.path.isfile(filename):
+        #check first the read-only attribute
+        file_attribute = os.stat(filename)[0]
+        if (not file_attribute & stat.S_IWRITE):
+            # File is read-only, so make it writeable
+            logger.debug('Read only mode on file ' + filename + ' Will try to make it writeable')
+            try:
+                os.chmod(filename, stat.S_IWRITE)
+            except:
+                logger.warning('Cannot change permissions of ' + filename, logger.WARNING)
 
 #Wake function
 def WakeOnLan(ethernet_address):
@@ -381,8 +382,8 @@ def parse_args(clientAgent, args):
         return None, None, None, None, None
 
 
-def get_dirnames(section, subsections=None):
-    dirNames = []
+def getDirs(section, subsections=None):
+    to_return = []
 
     if subsections is None:
         subsections = nzbtomedia.SUBSECTIONS[section].sections
@@ -390,52 +391,66 @@ def get_dirnames(section, subsections=None):
     if not isinstance(subsections, list):
         subsections = [subsections]
 
+    def processDir(path):
+        folders = []
+        # search for single files and move them into there own folder for post-processing
+        for mediafile in listMediaFiles(path):
+            parentDir = os.path.dirname(mediafile)
+            if parentDir == path:
+                newPath = None
+                fileExt = os.path.splitext(os.path.basename(mediafile))[1]
+
+                try:
+                    if fileExt in nzbtomedia.AUDIOCONTAINER:
+                        f = beets.mediafile.MediaFile(mediafile)
+
+                        # get artist and album info
+                        artist = f.artist
+                        album = f.album
+
+                        # create new path
+                        newPath = os.path.join(parentDir, "%s - %s" % (sanitizeName(artist), sanitizeName(album)))
+                    elif fileExt in nzbtomedia.MEDIACONTAINER:
+                        f = guessit.guess_video_info(mediafile)
+
+                        # get title
+                        title = None
+                        try:
+                            title = f['series']
+                        except:
+                            title = f['title']
+
+                        if not title:
+                            title = os.path.basename(mediafile)
+
+                        newPath = os.path.join(parentDir, sanitizeName(title))
+                except Exception, e:
+                    logger.info("Exception from MediaFile for: %s: %s" % (dir, e))
+
+                # create new path if it does not exist
+                if not os.path.exists(newPath):
+                    makeDir(newPath)
+
+                # move file to its new path
+                shutil.move(mediafile, newPath)
+
+        folders.extend([os.path.join(path, o) for o in os.listdir(path) if
+                        os.path.isdir(os.path.join(path, o))])
+        return folders
+
     for subsection in subsections:
-        try:
-            watch_dir = nzbtomedia.CFG[section][subsection]["watch_dir"]
-            if not os.path.exists(watch_dir):
-                watch_dir = None
-        except:
-            watch_dir = None
+        watch_dir = os.path.abspath(nzbtomedia.CFG[section][subsection]["watch_dir"])
+        if os.path.exists(watch_dir):
+            to_return.extend(processDir(watch_dir))
 
-        try:
-            outputDirectory = joinPath(nzbtomedia.OUTPUTDIRECTORY, subsection)
-            if not os.path.exists(outputDirectory):
-                outputDirectory = None
-        except:
-            outputDirectory = None
+        outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
+        if os.path.exists(outputDirectory):
+            to_return.extend(processDir(outputDirectory))
 
-        if watch_dir:
-            # search for single files and move them into there own folder for post-processing
-            for mediafile in listMediaFiles(watch_dir):
-                parentDir = os.path.dirname(mediafile)
-                if parentDir == watch_dir:
-                    p = joinPath(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
-                    if not os.path.exists(p):
-                        os.mkdir(p)
-                        shutil.move(mediafile, p)
-
-            dirNames.extend([joinPath(watch_dir, o) for o in os.listdir(watch_dir) if
-                             os.path.isdir(joinPath(watch_dir, o))])
-
-        if outputDirectory:
-            # search for single files and move them into there own folder for post-processing
-            for mediafile in listMediaFiles(outputDirectory):
-                parentDir = os.path.dirname(mediafile)
-                if parentDir == outputDirectory:
-                    p = joinPath(parentDir, (os.path.splitext(os.path.splitext(mediafile)[0])[0]))
-                    if not os.path.exists(p):
-                        os.mkdir(p)
-                    shutil.move(mediafile, p)
-
-            dirNames.extend([joinPath(outputDirectory, o) for o in os.listdir(outputDirectory) if
-                             os.path.isdir(joinPath(outputDirectory, o))])
-
-        if not dirNames:
+        if not to_return:
             logger.debug("No directories identified in %s for post-processing" % (subsection), section)
 
-    return list(set(dirNames))
-
+    return list(set(to_return))
 
 def rmDir(dirName):
     logger.info("Deleting %s" % (dirName))
@@ -449,7 +464,7 @@ def cleanProcDirs():
     for section, subsection in nzbtomedia.SUBSECTIONS.items():
         for category in subsection:
             if nzbtomedia.CFG[section][category].isenabled():
-                dirNames = get_dirnames(section, category)
+                dirNames = getDirs(section, category)
                 for dirName in dirNames:
                     try:
                         minSize = int(nzbtomedia.CFG[section][category]['minSize'])
@@ -606,12 +621,12 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
         return False
 
 def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True):
-    if not dir or not os.path.isdir(path):
+    if not os.path.isdir(path):
         return []
 
     files = []
     for curFile in os.listdir(path):
-        fullCurFile = joinPath(path, curFile)
+        fullCurFile = os.path.join(path, curFile)
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.'):

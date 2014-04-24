@@ -7,8 +7,8 @@ from subprocess import call, Popen
 def extract(filePath, outputDestination):
     # Using Windows
     if platform.system() == 'Windows':
-        chplocation = nzbtomedia.joinPath(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/chp.exe')
-        sevenzipLocation = nzbtomedia.joinPath(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/' + platform.machine() + '/7z.exe')
+        chplocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/chp.exe')
+        sevenzipLocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/' + platform.machine() + '/7z.exe')
 
         if not os.path.exists(sevenzipLocation):
             nzbtomedia.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")

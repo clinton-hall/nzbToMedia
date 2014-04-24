@@ -27,9 +27,9 @@ from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia import logger, versionCheck, nzbToMediaDB
 from nzbtomedia.nzbToMediaConfig import config
-from nzbtomedia.nzbToMediaUtil import category_search, sanitizeFileName, copy_link, parse_args, flatten, get_dirnames, \
-    remove_read_only, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, joinPath, \
-    extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, joinPath, cleanProcDirs, \
+from nzbtomedia.nzbToMediaUtil import category_search, sanitizeName, copy_link, parse_args, flatten, getDirs, \
+    rmReadOnly,rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, \
+    extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanProcDirs, \
     create_torrent_class, listMediaFiles
 from nzbtomedia.transcoder import transcoder
 from nzbtomedia.databases import mainDB
@@ -289,8 +289,8 @@ def initialize(section=None):
 
     # Setup FFMPEG and FFPROBE locations
     if platform.system() == 'Windows':
-        FFMPEG = joinPath(FFMPEG_PATH, 'ffmpeg.exe')
-        FFPROBE = joinPath(FFMPEG_PATH, 'ffprobe.exe')
+        FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
+        FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None

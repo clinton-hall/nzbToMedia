@@ -2,7 +2,7 @@ import os
 import time
 import nzbtomedia
 import requests
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, joinPath
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessComics:
@@ -39,7 +39,7 @@ class autoProcessComics:
         params = {}
         params['nzb_folder'] = dirName
         if remote_path:
-            params['nzb_folder'] = joinPath(remote_path, os.path.basename(dirName))
+            params['nzb_folder'] = os.path.join(remote_path, os.path.basename(dirName))
 
         if inputName != None:
             params['nzb_name'] = inputName
