@@ -47,6 +47,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     try:Torrent_NoLink = int(nzbtomedia.CFG[section][inputCategory]["Torrent_NoLink"])
     except:Torrent_NoLink = 0
 
+    try:extract = int(nzbtomedia.CFG[section][inputCategory]['extract'])
+    except:extract = 0
+
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
@@ -120,22 +123,15 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if not inputCategory in nzbtomedia.NOFLATTEN: #don't flatten hp in case multi cd albums, and we need to copy this back later.
         nzbtomedia.flatten(outputDestination)
 
-    if nzbtomedia.CFG[section][inputCategory]['extract'] == 1:
+    if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
         nzbtomedia.extractFiles(outputDestination)
 
     # Now check if video files exist in destination:
     if nzbtomedia.CFG["SickBeard","NzbDrone", "CouchPotato"][inputCategory]:
-        for outputFile in nzbtomedia.listMediaFiles(outputDestination):
-            fullFileName = os.path.basename(outputFile)
-            fileName, fileExt = os.path.splitext(fullFileName)
-
-            if fileExt in nzbtomedia.MEDIACONTAINER:
-                logger.debug("Found media file: %s" % (fullFileName))
-                video += 1
-
-        if video > 0:
-            logger.debug("Found %s media files" % (str(video)))
+        numVideos = len(nzbtomedia.listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False))
+        if numVideos > 0:
+            logger.info("Found %s media files in %s" % (numVideos, outputDestination))
             status = 0
         else:
             logger.warning("Found no media files in %s" % outputDestination)
