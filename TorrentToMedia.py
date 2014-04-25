@@ -39,7 +39,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
     # auto-detect section
-    section = nzbtomedia.CFG.findsection(inputCategory)
+    section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
     if len(section) > 1:
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (

@@ -1,5 +1,6 @@
 import os
 import shutil
+import copy
 import nzbtomedia
 from configobj import *
 
@@ -9,33 +10,36 @@ class Section(configobj.Section):
     def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         if not section.sections:
-            if not int(section['enabled']) == 1:
-                return
+            if int(section['enabled']) == 1:
+                return section
         else:
-            for section_name, subsections in section.items():
+            to_return = copy.deepcopy(section)
+            for section_name, subsections in to_return.items():
                 if subsections.sections:
                     for subsection in subsections:
                         if not int(subsections[subsection]['enabled']) == 1:
-                            subsections.pop(subsection)
+                            del subsections[subsection]
                 else:
                     if not int(subsections['enabled']) == 1:
-                        section.pop(section_name)
+                        del to_return[section_name]
 
-                if len(section[section_name]) == 0:
-                    section.pop(section_name)
-        return section
+                if len(to_return[section_name]) == 0:
+                    del to_return[section_name]
+            return to_return
 
     def findsection(section, key):
-        for subsection in section:
-            if key not in section[subsection]:
-                section.pop(subsection)
-        return section
+        to_return = copy.deepcopy(section)
+        for subsection in to_return:
+            if key not in to_return[subsection]:
+                del to_return[subsection]
+        return to_return
 
     def __getitem__(self, key):
         if key in self.keys():
             return dict.__getitem__(self, key)
 
-        for section, subsections in self.items():
+        to_return = copy.deepcopy(self)
+        for section, subsections in to_return.items():
             if section in key:
                 continue
             if isinstance(subsections, Section) and subsections.sections:
@@ -45,15 +49,15 @@ class Section(configobj.Section):
                     if key in options:
                         return options[key]
 
-                    subsections.pop(subsection)
+                    del subsections[subsection]
             else:
                 if section not in key:
-                    self.pop(section)
+                    del to_return[section]
 
             if len(subsections) == 0:
-                self.pop(section)
+                del to_return[section]
 
-        return self
+        return to_return
 
 class ConfigObj(configobj.ConfigObj, Section):
     def __init__(self, *args, **kw):

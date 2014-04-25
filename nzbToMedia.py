@@ -303,7 +303,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         myDB.upsert("downloads", newValueDict, controlValueDict)
 
     # auto-detect section
-    section = nzbtomedia.CFG.findsection(inputCategory)
+    section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
     if len(section) > 1:
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
@@ -485,7 +485,7 @@ def main(args, section=None):
                     except:
                         download_id = None
 
-                    if not clientAgent.lower() in (nzbtomedia.NZB_CLIENTS or 'manual'):
+                    if not clientAgent.lower() in (nzbtomedia.NZB_CLIENTS, 'manual'):
                         continue
 
                     results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,

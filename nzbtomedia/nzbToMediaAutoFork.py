@@ -3,14 +3,8 @@ import nzbtomedia
 import requests
 from nzbtomedia import logger
 
-def autoFork(inputCategory):
+def autoFork(section, inputCategory):
     # auto-detect correct section
-    section = nzbtomedia.CFG.findsection(inputCategory)
-    if not section:
-        logger.error(
-            "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
-        return 1
-
     # config settings
     try:
         host = nzbtomedia.CFG[section][inputCategory]["host"]

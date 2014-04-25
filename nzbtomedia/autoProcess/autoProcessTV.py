@@ -12,7 +12,7 @@ from nzbtomedia.transcoder import transcoder
 class autoProcessTV:
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
         # auto-detect correct fork
-        fork, fork_params = autoFork(inputCategory)
+        fork, fork_params = autoFork(section, inputCategory)
 
         # Check video files for corruption
         status = int(failed)
