@@ -174,10 +174,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if sectionName == 'CouchPotato':
         result = nzbtomedia.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
                                                        inputCategory)
-    elif sectionName == 'SickBeard':
-        result = nzbtomedia.autoProcessTV().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
-                                                           inputCategory)
-    elif sectionName == 'NzbDrone':
+    elif sectionName in ['SickBeard','NzbDrone']:
         result = nzbtomedia.autoProcessTV().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
                                                            inputCategory)
     elif sectionName == 'HeadPhones':

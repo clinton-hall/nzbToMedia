@@ -153,4 +153,5 @@ class autoProcessTV:
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             rmDir(dirName)
+
         return 0 # Success

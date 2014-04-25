@@ -23,8 +23,10 @@ class Section(configobj.Section):
                     if not int(subsections['enabled']) == 1:
                         del to_return[section_name]
 
-                if len(to_return[section_name]) == 0:
-                    del to_return[section_name]
+            # cleanout empty sections and subsections
+            for key in [k for (k, v) in to_return.items() if not v]:
+                del to_return[key]
+
             return to_return
 
     def findsection(section, key):
@@ -32,6 +34,11 @@ class Section(configobj.Section):
         for subsection in to_return:
             if key not in to_return[subsection]:
                 del to_return[subsection]
+
+        # cleanout empty sections and subsections
+        for key in [k for (k, v) in to_return.items() if not v]:
+            del to_return[key]
+
         return to_return
 
     def __getitem__(self, key):
@@ -54,8 +61,9 @@ class Section(configobj.Section):
                 if section not in key:
                     del to_return[section]
 
-            if len(subsections) == 0:
-                del to_return[section]
+        # cleanout empty sections and subsections
+        for key in [k for (k, v) in to_return.items() if not v]:
+            del to_return[key]
 
         return to_return
 
