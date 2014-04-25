@@ -312,7 +312,7 @@ def main(args):
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        for section, subsection in nzbtomedia.SUBSECTIONS.items():
+        for section, subsection in nzbtomedia.SECTIONS.items():
             for category in subsection:
                 for dirName in nzbtomedia.getDirs(subsection[category]):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
@@ -341,7 +341,7 @@ def main(args):
                     except:
                         inputID = None
 
-                    if not clientAgent.lower() in (nzbtomedia.TORRENT_CLIENTS or 'manual'):
+                    if not clientAgent.lower() in (nzbtomedia.TORRENT_CLIENTS,'manual'):
                         continue
 
                     results = processTorrent(dirName, os.path.basename(dirName), category, inputHash, inputID,

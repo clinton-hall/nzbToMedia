@@ -460,7 +460,7 @@ def main(args, section=None):
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        for section, subsection in nzbtomedia.SUBSECTIONS.items():
+        for section, subsection in nzbtomedia.SECTIONS.items():
             for category in subsection:
                 for dirName in getDirs(subsection[category]):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))

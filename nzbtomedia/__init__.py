@@ -1,5 +1,6 @@
 import locale
 import os
+import re
 import subprocess
 import sys
 import platform
@@ -111,7 +112,6 @@ MINSAMPLESIZE = None
 SAMPLEIDS = None
 
 SECTIONS = []
-SUBSECTIONS = {}
 
 TRANSCODE = None
 FFMPEG_PATH = None
@@ -140,8 +140,9 @@ USER_SCRIPT_CLEAN = None
 USER_DELAY = None
 USER_SCRIPT_RUNONCE = None
 
-__INITIALIZED__ = False
+PASSWORDSFILE = None
 
+__INITIALIZED__ = False
 
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
@@ -150,12 +151,13 @@ def initialize(section=None):
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENTAGENT, USELINK, OUTPUTDIRECTORY, NOFLATTEN, \
         UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, TRANSMISSIONHOST, TRANSMISSIONPORT, \
         TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, METACONTAINER, MINSAMPLESIZE, SAMPLEIDS, \
-        SECTIONS, SUBSECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, USER_SCRIPT_RUNONCE, \
+        SECTIONS, USER_SCRIPT_CATEGORIES, __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, USER_SCRIPT_RUNONCE, \
         APP_NAME, USER_SCRIPT_MEDIAEXTENSIONS, USER_SCRIPT, USER_SCRIPT_PARAM, USER_SCRIPT_SUCCESSCODES, USER_SCRIPT_CLEAN, \
         TRANSCODE, GIT_PATH, GIT_USER, GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, OUTPUTVIDEOEXTENSION, OUTPUTVIDEOCODEC, OUTPUTVIDEOPRESET, OUTPUTVIDEOFRAMERATE, LOG_DB, \
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, DELETE_ORIGINAL
+        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, DELETE_ORIGINAL,\
+        PASSWORDSFILE
 
     if __INITIALIZED__:
         return False
@@ -263,7 +265,10 @@ def initialize(section=None):
     DELUGEUSR = CFG["Torrent"]["DelugeUSR"]  # mysecretusr
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
 
-    COMPRESSEDCONTAINER = CFG["Extensions"]["compressedExtensions"]
+    COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
+                  re.compile('.part\d+.rar$', re.I),
+                  re.compile('.rar$', re.I)]
+    COMPRESSEDCONTAINER += [re.compile('%s$' % ext, re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
@@ -286,6 +291,8 @@ def initialize(section=None):
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
     OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
     NICENESS = int(CFG["Transcoder"]["niceness"])
+
+    PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
 
     # Setup FFMPEG and FFPROBE locations
     if platform.system() == 'Windows':
@@ -327,9 +334,9 @@ def initialize(section=None):
         USER_SCRIPT_RUNONCE = int(CFG["UserScript"]["user_script_runOnce"])
 
     # check for script-defied section and if None set to allow sections
-    SECTIONS = tuple(x for x in CFG if CFG[x].sections) if not section else (section,)
-    SUBSECTIONS = CFG[SECTIONS].isenabled()
-    CATEGORIES += SUBSECTIONS.sections
+    SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections) if not section else (section,)]
+    map(CATEGORIES.extend,([subsection.sections for section,subsection in SECTIONS.items()]))
+    CATEGORIES = list(set(CATEGORIES))
 
     # create torrent class
     TORRENT_CLASS = create_torrent_class(TORRENT_CLIENTAGENT)

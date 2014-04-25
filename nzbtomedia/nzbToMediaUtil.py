@@ -459,26 +459,24 @@ def rmDir(dirName):
 
 def cleanProcDirs():
     logger.info('Cleaning processing directories ...', 'CLEANDIRS')
-    for section, subsection in nzbtomedia.SUBSECTIONS.items():
+    for section, subsection in nzbtomedia.SECTIONS.items():
         for category in subsection:
-            if nzbtomedia.CFG[section][category].isenabled():
-                dirNames = getDirs(section, category)
-                for dirName in dirNames:
-                    try:
-                        minSize = int(nzbtomedia.CFG[section][category]['minSize'])
-                    except:minSize = 0
-                    try:
-                        delete_ignored = int(nzbtomedia.CFG[section][category]['delete_ignored'])
-                    except:delete_ignored = 0
-                    num_files = len(listMediaFiles(dirName, minSize=minSize, delete_ignored=delete_ignored))
-                    if num_files > 0:
-                        logger.info(
-                            "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
-                            'CLEANDIRS')
-                        continue
+            for dirName in nzbtomedia.getDirs(subsection[category]):
+                try:
+                    minSize = int(nzbtomedia.CFG[section][category]['minSize'])
+                except:minSize = 0
+                try:
+                    delete_ignored = int(nzbtomedia.CFG[section][category]['delete_ignored'])
+                except:delete_ignored = 0
+                num_files = len(listMediaFiles(dirName, minSize=minSize, delete_ignored=delete_ignored))
+                if num_files > 0:
+                    logger.info(
+                        "Directory %s still contains %s unprocessed file(s), skipping ..." % (dirName, num_files),
+                        'CLEANDIRS')
+                    continue
 
-                    logger.info("Directory %s has already been processed, removing ..." % (dirName), 'CLEANDIRS')
-                    shutil.rmtree(dirName)
+                logger.info("Directory %s has already been processed, removing ..." % (dirName), 'CLEANDIRS')
+                shutil.rmtree(dirName)
 
 def create_torrent_class(clientAgent):
     # Hardlink solution for Torrents
@@ -603,6 +601,14 @@ def cleanFileName(filename):
     filename = re.sub("^\[.*\]", "", filename)
     return filename.strip()
 
+
+def is_archive_file(filename):
+    """Check if the filename is allowed for the Archive"""
+    for regext in nzbtomedia.COMPRESSEDCONTAINER:
+        if regext.search(filename):
+            return regext.split(filename)[0]
+    return False
+
 def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     fileName, fileExt = os.path.splitext(mediafile)
 
@@ -613,7 +619,7 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     if (media and fileExt.lower() in nzbtomedia.MEDIACONTAINER)\
         or (audio and fileExt.lower() in nzbtomedia.AUDIOCONTAINER)\
         or (meta and fileExt.lower() in nzbtomedia.METACONTAINER)\
-        or (archives and fileExt.lower() in nzbtomedia.COMPRESSEDCONTAINER):
+        or (archives and is_archive_file(mediafile)):
         return True
     else:
         return False
@@ -696,33 +702,25 @@ def find_imdbid(dirName, inputName):
 def extractFiles(src, dst=None):
     extracted_folder = []
 
-    for inputFile in listMediaFiles(src):
+    for inputFile in listMediaFiles(src, media=False, audio=False, meta=False, archives=True):
         dirPath = os.path.dirname(inputFile)
-        fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
         fullFileName = os.path.basename(inputFile)
 
-        if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
-            if re.search('part\d+', fullFileName):
-                if not re.search('^((?!\.part(?!0*1\.rar$)\d+\.rar$).)*\.(?:rar|r?0*1)$', fullFileName):
-                    continue
+        if dirPath in extracted_folder:
+            break
 
-            logger.info("Found compressed archive %s for file %s" % (fileExt, fullFileName))
-
-            while(True):
-                try:
-                    extractor.extract(inputFile, dst or dirPath)
-                    extracted_folder.append(dst or dirPath)
-                    break
-                except:
-                    logger.error("Extraction failed for: %s" % (fullFileName))
+        try:
+            if extractor.extract(inputFile, dirPath or dst):
+                extracted_folder.append(dirPath or dst)
+        except Exception, e:
+            logger.error("Extraction failed for: %s" % (fullFileName))
 
     if extracted_folder:
         for folder in extracted_folder:
             for inputFile in listMediaFiles(folder):
                 fullFileName = os.path.basename(inputFile)
-                fileName, fileExt = os.path.splitext(fullFileName)
 
-                if fileExt in nzbtomedia.COMPRESSEDCONTAINER:
+                if is_archive_file(inputFile):
                     logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
                     try:
                         os.remove(inputFile)

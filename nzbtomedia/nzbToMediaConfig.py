@@ -39,9 +39,12 @@ class Section(configobj.Section):
             if section in key:
                 continue
             if isinstance(subsections, Section) and subsections.sections:
-                for subsection in subsections:
+                for subsection, options in subsections.items():
                     if subsection in key:
                         continue
+                    if key in options:
+                        return options[key]
+
                     subsections.pop(subsection)
             else:
                 if section not in key:

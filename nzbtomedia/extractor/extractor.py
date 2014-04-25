@@ -72,9 +72,8 @@ def extract(filePath, outputDestination):
     # Create outputDestination folder
         nzbtomedia.makeDir(outputDestination)
 
-    passwordsfile = nzbtomedia.CFG["passwords"]["PassWordFile"]
-    if passwordsfile != "" and os.path.isfile(os.path.normpath(passwordsfile)):
-        passwords = [line.strip() for line in open(os.path.normpath(passwordsfile))]
+    if nzbtomedia.PASSWORDSFILE != "" and os.path.isfile(os.path.normpath(nzbtomedia.PASSWORDSFILE)):
+        passwords = [line.strip() for line in open(os.path.normpath(nzbtomedia.PASSWORDSFILE))]
     else:
         passwords = []
         nzbtomedia.logger.info("Extracting %s to %s" % (filePath, outputDestination))
