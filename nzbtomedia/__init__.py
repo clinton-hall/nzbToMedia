@@ -30,7 +30,7 @@ from nzbtomedia import logger, versionCheck, nzbToMediaDB
 from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeName, copy_link, parse_args, flatten, getDirs, \
     rmReadOnly,rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, \
-    extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanProcDirs, \
+    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir, \
     create_torrent_class, listMediaFiles
 from nzbtomedia.transcoder import transcoder
 from nzbtomedia.databases import mainDB

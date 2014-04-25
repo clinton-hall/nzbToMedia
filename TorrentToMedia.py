@@ -202,7 +202,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             nzbtomedia.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
-        nzbtomedia.cleanProcDirs()
+        nzbtomedia.cleanDir(inputDirectory, sectionName, inputCategory)
 
     return result
 

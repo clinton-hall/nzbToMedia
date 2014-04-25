@@ -282,7 +282,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanProcDirs, update_downloadInfoStatus, get_downloadInfo
+from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
@@ -351,7 +351,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
             update_downloadInfoStatus(inputName, 1)
 
         # cleanup our processing folders of any misc unwanted files and empty directories
-        cleanProcDirs()
+        cleanDir(inputDirectory, sectionName, inputCategory)
 
     return result
 
