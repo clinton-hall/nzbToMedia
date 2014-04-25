@@ -244,6 +244,7 @@
     #Set the categories to use external script.
     #Use "UNCAT" to process non-category downloads, and "ALL" for all. Set to "NONE" to disable external script.
     [[UNCAT]]
+        #Enable/Disable this subsection category
         enabled = 0
         #What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
         user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg

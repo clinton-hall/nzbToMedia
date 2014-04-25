@@ -31,11 +31,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         myDB = nzbToMediaDB.DBConnection()
 
-        controlValueDict = {"input_directory": inputDirectory}
-        newValueDict = {"input_name": inputName,
-                        "input_hash": inputHash,
-                        "input_id": inputID,
-                        "client_agent": clientAgent,
+        controlValueDict = {"input_directory": unicode(inputDirectory)}
+        newValueDict = {"input_name": unicode(inputName),
+                        "input_hash": unicode(inputHash),
+                        "input_id": unicode(inputID),
+                        "client_agent": unicode(clientAgent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
         }

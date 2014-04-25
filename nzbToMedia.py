@@ -292,11 +292,11 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
         myDB = nzbToMediaDB.DBConnection()
 
-        controlValueDict = {"input_directory": inputDirectory}
-        newValueDict = {"input_name": inputName,
-                        "input_hash": download_id,
-                        "input_id": download_id,
-                        "client_agent": clientAgent,
+        controlValueDict = {"input_directory": unicode(inputDirectory)}
+        newValueDict = {"input_name": unicode(inputName),
+                        "input_hash": unicode(download_id),
+                        "input_id": unicode(download_id),
+                        "client_agent": unicode(clientAgent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
         }
