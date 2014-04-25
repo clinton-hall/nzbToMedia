@@ -10,18 +10,21 @@ class Section(configobj.Section):
     def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         if not section.sections:
-            if int(section['enabled']) == 1:
+            try:
+                value = list(ConfigObj.find_key(section, 'enabled'))[0]
+            except:value = 0
+            if int(value) == 1:
                 return section
         else:
             to_return = copy.deepcopy(section)
             for section_name, subsections in to_return.items():
-                if subsections.sections:
-                    for subsection in subsections:
-                        if not int(subsections[subsection]['enabled']) == 1:
-                            del subsections[subsection]
-                else:
-                    if not int(subsections['enabled']) == 1:
-                        del to_return[section_name]
+                for subsection in subsections:
+                    try:
+                        value = list(ConfigObj.find_key(subsections, 'enabled'))[0]
+                    except:value = 0
+
+                    if int(value) != 1:
+                        del to_return[section_name][subsection]
 
             # cleanout empty sections and subsections
             for key in [k for (k, v) in to_return.items() if not v]:
@@ -32,7 +35,11 @@ class Section(configobj.Section):
     def findsection(section, key):
         to_return = copy.deepcopy(section)
         for subsection in to_return:
-            if key not in to_return[subsection]:
+            try:
+                value = list(ConfigObj.find_key(to_return[subsection], key))[0]
+            except:value = None
+
+            if not value:
                 del to_return[subsection]
 
         # cleanout empty sections and subsections
@@ -73,6 +80,19 @@ class ConfigObj(configobj.ConfigObj, Section):
             args = (nzbtomedia.CONFIG_FILE,)
         super(configobj.ConfigObj, self).__init__(*args, **kw)
         self.interpolation = False
+
+    @staticmethod
+    def find_key(node, kv):
+        if isinstance(node, list):
+            for i in node:
+                for x in ConfigObj.find_key(i, kv):
+                    yield x
+        elif isinstance(node, dict):
+            if kv in node:
+                yield node[kv]
+            for j in node.values():
+                for x in ConfigObj.find_key(j, kv):
+                    yield x
 
     @staticmethod
     def migrate():
@@ -152,19 +172,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         values.pop(option)
 
                 # remove any options that we no longer need so they don't migrate into our new config
-                def find_key(node, kv):
-                    if isinstance(node, list):
-                        for i in node:
-                            for x in find_key(i, kv):
-                                yield x
-                    elif isinstance(node, dict):
-                        if kv in node:
-                            yield node[kv]
-                        for j in node.values():
-                            for x in find_key(j, kv):
-                                yield x
-
-                if not list(find_key(CFG_NEW, option)):
+                if not list(ConfigObj.find_key(CFG_NEW, option)):
                     values.pop(option)
 
             return values

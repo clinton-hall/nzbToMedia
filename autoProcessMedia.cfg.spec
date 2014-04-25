@@ -240,25 +240,26 @@
     mac = 00:01:2e:2D:64:e1
 
 [UserScript]
-    #Use user_script for uncategorized download?
-    #Set the categories to use external script, comma separated.
+    #Use user_script for uncategorized downloads
+    #Set the categories to use external script.
     #Use "UNCAT" to process non-category downloads, and "ALL" for all. Set to "NONE" to disable external script.
-    user_script_categories = NONE
-    #What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
-    user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
-    #Specify the path to your custom script
-    user_script_path = /nzbToMedia/userscripts/script.sh
-    #Specify the argument(s) passed to script, comma separated in order.
-    #for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
-    #So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
-    user_script_param = FN
-    #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
-    user_script_runOnce = 0
-    #Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
-    user_script_successCodes = 0
-    #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
-    user_script_clean = 1
-    delay = 120
+    [[UNCAT]]
+        enabled = 0
+        #What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
+        user_script_mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
+        #Specify the path to your custom script
+        user_script_path = /nzbToMedia/userscripts/script.sh
+        #Specify the argument(s) passed to script, comma separated in order.
+        #for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
+        #So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
+        user_script_param = FN
+        #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
+        user_script_runOnce = 0
+        #Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
+        user_script_successCodes = 0
+        #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
+        user_script_clean = 1
+        delay = 120
 
 [ASCII]
     #Set convert =1 if you want to convert any "foreign" characters to ASCII before passing to SB/CP etc. Default is disabled (0).

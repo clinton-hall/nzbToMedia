@@ -436,13 +436,17 @@ def getDirs(section, subsection):
                             os.path.isdir(os.path.join(path, o))])
         return folders
 
-    watch_dir = nzbtomedia.CFG[section][subsection]["watch_dir"]
-    if os.path.exists(watch_dir):
-        to_return.extend(processDir(watch_dir))
+    try:
+        watch_dir = nzbtomedia.CFG[section][subsection]["watch_dir"]
+        if os.path.exists(watch_dir):
+            to_return.extend(processDir(watch_dir))
+    except:pass
 
-    outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
-    if os.path.exists(outputDirectory):
-        to_return.extend(processDir(outputDirectory))
+    try:
+        outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
+        if os.path.exists(outputDirectory):
+            to_return.extend(processDir(outputDirectory))
+    except:pass
 
     if not to_return:
         logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))

@@ -8,6 +8,6 @@ from nzbtomedia.nzbToMediaUtil import get_downloadInfo
 # Initialize the config
 nzbtomedia.initialize()
 
-test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv']
+test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
 section = nzbtomedia.CFG.findsection('tv').isenabled()
 print section
