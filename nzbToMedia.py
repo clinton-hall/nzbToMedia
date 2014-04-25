@@ -460,10 +460,10 @@ def main(args, section=None):
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        for section, subsection in nzbtomedia.SECTIONS.items():
-            for category in subsection:
-                for dirName in getDirs(subsection[category]):
-                    logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
+        for section, subsections in nzbtomedia.SECTIONS.items():
+            for subsection in subsections:
+                for dirName in getDirs(section, subsection):
+                    logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 
                     logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
                     downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
@@ -489,10 +489,10 @@ def main(args, section=None):
                         continue
 
                     results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,
-                                      download_id=download_id, inputCategory=category)
+                                      download_id=download_id, inputCategory=subsection)
                     if results != 0:
                         logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (
-                        section, category))
+                        section, subsection))
                         result = results
 
     if result == 0:

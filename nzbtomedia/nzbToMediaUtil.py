@@ -383,8 +383,7 @@ def parse_args(clientAgent, args):
         return None, None, None, None, None
 
 
-def getDirs(subsection):
-    subsectionName = subsection.keys()[0]
+def getDirs(section, subsection):
     to_return = []
 
     def processDir(path):
@@ -437,16 +436,16 @@ def getDirs(subsection):
                             os.path.isdir(os.path.join(path, o))])
         return folders
 
-    watch_dir = subsection["watch_dir"]
+    watch_dir = nzbtomedia.CFG[section][subsection]["watch_dir"]
     if os.path.exists(watch_dir):
         to_return.extend(processDir(watch_dir))
 
-    outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsectionName)
+    outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
     if os.path.exists(outputDirectory):
         to_return.extend(processDir(outputDirectory))
 
     if not to_return:
-        logger.debug("No directories identified in %s for post-processing" % (subsectionName))
+        logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))
 
     return list(set(to_return))
 
