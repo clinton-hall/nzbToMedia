@@ -329,18 +329,18 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, inputCategory, inputName))
 
-    if nzbtomedia.CFG["CouchPotato"][inputCategory]:
+    if sectionName == "CouchPotato":
         result = autoProcessMovie().process(sectionName, inputDirectory, inputName, status, clientAgent, download_id,
                                             inputCategory)
-    elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
+    elif sectionName in ["SickBeard", "NzbDrone"]:
         result = autoProcessTV().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
                                                 inputCategory)
-    elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
+    elif sectionName == "HeadPhones":
         result = autoProcessMusic().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
-    elif nzbtomedia.CFG["Mylar"][inputCategory]:
+    elif sectionName == "Mylar":
         result = autoProcessComics().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
                                                     inputCategory)
-    elif nzbtomedia.CFG["Gamez"][inputCategory]:
+    elif sectionName == "Gamez":
         result = autoProcessGames().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
     else:
         result = -1
