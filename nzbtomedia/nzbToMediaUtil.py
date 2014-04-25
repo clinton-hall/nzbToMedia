@@ -458,14 +458,14 @@ def rmDir(dirName):
 
 def cleanProcDirs():
     logger.info('Cleaning processing directories ...', 'CLEANDIRS')
-    for section, subsection in nzbtomedia.SECTIONS.items():
-        for category in subsection:
-            for dirName in nzbtomedia.getDirs(subsection[category]):
+    for section, subsections in nzbtomedia.SECTIONS.items():
+        for subsection in subsections:
+            for dirName in nzbtomedia.getDirs(section,subsection):
                 try:
-                    minSize = int(nzbtomedia.CFG[section][category]['minSize'])
+                    minSize = int(nzbtomedia.CFG[section][subsection]['minSize'])
                 except:minSize = 0
                 try:
-                    delete_ignored = int(nzbtomedia.CFG[section][category]['delete_ignored'])
+                    delete_ignored = int(nzbtomedia.CFG[section][subsection]['delete_ignored'])
                 except:delete_ignored = 0
                 num_files = len(listMediaFiles(dirName, minSize=minSize, delete_ignored=delete_ignored))
                 if num_files > 0:
