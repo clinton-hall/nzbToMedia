@@ -10,14 +10,7 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
-    def processEpisode(self, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
-        # auto-detect correct section
-        section = nzbtomedia.CFG.findsection(inputCategory)
-        if not section:
-            logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
-            return 1
-
+    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
         # auto-detect correct fork
         fork, fork_params = autoFork(inputCategory)
 

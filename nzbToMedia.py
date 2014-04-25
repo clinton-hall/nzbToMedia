@@ -304,30 +304,45 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory)
+    if len(section) > 1:
+        logger.error(
+            'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
+            inputCategory, section.keys()))
+        return -1
+
     if section:
-        try:extract = int(nzbtomedia.CFG[section][inputCategory]['extract'])
-        except:extract = 0
-
-        if extract == 1:
-            logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
-            extractFiles(inputDirectory)
-
-        logger.info("Sending %s to %s for post-processing ..." % (inputName, str(section).upper()))
-
-        if nzbtomedia.CFG["CouchPotato"][inputCategory]:
-            result = autoProcessMovie().process(inputDirectory, inputName, status, clientAgent, download_id, inputCategory)
-        elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
-            result = autoProcessTV().processEpisode(inputDirectory, inputName, status, clientAgent, inputCategory)
-        elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
-            result = autoProcessMusic().process(inputDirectory, inputName, status, clientAgent, inputCategory)
-        elif nzbtomedia.CFG["Mylar"][inputCategory]:
-            result = autoProcessComics().processEpisode(inputDirectory, inputName, status, clientAgent, inputCategory)
-        elif nzbtomedia.CFG["Gamez"][inputCategory]:
-            result = autoProcessGames().process(inputDirectory, inputName, status, clientAgent, inputCategory)
-        else:
-            result = -1
+        sectionName = section.keys()[0]
+        logger.info('Auto-detected SECTION:%s' % (sectionName))
     else:
-        logger.error("We could not find a section with containing a download category labeled %s in your autoProcessMedia.cfg, Exiting!" % inputCategory)
+        logger.error("Unable to locate a section with subsection:%s enabled in your autoProcessMedia.cfg, exiting!" % (
+            inputCategory))
+        return -1
+
+    try:
+        extract = int(section[inputCategory]['extract'])
+    except:
+        extract = 0
+
+    if extract == 1:
+        logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
+        extractFiles(inputDirectory)
+
+    logger.info("Calling %s:%s to post-process:%s" % (sectionName, inputCategory, inputName))
+
+    if nzbtomedia.CFG["CouchPotato"][inputCategory]:
+        result = autoProcessMovie().process(sectionName, inputDirectory, inputName, status, clientAgent, download_id,
+                                            inputCategory)
+    elif nzbtomedia.CFG["SickBeard", "NzbDrone"][inputCategory]:
+        result = autoProcessTV().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
+                                                inputCategory)
+    elif nzbtomedia.CFG["HeadPhones"][inputCategory]:
+        result = autoProcessMusic().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
+    elif nzbtomedia.CFG["Mylar"][inputCategory]:
+        result = autoProcessComics().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
+                                                    inputCategory)
+    elif nzbtomedia.CFG["Gamez"][inputCategory]:
+        result = autoProcessGames().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
+    else:
         result = -1
 
     if result == 0:
@@ -339,6 +354,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         cleanProcDirs()
 
     return result
+
 
 def main(args, section=None):
     # Initialize the config
@@ -386,17 +402,20 @@ def main(args, section=None):
             # Unpack was skipped due to nzb-file properties or due to errors during par-check
 
             if os.environ['NZBPP_HEALTH'] < 1000:
-                logger.warning("Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
+                logger.warning(
+                    "Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
                 logger.info("Please check your Par-check/repair settings for future downloads.")
                 status = 1
 
             else:
-                logger.info("Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
+                logger.info(
+                    "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
                 logger.info("Please check your Par-check/repair settings for future downloads.")
 
         # Check if destination directory exists (important for reprocessing of history items)
         if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-            logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status failed" % (os.environ['NZBPP_DIRECTORY']))
+            logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status failed" % (
+            os.environ['NZBPP_DIRECTORY']))
             status = 1
 
         # Check for download_id to pass to CouchPotato
@@ -406,7 +425,8 @@ def main(args, section=None):
 
         # All checks done, now launching the script.
         clientAgent = 'nzbget'
-        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status, clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
+        result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBFILENAME'], status=status,
+                         clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
     # SABnzbd Pre 0.7.17
     elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -419,7 +439,8 @@ def main(args, section=None):
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         clientAgent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd")
-        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent, download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
+                         download_id='')
     # SABnzbd 0.7.17+
     elif len(args) >= nzbtomedia.SABNZB_0717_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -433,51 +454,58 @@ def main(args, section=None):
         # 8 Failure URL
         clientAgent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd 0.7.17+")
-        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent, download_id='')
+        result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
+                         download_id='')
     else:
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
         for section, subsection in nzbtomedia.SUBSECTIONS.items():
             for category in subsection:
-                if nzbtomedia.CFG[section][category].isenabled():
-                    dirNames = getDirs(section, category)
-                    for dirName in dirNames:
+                for dirName in getDirs(subsection[category]):
+                    logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
+
+                    logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
+                    downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
+                    if downloadInfo:
+                        logger.info(
+                            "Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
+                    else:
+                        logger.info(
+                            'Unable to locate download info for %s, continuing to try and process this release ...' % (
+                                os.path.basename(dirName))
+                        )
+
+                    try:
+                        clientAgent = str(downloadInfo[0]['client_agent'])
+                    except:
                         clientAgent = 'manual'
+                    try:
+                        download_id = str(downloadInfo[0]['input_id'])
+                    except:
                         download_id = None
 
-                        logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                        downloadInfo = get_downloadInfo(os.path.basename(dirName), 0)
-                        if downloadInfo:
-                            clientAgent = str(downloadInfo[0]['client_agent'])
-                            if not clientAgent.lower() in nzbtomedia.NZB_CLIENTS:
-                                continue
+                    if not clientAgent.lower() in (nzbtomedia.NZB_CLIENTS or 'manual'):
+                        continue
 
-                            download_id = str(downloadInfo[0]['input_id'])
-                            logger.info("Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
-
-                        logger.info("Starting manual run for %s:%s - Folder:%s" % (section, category, dirName))
-                        results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent, download_id=download_id, inputCategory=category)
-                        if results != 0:
-                            logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (section, category))
-                            result = results
-
-                    if len(dirNames) == 0:
-                        logger.info('[%s] - No directories found to post-process ...' % (str(category).upper()),
-                                    section)
-                else:
-                    logger.debug("nzbToMedia %s:%s is DISABLED" % (section, category))
+                    results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,
+                                      download_id=download_id, inputCategory=category)
+                    if results != 0:
+                        logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (
+                        section, category))
+                        result = results
 
     if result == 0:
         logger.info("The %s script completed successfully." % args[0])
-        if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            return(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
+        if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+            return (nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
         logger.error("A problem was reported in the %s script." % args[0])
-        if os.environ.has_key('NZBOP_SCRIPTDIR'): # return code for nzbget v11
-            return(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+        if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+            return (nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
-    return(result)
+    return (result)
+
 
 if __name__ == '__main__':
     exit(main(sys.argv))

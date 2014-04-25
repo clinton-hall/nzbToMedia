@@ -5,61 +5,52 @@ from configobj import *
 
 from itertools import chain
 
-class Sections(dict):
-    def isenabled(sections):
-        # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
-        to_return = False
-        for section, subsection in sections.items():
-            for item in subsection:
-                if int(subsection[item]['enabled']) == 1:
-                        to_return = True
-        return to_return
-
-    @property
-    def sections(sections):
-        # returns [subsections]
-        to_return = []
-        for section, subsection in sections.items():
-            to_return.append(subsection)
-        return list(set(chain.from_iterable(to_return)))
-
-    def __getitem__(self, key):
-        # check for key in sections
-        if key in self:
-            return dict.__getitem__(self, key)
-
-        # check for key in subsections
-        to_return = Sections()
-        for section, subsection in self.items():
-            if key in subsection:
-                to_return.update({section:{key:dict.__getitem__(subsection, key)}})
-        return to_return
-
 class Section(configobj.Section):
     def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
-        if section:
-            if int(section['enabled']) == 1:
-                    return True
-        return False
+        if not section.sections:
+            if not int(section['enabled']) == 1:
+                return
+        else:
+            for section_name, subsections in section.items():
+                if subsections.sections:
+                    for subsection in subsections:
+                        if not int(subsections[subsection]['enabled']) == 1:
+                            subsections.pop(subsection)
+                else:
+                    if not int(subsections['enabled']) == 1:
+                        section.pop(section_name)
+
+                if len(section[section_name]) == 0:
+                    section.pop(section_name)
+        return section
 
     def findsection(section, key):
         for subsection in section:
-            if key in section[subsection]:
-                return subsection
+            if key not in section[subsection]:
+                section.pop(subsection)
+        return section
 
     def __getitem__(self, key):
-        # check for key in section
         if key in self.keys():
             return dict.__getitem__(self, key)
 
-        # check for key in subsection
-        result = Sections()
-        for section in key:
-            if section in self:
-                subsection = dict.__getitem__(self, section)
-                result.update({section: subsection})
-        return result
+        for section, subsections in self.items():
+            if section in key:
+                continue
+            if isinstance(subsections, Section) and subsections.sections:
+                for subsection in subsections:
+                    if subsection in key:
+                        continue
+                    subsections.pop(subsection)
+            else:
+                if section not in key:
+                    self.pop(section)
+
+            if len(subsections) == 0:
+                self.pop(section)
+
+        return self
 
 class ConfigObj(configobj.ConfigObj, Section):
     def __init__(self, *args, **kw):

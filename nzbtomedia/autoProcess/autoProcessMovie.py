@@ -87,14 +87,7 @@ class autoProcessMovie:
 
         return results
 
-    def process(self, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
-        # auto-detect correct section
-        section = nzbtomedia.CFG.findsection(inputCategory)
-        if not section:
-            logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
-            return 1
-
+    def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
         # Check video files for corruption
         status = int(status)
         for video in listMediaFiles(dirName):

@@ -327,17 +327,15 @@ def initialize(section=None):
         USER_SCRIPT_RUNONCE = int(CFG["UserScript"]["user_script_runOnce"])
 
     # check for script-defied section and if None set to allow sections
-    SECTIONS = ("CouchPotato", "SickBeard", "NzbDrone", "HeadPhones", "Mylar", "Gamez")
-    if section: SECTIONS = (section,)
-
-    SUBSECTIONS = CFG[SECTIONS]
+    SECTIONS = tuple(x for x in CFG if CFG[x].sections) if not section else (section,)
+    SUBSECTIONS = CFG[SECTIONS].isenabled()
     CATEGORIES += SUBSECTIONS.sections
 
     # create torrent class
     TORRENT_CLASS = create_torrent_class(TORRENT_CLIENTAGENT)
 
+    # finished initalizing
     return True
-
 
 def restart():
     install_type = versionCheck.CheckVersion().install_type

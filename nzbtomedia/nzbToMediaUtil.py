@@ -197,24 +197,25 @@ def flatten(outputDestination):
 
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
-def removeEmptyFolders(path):
-    logger.info("Removing empty folders in: %s" % (path), 'REMOVER')
-    if not os.path.isdir(path):
-        return
+def removeEmptyFolders(path, removeRoot=True):
+  'Function to remove empty folders'
+  if not os.path.isdir(path):
+    return
 
-    # Remove empty subfolders
-    files = os.listdir(path)
-    if len(files):
-        for f in files:
-            fullpath = os.path.join(path, f)
-            if os.path.isdir(fullpath):
-                removeEmptyFolders(fullpath)
+  # remove empty subfolders
+  logger.debug("Checking for empty folders in:%s" % (path))
+  files = os.listdir(path)
+  if len(files):
+    for f in files:
+      fullpath = os.path.join(path, f)
+      if os.path.isdir(fullpath):
+        removeEmptyFolders(fullpath)
 
-    # If folder empty, delete it
-    files = os.listdir(path)
-    if len(files) == 0:
-        logger.debug("Removing empty folder: %s" % (path), 'REMOVER')
-        os.rmdir(path)
+  # if folder empty, delete it
+  files = os.listdir(path)
+  if len(files) == 0 and removeRoot:
+    logger.debug("Removing empty folder:%s" % (path))
+    os.rmdir(path)
 
 def rmReadOnly(filename):
     if os.path.isfile(filename):
@@ -382,14 +383,9 @@ def parse_args(clientAgent, args):
         return None, None, None, None, None
 
 
-def getDirs(section, subsections=None):
+def getDirs(subsection):
+    subsectionName = subsection.keys()[0]
     to_return = []
-
-    if subsections is None:
-        subsections = nzbtomedia.SUBSECTIONS[section].sections
-
-    if not isinstance(subsections, list):
-        subsections = [subsections]
 
     def processDir(path):
         folders = []
@@ -434,21 +430,23 @@ def getDirs(section, subsections=None):
                 # move file to its new path
                 shutil.move(mediafile, newPath)
 
-        folders.extend([os.path.join(path, o) for o in os.listdir(path) if
-                        os.path.isdir(os.path.join(path, o))])
+        removeEmptyFolders(path, removeRoot=False)
+
+        if os.listdir(path):
+            folders.extend([os.path.join(path, o) for o in os.listdir(path) if
+                            os.path.isdir(os.path.join(path, o))])
         return folders
 
-    for subsection in subsections:
-        watch_dir = os.path.abspath(nzbtomedia.CFG[section][subsection]["watch_dir"])
-        if os.path.exists(watch_dir):
-            to_return.extend(processDir(watch_dir))
+    watch_dir = subsection["watch_dir"]
+    if os.path.exists(watch_dir):
+        to_return.extend(processDir(watch_dir))
 
-        outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
-        if os.path.exists(outputDirectory):
-            to_return.extend(processDir(outputDirectory))
+    outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsectionName)
+    if os.path.exists(outputDirectory):
+        to_return.extend(processDir(outputDirectory))
 
-        if not to_return:
-            logger.debug("No directories identified in %s for post-processing" % (subsection), section)
+    if not to_return:
+        logger.debug("No directories identified in %s for post-processing" % (subsectionName))
 
     return list(set(to_return))
 

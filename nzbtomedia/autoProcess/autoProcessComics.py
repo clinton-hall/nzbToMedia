@@ -6,14 +6,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessComics:
-    def processEpisode(self, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
-        # auto-detect correct section
-        section = nzbtomedia.CFG.findsection(inputCategory)
-        if not section:
-            logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
-            return 1
-
+    def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         username = nzbtomedia.CFG[section][inputCategory]["username"]

@@ -4,18 +4,7 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
 class autoProcessGames:
-    def process(self, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
-        if dirName is None:
-            logger.error("No directory was given!")
-            return 1  # failure
-
-        # auto-detect correct section
-        section = nzbtomedia.CFG.findsection(inputCategory)
-        if not section:
-            logger.error(
-                "We were unable to find a section for category %s, please check your autoProcessMedia.cfg file." % inputCategory)
-            return 1
-
+    def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         status = int(status)
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
