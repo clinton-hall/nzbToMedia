@@ -457,7 +457,10 @@ def rmDir(dirName):
         logger.error("Unable to delete folder %s" % (dirName))
 
 def cleanDir(path, section, subsection):
-    logger.info('Cleaning directory:%s ...' % (path), 'CLEANDIRS')
+    if not os.path.exists(path):
+        logger.info('Directory %s has been processed and removed ...' % (path), 'CLEANDIR')
+        return
+
     try:
         minSize = int(nzbtomedia.CFG[section][subsection]['minSize'])
     except:minSize = 0
@@ -471,7 +474,7 @@ def cleanDir(path, section, subsection):
             "Directory %s still contains %s unprocessed file(s), skipping ..." % (path, num_files),
             'CLEANDIRS')
 
-    logger.info("Directory %s has already been processed, removing ..." % (path), 'CLEANDIRS')
+    logger.info("Directory %s has been processed, removing ..." % (path), 'CLEANDIRS')
     shutil.rmtree(path)
 
 def create_torrent_class(clientAgent):
