@@ -9,24 +9,12 @@ import nzbtomedia
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
 
-DOWNLOADINFO = None
-USER_SCRIPT_MEDIAEXTENSIONS = None
-USER_SCRIPT = None
-USER_SCRIPT_PARAM = None
-USER_SCRIPT_SUCCESSCODES = None
-USER_SCRIPT_CLEAN = None
-USER_DELAY = None
-USER_SCRIPT_RUNONCE = None
-
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
-    global USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO
-
     status = 1  # 1 = failed | 0 = success
     root = 0
     foundFile = 0
 
-    if clientAgent != 'manual' and not DOWNLOADINFO:
+    if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory %s to database' % (inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
@@ -183,7 +171,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     result = 0
     if (inputCategory in nzbtomedia.USER_SCRIPT_CATEGORIES and not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES) or (
                     "ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES and not inputCategory in processCategories):
-        logger.info("Processing user script %s." % (USER_SCRIPT))
+        logger.info("Processing user script %s." % (nzbtomedia.USER_SCRIPT))
         result = external_script(outputDestination, inputName, inputCategory)
     elif status != 0:
         logger.error("Something failed! Please check logs. Exiting")
@@ -233,12 +221,12 @@ def external_script(outputDestination, torrentName, torrentLabel):
             filePath = nzbtomedia.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
-            if fileExtension in USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in USER_SCRIPT_MEDIAEXTENSIONS:
+            if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files = num_files + 1
-                if USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
+                if nzbtomedia.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
-                command = [USER_SCRIPT]
-                for param in USER_SCRIPT_PARAM:
+                command = [nzbtomedia.USER_SCRIPT]
+                for param in nzbtomedia.USER_SCRIPT_PARAM:
                     if param == "FN":
                         command.append(file)
                         continue
@@ -252,7 +240,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
                         command.append(torrentLabel)
                         continue
                     elif param == "DN":
-                        if USER_SCRIPT_RUNONCE == 1:
+                        if nzbtomedia.USER_SCRIPT_RUNONCE == 1:
                             command.append(outputDestination)
                         else:
                             command.append(dirpath)
@@ -267,7 +255,7 @@ def external_script(outputDestination, torrentName, torrentLabel):
                 try:
                     p = Popen(command)
                     res = p.wait()
-                    if str(res) in USER_SCRIPT_SUCCESSCODES:  # Linux returns 0 for successful.
+                    if str(res) in nzbtomedia.USER_SCRIPT_SUCCESSCODES:  # Linux returns 0 for successful.
                         logger.info("UserScript %s was successfull" % (command[0]))
                         result = 0
                     else:
@@ -281,20 +269,20 @@ def external_script(outputDestination, torrentName, torrentLabel):
                     result = int(1)
                 final_result = final_result + result
 
-    time.sleep(USER_DELAY)
+    time.sleep(nzbtomedia.USER_DELAY)
     num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
             filePath = nzbtomedia.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
-            if fileExtension in USER_SCRIPT_MEDIAEXTENSIONS or USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
+            if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
                 num_files_new = num_files_new + 1
 
-    if USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
+    if nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
         logger.info("All files have been processed. Cleaning outputDirectory %s" % (outputDestination))
         shutil.rmtree(outputDestination)
-    elif USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
+    elif nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned." % (
             num_files, num_files_new))
     return final_result
@@ -335,8 +323,8 @@ def main(args):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 
                     logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                    DOWNLOADINFO = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
-                    if DOWNLOADINFO:
+                    nzbtomedia.DOWNLOADINFO = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
+                    if nzbtomedia.DOWNLOADINFO:
                         logger.info(
                             "Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
                     else:
@@ -346,15 +334,15 @@ def main(args):
                         )
 
                     try:
-                        clientAgent = str(DOWNLOADINFO[0]['client_agent'])
+                        clientAgent = str(nzbtomedia.DOWNLOADINFO[0]['client_agent'])
                     except:
                         clientAgent = 'manual'
                     try:
-                        inputHash = str(DOWNLOADINFO[0]['input_hash'])
+                        inputHash = str(nzbtomedia.DOWNLOADINFO[0]['input_hash'])
                     except:
                         inputHash = None
                     try:
-                        inputID = str(DOWNLOADINFO[0]['input_id'])
+                        inputID = str(nzbtomedia.DOWNLOADINFO[0]['input_id'])
                     except:
                         inputID = None
 
