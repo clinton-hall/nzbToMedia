@@ -139,45 +139,47 @@ def is_sample(inputName):
         return True
 
 def copy_link(src, targetLink, useLink):
-    if os.path.exists(targetLink):
-        logger.info("%s already exists. skipping ..." % (os.path.basename(targetLink)), 'COPYLINK')
+    logger.info("MEDIAFILE: [%s]" % (os.path.basename(targetLink)), 'COPYLINK')
+    logger.info("SOURCE FOLDER: [%s]" % (os.path.dirname(src)), 'COPYLINK')
+    logger.info("TARGET FOLDER: [%s]" % (os.path.dirname(targetLink)), 'COPYLINK')
+
+    if src != targetLink and os.path.exists(targetLink):
+        logger.info("MEDIAFILE already exists in the TARGET folder, skipping ...", 'COPYLINK')
+        return True
+    elif src == targetLink:
+        logger.info("SOURCE AND TARGET folders are the same, skipping ...", 'COPYLINK')
         return True
 
     makeDir(os.path.dirname(targetLink))
-
     try:
         if useLink == 'dir':
-            logger.info("Directory linking %s to %s" % (src, targetLink), 'COPYLINK')
+            logger.info("Directory linking SOURCE FOLDER -> TARGET FOLDER", 'COPYLINK')
             linktastic.dirlink(src, targetLink)
             return True
         if useLink == 'junction':
-            logger.info("Directory junction linking %s to %s" % (src, targetLink), 'COPYLINK')
+            logger.info("Directory junction linking SOURCE FOLDER -> TARGET FOLDER", 'COPYLINK')
             linktastic.dirlink(src, targetLink)
             return True
         elif useLink == "hard":
-            logger.info("Hard linking %s to %s" % (src, targetLink), 'COPYLINK')
+            logger.info("Hard linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
             linktastic.link(src, targetLink)
             return True
         elif useLink == "sym":
-            logger.info("Moving %s to %s before sym linking" % (src, targetLink), 'COPYLINK')
+            logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
             shutil.move(src, targetLink)
-            logger.info("Sym linking %s to %s" % (targetLink, src), 'COPYLINK')
             linktastic.symlink(targetLink, src)
             return True
         elif useLink == "move":
-            logger.debug("Moving %s to %s" % (src, targetLink))
+            logger.info("Moving SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
             shutil.move(src, targetLink)
             return True
     except Exception, e:
         logger.warning("Error: %s, copying instead ... " % (e), 'COPYLINK')
-        logger.debug("Copying %s to %s" % (src, targetLink), 'COPYLINK')
-        shutil.copy(src, targetLink)
 
-    logger.debug("Copying %s to %s" % (src, targetLink))
+    logger.info("Copying SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
     shutil.copy(src, targetLink)
 
     return True
-
 
 def flatten(outputDestination):
     logger.info("FLATTEN: Flattening directory: %s" % (outputDestination))
@@ -388,6 +390,9 @@ def getDirs(section, subsection):
 
     def processDir(path):
         folders = []
+
+        logger.info("Searching %s for mediafiles to post-process ..." % (path))
+
         # search for single files and move them into there own folder for post-processing
         for mediafile in listMediaFiles(path):
             parentDir = os.path.dirname(mediafile)
@@ -437,7 +442,7 @@ def getDirs(section, subsection):
         return folders
 
     try:
-        watch_dir = nzbtomedia.CFG[section][subsection]["watch_dir"]
+        watch_dir = os.path.join(nzbtomedia.CFG[section][subsection]["watch_dir"], subsection)
         if os.path.exists(watch_dir):
             to_return.extend(processDir(watch_dir))
     except:pass

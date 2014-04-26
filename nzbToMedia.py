@@ -485,7 +485,7 @@ def main(args, section=None):
                     except:
                         download_id = None
 
-                    if clientAgent.lower() not in (nzbtomedia.NZB_CLIENTS or ['manual']):
+                    if clientAgent.lower() not in nzbtomedia.NZB_CLIENTS and clientAgent != 'manual':
                         continue
 
                     results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,

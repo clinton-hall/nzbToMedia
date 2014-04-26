@@ -286,7 +286,6 @@ def external_script(outputDestination, torrentName, torrentLabel):
                     result = int(1)
                 final_result = final_result + result
 
-    time.sleep(nzbtomedia.USER_DELAY)
     num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
@@ -363,7 +362,7 @@ def main(args):
                     except:
                         inputID = None
 
-                    if clientAgent.lower() not in (nzbtomedia.TORRENT_CLIENTS or ['manual']):
+                    if clientAgent.lower() not in nzbtomedia.TORRENT_CLIENTS and clientAgent != 'manual':
                         continue
 
                     results = processTorrent(dirName, os.path.basename(dirName), subsection, inputHash, inputID,
