@@ -64,10 +64,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         extract = 0
 
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:
-        nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = (nzbtomedia.CFG[section][inputCategory]["user_script_mediaExtensions"])
+        nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = nzbtomedia.CFG[section][inputCategory]["user_script_mediaExtensions"]
         nzbtomedia.USER_SCRIPT = nzbtomedia.CFG[section][inputCategory]["user_script_path"]
-        nzbtomedia.USER_SCRIPT_PARAM = (nzbtomedia.CFG[section][inputCategory]["user_script_param"])
-        nzbtomedia.USER_SCRIPT_SUCCESSCODES = (nzbtomedia.CFG[section][inputCategory]["user_script_successCodes"])
+        nzbtomedia.USER_SCRIPT_PARAM = nzbtomedia.CFG[section][inputCategory]["user_script_param"]
+        nzbtomedia.USER_SCRIPT_SUCCESSCODES = nzbtomedia.CFG[section][inputCategory]["user_script_successCodes"]
         nzbtomedia.USER_SCRIPT_CLEAN = int(nzbtomedia.CFG[section][inputCategory]["user_script_clean"])
         nzbtomedia.USER_DELAY = int(nzbtomedia.CFG[section][inputCategory]["delay"])
         nzbtomedia.USER_SCRIPT_RUNONCE = int(nzbtomedia.CFG[section][inputCategory]["user_script_runOnce"])
