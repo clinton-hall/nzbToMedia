@@ -64,13 +64,13 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         extract = 0
 
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:
-        USER_SCRIPT_MEDIAEXTENSIONS = (section[inputCategory]["user_script_mediaExtensions"])
-        USER_SCRIPT = section[inputCategory]["user_script_path"]
-        USER_SCRIPT_PARAM = (section[inputCategory]["user_script_param"])
-        USER_SCRIPT_SUCCESSCODES = (section[inputCategory]["user_script_successCodes"])
-        USER_SCRIPT_CLEAN = int(section[inputCategory]["user_script_clean"])
-        USER_DELAY = int(section[inputCategory]["delay"])
-        USER_SCRIPT_RUNONCE = int(section[inputCategory]["user_script_runOnce"])
+        nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = (nzbtomedia.CFG[section][inputCategory]["user_script_mediaExtensions"])
+        nzbtomedia.USER_SCRIPT = nzbtomedia.CFG[section][inputCategory]["user_script_path"]
+        nzbtomedia.USER_SCRIPT_PARAM = (nzbtomedia.CFG[section][inputCategory]["user_script_param"])
+        nzbtomedia.USER_SCRIPT_SUCCESSCODES = (nzbtomedia.CFG[section][inputCategory]["user_script_successCodes"])
+        nzbtomedia.USER_SCRIPT_CLEAN = int(nzbtomedia.CFG[section][inputCategory]["user_script_clean"])
+        nzbtomedia.USER_DELAY = int(nzbtomedia.CFG[section][inputCategory]["delay"])
+        nzbtomedia.USER_SCRIPT_RUNONCE = int(nzbtomedia.CFG[section][inputCategory]["user_script_runOnce"])
 
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
