@@ -285,9 +285,12 @@ from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo
 from nzbtomedia import logger, nzbToMediaDB
 
+DOWNLOADINFO = None
 # post-processing
 def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
-    if clientAgent != 'manual':
+    global DOWNLOADINFO
+
+    if clientAgent != 'manual' and not DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
@@ -477,15 +480,15 @@ def main(args, section=None):
                         )
 
                     try:
-                        clientAgent = str(downloadInfo[0]['client_agent'])
+                        clientAgent = str(DOWNLOADINFO[0]['client_agent'])
                     except:
                         clientAgent = 'manual'
                     try:
-                        download_id = str(downloadInfo[0]['input_id'])
+                        download_id = str(DOWNLOADINFO[0]['input_id'])
                     except:
                         download_id = None
 
-                    if not clientAgent.lower() in (nzbtomedia.NZB_CLIENTS, 'manual'):
+                    if clientAgent.lower() not in (nzbtomedia.NZB_CLIENTS or ['manual']):
                         continue
 
                     results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,

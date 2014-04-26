@@ -9,6 +9,7 @@ import nzbtomedia
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
 
+DOWNLOADINFO = None
 USER_SCRIPT_MEDIAEXTENSIONS = None
 USER_SCRIPT = None
 USER_SCRIPT_PARAM = None
@@ -17,16 +18,15 @@ USER_SCRIPT_CLEAN = None
 USER_DELAY = None
 USER_SCRIPT_RUNONCE = None
 
-
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
+    global USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
+        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO
+
     status = 1  # 1 = failed | 0 = success
     root = 0
     foundFile = 0
 
-    global USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES
-
-    if clientAgent != 'manual':
+    if clientAgent != 'manual' and not DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory %s to database' % (inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
@@ -335,8 +335,8 @@ def main(args):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 
                     logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                    downloadInfo = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
-                    if downloadInfo:
+                    DOWNLOADINFO = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
+                    if DOWNLOADINFO:
                         logger.info(
                             "Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
                     else:
@@ -346,19 +346,19 @@ def main(args):
                         )
 
                     try:
-                        clientAgent = str(downloadInfo[0]['client_agent'])
+                        clientAgent = str(DOWNLOADINFO[0]['client_agent'])
                     except:
                         clientAgent = 'manual'
                     try:
-                        inputHash = str(downloadInfo[0]['input_hash'])
+                        inputHash = str(DOWNLOADINFO[0]['input_hash'])
                     except:
                         inputHash = None
                     try:
-                        inputID = str(downloadInfo[0]['input_id'])
+                        inputID = str(DOWNLOADINFO[0]['input_id'])
                     except:
                         inputID = None
 
-                    if not clientAgent.lower() in (nzbtomedia.TORRENT_CLIENTS,'manual'):
+                    if clientAgent.lower() not in (nzbtomedia.TORRENT_CLIENTS or ['manual']):
                         continue
 
                     results = processTorrent(dirName, os.path.basename(dirName), subsection, inputHash, inputID,
