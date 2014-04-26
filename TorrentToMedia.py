@@ -64,13 +64,30 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         extract = 0
 
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:
-        nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_mediaExtensions"])
-        nzbtomedia.USER_SCRIPT = nzbtomedia.CFG[sectionName][inputCategory]["user_script_path"]
-        nzbtomedia.USER_SCRIPT_PARAM = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_param"])
-        nzbtomedia.USER_SCRIPT_SUCCESSCODES = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_successCodes"])
-        nzbtomedia.USER_SCRIPT_CLEAN = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_clean"])
-        nzbtomedia.USER_DELAY = int(nzbtomedia.CFG[sectionName][inputCategory]["delay"])
-        nzbtomedia.USER_SCRIPT_RUNONCE = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_runOnce"])
+        try:
+            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_mediaExtensions"])
+        except:
+            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = None
+        try:
+            nzbtomedia.USER_SCRIPT = nzbtomedia.CFG[sectionName][inputCategory]["user_script_path"]
+        except:
+            nzbtomedia.USER_SCRIPT = None
+        try:
+            nzbtomedia.USER_SCRIPT_PARAM = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_param"])
+        except:
+            nzbtomedia.USER_SCRIPT_PARAM = None
+        try:
+            nzbtomedia.USER_SCRIPT_SUCCESSCODES = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_successCodes"])
+        except:
+            nzbtomedia.USER_SCRIPT_SUCCESSCODES = 0
+        try:
+            nzbtomedia.USER_SCRIPT_CLEAN = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_clean"])
+        except:
+            nzbtomedia.USER_SCRIPT_CLEAN = 1
+        try:
+            nzbtomedia.USER_SCRIPT_RUNONCE = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_runOnce"])
+        except:
+            nzbtomedia.USER_SCRIPT_RUNONCE = 1
 
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
