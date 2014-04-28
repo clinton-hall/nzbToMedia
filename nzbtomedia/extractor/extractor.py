@@ -44,10 +44,13 @@ def extract(filePath, outputDestination):
         if not os.getenv('TR_TORRENT_DIR'):
             for cmd in required_cmds:
                 if call(['which', cmd]):  #note, returns 0 if exists, or 1 if doesn't exist.
-                    for k, v in EXTRACT_COMMANDS.items():
-                        if cmd in v[0]:
-                            nzbtomedia.logger.error("EXTRACTOR: %s not found, disabling support for %s" % (cmd, k))
-                            del EXTRACT_COMMANDS[k]
+                    if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
+                        EXTRACT_COMMANDS[".7z"] = ["7z", "x"]
+                    else: 
+                        for k, v in EXTRACT_COMMANDS.items():
+                            if cmd in v[0]:
+                                nzbtomedia.logger.error("EXTRACTOR: %s not found, disabling support for %s" % (cmd, k))
+                                del EXTRACT_COMMANDS[k]
         else:
             nzbtomedia.logger.warning("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
 
