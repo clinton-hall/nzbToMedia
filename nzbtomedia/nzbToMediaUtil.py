@@ -558,6 +558,9 @@ def remove_torrent(clientAgent, inputHash, inputID, inputName):
 
         time.sleep(5)
 
+    else:
+        resume_torrent(clientAgent, inputHash, inputID, inputName)
+
 def find_download(clientAgent, download_id):
     logger.debug("Searching for Download on %s ..." % (clientAgent))
     if clientAgent == 'utorrent':
