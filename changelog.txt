@@ -28,6 +28,8 @@ Now prints github version into log when available.
 Changed log location and format.
 Added autoUpdate option via git.
 All calls now use requests, not urllib.
+All details now saved into Database. Can be used for more features later ;)
+Improved status checking to ensure we only cleanup when successfully processed.
 
 Huge Thanks @echel0n
 
