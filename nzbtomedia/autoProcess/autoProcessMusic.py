@@ -84,8 +84,12 @@ class autoProcessMusic:
                 return 1  # failure
 
             logger.debug("Result: %s" % (r.text),section)
-            if r.text == "OK":
-                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section)
+
+            if not r.status_code == requests.codes.ok:
+                logger.error("Server returned status %s" % (str(r.status_code)), section)
+                return 1
+            elif r.text == "OK":
+                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section) 
             else:
                 logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (inputName, dirName),section)
                 return 1 # failure

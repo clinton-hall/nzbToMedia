@@ -54,5 +54,8 @@ class autoProcessComics:
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
 
-        time.sleep(60) #wait 1 minute for now... need to see just what gets logged and how long it takes to process
-        return 0 # Success
+        if not r.status_code == requests.codes.ok:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return 1
+        else:
+            return 0

@@ -55,7 +55,10 @@ class autoProcessGames:
         result = r.json()
         logger.postprocess("%s" % (result),section)
 
-        if result['success']:
+        if not r.status_code == requests.codes.ok:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return 1
+        elif result['success']:
             logger.postprocess("SUCCESS: Status for %s has been set to %s in Gamez" % (gamezID, downloadStatus),section)
             return 0 # Success
         else:

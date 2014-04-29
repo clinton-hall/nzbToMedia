@@ -158,7 +158,10 @@ class autoProcessTV:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             rmDir(dirName)
 
-        if Success:
+        if not r.status_code == requests.codes.ok:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return 1
+        elif Success:
             return 0
         else:
-            return 1
+            return 1  # We did not receive Success confirmation.

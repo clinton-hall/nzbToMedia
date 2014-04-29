@@ -180,7 +180,10 @@ class autoProcessMovie:
                 return 1  # failure
 
             result = r.json()
-            if result['success']:
+            if not r.status_code == requests.codes.ok:
+                logger.error("Server returned status %s" % (str(r.status_code)), section)
+                return 1
+            elif result['success']:
                 logger.postprocess("SUCCESS: Finished %s scan for folder %s" % (method, dirName), section)
             else:
                 logger.error("FAILED: %s scan was unable to finish for folder %s. exiting!" % (method, dirName),
@@ -233,7 +236,10 @@ class autoProcessMovie:
                 return 1  # failure
 
             result = r.json()
-            if result['success']:
+            if not r.status_code == requests.codes.ok:
+                logger.error("Server returned status %s" % (str(r.status_code)), section)
+                return 1
+            elif result['success']:
                 logger.postprocess("SUCCESS: Snatched the next highest release ...", section)
                 return 0
             else:
