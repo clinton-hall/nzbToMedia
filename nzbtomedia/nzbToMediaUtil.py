@@ -771,18 +771,18 @@ def backupVersionedFile(old_file, version):
 
 
 def update_downloadInfoStatus(inputName, status):
-    logger.db("Updating status of our download %s in the DB to %s" % (inputName, status))
+    logger.debug("Updating status of our download %s in the DB to %s" % (inputName, status))
 
     myDB = nzbToMediaDB.DBConnection()
     myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
-                [status, datetime.date.today().toordinal(), inputName])
+                [status, datetime.date.today().toordinal(), unicode(inputName)])
 
 
 def get_downloadInfo(inputName, status):
-    logger.db("Getting download info for %s from the DB" % (inputName))
+    logger.debug("Getting download info for %s from the DB" % (inputName))
 
     myDB = nzbToMediaDB.DBConnection()
     sqlResults = myDB.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
-                             [inputName, status])
+                             [unicode(inputName), status])
 
     return sqlResults
