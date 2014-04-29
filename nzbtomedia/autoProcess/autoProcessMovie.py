@@ -33,7 +33,10 @@ class autoProcessMovie:
 
         result = r.json()
         if not result['success']:
-            logger.error(str(result['error']))
+            if 'error' in result:
+                logger.error(str(result['error']))
+            else:
+                logger.error("no media found for id %s", params['id']) 
             return results
 
         # Gather release info and return it back, no need to narrow results
