@@ -151,7 +151,9 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: 
                 logger.postprocess("%s" % (line), section)
-                if "Processing succeeded for" in line:  # We set Success based on the last non-empty line in the output.
+                if section == "SickBeard" and "Processing succeeded for" in line:
+                    Success = True
+                elif section == "NzbDrone" and "stateChangeTime" in line:
                     Success = True
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
