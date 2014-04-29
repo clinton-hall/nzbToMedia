@@ -339,6 +339,7 @@ def initialize(section=None):
 def restart():
     install_type = versionCheck.CheckVersion().install_type
 
+    status = 0
     popen_list = []
 
     if install_type in ('git', 'source'):
@@ -350,5 +351,6 @@ def restart():
         logger.close()
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()
+        status = p.returncode
 
-    os._exit(0)
+    os._exit(status)
