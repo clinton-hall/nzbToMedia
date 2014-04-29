@@ -146,7 +146,10 @@ def copy_link(src, targetLink, useLink):
     if src != targetLink and os.path.exists(targetLink):
         logger.info("MEDIAFILE already exists in the TARGET folder, skipping ...", 'COPYLINK')
         return True
-    elif src == targetLink:
+    elif src == targetLink and os.path.isfile(targetLink) and os.path.isfile(src):
+        logger.info("SOURCE AND TARGET files are the same, skipping ...", 'COPYLINK')
+        return True
+    elif src == os.path.dirname(targetLink):
         logger.info("SOURCE AND TARGET folders are the same, skipping ...", 'COPYLINK')
         return True
 
