@@ -32,11 +32,8 @@
 # NzbDrone port.
 #ndport=8081
 
-# NzbDrone username.
-#ndusername=
-
-# NzbDrone password.
-#ndpassword=
+# NzbDrone API key.
+#ndapikey=
 
 # NzbDrone uses ssl (0, 1).
 #
@@ -47,11 +44,6 @@
 #
 # set this if using a reverse proxy.
 #ndweb_root=
-
-# NzbDrone watch directory.
-#
-# set this to where your NzbDrone completed downloads are.
-#ndwatch_dir=
 
 ## Extensions
 
