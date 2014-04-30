@@ -181,7 +181,10 @@ def initialize(section=None):
     except:
         print 'Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
         print 'or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.'
-        sys.exit(1)
+        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+            sys.exit(NZBGET_POSTPROCESS_ERROR)
+        else:
+            sys.exit(1)
 
     if not makeDir(LOG_DIR):
         print("!!! No log folder, logging to screen only!")
@@ -192,13 +195,19 @@ def initialize(section=None):
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
         logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
-        sys.exit(-1)
+        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+            sys.exit(NZBGET_POSTPROCESS_ERROR)
+        else:
+            sys.exit(-1)
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         if not config.addnzbget():
             logger.error("Unable to migrate NzbGet config file %s, exiting ..." % (CONFIG_FILE))
-            sys.exit(-1)
+            if os.environ.has_key('NZBOP_SCRIPTDIR'):
+                sys.exit(NZBGET_POSTPROCESS_ERROR)
+            else:
+                sys.exit(-1)
     # load newly migrated config
     logger.info("Loading config from [%s]" % (CONFIG_FILE))
     CFG = config()
