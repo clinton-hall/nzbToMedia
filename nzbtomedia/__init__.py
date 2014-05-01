@@ -202,7 +202,7 @@ def initialize(section=None):
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        CFG = config.addnzbget():
+        CFG = config.addnzbget()
 
     else:  # load newly migrated config
         logger.info("Loading config from [%s]" % (CONFIG_FILE))
