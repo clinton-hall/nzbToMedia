@@ -3,6 +3,7 @@ import shutil
 import copy
 import nzbtomedia
 from configobj import *
+from nzbtomedia import logger
 
 from itertools import chain
 
@@ -114,7 +115,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(nzbtomedia.CONFIG_FILE, nzbtomedia.CONFIG_SPEC_FILE)
             CFG_NEW = config(nzbtomedia.CONFIG_SPEC_FILE)
         except Exception, e:
-            logger.debug("Error %s when copying to .cfg" % (e))
+            logger.debug("Error %s when copying to .spec" % (e))
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
