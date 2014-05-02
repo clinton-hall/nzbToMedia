@@ -2,7 +2,7 @@ import os
 import time
 import nzbtomedia
 import requests
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, replaceExtensions
 from nzbtomedia import logger
 
 class autoProcessComics:
