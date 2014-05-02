@@ -39,6 +39,21 @@ def sanitizeName(name):
 
     return name
 
+def replaceExtensions(path):
+    for dirpath, dirnames, filesnames in os.walk(path):
+        for filename in filesnames:
+            name, ext = os.path.splitext(filename)
+            if ext in nzbtomedia.EXT_REPLACE:
+                file = os.path.join(dirpath, filename)
+                target = os.path.join(dirpath, name + nzbtomedia.EXT_REPLACE[ext])
+                try:
+                    logger.debug("Renaming %s to %s" % (file, target), 'RENAME')
+                    shutil.move(file, target)
+                except:
+                    logger.error("Could not rename %s to %s" % (file, target), 'RENAME')
+            else:
+                continue         
+
 def makeDir(path):
     if not os.path.isdir(path):
         try:

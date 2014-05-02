@@ -29,6 +29,8 @@ class autoProcessComics:
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
+        replaceExtensions(dirName)
+
         params = {}
         params['nzb_folder'] = dirName
         if remote_path:
