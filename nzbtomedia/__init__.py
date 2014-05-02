@@ -104,6 +104,7 @@ DELUGEPWD = None
 
 EXTCONTAINER = []
 COMPRESSEDCONTAINER = []
+EXT_REPLACE = {}
 MEDIACONTAINER = []
 AUDIOCONTAINER = []
 METACONTAINER = []
@@ -156,7 +157,7 @@ def initialize(section=None):
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO
+        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, EXT_REPLACE
 
     if __INITIALIZED__:
         return False
@@ -273,6 +274,7 @@ def initialize(section=None):
                   re.compile('.part\d+.rar$', re.I),
                   re.compile('.rar$', re.I)]
     COMPRESSEDCONTAINER += [re.compile('%s$' % ext, re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
+    EXT_REPLACE = {'.cbr':'.rar', '.cbz':'.zip'}  # extensions used for comic books need to be replaced before we can extract.
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt

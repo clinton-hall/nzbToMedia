@@ -125,7 +125,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     for inputFile in inputFiles:
         filePath = os.path.dirname(inputFile)
         fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
-        fullFileName = os.path.basename(inputFile)
+        if fileExt in nzbtomedia.EXT_REPLACE:
+            fullFileName = fileName + nzbtomedia.EXT_REPLACE[fileExt]
+        else:
+            fullFileName = os.path.basename(inputFile)
 
         targetFile = nzbtomedia.os.path.join(outputDestination, fullFileName)
         if inputCategory in nzbtomedia.NOFLATTEN:

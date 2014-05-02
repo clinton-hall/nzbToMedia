@@ -1,6 +1,7 @@
 import copy
 import os
 import requests
+import json
 import nzbtomedia
 
 from nzbtomedia.nzbToMediaAutoFork import autoFork
@@ -140,9 +141,9 @@ class autoProcessTV:
             if section == "SickBeard":
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
-                params = {"name": "DownloadedEpisodesScan", "path": dirName}
+                data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
                 headers = {"X-Api-Key": apikey}
-                r = requests.get(url, params=params, headers=headers, stream=True, verify=False)
+                r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure
@@ -151,7 +152,7 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: 
                 logger.postprocess("%s" % (line), section)
-                if section == "SickBeard" and "Processing succeeded for" in line:
+                if section == "SickBeard" and "Processing succeeded" in line:
                     Success = True
                 elif section == "NzbDrone" and "stateChangeTime" in line:
                     Success = True
