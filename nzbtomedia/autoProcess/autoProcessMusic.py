@@ -85,7 +85,7 @@ class autoProcessMusic:
 
             logger.debug("Result: %s" % (r.text),section)
 
-            if not r.status_code == requests.codes.ok:
+            if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
                 return 1
             elif r.text == "OK":
