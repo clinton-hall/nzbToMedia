@@ -53,13 +53,12 @@ def autoFork(section, inputCategory):
         try:
             r = requests.get(url, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
-            logger.info("Could not connect to %s:%s to verify fork!" % (section, inputCategory))
-            break
+            logger.warning("Could not connect to %s:%s to verify fork!" % (section, inputCategory))
             
-        if r.ok:
-            fork = ['default', {}]
-        else:
-            logger.info("Connection to %s:%s failed! Check your configuration" % (section, inputCategory))
+        if not r.ok:
+            logger.warning("Connection to %s:%s failed! Check your configuration" % (section, inputCategory))
+
+        fork = ['default', {}]
 
     elif fork == "auto":
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
