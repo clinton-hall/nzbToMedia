@@ -320,14 +320,20 @@ def initialize(section=None):
         FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
 
         if not FFMPEG:
-            FFMPEG = None
-            logger.warning("Failed to locate ffmpeg, transcoding disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            if os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
+                FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
+            else:
+                FFMPEG = None
+                logger.warning("Failed to locate ffmpeg, transcoding disabled!")
+                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
         if not FFPROBE:
-            FFPROBE = None
-            logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            if os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
+                FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
+            else:
+                FFPROBE = None
+                logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
+                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     # userscript
     map(USER_SCRIPT_CATEGORIES.append, ([subsections[0] for subsections in CFG['UserScript'].items()]))

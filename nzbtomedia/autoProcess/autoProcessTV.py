@@ -107,7 +107,7 @@ class autoProcessTV:
         if status == 0:
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
-            if fork in nzbtomedia.SICKBEARD_FAILED:
+            if fork in nzbtomedia.SICKBEARD_FAILED or section == "NzbDrone":
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             else:
                 logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)

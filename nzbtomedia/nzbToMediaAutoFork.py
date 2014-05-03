@@ -21,6 +21,11 @@ def autoFork(section, inputCategory):
         password = None
 
     try:
+        apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
+    except:
+        apikey = None
+
+    try:
         ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
     except:
         ssl = 0
@@ -41,7 +46,21 @@ def autoFork(section, inputCategory):
         protocol = "http://"
 
     detected = False
-    if fork == "auto":
+    if section == "NzbDrone":
+        logger.info("Attempting to verify %s fork" % inputCategory)
+        url = "%s%s:%s%s/api/rootfolder" % (protocol,host,port,web_root)
+        headers={"X-Api-Key": apikey}
+        try:
+            r = requests.get(url, headers=headers, stream=True, verify=False)
+        except requests.ConnectionError:
+            logger.warning("Could not connect to %s:%s to verify fork!" % (section, inputCategory))
+            
+        if not r.ok:
+            logger.warning("Connection to %s:%s failed! Check your configuration" % (section, inputCategory))
+
+        fork = ['default', {}]
+
+    elif fork == "auto":
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
         for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=False):
             url = "%s%s:%s%s/home/postprocess/processEpisode?%s" % (protocol,host,port,web_root,urllib.urlencode(fork[1]))
