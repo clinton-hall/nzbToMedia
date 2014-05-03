@@ -31,7 +31,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.debug("Received Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
-    inputDirectory, inputName, inputCategory, root, single = nzbtomedia.category_search(inputDirectory, inputName,
+    inputDirectory, inputName, inputCategory, root = nzbtomedia.category_search(inputDirectory, inputName,
                                                                                         inputCategory, root,
                                                                                         nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure
 
@@ -140,8 +140,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         if root == 1:
             if not foundFile:
-                logger.debug("Looking for %s in: %s" % (inputName, fullFileName))
-            if (nzbtomedia.sanitizeName(inputName) in nzbtomedia.sanitizeName(fullFileName)) or (
+                logger.debug("Looking for %s in: %s" % (inputName, inputFile))
+            if (nzbtomedia.sanitizeName(inputName) in nzbtomedia.sanitizeName(inputFile)) or (
                         nzbtomedia.sanitizeName(fileName) in nzbtomedia.sanitizeName(inputName)):
                 foundFile = True
                 logger.debug("Found file %s that matches Torrent Name %s" % (fullFileName, inputName))

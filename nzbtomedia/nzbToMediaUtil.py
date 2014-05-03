@@ -63,11 +63,10 @@ def makeDir(path):
     return True
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
-    single = False
     tordir = False
 
     if inputDirectory is None:  # =Nothing to process here.
-        return inputDirectory, inputName, inputCategory, root, single
+        return inputDirectory, inputName, inputCategory, root
 
     pathlist = os.path.normpath(inputDirectory).split(os.sep)
 
@@ -79,9 +78,8 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         logger.debug("SEARCH: Could not find a category in the directory structure")
 
     if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file
-        single = True
         if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
-        return inputDirectory, inputName, inputCategory, root, single
+        return inputDirectory, inputName, inputCategory, root
 
     if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
         logger.info(
@@ -93,8 +91,19 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         inputDirectory = os.path.join(inputDirectory, inputName)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
-    if inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeName(inputName))):
+    elif inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeName(inputName))):
         logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (
+            sanitizeName(inputName), inputDirectory))
+        inputDirectory = os.path.join(inputDirectory, sanitizeName(inputName))
+        logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
+        tordir = True
+    elif inputName and os.path.isfile(os.path.join(inputDirectory, inputName)):
+        logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
+        inputDirectory = os.path.join(inputDirectory, inputName)
+        logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
+        tordir = True
+    elif inputName and os.path.isfile(os.path.join(inputDirectory, sanitizeName(inputName))):
+        logger.info("SEARCH: Found torrent file %s in input directory directory %s" % (
             sanitizeName(inputName), inputDirectory))
         inputDirectory = os.path.join(inputDirectory, sanitizeName(inputName))
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
@@ -128,7 +137,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         logger.info("SEARCH: Could not find a unique directory for this download. Assume a common directory.")
         logger.info("SEARCH: We will try and determine which files to process, individually")
 
-    return inputDirectory, inputName, inputCategory, root, single
+    return inputDirectory, inputName, inputCategory, root
 
 def getDirSize(inputPath):
    from functools import partial
@@ -654,10 +663,23 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
         return False
 
 def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True):
-    if not os.path.isdir(path):
-        return []
-
     files = []
+    if not os.path.isdir(path): 
+        if os.path.isfile(path):  # Single file downloads.
+            curFile = os.path.split(path)[1]
+            if isMediaFile(curFile, media, audio, meta, archives):
+                # Optionally ignore sample files
+                if is_sample(path) or not is_minSize(path, minSize):
+                    if delete_ignored == 1:
+                        try:
+                            os.unlink(path)
+                            logger.debug('Ignored file %s has been removed ...' % (curFile))
+                        except:pass
+                else:
+                    files.append(path)
+
+        return files
+
     for curFile in os.listdir(path):
         fullCurFile = os.path.join(path, curFile)
 

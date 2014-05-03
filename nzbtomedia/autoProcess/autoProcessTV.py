@@ -161,7 +161,7 @@ class autoProcessTV:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             rmDir(dirName)
 
-        if not r.status_code == requests.codes.ok:
+        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
             return 1
         elif Success:
