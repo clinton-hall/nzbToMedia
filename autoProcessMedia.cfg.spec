@@ -64,6 +64,7 @@
         Torrent_NoLink = 0
         process_method =
         extract = 1
+        nzbExtractionBy = Downloader
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
@@ -90,6 +91,7 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         extract = 1
+        nzbExtractionBy = Downloader
         wait_for = 2
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
