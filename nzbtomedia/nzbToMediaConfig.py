@@ -315,8 +315,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "NzbDrone"
             envCatKey = 'NZBPO_NDCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY']
-            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy']
+            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR']
+            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_ND' + envKeys[index]

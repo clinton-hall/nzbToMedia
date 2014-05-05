@@ -45,6 +45,11 @@
 # set this if using a reverse proxy.
 #ndweb_root=
 
+# NzbDrone wait_for
+#
+# Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
+#ndwait_for=2
+
 ## Extensions
 
 # Media Extensions
