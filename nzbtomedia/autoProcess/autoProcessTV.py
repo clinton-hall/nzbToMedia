@@ -11,6 +11,24 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
+    def numMissing(url1, params, headers):
+        r = None
+        try:
+            r = requests.get(url1, params=params, headers=headers, stream=True, verify=False)
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: %s" % (url1), section)
+            missing = 0
+        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            missing = 0
+        else:
+            try:
+                res = json.loads(r.content)
+                missing = int(res['totalRecords'])
+            except:
+                missing = 0
+        return missing
+
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
@@ -133,6 +151,10 @@ class autoProcessTV:
             url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
+            url1 = url = "%s%s:%s%s/api/missing" % (protocol, host, port, web_root)
+            headers = {"X-Api-Key": apikey}
+            params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
+            data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
 
         logger.debug("Opening URL: %s" % (url),section)
 
@@ -141,21 +163,21 @@ class autoProcessTV:
             if section == "SickBeard":
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
-                headers = {"X-Api-Key": apikey}
+                start_numMissing = numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure
 
         Success = False
+        Started = False
         for line in r.iter_lines():
             if line: 
                 logger.postprocess("%s" % (line), section)
                 if section == "SickBeard" and "Processing succeeded" in line:
                     Success = True
                 elif section == "NzbDrone" and "stateChangeTime" in line:
-                    Success = True
+                    Started = True
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
@@ -166,5 +188,26 @@ class autoProcessTV:
             return 1
         elif Success:
             return 0
+        elif section == "NzbDrone" and Started:
+            num_processed = 0
+            total_processed = 0
+            timeout = time.time() + 60 * wait_for
+            while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
+                current_numMissing = numMissing(url1, params, headers)
+                if current_numMissing < start_numMissing:
+                    num_processed = start_numMissing - current_numMissing
+                    if total_processed == num_processed:  # we have gone another cycle without any more episodes being completed.
+                        logger.postprocess("%s episodes processed successfully" % (str(total_processed)), section)
+                        return 0
+                    total_processed = num_processed  # Set this up for next cycle to see if nay new episodes are completed.
+                    timeout += 10 * wait_for  # extend this loop while things are still changing.... multi episode download.               
+                time.sleep(10 * wait_for)
+
+
+            # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
+            logger.warning(
+            "The number of missing episodes does not appear to have changed status after %s minutes, Please check your logs." % (str(wait_for)),
+            section)
+            return 1
         else:
             return 1  # We did not receive Success confirmation.
