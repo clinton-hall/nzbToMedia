@@ -181,6 +181,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         if numVideos > 0:
             logger.info("Found %s media files in %s" % (numVideos, outputDestination))
             status = 0
+        elif extract != 1:
+            logger.info("Found no media files in %s. Sending to %s to process" % (outputDestination, sectionName))
+            status = 0
         else:
             logger.warning("Found no media files in %s" % outputDestination)
 
