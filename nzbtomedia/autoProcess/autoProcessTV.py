@@ -151,7 +151,7 @@ class autoProcessTV:
             url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
-            url1 = url = "%s%s:%s%s/api/missing" % (protocol, host, port, web_root)
+            url1 = "%s%s:%s%s/api/missing" % (protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
@@ -159,15 +159,20 @@ class autoProcessTV:
         logger.debug("Opening URL: %s" % (url),section)
 
         try:
-            r = None
             if section == "SickBeard":
+                r = None
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
                 start_numMissing = numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
+                r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
             return 1 # failure
+
+        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return 1
 
         Success = False
         Started = False
@@ -183,10 +188,7 @@ class autoProcessTV:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
             rmDir(dirName)
 
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return 1
-        elif Success:
+        if Success:
             return 0
         elif section == "NzbDrone" and Started:
             num_processed = 0
@@ -202,7 +204,6 @@ class autoProcessTV:
                     total_processed = num_processed  # Set this up for next cycle to see if nay new episodes are completed.
                     timeout += 10 * wait_for  # extend this loop while things are still changing.... multi episode download.               
                 time.sleep(10 * wait_for)
-
 
             # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
             logger.warning(
