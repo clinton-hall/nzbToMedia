@@ -30,7 +30,7 @@
 #ndhost=localhost
 
 # NzbDrone port.
-#ndport=8081
+#ndport=8989
 
 # NzbDrone API key.
 #ndapikey=
