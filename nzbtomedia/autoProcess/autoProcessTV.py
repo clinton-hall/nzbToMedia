@@ -163,7 +163,7 @@ class autoProcessTV:
                 r = None
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
-                start_numMissing = numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
+                start_numMissing = self.numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
                 r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
@@ -195,7 +195,7 @@ class autoProcessTV:
             total_processed = 0
             timeout = time.time() + 60 * wait_for
             while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-                current_numMissing = numMissing(url1, params, headers)
+                current_numMissing = self.numMissing(url1, params, headers)
                 if current_numMissing < start_numMissing:
                     num_processed = start_numMissing - current_numMissing
                     if total_processed == num_processed:  # we have gone another cycle without any more episodes being completed.
