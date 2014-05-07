@@ -14,20 +14,20 @@ from nzbtomedia.transcoder import transcoder
 class autoProcessTV:
     def numMissing(self, url1, params, headers):
         r = None
+        missing = 0
         try:
             r = requests.get(url1, params=params, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url1), section)
-            missing = 0
+            return missing
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
-            missing = 0
         else:
             try:
                 res = json.loads(r.content)
                 missing = int(res['totalRecords'])
             except:
-                missing = 0
+                pass
         return missing
 
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
