@@ -74,6 +74,11 @@ class autoProcessTV:
         except:
             remote_path = None
 
+        try:
+            wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
+        except:
+            wait_for  = 2
+
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
