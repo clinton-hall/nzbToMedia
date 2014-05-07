@@ -11,7 +11,7 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
-    def numMissing(url1, params, headers):
+    def numMissing(self, url1, params, headers):
         r = None
         try:
             r = requests.get(url1, params=params, headers=headers, stream=True, verify=False)
