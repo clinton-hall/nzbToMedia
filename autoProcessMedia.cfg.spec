@@ -19,6 +19,8 @@
     log_db = 0
     # Set to where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
+    # Enable/Disable media file checking using ffprobe.
+    check_media = 1
 
 [CouchPotato]
     #### autoProcessing for Movies

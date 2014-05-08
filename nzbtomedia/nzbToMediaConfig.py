@@ -229,8 +229,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         try:
             section = "General"
-            envKeys = ['AUTO_UPDATE']
-            cfgKeys = ['auto_update']
+            envKeys = ['AUTO_UPDATE', 'CHECK_MEDIA']
+            cfgKeys = ['auto_update', 'check_media']
             for index in range(len(envKeys)):
                 key = 'NZBPO_' + envKeys[index]
                 if os.environ.has_key(key):

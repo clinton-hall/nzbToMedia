@@ -19,6 +19,11 @@
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
 #auto_update=0
 
+# Check Media for corruption (0, 1).
+#
+# Enable/Disable media file checking using ffprobe.
+#check_media=1
+
 # Media Extensions
 #
 # This is a list of media extensions that are used to verify that the download does contain valid media.

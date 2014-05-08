@@ -230,6 +230,7 @@ def initialize(section=None):
     GIT_BRANCH = CFG['General']['git_branch'] or 'dev'
     FORCE_CLEAN = CFG["General"]["force_clean"]
     FFMPEG_PATH = CFG["General"]["ffmpeg_path"]
+    CHECK_MEDIA = int(CFG["General"]["check_Media"]
 
     # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():
@@ -314,7 +315,7 @@ def initialize(section=None):
             logger.warning("Failed to locate ffmpeg.exe, transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not (os.path.isfile(FFPROBE)):  # problem
+        if not (os.path.isfile(FFPROBE)) and CHECK_MEDIA:  # problem
             FFPROBE = None
             logger.warning("Failed to locate ffprobe.exe, video corruption detection disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
@@ -331,13 +332,16 @@ def initialize(section=None):
                 logger.warning("Failed to locate ffmpeg, transcoding disabled!")
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not FFPROBE:
+        if not FFPROBE and CHECK_MEDIA:
             if os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
                 FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
             else:
                 FFPROBE = None
                 logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+
+    if not CHECK_MEDIA:  # allow users to bypass this.
+        FFPROBE = None
 
     # userscript
     map(USER_SCRIPT_CATEGORIES.append, ([subsections[0] for subsections in CFG['UserScript'].items()]))
