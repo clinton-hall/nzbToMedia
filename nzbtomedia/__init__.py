@@ -230,7 +230,7 @@ def initialize(section=None):
     GIT_BRANCH = CFG['General']['git_branch'] or 'dev'
     FORCE_CLEAN = CFG["General"]["force_clean"]
     FFMPEG_PATH = CFG["General"]["ffmpeg_path"]
-    CHECK_MEDIA = int(CFG["General"]["check_Media"]
+    CHECK_MEDIA = int(CFG["General"]["check_Media"])
 
     # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():

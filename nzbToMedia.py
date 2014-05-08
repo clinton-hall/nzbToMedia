@@ -189,11 +189,8 @@
 # Mylar port.
 #myport=8090
 
-# Mylar username.
-#myusername=
-
-# Mylar password.
-#mypassword=
+# Mylar api key.
+#myapikey=
 
 # Mylar uses ssl (0, 1).
 #
@@ -204,6 +201,11 @@
 #
 # set this if using a reverse proxy.
 #myweb_root=
+
+# Mylar wait_for
+#
+# Set the number of minutes to wait after calling the force process, to check the issue has changed status.
+#myswait_for=1
 
 ## Gamez
 
