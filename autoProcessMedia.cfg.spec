@@ -158,6 +158,8 @@
         apikey =
         host = localhost
         port = 8085
+        ###### 
+        library = Set to path where you want the processed games to be moved to.
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =

@@ -41,6 +41,11 @@
 # Set to 1 if using ssl, else set to 0.
 #gzssl=0
 
+# Gamez library
+#
+# move downloaded games here.
+#gzlibrary
+
 # Gamez web_root
 #
 # set this if using a reverse proxy.

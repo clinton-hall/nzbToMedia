@@ -42,9 +42,12 @@ class autoProcessTV:
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
-        username = nzbtomedia.CFG[section][inputCategory]["username"]
-        password = nzbtomedia.CFG[section][inputCategory]["password"]
-
+        try:
+            username = nzbtomedia.CFG[section][inputCategory]["username"]
+            password = nzbtomedia.CFG[section][inputCategory]["password"]
+        except:
+            username = ""
+            password = ""
         try:
             apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
         except:

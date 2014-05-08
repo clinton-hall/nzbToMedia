@@ -1,5 +1,6 @@
 import nzbtomedia
 import requests
+import shutil
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 from nzbtomedia import logger
 
@@ -10,12 +11,14 @@ class autoProcessGames:
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
-
+        try:
+            library = nzbtomedia.CFG[section][inputCategory]["library"]
+        except:
+            library = None
         try:
             ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
             ssl = 0
-
         try:
             web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
@@ -54,6 +57,16 @@ class autoProcessGames:
 
         result = r.json()
         logger.postprocess("%s" % (result),section)
+        if library:
+            logger.postprocess("moving files to library: %s" % (library),section)
+            try:
+                shutil.move(dirName, os.path.join(library, inputName))
+            except:
+                logger.error("Unable to move %s to %s" % (dirName, os.path.join(library, inputName)), section)
+                return 1
+        else:
+            logger.error("No library specified to move files to. Please edit your configuration.", section)
+            return 1
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)

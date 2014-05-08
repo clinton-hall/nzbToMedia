@@ -109,5 +109,5 @@ class autoProcessMusic:
             time.sleep(10 * wait_for)
 
         # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
-        logger.warning("The music album does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for))
+        logger.warning("The music album does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for),section)
         return 1  # failure
