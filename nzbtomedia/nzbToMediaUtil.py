@@ -64,7 +64,7 @@ def makeDir(path):
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     tordir = False
-
+    root = 0
     if inputDirectory is None:  # =Nothing to process here.
         return inputDirectory, inputName, inputCategory, root
 
@@ -98,7 +98,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
     elif inputName and os.path.isfile(os.path.join(inputDirectory, inputName)):
-        logger.info("SEARCH: Found torrent directory %s in input directory directory %s" % (inputName, inputDirectory))
+        logger.info("SEARCH: Found torrent file %s in input directory directory %s" % (inputName, inputDirectory))
         inputDirectory = os.path.join(inputDirectory, inputName)
         logger.info("SEARCH: Setting inputDirectory to %s" % (inputDirectory))
         tordir = True
