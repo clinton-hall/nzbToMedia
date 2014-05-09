@@ -64,7 +64,7 @@ def makeDir(path):
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     tordir = False
-    root = 0
+
     if inputDirectory is None:  # =Nothing to process here.
         return inputDirectory, inputName, inputCategory, root
 
