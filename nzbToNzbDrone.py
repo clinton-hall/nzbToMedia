@@ -55,6 +55,11 @@
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
 #ndwait_for=2
 
+# NzbDrone Delete Failed Downloads (0, 1).
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#nddelete_failed=0
+
 ## Extensions
 
 # Media Extensions
