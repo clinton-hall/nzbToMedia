@@ -1,6 +1,7 @@
 import os
 import re
 import logging
+from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
 Logger = logging.getLogger()
 reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\b[45]62[xh]\.", r"\.yarulb\.", r"\.vtdh\.", r"\.ld[.-]?bew\.", r"\.pir[dvd|bew|db|rb]\."]
