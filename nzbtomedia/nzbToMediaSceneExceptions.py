@@ -7,41 +7,43 @@ reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\b[45]62[xh
 reverse_pattern = re.compile('|'.join(reverse_list), flags=re.IGNORECASE)
 season_pattern = re.compile(r"(.*\.\d{2}e\d{2}s\.)(.*)", flags=re.IGNORECASE)
 word_pattern = re.compile(r"([^A-Z0-9]*[A-Z0-9]+)")
+media_list = [r"\.s\d{2}e\d{2}\.", r"\.1080[pi]\.", r"\.720p\.", r"\.[xh]26[45]\b", r"\.bluray\.", r"\.hdtv\.", r"\.web[.-]?dl\.", r"\.[dvd|web|bd|br]rip\."]
+media_pattern = re.compile('|'.join(media_list), flags=re.IGNORECASE)
+garbage_name = re.compile(r"^[a-zA-Z0-9]*$")
 char_replace = [[r"(\w)1\.(\w)",r"\1i\2"]
 ]
 
 def process_all_exceptions(name, dirname):
     for filename in listMediaFiles(dirname):
-        if reverse_pattern.search(filename) is not None:
-            exception = process_reverse
-            parentDir = os.path.dirname(filename)
-            exception(filename, parentDir)
-        else:           
-            for group, exception in __customgroups__.items():
-                if not (group in name or group in dirname or group in filename):
-                    continue
-                parentDir = os.path.dirname(filename)
-                exception(filename, parentDir)
+        parentDir = os.path.dirname(filename)
+        head, fileExtension = os.path.splitext(os.path.basename(filename))
+        if reverse_pattern.search(head) is not None:
+            exception = reverse_filename        
+        elif garbage_name.search(head) is not None:
+            exception = replace_filename
+        else:
+            continue
+        exception(filename, parentDir, name)
 
-def process_qoq(filename, dirname):
-    logging.debug("Reversing the file name for a QoQ release %s" % (filename), EXCEPTION)
+def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
-    newname = head[::-1]
+    if media_pattern.search(os.path.basename(dirname)) is not None: 
+        newname = os.path.basename(dirname)
+        logging.debug("Replacing file name %s with directory name %s" % (head, newname), EXCEPTION)
+    elif media_pattern.search(name) is not None:
+        newname = name
+        logging.debug("Replacing file name %s with download name %s" % (head, newname), EXCEPTION)
+    else:
+        logging.warning("No name replacement determined for %s" % (head), EXCEPTION)
+        return 
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
-    os.rename(filename, newfilePath)
-    logging.debug("New file name is %s" % (newfile), EXCEPTION)
+    try:
+        os.rename(filename, newfilePath)
+    except Exception,e:
+        logging.error("Unable to rename file due to: %s" % (str(e)), EXCEPTION)
 
-def process_eci(filename, dirname):
-    logging.debug("Replacing file name %s with directory name %s an -ECI release" % (filename, os.path.basename(dirname)), EXCEPTION)
-    head, fileExtension = os.path.splitext(os.path.basename(filename))
-    newname = os.path.basename(dirname)
-    newfile = newname + fileExtension
-    newfilePath = os.path.join(dirname, newfile)
-    os.rename(filename, newfilePath)
-    logging.debug("New file name is %s" % (newfile), EXCEPTION)
-
-def process_reverse(filename, dirname):
+def reverse_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     na_parts = season_pattern.search(head)
     if na_parts is not None:
@@ -69,5 +71,5 @@ def process_reverse(filename, dirname):
 
 # dict for custom groups
 # we can add more to this list
-__customgroups__ = {'Q o Q': process_qoq, '-ECI': process_eci}
+#__customgroups__ = {'Q o Q': process_qoq, '-ECI': process_eci}
                 
