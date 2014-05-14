@@ -326,6 +326,12 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
+    if section is None:
+        logger.error(
+            'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for teh appropriate section in your autoProcessMedia.cfg and try again.' % (
+            inputCategory))
+        return -1
+
     if len(section) > 1:
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
