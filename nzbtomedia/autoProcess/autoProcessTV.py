@@ -199,24 +199,27 @@ class autoProcessTV:
         if Success:
             return 0
         elif section == "NzbDrone" and Started:
-            num_processed = 0
-            total_processed = 0
-            timeout = time.time() + 60 * wait_for
-            while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
-                current_numMissing = self.numMissing(url1, params, headers)
-                if current_numMissing < start_numMissing:
-                    num_processed = start_numMissing - current_numMissing
-                    if total_processed == num_processed:  # we have gone another cycle without any more episodes being completed.
-                        logger.postprocess("%s episodes processed successfully" % (str(total_processed)), section)
-                        return 0
-                    total_processed = num_processed  # Set this up for next cycle to see if nay new episodes are completed.
-                    timeout += 10 * wait_for  # extend this loop while things are still changing.... multi episode download.               
+            n = 0
+            current_numMissing = start_numMissing
+            while n < 6:  # set up wait_for minutes of no change in numMissing.
                 time.sleep(10 * wait_for)
+                new_numMissing = self.numMissing(url1, params, headers)
+                if new_numMissing == current_numMissing:  # nothing processed since last call
+                    n += 1
+                else:
+                    n = 0
+                    current_numMissing = new_numMissing  # reset counter and start loop again with this many missing.
 
-            # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
-            logger.warning(
-            "The number of missing episodes does not appear to have changed status after %s minutes, Please check your logs." % (str(wait_for)),
-            section)
-            return 1
+            if current_numMissing < start_numMissing:
+                logger.debug(
+                "The number of missing episodes changes from %s to %s and then remained the same for % minutes. Consider this successful" % 
+                (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
+                return 0
+            else:
+                # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
+                logger.warning(
+                "The number of missing episodes: %s does not appear to have changed status after %s minutes, Please check your logs." % 
+                (str(start_numMissing), str(wait_for)), section)
+                return 1
         else:
             return 1  # We did not receive Success confirmation.
