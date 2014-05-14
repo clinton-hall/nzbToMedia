@@ -4,7 +4,7 @@ import logging
 from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
 Logger = logging.getLogger()
-reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\.[pi]675\.", r"\.[pi]p084\.", r"\.p063\.", r"\b[45]62[xh]\.", r"\.yarulb\.", r"\.vtd[hp]\.", 
+reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\.[pi]675\.", r"\.[pi]084\.", r"\.p063\.", r"\b[45]62[xh]\.", r"\.yarulb\.", r"\.vtd[hp]\.", 
                 r"\.ld[.-]?bew\.", r"\.pir.?(dov|dvd|bew|db|rb)\.", r"\brdvd\.", r"\.vts\.", r"\.reneercs\.", r"\.dcv\.", r"\b(pir|mac)dh\b", r"\.reporp\.", r"\.kcaper\.", 
                 r"\.lanretni\.", r"\b3ca\b", r"\.cstn\."]
 reverse_pattern = re.compile('|'.join(reverse_list), flags=re.IGNORECASE)
