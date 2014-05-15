@@ -3,7 +3,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Reset the Date Modified and Date Created for downlaoded files.
+# Reset the Date Modified and Date Created for downloaded files.
 #
 # This is useful for sorting "newly added" media.
 # This should run before other scripts.
