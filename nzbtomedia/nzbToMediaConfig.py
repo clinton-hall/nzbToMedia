@@ -3,6 +3,7 @@ import shutil
 import copy
 import nzbtomedia
 from configobj import *
+from nzbtomedia import logger
 
 from itertools import chain
 
@@ -105,16 +106,16 @@ class ConfigObj(configobj.ConfigObj, Section):
             if not os.path.isfile(nzbtomedia.CONFIG_FILE):
                 shutil.copyfile(nzbtomedia.CONFIG_SPEC_FILE, nzbtomedia.CONFIG_FILE)
             CFG_OLD = config(nzbtomedia.CONFIG_FILE)
-        except:
-            pass
+        except Exception, e:
+            logger.debug("Error %s when copying to .cfg" % (e))
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
             if not os.path.isfile(nzbtomedia.CONFIG_SPEC_FILE):
                 shutil.copyfile(nzbtomedia.CONFIG_FILE, nzbtomedia.CONFIG_SPEC_FILE)
             CFG_NEW = config(nzbtomedia.CONFIG_SPEC_FILE)
-        except:
-            pass
+        except Exception, e:
+            logger.debug("Error %s when copying to .spec" % (e))
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
@@ -358,14 +359,17 @@ class ConfigObj(configobj.ConfigObj, Section):
                     value = os.environ[key]
                     CFG_NEW[section][option] = value
 
-        except:
-            return False
+        except Exception, e:
+            logger.debug("Error %s when applying NZBGet config" % (e))
 
-        # write our new config to autoProcessMedia.cfg
-        CFG_NEW.filename = nzbtomedia.CONFIG_FILE
-        CFG_NEW.write()
+        try:
+            # write our new config to autoProcessMedia.cfg
+            CFG_NEW.filename = nzbtomedia.CONFIG_FILE
+            CFG_NEW.write()
+        except Exception, e:
+            logger.debug("Error %s when writing changes to .cfg" % (e))       
 
-        return True
+        return CFG_NEW
 
 configobj.Section = Section
 configobj.ConfigObj = ConfigObj

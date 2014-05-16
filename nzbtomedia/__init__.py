@@ -198,21 +198,17 @@ def initialize(section=None):
     if not config.migrate():
         logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
         if os.environ.has_key('NZBOP_SCRIPTDIR'):
-            sys.exit(NZBGET_POSTPROCESS_ERROR)
+            pass  # We will try and read config from Environment.
         else:
             sys.exit(-1)
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
-        if not config.addnzbget():
-            logger.error("Unable to migrate NzbGet config file %s, exiting ..." % (CONFIG_FILE))
-            if os.environ.has_key('NZBOP_SCRIPTDIR'):
-                sys.exit(NZBGET_POSTPROCESS_ERROR)
-            else:
-                sys.exit(-1)
-    # load newly migrated config
-    logger.info("Loading config from [%s]" % (CONFIG_FILE))
-    CFG = config()
+        CFG = config.addnzbget()
+
+    else:  # load newly migrated config
+        logger.info("Loading config from [%s]" % (CONFIG_FILE))
+        CFG = config()
 
     # Enable/Disable DEBUG Logging
     LOG_DEBUG = int(CFG['General']['log_debug'])
