@@ -212,7 +212,7 @@ class autoProcessTV:
 
             if current_numMissing < start_numMissing:
                 logger.debug(
-                "The number of missing episodes changes from %s to %s and then remained the same for % minutes. Consider this successful" % 
+                "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 
                 (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
                 return 0
             else:
