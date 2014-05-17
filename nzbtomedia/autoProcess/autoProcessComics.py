@@ -8,7 +8,7 @@ from nzbtomedia import logger
 
 class autoProcessComics:
     def get_status(self, url, apikey, dirName):
-        logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)),section)
+        logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))
 
         params = {}
         params['apikey'] = apikey
