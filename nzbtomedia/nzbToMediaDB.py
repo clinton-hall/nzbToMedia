@@ -174,7 +174,7 @@ class DBConnection:
         self.action(query, valueDict.values() + keyDict.values())
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT INTO " + tableName + " (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
+            query = "INSERT OR IGNORE INTO " + tableName + " (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
                     " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
             self.action(query, valueDict.values() + keyDict.values())
 
