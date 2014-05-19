@@ -257,6 +257,7 @@ def initialize(section=None):
     OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
     CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
     NOFLATTEN = (CFG["Torrent"]["noFlatten"])
+    if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
     DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
     UTORRENTWEBUI = CFG["Torrent"]["uTorrentWEBui"]  # http://localhost:8090/gui/
     UTORRENTUSR = CFG["Torrent"]["uTorrentUSR"]  # mysecretusr
