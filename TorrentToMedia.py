@@ -122,7 +122,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if sectionName == 'HeadPhones':
         nzbtomedia.NOFLATTEN.extend(
-            section.sections)  # Make sure we preserve folder structure for HeadPhones.
+            inputCategory)  # Make sure we preserve folder structure for HeadPhones.
 
     now = datetime.datetime.now()
 
