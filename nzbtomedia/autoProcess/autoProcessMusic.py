@@ -58,6 +58,14 @@ class autoProcessMusic:
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
+        if remote_path:
+            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
+                remote_path = remote_path + os.path.basename(dirName)
+            elif remote_path[0] == '/':  # posix path
+                remote_path = remote_path + '/' + os.path.basename(dirName)
+            else:  # assume windows path or UNF path
+                remote_path = remote_path + '\\' + os.path.basename(dirName)
+
         url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 
         if status == 0:
@@ -68,7 +76,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                params['dir'] = os.path.join(remote_path, os.path.basename(os.path.dirname(dirName)))
+                params['dir'] = remote_path
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:

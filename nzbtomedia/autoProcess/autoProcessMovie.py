@@ -145,6 +145,14 @@ class autoProcessMovie:
         process_all_exceptions(inputName.lower(), dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
+        if remote_path:
+            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
+                remote_path = remote_path + os.path.basename(dirName)
+            elif remote_path[0] == '/':  # posix path
+                remote_path = remote_path + '/' + os.path.basename(dirName)
+            else:  # assume windows path or UNF path
+                remote_path = remote_path + '\\' + os.path.basename(dirName)
+
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:
                 result = transcoder.Transcode_directory(dirName)
@@ -165,7 +173,7 @@ class autoProcessMovie:
 
             params['media_folder'] = dirName
             if remote_path:
-                params['media_folder'] = os.path.join(remote_path, os.path.basename(dirName))
+                params['media_folder'] = remote_path
 
             url = "%s%s" % (baseURL, command)
 

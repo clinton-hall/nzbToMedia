@@ -107,6 +107,14 @@ class autoProcessTV:
                 status = 1
                 failed = 1
 
+        if remote_path:
+            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
+                remote_path = remote_path + os.path.basename(dirName)
+            elif remote_path[0] == '/':  # posix path
+                remote_path = remote_path + '/' + os.path.basename(dirName)
+            else:  # assume windows path or UNF path
+                remote_path = remote_path + '\\' + os.path.basename(dirName)
+
         # configure SB params to pass
         fork_params['quiet'] = 1
         if inputName is not None:
@@ -119,7 +127,7 @@ class autoProcessTV:
             if param in ["dirName", "dir"]:
                 fork_params[param] = dirName
                 if remote_path:
-                    fork_params[param] = os.path.join(remote_path, os.path.basename(dirName))
+                    fork_params[param] = remote_path
 
             if param == "process_method":
                 if process_method:
@@ -163,7 +171,7 @@ class autoProcessTV:
             headers = {"X-Api-Key": apikey}
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": os.path.join(remote_path, os.path.basename(dirName))})
+                data = json.dumps({"name": "DownloadedEpisodesScan", "path": remote_path})
             else:
                 data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
 

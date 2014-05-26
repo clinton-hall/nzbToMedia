@@ -59,13 +59,20 @@ class autoProcessComics:
 
         replaceExtensions(dirName)
 
+        if remote_path:
+            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
+                remote_path = remote_path + os.path.basename(dirName)
+            elif remote_path[0] == '/':  # posix path
+                remote_path = remote_path + '/' + os.path.basename(dirName)
+            else:  # assume windows path or UNF path
+                remote_path = remote_path + '\\' + os.path.basename(dirName)
+
         params = {}
         params['apikey'] = apikey
         params['cmd'] = "forceProcess"
+        params['nzb_folder'] = dirName
         if remote_path:
-            params['nzb_folder'] = os.path.join(remote_path, os.path.basename(dirName))
-        else:
-            params['nzb_folder'] = dirName
+            params['nzb_folder'] = remote_path
 
         if inputName != None:
             params['nzb_name'] = inputName
