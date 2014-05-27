@@ -20,6 +20,11 @@
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
 #auto_update=0
 
+# Safe Mode protection of DestDir (0, 1).
+#
+# Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
+#safe_mode=1
+
 ## Mylar
 
 # Mylar script category.
