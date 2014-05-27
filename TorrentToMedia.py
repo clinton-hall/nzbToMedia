@@ -109,6 +109,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
+    if nzbtomedia.SAFE_MODE and outputDestination == nzbtomedia.TORRENT_DEFAULTDIR:
+        logger.error(
+            'The output directory:[%s] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting' % (
+            inputDirectory))
+        return -1
+
     if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:  # if None, we only process the 5 listed.
         if "ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES:  # All defined categories
             processOnly = nzbtomedia.CATEGORIES

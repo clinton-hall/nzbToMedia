@@ -24,6 +24,11 @@
 # Enable/Disable media file checking using ffprobe.
 #check_media=1
 
+# Safe Mode protection of DestDir (0, 1).
+#
+# Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
+#safe_mode=1
+
 ## CouchPotato
 
 # CouchPotato script category.
@@ -309,6 +314,12 @@ from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
 def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
+    if nzbtomedia.SAFE_MODE and inputDirectory == nzbtomedia.NZB_DEFAULTDIR:
+        logger.error(
+            'The input directory:[%s] is the Default Download Directory. Please configure category directories to prevent processing of other media.' % (
+            inputDirectory))
+        return -1
+
     if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
 

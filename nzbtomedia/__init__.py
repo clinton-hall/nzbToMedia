@@ -75,11 +75,13 @@ GIT_USER = None
 GIT_BRANCH = None
 GIT_REPO = None
 FORCE_CLEAN = None
+SAFE_MODE = None
 
 NZB_CLIENTAGENT = None
 SABNZBDHOST = None
 SABNZBDPORT = None
 SABNZBDAPIKEY = None
+NZB_DEFAULTDIR = None
 
 TORRENT_CLIENTAGENT = None
 TORRENT_CLASS = None
@@ -87,6 +89,7 @@ USELINK = None
 OUTPUTDIRECTORY = None
 NOFLATTEN = []
 DELETE_ORIGINAL = None
+TORRENT_DEFAULTDIR = None
 
 UTORRENTWEBUI = None
 UTORRENTUSR = None
@@ -158,7 +161,8 @@ def initialize(section=None):
         OUTPUTVIDEOBITRATE, OUTPUTAUDIOCODEC, OUTPUTAUDIOBITRATE, OUTPUTSUBTITLECODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, \
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, EXT_REPLACE, CHECK_MEDIA
+        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, EXT_REPLACE, CHECK_MEDIA, SAFE_MODE, \
+        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR
 
     if __INITIALIZED__:
         return False
@@ -228,6 +232,7 @@ def initialize(section=None):
     FORCE_CLEAN = CFG["General"]["force_clean"]
     FFMPEG_PATH = CFG["General"]["ffmpeg_path"]
     CHECK_MEDIA = int(CFG["General"]["check_media"])
+    SAFE_MODE = int(CFG["General"]["safe_mode"])
 
     # Check for updates via GitHUB
     if versionCheck.CheckVersion().check_for_new_version():
@@ -251,10 +256,12 @@ def initialize(section=None):
     SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]
     SABNZBDPORT = int(CFG["Nzb"]["sabnzbd_port"])
     SABNZBDAPIKEY = CFG["Nzb"]["sabnzbd_apikey"]
+    NZB_DEFAULTDIR = int(CFG["Nzb"]["default_downloadDirectory"])
 
     TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | other
     USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
     OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
+    NZB_DEFAULTDIR = int(CFG["Torrent"]["default_downloadDirectory"])
     CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
     NOFLATTEN = (CFG["Torrent"]["noFlatten"])
     if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
