@@ -3,7 +3,7 @@ from nzbtomedia import logger, nzbToMediaDB
 from nzbtomedia.nzbToMediaUtil import backupVersionedFile
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from
-MAX_DB_VERSION = 1
+MAX_DB_VERSION = 2
 
 def backupDatabase(version):
     logger.info("Backing up database before upgrade")
@@ -22,11 +22,11 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
         return self.hasTable("db_version")
 
     def execute(self):
-        if not self.hasTable("history") and not self.hasTable("db_version"):
+        if not self.hasTable("downloads") and not self.hasTable("db_version"):
             queries = [
                 "CREATE TABLE db_version (db_version INTEGER);",
-                "CREATE TABLE downloads (input_directory TEXT, input_name TEXT PRIMARY KEY, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC);",
-                "INSERT INTO db_version (db_version) VALUES (1);"
+                "CREATE TABLE downloads (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));",
+                "INSERT INTO db_version (db_version) VALUES (2);"
             ]
             for query in queries:
                 self.connection.action(query)
@@ -47,3 +47,10 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
                                           str(MAX_DB_VERSION) + ").\n" + \
                                           "If you have used other forks of nzbToMedia, your database may be unusable due to their modifications."
                 )
+            if cur_db_version < MAX_DB_VERSION:  # We need to upgrade.
+                queries = [
+                    "ALTER TABLE downloads ADD CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name);", 
+                    "INSERT INTO db_version (db_version) VALUES (2);"
+                ]
+                for query in queries:
+                    self.connection.action(query)

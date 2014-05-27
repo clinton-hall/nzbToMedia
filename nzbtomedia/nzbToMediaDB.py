@@ -255,7 +255,7 @@ class SchemaUpgrade(object):
     def checkDBVersion(self):
         result = self.connection.select("SELECT db_version FROM db_version")
         if result:
-            return int(result[0]["db_version"])
+            return int(result[-1]["db_version"])
         else:
             return 0
 
