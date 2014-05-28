@@ -19,7 +19,11 @@ def backupDatabase(version):
 
 class InitialSchema(nzbToMediaDB.SchemaUpgrade):
     def test(self):
-        return self.hasTable("db_version")
+        no_update = True
+        if self.hasTable("db_version"):
+            cur_db_version = self.checkDBVersion()
+            no_update = not cur_db_version < MAX_DB_VERSION
+        return no_update
 
     def execute(self):
         if not self.hasTable("downloads") and not self.hasTable("db_version"):
@@ -49,7 +53,10 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
                 )
             if cur_db_version < MAX_DB_VERSION:  # We need to upgrade.
                 queries = [
-                    "ALTER TABLE downloads ADD CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name);", 
+                    "CREATE TABLE downloads2 (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));",
+                    "INSERT INTO downloads2 SELECT * FROM downloads;",
+                    "DROP TABLE IF EXISTS downloads;",
+                    "ALTER TABLE downloads2 RENAME TO downloads;", 
                     "INSERT INTO db_version (db_version) VALUES (2);"
                 ]
                 for query in queries:
