@@ -186,6 +186,8 @@
     sabnzbd_host = localhost
     sabnzbd_port = 8080
     sabnzbd_apikey =
+    ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.
+    default_downloadDirectory =
 
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, other
@@ -194,6 +196,8 @@
     useLink = hard
     ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
     outputDirectory = /abs/path/to/complete/
+    ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode. 
+    default_downloadDirectory =
     ###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
     categories = music_videos,pictures,software,manual
     ###### A list of categories that you don't want to be flattened (i.e preserve the directory structure when copying/linking.
