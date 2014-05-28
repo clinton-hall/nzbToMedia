@@ -21,6 +21,8 @@
     ffmpeg_path =
     # Enable/Disable media file checking using ffprobe.
     check_media = 1
+    # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectories by mistake.
+    safe_mode = 1
 
 [CouchPotato]
     #### autoProcessing for Movies
