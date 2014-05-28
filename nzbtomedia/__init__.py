@@ -256,12 +256,12 @@ def initialize(section=None):
     SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]
     SABNZBDPORT = int(CFG["Nzb"]["sabnzbd_port"])
     SABNZBDAPIKEY = CFG["Nzb"]["sabnzbd_apikey"]
-    NZB_DEFAULTDIR = int(CFG["Nzb"]["default_downloadDirectory"])
+    NZB_DEFAULTDIR = CFG["Nzb"]["default_downloadDirectory"]
 
     TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | other
     USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
     OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
-    NZB_DEFAULTDIR = int(CFG["Torrent"]["default_downloadDirectory"])
+    TORRENT_DEFAULTDIR = CFG["Torrent"]["default_downloadDirectory"]
     CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
     NOFLATTEN = (CFG["Torrent"]["noFlatten"])
     if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
