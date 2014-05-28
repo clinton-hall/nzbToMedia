@@ -231,13 +231,12 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         try:
             section = "Nzb"
-                key = 'NZBOP_DESTDIR'
-                if os.environ.has_key(key):
-                    option = default_downloadDirectory
-                    value = os.environ[key]
-                    CFG_NEW[section][option] = value
+            key = 'NZBOP_DESTDIR'
+            if os.environ.has_key(key):
+                option = default_downloadDirectory
+                value = os.environ[key]
+                CFG_NEW[section][option] = value
 
-        try:
             section = "General"
             envKeys = ['AUTO_UPDATE', 'CHECK_MEDIA', 'SAFE_MODE']
             cfgKeys = ['auto_update', 'check_media', 'safe_mode']
