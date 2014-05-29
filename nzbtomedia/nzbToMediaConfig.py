@@ -233,7 +233,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
             if os.environ.has_key(key):
-                option = default_downloadDirectory
+                option = 'default_downloadDirectory'
                 value = os.environ[key]
                 CFG_NEW[section][option] = value
 

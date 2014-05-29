@@ -339,7 +339,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
     if section is None:
         logger.error(
-            'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for teh appropriate section in your autoProcessMedia.cfg and try again.' % (
+            'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
             inputCategory))
         return -1
 
