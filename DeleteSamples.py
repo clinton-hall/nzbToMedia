@@ -54,11 +54,11 @@ if os.environ['NZBOP_VERSION'][0:5] < '11.0':
     print "NZBGet Version %s is not supported. Please update NZBGet." % (str(os.environ['NZBOP_VERSION']))
     sys.exit(0)
 
-print "Script triggered from NZBGet Version %s." % (str(os.environ['NZBOP_VERSION'][0:5]))
+print "Script triggered from NZBGet Version %s." % (str(os.environ['NZBOP_VERSION']))
 status = 0
 if os.environ.has_key('NZBPP_TOTALSTATUS'):
     if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
-        print "Download failed with status %s." % (os.environ['NZBPP_STATUS']))
+        print "Download failed with status %s." % (os.environ['NZBPP_STATUS'])
         status = 1
 
 else:
