@@ -413,49 +413,44 @@ def main(args, section=None):
     result = 0
     status = 0
 
-    # NZBGet V11+
-    # Check if the script is called from nzbget 11.0 or later
-    if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
-        logger.info("Script triggered from NZBGet (11.0 or later).")
+    # NZBGet
+    if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        logger.info("Script triggered from NZBGet Version %s." %(str(os.environ['NZBOP_VERSION'][0:5])))
 
-        if os.environ['NZBOP_UNPACK'] != 'yes':
-            logger.error("Please enable option \"Unpack\" in nzbget configuration file, exiting")
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
-
-        # Check par status
-        if os.environ['NZBPP_PARSTATUS'] == '3':
-            logger.warning("Par-check successful, but Par-repair disabled, exiting")
-            logger.info("Please check your Par-repair settings for future downloads.")
-            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
-
-        if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
-            logger.warning("Par-repair failed, setting status \"failed\"")
-            status = 1
-
-        # Check unpack status
-        if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-            logger.warning("Unpack failed, setting status \"failed\"")
-            status = 1
-
-        if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
-            # Unpack was skipped due to nzb-file properties or due to errors during par-check
-
-            if os.environ['NZBPP_HEALTH'] < 1000:
-                logger.warning(
-                    "Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
-                logger.info("Please check your Par-check/repair settings for future downloads.")
+        # Check if the script is called from nzbget 13.0 or later
+        if os.environ.has_key('NZBPP_TOTALSTATUS'):
+            if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
+                logger.info("Download failed with status %s." %(os.environ['NZBPP_STATUS']))
                 status = 1
 
-            else:
-                logger.info(
-                    "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
-                logger.info("Please check your Par-check/repair settings for future downloads.")
+        # Check if the script is called from nzbget 11.0 or later
+        elif os.environ['NZBOP_VERSION'][0:5] < '11.0':
+            logger.error("NZBGet Version %s is not supported. Please update NZBGet." %(str(os.environ['NZBOP_VERSION'][0:5])))
+            sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
-        # Check if destination directory exists (important for reprocessing of history items)
-        if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-            logger.error("Nothing to post-process: destination directory %s doesn't exist. Setting status failed" % (
-            os.environ['NZBPP_DIRECTORY']))
-            status = 1
+        else:
+            if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
+                logger.warning("Par-repair failed, setting status \"failed\"")
+                status = 1
+
+            # Check unpack status
+            if os.environ['NZBPP_UNPACKSTATUS'] == '1':
+                logger.warning("Unpack failed, setting status \"failed\"")
+                status = 1
+
+            if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ['NZBPP_PARSTATUS'] == '0':
+                # Unpack was skipped due to nzb-file properties or due to errors during par-check
+
+                if os.environ['NZBPP_HEALTH'] < 1000:
+                    logger.warning(
+                        "Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \"failed\"")
+                    logger.info("Please check your Par-check/repair settings for future downloads.")
+                    status = 1
+
+                else:
+                    logger.info(
+                        "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful")
+                    logger.info("Please check your Par-check/repair settings for future downloads.")
 
         # Check for download_id to pass to CouchPotato
         download_id = ""
