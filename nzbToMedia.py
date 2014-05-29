@@ -417,10 +417,10 @@ def main(args, section=None):
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         # Check if the script is called from nzbget 11.0 or later
         if os.environ['NZBOP_VERSION'][0:5] < '11.0':
-            logger.error("NZBGet Version %s is not supported. Please update NZBGet." %(str(os.environ['NZBOP_VERSION'][0:5])))
+            logger.error("NZBGet Version %s is not supported. Please update NZBGet." %(str(os.environ['NZBOP_VERSION'])))
             sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
 
-        logger.info("Script triggered from NZBGet Version %s." %(str(os.environ['NZBOP_VERSION'][0:5])))
+        logger.info("Script triggered from NZBGet Version %s." %(str(os.environ['NZBOP_VERSION'])))
 
         # Check if the script is called from nzbget 13.0 or later
         if os.environ.has_key('NZBPP_TOTALSTATUS'):

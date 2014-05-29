@@ -21,7 +21,7 @@ if not os.environ.has_key('NZBOP_SCRIPTDIR'):
     sys.exit(0)
 
 if os.environ['NZBOP_VERSION'][0:5] < '11.0':
-    print "NZBGet Version %s is not supported. Please update NZBGet." % (str(os.environ['NZBOP_VERSION'][0:5]))
+    print "NZBGet Version %s is not supported. Please update NZBGet." % (str(os.environ['NZBOP_VERSION']))
     sys.exit(0)
 
 print "Script triggered from NZBGet Version %s." % (str(os.environ['NZBOP_VERSION'][0:5]))
