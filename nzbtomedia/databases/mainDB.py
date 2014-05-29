@@ -19,7 +19,7 @@ def backupDatabase(version):
 
 class InitialSchema(nzbToMediaDB.SchemaUpgrade):
     def test(self):
-        no_update = True
+        no_update = False
         if self.hasTable("db_version"):
             cur_db_version = self.checkDBVersion()
             no_update = not cur_db_version < MAX_DB_VERSION
