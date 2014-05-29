@@ -45,26 +45,24 @@ def is_sample(filePath, inputName, maxSampleSize, SampleIDs):
                 return True
     # Return False if none of these were met.
     return False
+  
+if not os.environ.has_key('NZBOP_SCRIPTDIR'):
+    print "This script can only be called from NZBGet (11.0 or later)."
+    sys.exit(0)
 
+if os.environ['NZBOP_VERSION'][0:5] < '11.0':
+    print "NZBGet Version %s is not supported. Please update NZBGet." % (str(os.environ['NZBOP_VERSION'][0:5]))
+    sys.exit(0)
 
-# NZBGet V11+
-# Check if the script is called from nzbget 11.0 or later
-if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5] < '11.0':
-    print "Script triggered from NZBGet (11.0 or later)."
+print "Script triggered from NZBGet Version %s." % (str(os.environ['NZBOP_VERSION'][0:5]))
+status = 0
+if os.environ.has_key('NZBPP_TOTALSTATUS'):
+    if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
+        print "Download failed with status %s." % (os.environ['NZBPP_STATUS']))
+        status = 1
 
-    # Check nzbget.conf options
-    status = 0
-
-    if os.environ['NZBOP_UNPACK'] != 'yes':
-        print "Please enable option \"Unpack\" in nzbget configuration file, exiting."
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
-
+else:
     # Check par status
-    if os.environ['NZBPP_PARSTATUS'] == '3':
-        print "Par-check successful, but Par-repair disabled, exiting."
-        print "Please check your Par-repair settings for future downloads."
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
-
     if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ['NZBPP_PARSTATUS'] == '4':
         print "Par-repair failed, setting status \"failed\"."
         status = 1
@@ -86,33 +84,27 @@ if os.environ.has_key('NZBOP_SCRIPTDIR') and not os.environ['NZBOP_VERSION'][0:5
             print "Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful."
             print "Please check your Par-check/repair settings for future downloads."
 
-    # Check if destination directory exists (important for reprocessing of history items)
-    if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
-        print "Nothing to post-process: destination directory", os.environ['NZBPP_DIRECTORY'], "doesn't exist. Setting status \"failed\"."
-        status = 1
+# Check if destination directory exists (important for reprocessing of history items)
+if not os.path.isdir(os.environ['NZBPP_DIRECTORY']):
+    print "Nothing to post-process: destination directory", os.environ['NZBPP_DIRECTORY'], "doesn't exist. Setting status \"failed\"."
+    status = 1
 
-    # All checks done, now launching the script.
+# All checks done, now launching the script.
+if status == 1:
+    sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
 
-    if status == 1:
-        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_NONE)
-
-    mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
-    SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
-    for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
-        for file in filenames:
-
-            filePath = os.path.join(dirpath, file)
-            fileName, fileExtension = os.path.splitext(file)
-
-            if fileExtension in mediaContainer:  # If the file is a video file
-                if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE'], SampleIDs):  # Ignore samples
-                    print "Deleting sample file: ", filePath
-                    try:
-                        os.unlink(filePath)
-                    except:
-                        print "Error: unable to delete file", filePath
-                        sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
-    sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
-else:
-    print "This script can only be called from NZBGet (11.0 or later)."
-    sys.exit(0)
+mediaContainer = os.environ['NZBPO_MEDIAEXTENSIONS'].split(',')
+SampleIDs = os.environ['NZBPO_SAMPLEIDS'].split(',')
+for dirpath, dirnames, filenames in os.walk(os.environ['NZBPP_DIRECTORY']):
+    for file in filenames:
+        filePath = os.path.join(dirpath, file)
+        fileName, fileExtension = os.path.splitext(file)
+        if fileExtension in mediaContainer:  # If the file is a video file
+            if is_sample(filePath, os.environ['NZBPP_NZBNAME'], os.environ['NZBPO_MAXSAMPLESIZE'], SampleIDs):  # Ignore samples
+                print "Deleting sample file: ", filePath
+                try:
+                    os.unlink(filePath)
+                except:
+                    print "Error: unable to delete file", filePath
+                    sys.exit(nzbtomedia.NZBGET_POSTPROCESS_ERROR)
+sys.exit(nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
