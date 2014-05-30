@@ -7,7 +7,7 @@ import nzbtomedia
 
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles, remoteDir
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -73,9 +73,9 @@ class autoProcessTV:
         except:
             process_method = None
         try:
-            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+            remote_path = int(nzbtomedia.CFG[section][inputCategory]["remote_path"])
         except:
-            remote_path = None
+            remote_path = 0
         try:
             wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
         except:
@@ -107,14 +107,6 @@ class autoProcessTV:
                 status = 1
                 failed = 1
 
-        if remote_path:
-            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
-                remote_path = remote_path + os.path.basename(dirName)
-            elif remote_path[0] == '/':  # posix path
-                remote_path = remote_path + '/' + os.path.basename(dirName)
-            else:  # assume windows path or UNF path
-                remote_path = remote_path + '\\' + os.path.basename(dirName)
-
         # configure SB params to pass
         fork_params['quiet'] = 1
         if inputName is not None:
@@ -127,7 +119,7 @@ class autoProcessTV:
             if param in ["dirName", "dir"]:
                 fork_params[param] = dirName
                 if remote_path:
-                    fork_params[param] = remote_path
+                    fork_params[param] = remoteDir(dirName)
 
             if param == "process_method":
                 if process_method:

@@ -83,6 +83,19 @@
 # set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
 #sbprocess_method=
 
+# SickBeard and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#sbremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints= 
+
 ## Extensions
 
 # Media Extensions

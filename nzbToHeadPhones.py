@@ -60,6 +60,19 @@
 # Set the number of minutes to wait after initiating HeadPhones post-processing to check if the album status has changed.
 #hpwait_for=2
 
+# HeadPhones and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#hpremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints= 
+
 ## WakeOnLan
 
 # use WOL (0, 1).

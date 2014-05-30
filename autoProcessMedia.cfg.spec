@@ -45,8 +45,8 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if Couchpotato is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
@@ -73,8 +73,8 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if SickBeard is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
@@ -101,8 +101,8 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if NzbDrone is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
@@ -125,8 +125,8 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if HeadPhones is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
@@ -149,8 +149,8 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if Mylar is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
@@ -174,10 +174,15 @@
         minSize = 0
         # Enable/Disable deleteing ignored files (samples and invalid media files)
         delete_ignored = 0
-        ##### Set to path where completed downloads are found on remote server for this category
-        remote_path =
+        ##### Enable if Gamez is on a remote server for this category
+        remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+
+[Network]
+    # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+    # e.g. MountPoints = /volume1/Public/,E:\|/volume2/share/,\\NAS\
+    mount_points = 
 
 [Nzb]
     ###### clientAgent - Supported clients: sabnzbd, nzbget

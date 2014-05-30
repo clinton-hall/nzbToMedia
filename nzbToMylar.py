@@ -61,6 +61,19 @@
 # set this to where your Mylar completed downloads are.
 #mywatch_dir=
 
+# Mylar and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#myremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints= 
+
 ## WakeOnLan
 
 # use WOL (0, 1).

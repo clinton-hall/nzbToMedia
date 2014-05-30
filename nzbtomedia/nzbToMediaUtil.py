@@ -31,7 +31,7 @@ def sanitizeName(name):
     '''
 
     # remove bad chars from the filename
-    name = re.sub(r'[\\/\*]', '-', name)
+    name = re.sub(r'[\\\/*]', '-', name)
     name = re.sub(r'[:"<>|?]', '', name)
 
     # remove leading/trailing periods and spaces
@@ -61,6 +61,21 @@ def makeDir(path):
         except Exception, e:
             return False
     return True
+
+def remoteDir(path):
+    for local,remote in nzbtomedia.REMOTEPATHS:
+        if local in path:
+            base_dirs = path.replace(local,"").split(os.sep)
+            if '/' in remote:
+                remote_sep = '/'
+            else:
+                remote_sep = '\\'
+            new_path = remote_sep.join([remote] + base_dirs)
+            new_path = re.sub(r'(\S)(\\+)', r'\1\\', new_path)
+            new_path = re.sub(r'(\/+)', r'/', new_path)
+            new_path = re.sub(r'([\/\\])$', r'', new_path)
+            return new_path
+    return path
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     tordir = False

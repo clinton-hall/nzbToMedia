@@ -172,7 +172,11 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == "forceClean":
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
-
+                if option == "remote_path":
+                    if value and not isinstance(value, int):
+                        value = 1
+                    elif not value:
+                        value = 0
                 # remove any options that we no longer need so they don't migrate into our new config
                 if not list(ConfigObj.find_key(CFG_NEW, option)):
                     values.pop(option)
@@ -247,10 +251,20 @@ class ConfigObj(configobj.ConfigObj, Section):
                     value = os.environ[key]
                     CFG_NEW[section][option] = value
 
+            section = "Network"
+            envKeys = ['MOUNTPOINTS']
+            cfgKeys = ['mount_points']
+            for index in range(len(envKeys)):
+                key = 'NZBPO_' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    CFG_NEW[section][option] = value            
+
             section = "CouchPotato"
             envCatKey = 'NZBPO_CPSCATEGORY'
-            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTECPS', 'WAIT_FOR', 'WATCH_DIR']
-            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remoteCPS', 'wait_for', 'watch_dir']
+            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH' 'WAIT_FOR', 'WATCH_DIR']
+            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path', 'wait_for', 'watch_dir']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_CPS' + envKeys[index]
@@ -264,8 +278,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "SickBeard"
             envCatKey = 'NZBPO_SBCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY']
-            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy']
+            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_SB' + envKeys[index]
@@ -279,8 +293,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "HeadPhones"
             envCatKey = 'NZBPO_HPCATEGORY'
-            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WAIT_FOR', 'WATCH_DIR']
-            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir']
+            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WAIT_FOR', 'WATCH_DIR', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_HP' + envKeys[index]
@@ -294,8 +308,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "Mylar"
             envCatKey = 'NZBPO_MYCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR']
-            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir']
+            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_MY' + envKeys[index]
@@ -309,8 +323,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "Gamez"
             envCatKey = 'NZBPO_GZCATEGORY'
-            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'LIBRARY']
-            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'library']
+            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'LIBRARY', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'library', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_GZ' + envKeys[index]
@@ -324,8 +338,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "NzbDrone"
             envCatKey = 'NZBPO_NDCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED']
-            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed']
+            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_ND' + envKeys[index]

@@ -3,7 +3,7 @@ import time
 import requests
 import nzbtomedia
 
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir
 from nzbtomedia import logger
 
 class autoProcessMusic:
@@ -47,9 +47,9 @@ class autoProcessMusic:
             web_root = ""
 
         try:
-            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+            remote_path = int(nzbtomedia.CFG[section][inputCategory]["remote_path"])
         except:
-            remote_path = None
+            remote_path = 0
 
         if ssl:
             protocol = "https://"
@@ -57,14 +57,6 @@ class autoProcessMusic:
             protocol = "http://"
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
-
-        if remote_path:
-            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
-                remote_path = remote_path + os.path.basename(dirName)
-            elif remote_path[0] == '/':  # posix path
-                remote_path = remote_path + '/' + os.path.basename(dirName)
-            else:  # assume windows path or UNF path
-                remote_path = remote_path + '\\' + os.path.basename(dirName)
 
         url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 
@@ -76,7 +68,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                params['dir'] = remote_path
+                params['dir'] = remoteDir(dirName)
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:

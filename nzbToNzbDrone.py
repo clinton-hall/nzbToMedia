@@ -65,6 +65,19 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #nddelete_failed=0
 
+# NzbDrone and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#ndremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints= 
+
 ## Extensions
 
 # Media Extensions

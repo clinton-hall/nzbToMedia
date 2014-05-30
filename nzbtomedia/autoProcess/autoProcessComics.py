@@ -3,7 +3,7 @@ import time
 import nzbtomedia
 import requests
 import time
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, replaceExtensions
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, replaceExtensions, remoteDir
 from nzbtomedia import logger
 
 class autoProcessComics:
@@ -51,28 +51,20 @@ class autoProcessComics:
         except:
             web_root = ""
         try:
-            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+            remote_path = int(nzbtomedia.CFG[section][inputCategory]["remote_path"])
         except:
-            remote_path = None
+            remote_path = 0
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
         replaceExtensions(dirName)
-
-        if remote_path:
-            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
-                remote_path = remote_path + os.path.basename(dirName)
-            elif remote_path[0] == '/':  # posix path
-                remote_path = remote_path + '/' + os.path.basename(dirName)
-            else:  # assume windows path or UNF path
-                remote_path = remote_path + '\\' + os.path.basename(dirName)
 
         params = {}
         params['apikey'] = apikey
         params['cmd'] = "forceProcess"
         params['nzb_folder'] = dirName
         if remote_path:
-            params['nzb_folder'] = remote_path
+            params['nzb_folder'] = remoteDir(dirName)
 
         if inputName != None:
             params['nzb_name'] = inputName

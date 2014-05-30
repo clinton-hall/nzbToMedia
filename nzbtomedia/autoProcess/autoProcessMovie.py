@@ -4,7 +4,7 @@ import requests
 import nzbtomedia
 
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -113,9 +113,9 @@ class autoProcessMovie:
         except:
             web_root = ""
         try:
-            remote_path = nzbtomedia.CFG[section][inputCategory]["remote_path"]
+            remote_path = int(nzbtomedia.CFG[section][inputCategory]["remote_path"])
         except:
-            remote_path = None
+            remote_path = 0
 
         if ssl:
             protocol = "https://"
@@ -145,14 +145,6 @@ class autoProcessMovie:
         process_all_exceptions(inputName.lower(), dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
-        if remote_path:
-            if remote_path[-1] in ['\\','/']:  # supplied directory includes final directory separator
-                remote_path = remote_path + os.path.basename(dirName)
-            elif remote_path[0] == '/':  # posix path
-                remote_path = remote_path + '/' + os.path.basename(dirName)
-            else:  # assume windows path or UNF path
-                remote_path = remote_path + '\\' + os.path.basename(dirName)
-
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:
                 result = transcoder.Transcode_directory(dirName)
@@ -173,7 +165,7 @@ class autoProcessMovie:
 
             params['media_folder'] = dirName
             if remote_path:
-                params['media_folder'] = remote_path
+                params['media_folder'] = remoteDir(dirName)
 
             url = "%s%s" % (baseURL, command)
 

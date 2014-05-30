@@ -70,10 +70,10 @@
 # Set the number of minutes to wait after calling the renamer, to check the movie has changed status.
 #cpswait_for=2
 
-# CouchPotatoServer and NZBGet are a different system (0, 1).
+# Couchpotato and NZBGet are a different system (0, 1).
 #
-# set to 1 if CouchPotato and NZBGet are on a different system, or 0 if on the same system.
-#remoteCPS = 0
+# Enable to replace local path with the path as per the mountPoints below.
+#cpsremote_path=0
 
 ## SickBeard
 
@@ -124,6 +124,11 @@
 # set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
 #sbprocess_method=
 
+# SickBeard and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#sbremote_path=0
+
 ## NzbDrone
 
 # NzbDrone script category.
@@ -160,6 +165,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #nddelete_failed=0
 
+# NzbDrone and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#ndremote_path=0
+
 ## HeadPhones
 
 # HeadPhones script category.
@@ -185,6 +195,11 @@
 #
 # set this if using a reverse proxy.
 #hpweb_root=
+
+# HeadPhones and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#hpremote_path=0
 
 ## Mylar
 
@@ -217,6 +232,11 @@
 # Set the number of minutes to wait after calling the force process, to check the issue has changed status.
 #myswait_for=1
 
+# Mylar and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#myremote_path=0
+
 ## Gamez
 
 # Gamez script category.
@@ -247,6 +267,19 @@
 #
 # set this if using a reverse proxy.
 #gzweb_root=
+
+# Gamez and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#gzremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints= 
 
 ## Extensions
 
@@ -361,6 +394,11 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         extract = int(section[inputCategory]['extract'])
     except:
         extract = 0
+
+    if int(section[inputCategory]['remote_path']) and not nzbtomedia.REMOTEPATHS:
+        logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
+            sectionName, inputCategory))
+        return -1
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))

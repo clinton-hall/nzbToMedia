@@ -91,6 +91,8 @@ NOFLATTEN = []
 DELETE_ORIGINAL = None
 TORRENT_DEFAULTDIR = None
 
+REMOTEPATHS = None
+
 UTORRENTWEBUI = None
 UTORRENTUSR = None
 UTORRENTPWD = None
@@ -162,7 +164,7 @@ def initialize(section=None):
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, EXT_REPLACE, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR
+        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS
 
     if __INITIALIZED__:
         return False
@@ -279,6 +281,10 @@ def initialize(section=None):
     DELUGEPORT = int(CFG["Torrent"]["DelugePort"])  # 8084
     DELUGEUSR = CFG["Torrent"]["DelugeUSR"]  # mysecretusr
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
+
+    REMOTEPATHS = CFG["Network"]["mount_points"] or None
+    if REMOTEPATHS:
+        REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                   re.compile('.part\d+.rar$', re.I),
