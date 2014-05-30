@@ -263,7 +263,7 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "CouchPotato"
             envCatKey = 'NZBPO_CPSCATEGORY'
-            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH' 'WAIT_FOR', 'WATCH_DIR']
+            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH', 'WAIT_FOR', 'WATCH_DIR']
             cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path', 'wait_for', 'watch_dir']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
