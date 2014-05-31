@@ -308,8 +308,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "Mylar"
             envCatKey = 'NZBPO_MYCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
-            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'remote_path']
+            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'APIKEY', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'apikey', 'ssl', 'web_root', 'watch_dir', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_MY' + envKeys[index]
