@@ -7,29 +7,6 @@ from nzbtomedia.nzbToMediaUtil import convert_to_ascii, replaceExtensions, remot
 from nzbtomedia import logger
 
 class autoProcessComics:
-    def get_status(self, url, apikey, dirName):
-        logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))
-
-        params = {}
-        params['apikey'] = apikey
-        params['cmd'] = "getHistory"
-
-        logger.debug("Opening URL: %s with PARAMS: %s" % (url, params))
-
-        try:
-            r = requests.get(url, params=params, verify=False)
-        except Exception, e:
-            logger.error("Unable to open URL")
-            return None
-
-        try:
-            result = r.json()
-            for issue in result:
-                if os.path.basename(dirName) == issue['FolderName']:
-                     return issue["Status"].lower()
-        except:
-            return None
-
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         if status != 0:
             logger.warning("FAILED DOWNLOAD DETECTED, nothing to process.",section)
@@ -38,10 +15,6 @@ class autoProcessComics:
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
-        try:
-            wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
-        except:
-            wait_for = 1
         try:
             ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
@@ -76,10 +49,7 @@ class autoProcessComics:
 
         url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
 
-        release_status = self.get_status(url, apikey, dirName)
-        if not release_status:
-            logger.error("Could not find a status for %s, is it in the wanted list ?" % (inputName),section)
-            return 1
+        success = False
 
         logger.debug("Opening URL: %s" % (url), section)
 
@@ -91,23 +61,15 @@ class autoProcessComics:
 
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
+            if "Post Processing SUCCESSFULL!" in line: success = True
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
             return 1
+
+        if success:
+            logger.postprocess("SUCCESS: This issue has been processed successfully",section)
+            return 0
         else:
-            logger.postprocess("Post-Processing started for %s in folder %s ..." % (inputName, dirName),section)
-
-        # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
-        timeout = time.time() + 60 * wait_for
-        while (time.time() < timeout):  # only wait 1 (default) minutes, then return.
-            current_status = self.get_status(url, apikey, dirName)
-            if current_status is not None and current_status != release_status:  # Something has changed. Mylar must have processed this issue.
-                logger.postprocess("SUCCESS: This issue is now marked as status [%s]" % (current_status),section)
-                return 0
-
-            time.sleep(10 * wait_for)
-
-        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
-        logger.warning("The issue does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for),section)
-        return 1  # failure
+            logger.warning("The issue does not appear to have successfully processed. Please check your Logs",section)
+            return 1  # failure
