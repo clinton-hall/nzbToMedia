@@ -395,8 +395,13 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     except:
         extract = 0
 
-    if int(section[inputCategory]['remote_path']) and not nzbtomedia.REMOTEPATHS:
-        logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
+    try:
+        if int(section[inputCategory]['remote_path']) and not nzbtomedia.REMOTEPATHS:
+            logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
+                sectionName, inputCategory))
+            return -1
+    except:
+        logger.error('Remote Path is not valid for %s:%s Please set this to either 0 to disable or 1 to enable, exiting!' % (
             sectionName, inputCategory))
         return -1
 
