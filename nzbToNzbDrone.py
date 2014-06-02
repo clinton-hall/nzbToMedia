@@ -34,7 +34,7 @@
 # NzbDrone script category.
 #
 # category that gets called for post-processing with NzbDrone.
-#ndCategory=tv
+#ndCategory=tv2
 
 # NzbDrone host.
 #ndhost=localhost
