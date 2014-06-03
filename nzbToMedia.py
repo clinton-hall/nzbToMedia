@@ -214,8 +214,11 @@
 # Mylar port.
 #myport=8090
 
-# Mylar api key.
-#myapikey=
+# Mylar username.
+#myusername=
+
+# Mylar password.
+#mypassword=
 
 # Mylar uses ssl (0, 1).
 #
@@ -401,9 +404,8 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
                 sectionName, inputCategory))
             return -1
     except:
-        logger.error('Remote Path is not valid for %s:%s Please set this to either 0 to disable or 1 to enable, exiting!' % (
-            sectionName, inputCategory))
-        return -1
+        logger.error('Remote Path %s is not valid for %s:%s Please set this to either 0 to disable or 1 to enable!' % (
+            section[inputCategory]['remote_path'], sectionName, inputCategory))
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))

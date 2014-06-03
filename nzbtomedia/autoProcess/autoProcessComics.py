@@ -14,7 +14,8 @@ class autoProcessComics:
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
-        apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
+        username = nzbtomedia.CFG[section][inputCategory]["username"]
+        password = nzbtomedia.CFG[section][inputCategory]["password"]
         try:
             ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
         except:
@@ -33,8 +34,6 @@ class autoProcessComics:
         replaceExtensions(dirName)
 
         params = {}
-        params['apikey'] = apikey
-        params['cmd'] = "forceProcess"
         params['nzb_folder'] = dirName
         if remote_path:
             params['nzb_folder'] = remoteDir(dirName)
@@ -47,14 +46,14 @@ class autoProcessComics:
         else:
             protocol = "http://"
 
-        url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
+        url = "%s%s:%s%s/post_process" % (protocol, host, port, web_root)
 
         success = False
 
         logger.debug("Opening URL: %s" % (url), section)
 
         try:
-            r = requests.get(url, params=params, stream=True, verify=False)
+            r = requests.get(url, auth=(username, password), params=params, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL", section)
             return 1 # failure
