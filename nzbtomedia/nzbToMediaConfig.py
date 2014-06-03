@@ -163,18 +163,16 @@ class ConfigObj(configobj.ConfigObj, Section):
                         CFG_NEW['Extensions'][option] = value
                         values.pop(option)
                     if option == "useLink":  # Sym links supported now as well.
-                        if isinstance(value, int):
-                            num_value = int(value)
-                            if num_value == 1:
-                                value = 'hard'
-                            else:
-                                value = 'no'
-                            values[option] = value
+                        if value in ['1', 1]:
+                            value = 'hard'
+                        elif value in ['0', 0]:
+                            value = 'no'
+                        values[option] = value
                     if option == "forceClean":
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
                 if option == "remote_path":
-                    if value and not isinstance(value, int):
+                    if value and not value in ['0', '1', 0, 1]:
                         value = 1
                     elif not value:
                         value = 0
@@ -236,6 +234,10 @@ class ConfigObj(configobj.ConfigObj, Section):
         CFG_NEW = config()
 
         try:
+            if os.environ.has_key('NZBPO_NDCATEGORY') and os.environ.has_key('NZBPO_SBCATEGORY'):
+                if os.environ('NZBPO_NDCATEGORY') == os.environ('NZBPO_SBCATEGORY'):
+                    logger.warning("%s category is set for SickBeard and NzbDrone. Please check your config in NZBGet" % (os.environ('NZBPO_NDCATEGORY')))
+
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
             if os.environ.has_key(key):
@@ -292,6 +294,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                             CFG_NEW[section][os.environ[envCatKey]] = {}
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['NzbDrone'].sections:
+                    CFG_NEW['NzbDrone'][envCatKey]['enabled'] = 0
 
             section = "HeadPhones"
             envCatKey = 'NZBPO_HPCATEGORY'
@@ -352,6 +356,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                             CFG_NEW[section][os.environ[envCatKey]] = {}
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['SickBeard'].sections:
+                    CFG_NEW['SickBeard'][envCatKey]['enabled'] = 0
 
             section = "Extensions"
             envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
