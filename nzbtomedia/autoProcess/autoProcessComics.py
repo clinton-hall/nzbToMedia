@@ -33,6 +33,10 @@ class autoProcessComics:
 
         replaceExtensions(dirName)
 
+        clean_name, ext = os.path.splitext(inputName)
+            if len(ext) == 4:  # we assume this was a standrard extension. 
+                inputName = clean_name
+
         params = {}
         params['nzb_folder'] = dirName
         if remote_path:
@@ -60,7 +64,7 @@ class autoProcessComics:
 
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
-            if "Post Processing SUCCESSFULL!" in line: success = True
+            if "Post Processing SUCCESSFUL!" in line: success = True
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
