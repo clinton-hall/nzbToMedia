@@ -169,6 +169,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                                 value = 'hard'
                             else:
                                 value = 'no'
+                            values[option] = value
                     if option == "forceClean":
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
@@ -177,6 +178,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         value = 1
                     elif not value:
                         value = 0
+                    values[option] = value
                 # remove any options that we no longer need so they don't migrate into our new config
                 if not list(ConfigObj.find_key(CFG_NEW, option)):
                     values.pop(option)
