@@ -34,8 +34,8 @@ class autoProcessComics:
         replaceExtensions(dirName)
 
         clean_name, ext = os.path.splitext(inputName)
-            if len(ext) == 4:  # we assume this was a standrard extension. 
-                inputName = clean_name
+        if len(ext) == 4:  # we assume this was a standrard extension. 
+            inputName = clean_name
 
         params = {}
         params['nzb_folder'] = dirName
