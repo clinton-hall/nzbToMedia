@@ -65,6 +65,8 @@ def extract(filePath, outputDestination):
             cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
     elif ext[1] in (".1", ".01", ".001") and os.path.splitext(ext[0])[1] in (".rar", ".zip", ".7z"):
         cmd = EXTRACT_COMMANDS[os.path.splitext(ext[0])[1]]
+    elif ext[1] in (".cb7", ".cba", ".cbr", ".cbt", ".cbz"):  # don't extract these comic book archives.
+        return False
     else:
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]

@@ -3,7 +3,7 @@ import time
 import nzbtomedia
 import requests
 import time
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, replaceExtensions, remoteDir
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir
 from nzbtomedia import logger
 
 class autoProcessComics:
@@ -30,7 +30,6 @@ class autoProcessComics:
             remote_path = 0
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
-#        replaceExtensions(dirName)
         clean_name, ext = os.path.splitext(inputName)
         if len(ext) == 4:  # we assume this was a standrard extension. 
             inputName = clean_name
