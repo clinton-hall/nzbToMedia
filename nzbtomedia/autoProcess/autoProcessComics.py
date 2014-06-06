@@ -30,15 +30,14 @@ class autoProcessComics:
             remote_path = 0
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
-
-        replaceExtensions(dirName)
-
+#        replaceExtensions(dirName)
         clean_name, ext = os.path.splitext(inputName)
         if len(ext) == 4:  # we assume this was a standrard extension. 
             inputName = clean_name
 
         params = {}
         params['nzb_folder'] = dirName
+
         if remote_path:
             params['nzb_folder'] = remoteDir(dirName)
 
@@ -55,13 +54,11 @@ class autoProcessComics:
         success = False
 
         logger.debug("Opening URL: %s" % (url), section)
-
         try:
             r = requests.get(url, auth=(username, password), params=params, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL", section)
             return 1 # failure
-
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
             if "Post Processing SUCCESSFUL!" in line: success = True
