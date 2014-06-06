@@ -487,6 +487,8 @@ def getDirs(section, subsection):
         watch_dir = os.path.join(nzbtomedia.CFG[section][subsection]["watch_dir"], subsection)
         if os.path.exists(watch_dir):
             to_return.extend(processDir(watch_dir))
+        elif os.path.exists(nzbtomedia.CFG[section][subsection]["watch_dir"]):
+            to_return.extend(processDir(nzbtomedia.CFG[section][subsection]["watch_dir"]))
     except:pass
 
     try:
