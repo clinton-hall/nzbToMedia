@@ -60,7 +60,7 @@ class autoProcessComics:
             return 1 # failure
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
-            if "Post Processing SUCCESSFUL!" in line: success = True
+            if ("Post Processing SUCCESSFUL!" or "Post Processing SUCCESSFULL!")in line: success = True
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
