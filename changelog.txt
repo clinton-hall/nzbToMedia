@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V10.0 XX/04/2014
+V9.3 09/06/2014
 
 Impacts Torrents
 Allow Headphones to remove torrents and data after processing.
