@@ -35,20 +35,29 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                                                                                         inputCategory, root,
                                                                                         nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure
 
+    if inputCategory == "":
+        inputCategory = "UNCAT"
+
+    usercat = inputCategory
+
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
     # auto-detect section
     section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
     if section is None:
-        logger.error(
-            'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for teh appropriate section in your autoProcessMedia.cfg and try again.' % (
-                inputCategory))
-        return -1
+        section = nzbtomedia.CFG.findsection("ALL").isenabled()
+        if section is None:
+            logger.error(
+                'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
+                    inputCategory))
+            return -1
+        else:
+            usercat = "ALL"
 
     if len(section) > 1:
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
-                inputCategory, section.keys()))
+                usercat, section.keys()))
         return -1
 
     if section:
@@ -60,49 +69,43 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         return -1
 
     try:
-        Torrent_NoLink = int(section[inputCategory]["Torrent_NoLink"])
+        Torrent_NoLink = int(section[usercat]["Torrent_NoLink"])
     except:
         Torrent_NoLink = 0
 
     try:
-        extract = int(section[inputCategory]['extract'])
+        extract = int(section[usercat]['extract'])
     except:
         extract = 0
 
-    if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:
+    if sectionName == "UserScript":
         try:
-            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_mediaExtensions"])
+            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = section[usercat]["user_script_mediaExtensions"]
         except:
             nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = None
         try:
-            nzbtomedia.USER_SCRIPT = nzbtomedia.CFG[sectionName][inputCategory]["user_script_path"]
+            nzbtomedia.USER_SCRIPT = section[usercat]["user_script_path"]
         except:
             nzbtomedia.USER_SCRIPT = None
         try:
-            nzbtomedia.USER_SCRIPT_PARAM = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_param"])
+            nzbtomedia.USER_SCRIPT_PARAM = section[usercat]["user_script_param"]
         except:
             nzbtomedia.USER_SCRIPT_PARAM = None
         try:
-            nzbtomedia.USER_SCRIPT_SUCCESSCODES = (nzbtomedia.CFG[sectionName][inputCategory]["user_script_successCodes"])
+            nzbtomedia.USER_SCRIPT_SUCCESSCODES = section[usercat]["user_script_successCodes"]
         except:
             nzbtomedia.USER_SCRIPT_SUCCESSCODES = 0
         try:
-            nzbtomedia.USER_SCRIPT_CLEAN = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_clean"])
+            nzbtomedia.USER_SCRIPT_CLEAN = int(section[usercat]["user_script_clean"])
         except:
             nzbtomedia.USER_SCRIPT_CLEAN = 1
         try:
-            nzbtomedia.USER_SCRIPT_RUNONCE = int(nzbtomedia.CFG[sectionName][inputCategory]["user_script_runOnce"])
+            nzbtomedia.USER_SCRIPT_RUNONCE = int(section[usercat]["user_script_runOnce"])
         except:
             nzbtomedia.USER_SCRIPT_RUNONCE = 1
 
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
-
-    processCategories = nzbtomedia.CATEGORIES
-    processOnly = processCategories
-
-    if inputCategory == "":
-        inputCategory = "UNCAT"
 
     outputDestination = os.path.normpath(
         nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeName(inputName)))
@@ -114,15 +117,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             'The output directory:[%s] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting' % (
             inputDirectory))
         return -1
-
-    if not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES:  # if None, we only process the 5 listed.
-        if "ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES:  # All defined categories
-            processOnly = nzbtomedia.CATEGORIES
-        processOnly.extend(nzbtomedia.USER_SCRIPT_CATEGORIES)  # Adds all categories to be processed by userscript.
-
-    if not inputCategory in processOnly:
-        logger.info("No processing to be done for category: %s. Exiting" % (inputCategory))
-        return
 
     logger.debug("Scanning files in directory: %s" % (inputDirectory))
 
@@ -200,16 +194,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if not sectionName in ['CouchPotato', 'SickBeard', 'NzbDrone']:
         status = 0
 
-    result = 0
-    if (inputCategory in nzbtomedia.USER_SCRIPT_CATEGORIES and not "NONE" in nzbtomedia.USER_SCRIPT_CATEGORIES) or (
-                    "ALL" in nzbtomedia.USER_SCRIPT_CATEGORIES and not inputCategory in processCategories):
-        logger.info("Processing user script %s." % (nzbtomedia.USER_SCRIPT))
-        result = external_script(outputDestination, inputName, inputCategory)
-    elif status != 0:
-        logger.error("Something failed! Please check logs. Exiting")
-        return status
+    logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
 
-    logger.info("Calling %s:%s to post-process:%s" % (sectionName, inputCategory, inputName))
+    result = 0
+    if sectionName in ["UserScript"]:
+        result = external_script(outputDestination, inputName, inputCategory)
 
     if sectionName == 'CouchPotato':
         result = nzbtomedia.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
@@ -245,6 +234,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
 
 def external_script(outputDestination, torrentName, torrentLabel):
+    if nzbtomedia.USER_SCRIPT is None:  # do nothing and return success.
+        return 0
     final_result = 0  # start at 0.
     num_files = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
