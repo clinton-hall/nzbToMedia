@@ -56,7 +56,27 @@ class autoProcessMusic:
         else:
             protocol = "http://"
 
+        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+            dirName = os.path.split(os.path.normpath(dirName))[0]
+
+        SpecificPath = os.path.join(dirName, str(inputName))
+        cleanName = os.path.splitext(SpecificPath)
+        if cleanName[1] == ".nzb":
+            SpecificPath = cleanName[0]
+        if os.path.isdir(SpecificPath):
+            dirName = SpecificPath
+
+        process_all_exceptions(inputName.lower(), dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
+
+        if not listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
+            logger.debug('Checking for archives to extract in directory: %s' % (dirName))
+            nzbtomedia.extractFiles(dirName)
+            inputName, dirName = convert_to_ascii(inputName, dirName)
+
+        if listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and status:
+            logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as successful." % (str(good_files)), section)
+            status = 0
 
         url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 

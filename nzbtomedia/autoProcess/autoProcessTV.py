@@ -34,12 +34,6 @@ class autoProcessTV:
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
 
-        # Check video files for corruption
-        status = int(failed)
-        for video in listMediaFiles(dirName):
-            if not transcoder.isVideoGood(video):
-                status = 1
-
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         try:
@@ -91,14 +85,37 @@ class autoProcessTV:
         if os.path.isdir(SpecificPath):
             dirName = SpecificPath
 
+        # Check video files for corruption
+        status = int(failed)
+        for video in listMediaFiles(dirName):
+            if not transcoder.isVideoGood(video):
+                status = 1
+                failed = 1
+
         if fork not in nzbtomedia.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
                 process_all_exceptions(inputName.lower(), dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
 
             # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
-            if listMediaFiles(dirName):  # Check that a video exists. if not, assume failed.
+            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
+            elif listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
+                logger.debug('Checking for archives to extract in directory: %s' % (dirName))
+                nzbtomedia.extractFiles(dirName)
+                inputName, dirName = convert_to_ascii(inputName, dirName)
+                good_files = 0
+                num_files = 0
+                for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
+                    num_files += 1
+                    if transcoder.isVideoGood(video):
+                        good_files += 1
+                if num_files > 0 and good_files == num_files:
+                    status = 0
+                    failed = 0
+
+            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
+                flatten(dirName) 
             elif clientAgent == "manual":
                 logger.warning("No media files found in directory %s to manually process." % (dirName), section)
                 return 0  # Success (as far as this script is concerned)

@@ -8,6 +8,7 @@ import nzbtomedia
 
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
@@ -172,6 +173,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if not inputCategory in nzbtomedia.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
         nzbtomedia.flatten(outputDestination)
+
+    inputName, outputDestination = convert_to_ascii(inputName, outputDestination)
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))

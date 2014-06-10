@@ -283,7 +283,7 @@
         delay = 120
 
 [ASCII]
-    #Set convert =1 if you want to convert any "foreign" characters to ASCII before passing to SB/CP etc. Default is disabled (0).
+    #Set convert =1 if you want to convert any "foreign" characters to ASCII (UTF8) before passing to SB/CP etc. Default is disabled (0).
     convert = 0
 
 [passwords]

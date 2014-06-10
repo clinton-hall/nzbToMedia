@@ -91,11 +91,6 @@ class autoProcessMovie:
         return results
 
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
-        # Check video files for corruption
-        status = int(status)
-        for video in listMediaFiles(dirName):
-            if not transcoder.isVideoGood(video):
-                status = 1
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -142,8 +137,42 @@ class autoProcessMovie:
             except:
                 pass
 
+        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+            dirName = os.path.split(os.path.normpath(dirName))[0]
+
+        SpecificPath = os.path.join(dirName, str(inputName))
+        cleanName = os.path.splitext(SpecificPath)
+        if cleanName[1] == ".nzb":
+            SpecificPath = cleanName[0]
+        if os.path.isdir(SpecificPath):
+            dirName = SpecificPath
+
         process_all_exceptions(inputName.lower(), dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
+
+        if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
+            logger.debug('Checking for archives to extract in directory: %s' % (dirName))
+            nzbtomedia.extractFiles(dirName)
+            inputName, dirName = convert_to_ascii(inputName, dirName)
+
+        good_files = 0
+        num_files = 0
+        # Check video files for corruption
+        status = int(status)
+        for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
+            num_files += 1
+            if transcoder.isVideoGood(video):
+                good_files += 1
+        if num_files > 0 and good_files == num_files:
+            if status:
+                logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as successful." % (str(good_files)), section)
+                status = 0
+        elif clientAgent == "manual":
+            logger.warning("No media files found in directory %s to manually process." % (dirName), section)
+            return 0  # Success (as far as this script is concerned)
+        else:
+            logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
+            status = 1
 
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:

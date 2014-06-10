@@ -308,24 +308,88 @@ def WakeUp():
         logger.info("System with mac: %s has been woken. Continuing with the rest of the script." % (mac))
 
 
+def CharReplace(fileDirName):
+    # Special character hex range:
+    # CP850: 0x80-0xA5 (fortunately not used in ISO-8859-15)
+    # UTF-8: 1st hex code 0xC2-0xC3 followed by a 2nd hex code 0xA1-0xFF
+    # ISO-8859-15: 0xA6-0xFF
+    # The function will detect if fileDirName contains a special character
+    # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
+    encodingDetected = False
+    # parsing all files/directories in odrer to detect if CP850 is used
+    for Idx in range(len(fileDirName)):
+        encodingDetected = False
+        # /!\ detection is done 2char by 2char for UTF-8 special character
+        if (len(fileDirName) != 1) & (Idx < (len(fileDirName) - 1)):
+            # Detect UTF-8
+            if ((fileDirName[Idx] == '\xC2') | (fileDirName[Idx] == '\xC3')) & ((fileDirName[Idx+1] >= '\xA0') & (fileDirName[Idx+1] <= '\xFF')):
+                utf8Name = fileDirName
+                break;
+            # Detect CP850
+            elif ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
+                utf8Name = fileDirName.decode('cp850')
+                utf8Name = utf8Name.encode('utf-8')
+                logger.debug("Renaming CP850 encoding %s to utf8 %s" %(fileDirName, utf8Name))
+                encodingDetected = True
+                break;
+            # Detect ISO-8859-15
+            elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
+                utf8Name = fileDirName.decode('iso-8859-15')
+                utf8Name = utf8Name.encode('utf-8')
+                logger.debug("Renamed iso-8859-15 encoding %s to utf8 %s" %(fileDirName, utf8Name))
+                encodingDetected = True
+                break;
+        else:
+            # Detect CP850
+            if ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
+                utf8Name = fileDirName.decode('cp850')
+                utf8Name = utf8Name.encode('utf-8')
+                logger.debug("Renamed CP850 encoding %s to utf8 %s" %(fileDirName, utf8Name))
+                encodingDetected = True
+                break;
+            # Detect ISO-8859-15
+            elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
+                utf8Name = fileDirName.decode('iso-8859-15')
+                utf8Name = utf8Name.encode('utf-8')
+                logger.debug("Renamed iso-8859-15 encoding %s to utf8 %s" %(fileDirName, utf8Name))
+                encodingDetected = True
+                break;
+    if encodingDetected == False:
+        utf8Name = fileDirName
+    return encodingDetected, utf8Name
+
+
 def convert_to_ascii(inputName, dirName):
     ascii_convert = int(nzbtomedia.CFG["ASCII"]["convert"])
     if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and "\" is replaced!.
         return inputName, dirName
 
-    inputName2 = str(inputName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
-    dirName2 = str(dirName.decode('ascii', 'replace').replace(u'\ufffd', '_'))
-    if dirName != dirName2:
-        logger.info("Renaming directory:%s  to: %s." % (dirName, dirName2))
-        shutil.move(dirName, dirName2)
-    for dirpath, dirnames, filesnames in os.walk(dirName2):
-        for filename in filesnames:
-            filename2 = str(filename.decode('ascii', 'replace').replace(u'\ufffd', '_'))
-            if filename != filename2:
-                logger.info("Renaming file:%s  to: %s." % (filename, filename2))
-                shutil.move(filename, filename2)
-    inputName = inputName2
-    dirName = dirName2
+    encoded, inputName = CharReplace(inputName)
+
+    dir, base = os.path.split(dirName)
+    if not base:  # ended with "/"
+        dir, base = os.path.split(dir)
+
+    encoded, base2 = CharReplace(base)
+    if encoded:
+        dirName = os.path.join(dir, base2)
+        logger.info("Renaming directory: %s to: %s." % (base, base2))
+        os.rename(os.path.join(dir,base), dirName)
+
+    for dirname, dirnames, filenames in os.walk(dirName, topdown=False):
+        for subdirname in dirnames:
+            encoded, subdirname2 = CharReplace(subdirname)
+            if encoded:
+                logger.info("Renaming directory: %s to: %s." % (subdirname, subdirname2))
+                os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
+
+    for dirname, dirnames, filenames in os.walk(dirName):
+        for filename in filenames:
+            encoded, filename2 = CharReplace(filename)
+            if encoded:
+                logger.info("Renaming file: %s to: %s." % (filename, filename2))
+                os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
+
     return inputName, dirName
 
 
