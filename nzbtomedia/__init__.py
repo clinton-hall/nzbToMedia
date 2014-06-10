@@ -266,6 +266,7 @@ def initialize(section=None):
     CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
     NOFLATTEN = (CFG["Torrent"]["noFlatten"])
     if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
+    if isinstance(CATEGORIES, str): CATEGORIES = CATEGORIES.split(',')
     DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
     UTORRENTWEBUI = CFG["Torrent"]["uTorrentWEBui"]  # http://localhost:8090/gui/
     UTORRENTUSR = CFG["Torrent"]["uTorrentUSR"]  # mysecretusr
@@ -311,6 +312,7 @@ def initialize(section=None):
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
     OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
     NICENESS = int(CFG["Transcoder"]["niceness"])
+    if isinstance(IGNOREEXTENSIONS, str): IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
 
     PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
 
