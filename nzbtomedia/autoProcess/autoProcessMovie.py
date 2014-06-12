@@ -219,9 +219,6 @@ class autoProcessMovie:
                              section)
                 return 1  # failure
 
-            # Added a releease that was not in the wanted list so no way to check status, exit without errors
-            if not release:
-                return 0
         else:
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
 
@@ -276,6 +273,10 @@ class autoProcessMovie:
                                    section)
                 return 1
 
+        # Added a releease that was not in the wanted list so confirm rename successful by finding this movie media.list.
+        if not release:
+            download_id = None  # we don't want to filter new releases based on this.
+
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
         while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
@@ -283,6 +284,10 @@ class autoProcessMovie:
             release = self.get_release(baseURL, imdbid, download_id, release_id)
             if release:
                 try:
+                    if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.
+                        logger.postprocess("SUCCESS: Movie %s has now been added to CouchPotato" % (imdbid), section)
+                        return 0 # success
+
                     release_status_new = release[release_id]['status']
                     if release_status_new != release_status_old:
                         logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
