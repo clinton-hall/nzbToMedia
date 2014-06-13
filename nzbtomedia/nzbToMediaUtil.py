@@ -316,40 +316,35 @@ def CharReplace(fileDirName):
     # The function will detect if fileDirName contains a special character
     # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
     encodingDetected = False
-    # parsing all files/directories in odrer to detect if CP850 is used
+    if isinstance(fileDirName, unicode)
+        return encodingDetected fileDirName.encode('utf-8')
     for Idx in range(len(fileDirName)):
-        encodingDetected = False
         # /!\ detection is done 2char by 2char for UTF-8 special character
         if (len(fileDirName) != 1) & (Idx < (len(fileDirName) - 1)):
             # Detect UTF-8
             if ((fileDirName[Idx] == '\xC2') | (fileDirName[Idx] == '\xC3')) & ((fileDirName[Idx+1] >= '\xA0') & (fileDirName[Idx+1] <= '\xFF')):
-                utf8Name = fileDirName
-                break;
+                break
             # Detect CP850
             elif ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
-                utf8Name = fileDirName.decode('cp850')
-                utf8Name = utf8Name.encode('utf-8')
+                utf8Name = fileDirName.decode('cp850').encode('utf-8')
                 encodingDetected = True
-                break;
+                break
             # Detect ISO-8859-15
             elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
-                utf8Name = fileDirName.decode('iso-8859-15')
-                utf8Name = utf8Name.encode('utf-8')
+                utf8Name = fileDirName.decode('iso-8859-15').encode('utf-8')
                 encodingDetected = True
-                break;
+                break
         else:
             # Detect CP850
             if ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
-                utf8Name = fileDirName.decode('cp850')
-                utf8Name = utf8Name.encode('utf-8')
+                utf8Name = fileDirName.decode('cp850').encode('utf-8')
                 encodingDetected = True
-                break;
+                break
             # Detect ISO-8859-15
             elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
-                utf8Name = fileDirName.decode('iso-8859-15')
-                utf8Name = utf8Name.encode('utf-8')
+                utf8Name = fileDirName.decode('iso-8859-15').encode('utf-8')
                 encodingDetected = True
-                break;
+                break
     if encodingDetected == False:
         utf8Name = fileDirName
     return encodingDetected, utf8Name
