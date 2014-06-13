@@ -163,6 +163,11 @@ class autoProcessMovie:
             num_files += 1
             if transcoder.isVideoGood(video):
                 good_files += 1
+                if not release and not ".cp(tt" in video and imdbid:
+                    videoName, videoExt = os.path.splitext(video)
+                    video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
+                    logger.debug('Renaming: %s to: %s' % (video, video2))
+                    os.rename(video, video2)
         if num_files > 0 and good_files == num_files:
             if status:
                 logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as successful." % (str(good_files)), section)
