@@ -329,14 +329,12 @@ def CharReplace(fileDirName):
             elif ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
                 utf8Name = fileDirName.decode('cp850')
                 utf8Name = utf8Name.encode('utf-8')
-                logger.debug("Renaming CP850 encoding %s to utf8 %s" %(fileDirName, utf8Name))
                 encodingDetected = True
                 break;
             # Detect ISO-8859-15
             elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
                 utf8Name = fileDirName.decode('iso-8859-15')
                 utf8Name = utf8Name.encode('utf-8')
-                logger.debug("Renamed iso-8859-15 encoding %s to utf8 %s" %(fileDirName, utf8Name))
                 encodingDetected = True
                 break;
         else:
@@ -344,14 +342,12 @@ def CharReplace(fileDirName):
             if ((fileDirName[Idx] >= '\x80') & (fileDirName[Idx] <= '\xA5')):
                 utf8Name = fileDirName.decode('cp850')
                 utf8Name = utf8Name.encode('utf-8')
-                logger.debug("Renamed CP850 encoding %s to utf8 %s" %(fileDirName, utf8Name))
                 encodingDetected = True
                 break;
             # Detect ISO-8859-15
             elif (fileDirName[Idx] >= '\xA6') & (fileDirName[Idx] <= '\xFF'):
                 utf8Name = fileDirName.decode('iso-8859-15')
                 utf8Name = utf8Name.encode('utf-8')
-                logger.debug("Renamed iso-8859-15 encoding %s to utf8 %s" %(fileDirName, utf8Name))
                 encodingDetected = True
                 break;
     if encodingDetected == False:
@@ -373,21 +369,23 @@ def convert_to_ascii(inputName, dirName):
     encoded, base2 = CharReplace(base)
     if encoded:
         dirName = os.path.join(dir, base2)
-        logger.info("Renaming directory: %s to: %s." % (base, base2))
+        logger.info("Renaming directory to: %s." % (base2))
         os.rename(os.path.join(dir,base), dirName)
+        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+            print "[NZB] DIRECTORY=%s" % (dirName)  # Return the new directory to NZBGet.
 
     for dirname, dirnames, filenames in os.walk(dirName, topdown=False):
         for subdirname in dirnames:
             encoded, subdirname2 = CharReplace(subdirname)
             if encoded:
-                logger.info("Renaming directory: %s to: %s." % (subdirname, subdirname2))
+                logger.info("Renaming directory to: %s." % (subdirname2))
                 os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
 
     for dirname, dirnames, filenames in os.walk(dirName):
         for filename in filenames:
             encoded, filename2 = CharReplace(filename)
             if encoded:
-                logger.info("Renaming file: %s to: %s." % (filename, filename2))
+                logger.info("Renaming file to: %s." % (filename2))
                 os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
 
     return inputName, dirName

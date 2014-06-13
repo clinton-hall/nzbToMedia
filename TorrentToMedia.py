@@ -9,7 +9,7 @@ import nzbtomedia
 
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, CharReplace
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
@@ -21,8 +21,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         myDB = nzbToMediaDB.DBConnection()
 
-        controlValueDict = {"input_directory": unicode(inputDirectory)}
-        newValueDict = {"input_name": unicode(inputName),
+        encoded, inputDirectory1 = CharReplace(inputDirectory)
+        encoded, inputName1 = CharReplace(inputName)
+
+        controlValueDict = {"input_directory": unicode(inputDirectory1)}
+        newValueDict = {"input_name": unicode(inputName1),
                         "input_hash": unicode(inputHash),
                         "input_id": unicode(inputID),
                         "client_agent": unicode(clientAgent),

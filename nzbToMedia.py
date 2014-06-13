@@ -346,7 +346,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo
+from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
@@ -362,8 +362,11 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
         myDB = nzbToMediaDB.DBConnection()
 
-        controlValueDict = {"input_directory": unicode(inputDirectory)}
-        newValueDict = {"input_name": unicode(inputName),
+        encoded, inputDirectory1 = CharReplace(inputDirectory)
+        encoded, inputName1 = CharReplace(inputName)
+
+        controlValueDict = {"input_directory": unicode(inputDirectory1)}
+        newValueDict = {"input_name": unicode(inputName1),
                         "input_hash": unicode(download_id),
                         "input_id": unicode(download_id),
                         "client_agent": unicode(clientAgent),
