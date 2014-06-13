@@ -5,7 +5,6 @@ import sys
 import threading
 import logging
 import nzbtomedia
-from nzbtomedia.nzbToMediaUtil import CharReplace
 
 # number of log files to keep
 NUM_LOGS = 3
@@ -191,9 +190,10 @@ class NTMRotatingLogHandler(object):
             else:
                 self.writes_since_check += 1
 
-            encoded, toLog = CharReplace(toLog)  # Make sure log message can be written.
-
-            message = u"%s: %s" % (str(section).upper(), toLog)
+            try:
+                message = u"%s: %s" % (str(section).upper(), toLog)
+            except:
+                message = u"%s: Message contains non-utf-8 string" % (str(section).upper())
 
             out_line = message
 
