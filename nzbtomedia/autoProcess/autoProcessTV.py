@@ -93,7 +93,7 @@ class autoProcessTV:
             num_files += 1
             if transcoder.isVideoGood(video):
                 good_files += 1
-        if num_files > 0 
+        if num_files > 0: 
             if good_files == num_files and not status == 0:
                 logger.info('Found Valid Videos. Setting status Success')
                 status = 0
