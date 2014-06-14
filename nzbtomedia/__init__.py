@@ -331,8 +331,14 @@ def initialize(section=None):
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     else:
-        FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
-        FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+        try:
+            FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
+            FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+        except:
+            if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')):
+                FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
+            if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')):
+                FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
 
         if not FFMPEG:
             if os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
