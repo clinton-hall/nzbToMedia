@@ -170,8 +170,11 @@ class autoProcessMovie:
                     os.rename(video, video2)
         if num_files > 0 and good_files == num_files:
             if status:
-                logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as successful." % (str(good_files)), section)
+                logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as success." % (str(good_files)), section)
                 status = 0
+        elif num_files > 0 and good_files < num_files:
+            logger.info("Status shown as success from Downloader, but corrupt video files found. Setting as failed.", section)
+            status = 1
         elif clientAgent == "manual":
             logger.warning("No media files found in directory %s to manually process." % (dirName), section)
             return 0  # Success (as far as this script is concerned)

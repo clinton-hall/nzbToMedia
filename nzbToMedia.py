@@ -345,7 +345,7 @@ from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
 from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
-from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace
+from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
@@ -409,6 +409,8 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     except:
         logger.error('Remote Path %s is not valid for %s:%s Please set this to either 0 to disable or 1 to enable!' % (
             section[inputCategory]['remote_path'], sectionName, inputCategory))
+
+    inputName, inputDirectory = convert_to_ascii(inputName, inputDirectory)
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))

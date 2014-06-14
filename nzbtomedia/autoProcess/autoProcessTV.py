@@ -87,8 +87,19 @@ class autoProcessTV:
 
         # Check video files for corruption
         status = int(failed)
-        for video in listMediaFiles(dirName):
-            if not transcoder.isVideoGood(video):
+        good_files = 0
+        num_files = 0
+        for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
+            num_files += 1
+            if transcoder.isVideoGood(video):
+                good_files += 1
+        if num_files > 0 
+            if good_files == num_files and not status == 0:
+                logger.info('Found Valid Videos. Setting status Success')
+                status = 0
+                failed = 0
+            if good_files < num_files and status == 0:
+                logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
 
@@ -111,6 +122,7 @@ class autoProcessTV:
                     if transcoder.isVideoGood(video):
                         good_files += 1
                 if num_files > 0 and good_files == num_files:
+                    logger.info('Found Valid Videos. Setting status Success')
                     status = 0
                     failed = 0
 
