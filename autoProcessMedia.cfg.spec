@@ -281,6 +281,8 @@
         #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
         user_script_clean = 1
         delay = 120
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
 
 [ASCII]
     #Set convert =1 if you want to convert any "foreign" characters to ASCII (UTF8) before passing to SB/CP etc. Default is disabled (0).
