@@ -203,7 +203,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
 
     result = 0
-    if sectionName in ["UserScript"]:
+    if sectionName == 'UserScript':
         result = external_script(outputDestination, inputName, inputCategory)
 
     if sectionName == 'CouchPotato':
@@ -233,14 +233,15 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             # remove torrent
             nzbtomedia.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
-        # cleanup our processing folders of any misc unwanted files and empty directories
-        nzbtomedia.cleanDir(outputDestination, sectionName, inputCategory)
+        if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
+            # cleanup our processing folders of any misc unwanted files and empty directories
+            nzbtomedia.cleanDir(outputDestination, sectionName, inputCategory)
 
     return result
 
 
 def external_script(outputDestination, torrentName, torrentLabel):
-    if nzbtomedia.USER_SCRIPT is None:  # do nothing and return success.
+    if nzbtomedia.USER_SCRIPT is None or nzbtomedia.USER_SCRIPT == "None":  # do nothing and return success.
         return 0
     final_result = 0  # start at 0.
     num_files = 0
