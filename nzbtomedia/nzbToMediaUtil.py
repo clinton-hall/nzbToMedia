@@ -343,9 +343,10 @@ def CharReplace(Name):
             elif (Name[Idx] >= '\xA6') & (Name[Idx] <= '\xFF'):
                 encoding = 'iso-8859-15'
                 break
-    if not encoding == nzbtomedia.SYS_ENCODING:
+    if encoding and not encoding == nzbtomedia.SYS_ENCODING:
         encoded = True
-    return encoded, Name.decode(encoding).encode(nzbtomedia.SYS_ENCODING)
+        Name = Name.decode(encoding).encode(nzbtomedia.SYS_ENCODING)
+    return encoded, Name
 
 
 def convert_to_ascii(inputName, dirName):
