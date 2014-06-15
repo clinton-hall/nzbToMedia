@@ -232,9 +232,12 @@ class autoProcessTV:
             return 0
         elif section == "NzbDrone" and Started:
             n = 0
+            exists = True
             current_numMissing = start_numMissing
             while n < 6:  # set up wait_for minutes of no change in numMissing.
                 time.sleep(10 * wait_for)
+                if not os.path.exists(dirName):
+                    break
                 new_numMissing = self.numMissing(url1, params, headers)
                 if new_numMissing == current_numMissing:  # nothing processed since last call
                     n += 1
@@ -242,7 +245,10 @@ class autoProcessTV:
                     n = 0
                     current_numMissing = new_numMissing  # reset counter and start loop again with this many missing.
 
-            if current_numMissing < start_numMissing:
+            if not os.path.exists(dirName):
+                logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
+                return 0
+            elif current_numMissing < start_numMissing:
                 logger.debug(
                 "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 
                 (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
