@@ -232,7 +232,6 @@ class autoProcessTV:
             return 0
         elif section == "NzbDrone" and Started:
             n = 0
-            exists = True
             current_numMissing = start_numMissing
             while n < 6:  # set up wait_for minutes of no change in numMissing.
                 time.sleep(10 * wait_for)
