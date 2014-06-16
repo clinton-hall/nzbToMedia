@@ -281,6 +281,8 @@
         #Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
         user_script_clean = 1
         delay = 120
+        #Unique path (directory) created for every download. set 0 to disable.
+        unique_path = 1
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 

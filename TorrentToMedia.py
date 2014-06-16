@@ -14,6 +14,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     status = 1  # 1 = failed | 0 = success
     root = 0
     foundFile = 0
+    uniquePath = 1
 
     if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory %s to database' % (inputDirectory))
@@ -107,12 +108,20 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             nzbtomedia.USER_SCRIPT_RUNONCE = int(section[usercat]["user_script_runOnce"])
         except:
             nzbtomedia.USER_SCRIPT_RUNONCE = 1
+        try:
+            uniquePath = int(section[usercat]["unique_path"])
+        except:
+            uniquePath = 1
 
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
-    outputDestination = os.path.normpath(
-        nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeName(inputName)))
+    if uniquePath:
+        outputDestination = os.path.normpath(
+            nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeName(inputName)))
+    else:
+        outputDestination = os.path.normpath(
+            nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory))
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
