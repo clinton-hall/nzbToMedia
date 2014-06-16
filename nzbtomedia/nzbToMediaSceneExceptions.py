@@ -1,9 +1,8 @@
 import os
 import re
-import logging
+from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
-Logger = logging.getLogger()
 reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\.[pi]675\.", r"\.[pi]084\.", r"\.p063\.", r"\b[45]62[xh]\.", r"\.yarulb\.", r"\.vtd[hp]\.", 
                 r"\.ld[.-]?bew\.", r"\.pir.?(dov|dvd|bew|db|rb)\.", r"\brdvd\.", r"\.vts\.", r"\.reneercs\.", r"\.dcv\.", r"\b(pir|mac)dh\b", r"\.reporp\.", r"\.kcaper\.", 
                 r"\.lanretni\.", r"\b3ca\b", r"\.cstn\."]
@@ -19,6 +18,7 @@ char_replace = [[r"(\w)1\.(\w)",r"\1i\2"]
 ]
 
 def process_all_exceptions(name, dirname):
+    rename_script(dirname)
     for filename in listMediaFiles(dirname):
         parentDir = os.path.dirname(filename)
         head, fileExtension = os.path.splitext(os.path.basename(filename))
@@ -34,19 +34,19 @@ def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     if media_pattern.search(os.path.basename(dirname)) is not None: 
         newname = os.path.basename(dirname)
-        logging.debug("Replacing file name %s with directory name %s" % (head, newname))
+        logger.debug("Replacing file name %s with directory name %s" % (head, newname))
     elif media_pattern.search(name) is not None:
         newname = name
-        logging.debug("Replacing file name %s with download name %s" % (head, newname))
+        logger.debug("Replacing file name %s with download name %s" % (head, newname))
     else:
-        logging.warning("No name replacement determined for %s" % (head))
+        logger.warning("No name replacement determined for %s" % (head))
         return 
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
     except Exception,e:
-        logging.error("Unable to rename file due to: %s" % (str(e)))
+        logger.error("Unable to rename file due to: %s" % (str(e)))
 
 def reverse_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
@@ -66,13 +66,36 @@ def reverse_filename(filename, dirname, name):
         newname = new_words[::-1] + na_parts.group(1)[::-1]
     else:
         newname = head[::-1].title()
-    logging.debug("Reversing filename %s to %s" % (head, newname))
+    logger.debug("Reversing filename %s to %s" % (head, newname))
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
     except Exception,e:
-        logging.error("Unable to rename file due to: %s" % (str(e)))
+        logger.error("Unable to rename file due to: %s" % (str(e)))
+
+def rename_script(dirname):
+    rename_file = ""
+    for dir, dirs, files in listMediaFiles(dirname):
+        for file in files:
+            if re.search('(rename\S*\.(sh|bat))',file):
+                rename_file = os.path.join(dir, file)
+                dirname = dir
+                break
+    if rename_file: 
+        rename_lines = [line.strip() for line in open(rename_file)]
+        for line in rename_lines:
+            cmd = filter(None, re.split('mv|Move\s(\S*)\s(\S*)',line))
+            if len(cmd) == 2 and os.path.isfile(os.path.join(dirname, cmd[0])):
+                orig = os.path.join(dirname, cmd[0])
+                dest = os.path.join(dirname, cmd[1].split('\\')[-1].split('/')[-1])
+                if os.path.isfile(dest):
+                    continue
+                logger.debug("Renaming file %s to %s" % (orig, dest))
+                try:
+                    os.rename(orig, dest)
+                except Exception,e:
+                    logger.error("Unable to rename file due to: %s" % (str(e)))
 
 # dict for custom groups
 # we can add more to this list
