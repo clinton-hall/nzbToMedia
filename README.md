@@ -16,6 +16,8 @@ Failed download handling for SickBeard is available by using the development bra
 To use this feature, in autoProcessTV.cfg set the parameter "fork=failed". Default is "fork=default" and will work with standard version of SickBeard and just ignores failed downloads. 
 Additional forks exist for ThePirateBay (does its own extraction and linking). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/sickbeard-branches "SickBeard Forks") for a lit of known forks.
 
+Full support is provided for [SickRage](https://github.com/echel0n/SickRage "SickRage"). 
+
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmissions, Deluge and possibly more.
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
 	
@@ -43,7 +45,9 @@ Download the the compiled versions of this code from the links provided here [nz
 
 ### General
 
-1. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
+1. Install python 2.7.
+
+2. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
    and change the permission accordingly so the download client can access these files.
 	
 	git clone git://github.com/clinton-hall/nzbToMedia.git
