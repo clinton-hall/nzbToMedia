@@ -34,19 +34,19 @@ def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     if media_pattern.search(os.path.basename(dirname)) is not None: 
         newname = os.path.basename(dirname)
-        logger.debug("Replacing file name %s with directory name %s" % (head, newname))
+        logger.debug("Replacing file name %s with directory name %s" % (head, newname), "EXCEPTION")
     elif media_pattern.search(name) is not None:
         newname = name
-        logger.debug("Replacing file name %s with download name %s" % (head, newname))
+        logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
     else:
-        logger.warning("No name replacement determined for %s" % (head))
+        logger.warning("No name replacement determined for %s" % (head), "EXCEPTION")
         return 
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
     except Exception,e:
-        logger.error("Unable to rename file due to: %s" % (str(e)))
+        logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 def reverse_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
@@ -66,13 +66,13 @@ def reverse_filename(filename, dirname, name):
         newname = new_words[::-1] + na_parts.group(1)[::-1]
     else:
         newname = head[::-1].title()
-    logger.debug("Reversing filename %s to %s" % (head, newname))
+    logger.debug("Reversing filename %s to %s" % (head, newname), "EXCEPTION")
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
     except Exception,e:
-        logger.error("Unable to rename file due to: %s" % (str(e)))
+        logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 def rename_script(dirname):
     rename_file = ""
@@ -91,11 +91,11 @@ def rename_script(dirname):
                 dest = os.path.join(dirname, cmd[1].split('\\')[-1].split('/')[-1])
                 if os.path.isfile(dest):
                     continue
-                logger.debug("Renaming file %s to %s" % (orig, dest))
+                logger.debug("Renaming file %s to %s" % (orig, dest), "EXCEPTION")
                 try:
                     os.rename(orig, dest)
                 except Exception,e:
-                    logger.error("Unable to rename file due to: %s" % (str(e)))
+                    logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 # dict for custom groups
 # we can add more to this list
