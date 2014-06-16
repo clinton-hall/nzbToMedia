@@ -8,7 +8,7 @@ from nzbtomedia import logger
 
 class autoProcessComics:
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
-        if status != 0:
+        if int(status) != 0:
             logger.warning("FAILED DOWNLOAD DETECTED, nothing to process.",section)
             return 0
 
