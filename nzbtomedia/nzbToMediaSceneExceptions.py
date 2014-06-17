@@ -76,7 +76,7 @@ def reverse_filename(filename, dirname, name):
 
 def rename_script(dirname):
     rename_file = ""
-    for dir, dirs, files in listMediaFiles(dirname):
+    for dir, dirs, files in os.walk(dirname):
         for file in files:
             if re.search('(rename\S*\.(sh|bat))',file):
                 rename_file = os.path.join(dir, file)
