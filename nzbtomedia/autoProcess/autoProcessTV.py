@@ -172,9 +172,10 @@ class autoProcessTV:
                 return 0 # Success (as far as this script is concerned)
 
         if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
-            result = transcoder.Transcode_directory(dirName)
+            result, newDirName = transcoder.Transcode_directory(dirName)
             if result == 0:
                 logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
+                dirName = newDirName
             else:
                 logger.warning("FAILED: Transcoding failed for files in %s" % (dirName), section)
 

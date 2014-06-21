@@ -303,20 +303,96 @@
 # set to 1 to cretae a new file or 0 to replace the original
 #duplicate=1
 
-# ignore extensions
+# set niceness level.
+#
+# Only works on Linux. Highest priority is -20, lowest priority is 19.
+#niceness = 0
+
+# ignore extensions.
 #
 # list of extensions that won't be transcoded.
 #ignoreExtensions=.avi,.mkv
 
+# outputFastStart (0,1).
+#
+# outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
+#outputFastStart = 0
+
+# outputVideoPath.
+#
+# outputVideoPath. Set path you want transcoded videos moved to. Leave blank to disable.
+#outputVideoPath = 
+
+# processOutput (0,1).
+#
+# processOutput. 1 will send the outputVideoPath to SickBeard/CouchPotato. 0 will send original files.
+#processOutput = 0
+
+# audioLanguage.
+#
+# audioLanguage. set the 3 letter language code you want as your primary audio track.
+#audioLanguage = eng
+
+# allAudioLanguages (0,1).
+#
+# allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
+#allAudioLanguages = 0
+
+# subLanguages.
+#
+# subLanguages. create a list of languages in the order you want them in your subtitles. 
+# (future versions I hope to support sub downlaod)
+#subLanguages = eng,spa,fre
+
+# allSubLanguages (0,1).
+#
+# allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
+#allSubLanguages = 0
+
+# embedSubs (0,1).
+#
+# embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
+#embedSubs = 1
+
+# burnInSubtitle (0,1).
+#
+# burnInSubtitle. burns the default sub language into your video (needed for players that don't support subs)
+#burnInSubtitle = 0
+
+# extractSubs (0,1).
+#
+# extractSubs. 1 will extract subs from the video file and save these as external srt files.
+#extractSubs = 0
+
+# externalSubDir.
+#
+# externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
+#externalSubDir =
+
+# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, Roku-1080p, Roku-720p, Roku-480p).
+#
+# outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
+# If you want to use your own profile, set None and set the remaining options below.
+#outputDefault = None
+
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
+#VideoCodecAllow = 
 #outputVideoPreset=medium
 #outputVideoFramerate=24
 #outputVideoBitrate=800k
 #outputAudioCodec=libmp3lame
+#AudioCodecAllow = 
 #outputAudioBitrate=128k
-#outputSubtitleCodec=
+#outputQualityPercent = 0
+#outputAudioTrack2Codec = libfaac
+#AudioCodec2Allow = 
+#outputAudioTrack2Bitrate = 128k
+#outputAudioOtherCodec = libmp3lame
+#AudioOtherCodecAllow = 
+#outputAudioOtherBitrate = 128k
+#outputSubtitleCodec =
 
 ## WakeOnLan
 

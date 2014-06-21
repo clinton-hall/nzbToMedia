@@ -184,9 +184,10 @@ class autoProcessMovie:
 
         if status == 0:
             if nzbtomedia.TRANSCODE == 1:
-                result = transcoder.Transcode_directory(dirName)
+                result, newDirName = transcoder.Transcode_directory(dirName)
                 if result == 0:
                     logger.debug("Transcoding succeeded for files in %s" % (dirName), section)
+                    dirName = newDirName
                 else:
                     logger.warning("Transcoding failed for files in %s" % (dirName), section)
 

@@ -237,18 +237,52 @@
     # Only works on Linux. Highest priority is -20, lowest priority is 19.
     niceness = 0
     ignoreExtensions = .avi,.mkv,.mp4
-    outputVideoExtension = .mp4
-    outputVideoCodec = libx264
-    outputVideoPreset = medium
-    outputVideoFramerate = 24
-    outputVideoBitrate = 800k
-    outputAudioCodec = libmp3lame
-    outputAudioBitrate = 128k
-    outputSubtitleCodec =
     # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
     outputFastStart = 0
     # outputQualityPercent. used as -q:a value. 0 will disable this from being used.
     outputQualityPercent = 0
+    # outputVideoPath. Set path you want transcoded videos moved to. Leave blank to disable.
+    outputVideoPath = 
+    # processOutput. 1 will send the outputVideoPath to SickBeard/CouchPotato. 0 will send original files.
+    processOutput = 0
+    # audioLanguage. set the 3 letter language code you want as your primary audio track.
+    audioLanguage = eng
+    # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
+    allAudioLanguages = 0
+    # subLanguages. create a list of languages in the order you want them in your subtitles. 
+    # (future versions I hope to support sub downlaod)
+    subLanguages = eng,spa,fre
+    # allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
+    allSubLanguages = 0
+    # embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
+    embedSubs = 1
+    # burnInSubtitle. burns the default sub language into your video (needed for players that don't support subs)
+    burnInSubtitle = 0
+    # extractSubs. 1 will extract subs from the video file and save these as external srt files.
+    extractSubs = 0
+    # externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
+    externalSubDir =
+    # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
+    # If you want to use your own profile, leave this blank and set the remaining options below.
+    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, Roku-1080p, Roku-720p, Roku-480p
+    outputDefault =
+    #### Define custom settings below.
+    outputVideoExtension = .mp4
+    outputVideoCodec = libx264
+    VideoCodecAllow = 
+    outputVideoPreset = medium
+    outputVideoFramerate = 24
+    outputVideoBitrate = 800000
+    outputAudioCodec = ac3
+    AudioCodecAllow = 
+    outputAudioBitrate = 160000
+    outputAudioTrack2Codec = libfaac
+    AudioCodec2Allow = 
+    outputAudioTrack2Bitrate = 128000
+    outputAudioOtherCodec = libmp3lame
+    AudioOtherCodecAllow = 
+    outputAudioOtherBitrate = 128000
+    outputSubtitleCodec =
 
 [WakeOnLan]
     ###### set wake = 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) the host and port specified.
