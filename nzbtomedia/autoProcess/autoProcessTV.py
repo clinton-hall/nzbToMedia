@@ -193,8 +193,10 @@ class autoProcessTV:
             headers = {"X-Api-Key": apikey}
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": remote_path})
+                logger.debug("remote_path: %s" % (remoteDir(dirName)),section)
+                data = json.dumps({"name": "DownloadedEpisodesScan", "path": remoteDir(dirName)})
             else:
+                logger.debug("path: %s" % (dirName),section)
                 data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
 
         logger.debug("Opening URL: %s" % (url),section)
