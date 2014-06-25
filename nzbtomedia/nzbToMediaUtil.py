@@ -543,10 +543,28 @@ def getDirs(section, subsection):
 
     return list(set(to_return))
 
+def onerror(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+    
+    Usage : ``shutil.rmtree(path, onerror=onerror)``
+    """
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise
+
 def rmDir(dirName):
     logger.info("Deleting %s" % (dirName))
     try:
-        shutil.rmtree(dirName, True)
+        shutil.rmtree(dirName, onerror=onerror)
     except:
         logger.error("Unable to delete folder %s" % (dirName))
 
@@ -569,7 +587,10 @@ def cleanDir(path, section, subsection):
             'CLEANDIRS')
 
     logger.info("Directory %s has been processed, removing ..." % (path), 'CLEANDIRS')
-    shutil.rmtree(path)
+    try:
+        shutil.rmtree(path, onerror=onerror)
+    except:
+        logger.error("Unable to delete directory %s" % (dirName))
 
 def create_torrent_class(clientAgent):
     # Hardlink solution for Torrents
