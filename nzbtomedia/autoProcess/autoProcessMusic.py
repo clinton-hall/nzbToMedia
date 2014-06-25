@@ -20,14 +20,15 @@ class autoProcessMusic:
             r = requests.get(url, params=params, verify=False)
         except Exception, e:
             logger.error("Unable to open URL")
-            return
+            return None
 
         try:
             result = r.json()
             for album in result:
                 if os.path.basename(dirName) == album['FolderName']:
                      return album["Status"].lower()
-        except:pass
+        except:
+            return None
 
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
         status = int(status)
@@ -93,7 +94,6 @@ class autoProcessMusic:
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:
                 logger.error("Could not find a status for %s, is it in the wanted list ?" % (inputName),section)
-                return 1
 
             logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
@@ -118,16 +118,18 @@ class autoProcessMusic:
             logger.warning("FAILED DOWNLOAD DETECTED", section)
             return 0 # Success (as far as this script is concerned)
 
-        # we will now wait 1 minutes for this album to be processed before returning to TorrentToMedia and unpausing.
+        # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
-        while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
+        while (time.time() < timeout):
             current_status = self.get_status(url, apikey, dirName)
             if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s]" % (current_status),section)
                 return 0
-
+            if not os.path.isdir(dirName):
+                logger.postprocess("SUCCESS: The input directory %s has been removed Processing must have finished." % (dirName),section)
+                return 0
             time.sleep(10 * wait_for)
 
-        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        # The status hasn't changed. uTorrent can resume seeding now.
         logger.warning("The music album does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for),section)
         return 1  # failure

@@ -69,7 +69,7 @@ class autoProcessMovie:
                 except:
                     continue
 
-        # Narrow results by removing old releases by comparing there last_edit field
+        # Narrow results by removing old releases by comparing their last_edit field
         if len(results) > 1:
             for id1, x1 in results.items():
                 for id2, x2 in results.items():
