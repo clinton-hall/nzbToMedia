@@ -1,6 +1,7 @@
 import copy
 import os
 import time
+import errno
 import requests
 import json
 import nzbtomedia
@@ -92,7 +93,7 @@ class autoProcessTV:
             os.makedirs(dirName)  # Attempt to create the directory
         except OSError, e:
             # Re-raise the error if it wasn't about the directory not existing
-            if exception.errno != errno.EEXIST:
+            if e.errno != errno.EEXIST:
                 raise
 
         # Check video files for corruption
