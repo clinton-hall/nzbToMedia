@@ -290,6 +290,7 @@ def get_subs(file):
     filepaths = []
     subExt = ['.srt', '.sub', '.idx']
     name = os.path.splitext(os.path.split(file)[1])[0]
+    dir = os.path.split(file)[0]
     for dirname, dirs, filenames in os.walk(dir):
         for filename in filenames:
             filepaths.extend([os.path.join(dirname, filename)])
