@@ -161,7 +161,7 @@ class autoProcessMovie:
         status = int(status)
         for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
             num_files += 1
-            if transcoder.isVideoGood(video):
+            if transcoder.isVideoGood(video, status):
                 good_files += 1
                 if not release and not ".cp(tt" in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)

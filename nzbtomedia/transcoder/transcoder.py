@@ -10,47 +10,51 @@ from subprocess import call
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import makeDir
 
-def isVideoGood(videofile):
+def isVideoGood(videofile, status):
     fileNameExt = os.path.basename(videofile)
     fileName, fileExt = os.path.splitext(fileNameExt)
-    if fileExt not in nzbtomedia.MEDIACONTAINER:
-        return True
+    if fileExt not in nzbtomedia.MEDIACONTAINER or not nzbtomedia.FFPROBE:
+        if status:  # if the download was "failed", assume bad. If it was successful, assume good.
+            return False
+        else:
+            return True
 
-    if platform.system() == 'Windows':
-        bitbucket = open('NUL')
-    else:
-        bitbucket = open('/dev/null')
+    logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
+    video_details, result = getVideoDetails(videofile)
 
-    if not nzbtomedia.FFPROBE:
-        return True
-
-    command = [nzbtomedia.FFPROBE, videofile]
-    try:
-        logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
-        result = call(command, stdout=bitbucket, stderr=bitbucket)
-    except:
-        logger.error("Checking [%s] for corruption has failed" % (fileNameExt), 'TRANSCODER')
-        return False
-
-    if result == 0:
-        logger.info("SUCCESS: [%s] has no corruption." % (fileNameExt), 'TRANSCODER')
-        return True
-    else:
+    if result != 0:
         logger.error("FAILED: [%s] is corrupted!" % (fileNameExt), 'TRANSCODER')
         return False
+    if video_details.get("error"):
+        logger.info("FAILED: [%s] returned error [%s]." % (fileNameExt, str(video_details.get("error"))), 'TRANSCODER')
+        return False
+    if video_details.get("streams"):
+        videoStreams = [item for item in video_details["streams"] if item["codec_type"] == "video"]
+        audioStreams = [item for item in video_details["streams"] if item["codec_type"] == "audio"]
+        if len(videoStreams) > 0 and len(audioStreams) > 0:
+            logger.info("SUCCESS: [%s] has no corruption." % (fileNameExt), 'TRANSCODER')
+            return True
+        else:
+            logger.info("FAILED: [%s] has %s video streams and %s audio streams. Assume corruption." % (fileNameExt, str(len(videoStreams)), str(len(audioStreams))), 'TRANSCODER')
+            return False
+
 
 def getVideoDetails(videofile):
     video_details = {}
+    result = 1
     if not nzbtomedia.FFPROBE:
         return video_details
-    command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', videofile]
-    proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-    proc.wait()
-    video_details = json.loads(proc.stdout.read())
-    return video_details
+    command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
+    try:
+        proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+        result = proc.wait()
+        video_details = json.loads(proc.stdout.read())
+    except:
+        logger.error("Checking [%s] has failed" % (fileNameExt), 'TRANSCODER')
+    return video_details, result
 
 def buildCommands(file, newDir):
-    video_details = getVideoDetails(file)
+    video_details, result = getVideoDetails(file)
     dir, name = os.path.split(file)
     name, ext = os.path.splitext(name)
     if ext == nzbtomedia.VEXTENSION and newDir == dir: # we need to change the name to prevent overwriting itself.
@@ -64,7 +68,7 @@ def buildCommands(file, newDir):
     sub_cmd = []
     other_cmd = []
 
-    if not video_details:  # we couldn't read streams with ffprobe. Set defaults to try transcoding.
+    if not video_details or not video_details.get("streams"):  # we couldn't read streams with ffprobe. Set defaults to try transcoding.
         videoStreams = []
         audioStreams = []
         subStreams = []

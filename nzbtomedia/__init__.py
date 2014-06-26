@@ -371,7 +371,7 @@ def initialize(section=None):
     transcode_defaults = {
         'iPad':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -379,7 +379,7 @@ def initialize(section=None):
             },
         'iPad-1080p':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':'1920:1080','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':'1920:1080','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -387,7 +387,7 @@ def initialize(section=None):
             },
         'iPad-720p':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -395,7 +395,7 @@ def initialize(section=None):
             },
         'Apple-TV':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'ac3','ACODEC_ALLOW':['ac3'],'ABITRATE':None,
             'ACODEC2':'libfaac','ACODEC2_ALLOW':['libfaac'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -403,7 +403,7 @@ def initialize(section=None):
             },
         'iPod':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000,
             'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -411,7 +411,7 @@ def initialize(section=None):
             },
         'iPhone':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':'460:320','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':'460:320','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000,
             'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -419,7 +419,7 @@ def initialize(section=None):
             },
         'PS3':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'ac3','ACODEC_ALLOW':['ac3'],'ABITRATE':None,
             'ACODEC2':'libfaac','ACODEC2_ALLOW':['libfaac'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -427,7 +427,7 @@ def initialize(section=None):
             },
         'Roku-480p':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -435,7 +435,7 @@ def initialize(section=None):
             },
         'Roku-720p':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,
@@ -443,7 +443,7 @@ def initialize(section=None):
             },
         'Roku-1080p':{
             'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'libfaac','ACODEC_ALLOW':['libfaac'],'ABITRATE':160000,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None,
             'ACODEC3':None,'ACODEC3_ALLOW2':[],'ABITRATE3':None,

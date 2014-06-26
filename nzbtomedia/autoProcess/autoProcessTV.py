@@ -91,7 +91,7 @@ class autoProcessTV:
         num_files = 0
         for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
             num_files += 1
-            if transcoder.isVideoGood(video):
+            if transcoder.isVideoGood(video, status):
                 good_files += 1
         if num_files > 0: 
             if good_files == num_files and not status == 0:
@@ -108,7 +108,7 @@ class autoProcessTV:
                 process_all_exceptions(inputName.lower(), dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
 
-            # Now check if tv files exist in destination. Eventually extraction may be done here if nzbExtractionBy == TorrentToMedia
+            # Now check if tv files exist in destination. 
             if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
             elif listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
@@ -119,7 +119,7 @@ class autoProcessTV:
                 num_files = 0
                 for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
                     num_files += 1
-                    if transcoder.isVideoGood(video):
+                    if transcoder.isVideoGood(video, status):
                         good_files += 1
                 if num_files > 0 and good_files == num_files:
                     logger.info('Found Valid Videos. Setting status Success')
