@@ -468,6 +468,7 @@ def initialize(section=None):
         ACODEC3_ALLOW = transcode_defaults[DEFAULTS]['ACODEC3_ALLOW']
         ABITRATE3 = transcode_defaults[DEFAULTS]['ABITRATE3']
         SCODEC = transcode_defaults[DEFAULTS]['SCODEC']
+        transcode_defaults = {}  # clear memory
 
     if VEXTENSION in allow_subs:
         ALLOWSUBS = 1
@@ -487,6 +488,7 @@ def initialize(section=None):
     for codec in ACODEC3_ALLOW:
         if codec in codec_alias:
             ACODEC3_ALLOW.extend(codec_alias[codec])
+    codec_alias = {}  # clear memory
 
     PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
 
