@@ -468,26 +468,30 @@ def initialize(section=None):
         ACODEC3_ALLOW = transcode_defaults[DEFAULTS]['ACODEC3_ALLOW']
         ABITRATE3 = transcode_defaults[DEFAULTS]['ABITRATE3']
         SCODEC = transcode_defaults[DEFAULTS]['SCODEC']
-        transcode_defaults = {}  # clear memory
+    transcode_defaults = {}  # clear memory
 
     if VEXTENSION in allow_subs:
         ALLOWSUBS = 1
     if not VCODEC_ALLOW and VCODEC: VCODEC_ALLOW.extend([VCODEC])
     for codec in VCODEC_ALLOW:
         if codec in codec_alias:
-            VCODEC_ALLOW.extend(codec_alias[codec])
+            extra = [ item for item in codec_alias[codec] if item not in VCODEC_ALLOW ]
+            VCODEC_ALLOW.extend(extra)
     if not ACODEC_ALLOW and ACODEC: ACODEC_ALLOW.extend([ACODEC])
     for codec in ACODEC_ALLOW:
         if codec in codec_alias:
-            ACODEC_ALLOW.extend(codec_alias[codec])
+            extra = [ item for item in codec_alias[codec] if item not in ACODEC_ALLOW ]
+            ACODEC_ALLOW.extend(extra)
     if not ACODEC2_ALLOW and ACODEC2: ACODEC2_ALLOW.extend([ACODEC2])
     for codec in ACODEC2_ALLOW:
         if codec in codec_alias:
-            ACODEC2_ALLOW.extend(codec_alias[codec])
+            extra = [ item for item in codec_alias[codec] if item not in ACODEC2_ALLOW ]
+            ACODEC2_ALLOW.extend(extra)
     if not ACODEC3_ALLOW and ACODEC3: ACODEC3_ALLOW.extend([ACODEC3])
     for codec in ACODEC3_ALLOW:
         if codec in codec_alias:
-            ACODEC3_ALLOW.extend(codec_alias[codec])
+            extra = [ item for item in codec_alias[codec] if item not in ACODEC3_ALLOW ]
+            ACODEC3_ALLOW.extend(extra)
     codec_alias = {}  # clear memory
 
     PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
