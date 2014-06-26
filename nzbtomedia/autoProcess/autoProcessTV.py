@@ -85,6 +85,16 @@ class autoProcessTV:
         if os.path.isdir(SpecificPath):
             dirName = SpecificPath
 
+        # Attempt to create the directory if it doesn't exist and ignore any
+        # error stating that it already exists. This fixes a bug where SickRage
+        # won't process the directory because it doesn't exist.
+        try:
+            os.makedirs(dirName)  # Attempt to create the directory
+        except OSError, e:
+            # Re-raise the error if it wasn't about the directory not existing
+            if exception.errno != errno.EEXIST:
+                raise
+
         # Check video files for corruption
         status = int(failed)
         good_files = 0
