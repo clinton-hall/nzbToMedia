@@ -1,3 +1,4 @@
+from __future__ import unicode_literals
 import os
 import re
 import socket
@@ -10,6 +11,8 @@ import guessit
 import beets
 import requests
 import nzbtomedia
+from babelfish import Language
+import subliminal 
 
 from nzbtomedia.extractor import extractor
 from nzbtomedia.linktastic import linktastic
@@ -17,9 +20,6 @@ from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 from nzbtomedia import logger, nzbToMediaDB
-from __future__ import unicode_literals
-from babelfish import Language
-import subliminal  
 
 def sanitizeName(name):
     '''
