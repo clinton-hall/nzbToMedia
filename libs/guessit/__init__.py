@@ -195,7 +195,7 @@ def _guess_filename(filename, filetype):
     return m
 
 
-def guess_file_info(filename, filetype, info=None):
+def guess_file_info(filename, filetype='autodetect', info=None):
     """info can contain the names of the various plugins, such as 'filename' to
     detect filename info, or 'hash_md5' to get the md5 hash of the file.
 

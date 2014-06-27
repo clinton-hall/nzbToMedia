@@ -113,7 +113,7 @@
 # subLanguages.
 #
 # subLanguages. create a list of languages in the order you want them in your subtitles. 
-#subLanguages = eng,spa,fre
+#subLanguages = eng,spa,fra
 
 # Transcode (0, 1).
 #

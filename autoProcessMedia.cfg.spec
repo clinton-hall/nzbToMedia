@@ -234,7 +234,7 @@
     # getsubs. enable to download subtitles.
     getSubs = 0
     # subLanguages. create a list of languages in the order you want them in your subtitles. 
-    subLanguages = eng,spa,fre
+    subLanguages = eng,spa,fra
     # transcode. enable to use transcoder
     transcode = 0
     ###### duplicate =1 will cretae a new file. =0 will replace the original

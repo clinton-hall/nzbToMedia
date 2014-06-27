@@ -873,11 +873,16 @@ def import_subs(filename):
 
     languages = set()
     for item in nzbtomedia.SLANGUAGES:
-        languages.add(Language(item))
+        try:
+            languages.add(Language(item))
+        except:
+            pass
+    if not languages:
+        return
 
     logger.debug("Attempting to download subtitles for %s" %(filename), 'SUBTITLES')
 
-    video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True, original=original)
+    video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
     subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
     subliminal.save_subtitles(subtitles) 
 
