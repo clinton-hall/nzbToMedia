@@ -585,6 +585,7 @@ def cleanDir(path, section, subsection):
         logger.info(
             "Directory %s still contains %s unprocessed file(s), skipping ..." % (path, num_files),
             'CLEANDIRS')
+        return
 
     logger.info("Directory %s has been processed, removing ..." % (path), 'CLEANDIRS')
     try:
