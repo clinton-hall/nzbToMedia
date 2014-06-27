@@ -38,12 +38,11 @@ def isVideoGood(videofile, status):
             logger.info("FAILED: [%s] has %s video streams and %s audio streams. Assume corruption." % (fileNameExt, str(len(videoStreams)), str(len(audioStreams))), 'TRANSCODER')
             return False
 
-
 def getVideoDetails(videofile):
     video_details = {}
     result = 1
     if not nzbtomedia.FFPROBE:
-        return video_details
+        return video_details, result
     command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
     try:
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
