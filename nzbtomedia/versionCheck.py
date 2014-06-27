@@ -225,6 +225,7 @@ class GitUpdateManager(UpdateManager):
             branch = branch_info.strip().replace('refs/heads/', '', 1)
             if branch:
                 nzbtomedia.NZBTOMEDIA_BRANCH = branch
+                nzbtomedia.GIT_BRANCH = branch
         return nzbtomedia.GIT_BRANCH
 
     def _check_github_for_update(self):
