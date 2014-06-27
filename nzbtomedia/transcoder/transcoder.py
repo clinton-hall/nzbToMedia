@@ -45,7 +45,6 @@ def getVideoDetails(videofile):
         return video_details, result
     command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
     try:
-        result = None
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         while proc.poll() is None:
             time.sleep(0.5)
