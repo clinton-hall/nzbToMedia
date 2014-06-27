@@ -4,6 +4,7 @@ import nzbtomedia
 import requests
 import time
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir
+from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia import logger
 
 class autoProcessComics:
