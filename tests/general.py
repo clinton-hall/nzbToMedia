@@ -1,3 +1,4 @@
+#! /usr/bin/env python2
 import os
 import datetime
 import re
@@ -11,3 +12,10 @@ nzbtomedia.initialize()
 test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
 section = nzbtomedia.CFG.findsection('tv').isenabled()
 print section
+
+from babelfish import Language
+print Language('eng')
+
+import subliminal
+
+subliminal.cache_region.configure('dogpile.cache.memory')

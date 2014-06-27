@@ -17,6 +17,9 @@ from nzbtomedia.synchronousdeluge.client import DelugeClient
 from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 from nzbtomedia import logger, nzbToMediaDB
+from __future__ import unicode_literals
+from babelfish import Language
+import subliminal  
 
 def sanitizeName(name):
     '''
@@ -859,6 +862,24 @@ def extractFiles(src, dst=None):
                         time.sleep(1)
                     except:
                         logger.debug("Unable to remove file %s" % (inputFile))
+
+def import_subs(filename):
+    if not nzbtomedia.GETSUBS:
+        return
+    try:
+        subliminal.cache_region.configure('dogpile.cache.memory')
+    except:
+        pass   
+
+    languages = set()
+    for item in nzbtomedia.SLANGUAGES:
+        languages.add(Language(item))
+
+    logger.debug("Attempting to download subtitles for %s" %(filename), 'SUBTITLES')
+
+    video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True, original=original)
+    subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
+    subliminal.save_subtitles(subtitles) 
 
 def backupVersionedFile(old_file, version):
     numTries = 0

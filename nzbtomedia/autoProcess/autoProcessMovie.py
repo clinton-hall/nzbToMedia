@@ -4,7 +4,7 @@ import requests
 import nzbtomedia
 
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir, import_subs
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -162,6 +162,7 @@ class autoProcessMovie:
         for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
             num_files += 1
             if transcoder.isVideoGood(video, status):
+                import_subs(video)
                 good_files += 1
                 if not release and not ".cp(tt" in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)

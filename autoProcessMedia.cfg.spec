@@ -231,6 +231,11 @@
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 
 [Transcoder]
+    # getsubs. enable to download subtitles.
+    getSubs = 0
+    # subLanguages. create a list of languages in the order you want them in your subtitles. 
+    subLanguages = eng,spa,fre
+    # transcode. enable to use transcoder
     transcode = 0
     ###### duplicate =1 will cretae a new file. =0 will replace the original
     duplicate = 1
@@ -249,9 +254,6 @@
     audioLanguage = eng
     # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
     allAudioLanguages = 0
-    # subLanguages. create a list of languages in the order you want them in your subtitles. 
-    # (future versions I hope to support sub downlaod)
-    subLanguages = eng,spa,fre
     # allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
     allSubLanguages = 0
     # embedSubs. 1 will embded external sub/srt subs into your video if this is supported.

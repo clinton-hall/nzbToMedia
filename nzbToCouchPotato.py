@@ -97,6 +97,16 @@
 
 ## Transcoder
 
+# getSubs (0, 1).
+#
+# set to 1 to download subtitles.
+#getSubs = 0
+
+# subLanguages.
+#
+# subLanguages. create a list of languages in the order you want them in your subtitles. 
+#subLanguages = eng,spa,fre
+
 # Transcode (0, 1).
 #
 # set to 1 to transcode, otherwise set to 0.
@@ -141,12 +151,6 @@
 #
 # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
 #allAudioLanguages = 0
-
-# subLanguages.
-#
-# subLanguages. create a list of languages in the order you want them in your subtitles. 
-# (future versions I hope to support sub downlaod)
-#subLanguages = eng,spa,fre
 
 # allSubLanguages (0,1).
 #
