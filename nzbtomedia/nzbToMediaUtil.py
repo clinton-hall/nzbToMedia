@@ -682,7 +682,7 @@ def find_download(clientAgent, download_id):
             if hash == download_id:
                 return True
     if clientAgent == 'deluge':
-        pass
+        return False
     if clientAgent == 'sabnzbd':
         baseURL = "http://%s:%s/api" % (nzbtomedia.SABNZBDHOST, nzbtomedia.SABNZBDPORT)
         url = baseURL
@@ -695,11 +695,12 @@ def find_download(clientAgent, download_id):
             r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
-            return 1  # failure
+            return False  # failure
 
         result = r.json()
         if result['files']:
             return True
+    return False
 
 
 def cleanFileName(filename):
