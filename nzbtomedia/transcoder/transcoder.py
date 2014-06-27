@@ -121,7 +121,10 @@ def buildCommands(file, newDir):
         width = video["width"]
         height = video["height"]
         scale = nzbtomedia.VRESOLUTION
-        framerate = float(fr.split('/')[0])/float(fr.split('/')[1])
+        try:
+            framerate = float(fr.split('/')[0])/float(fr.split('/')[1])
+        except:
+            framerate = 0
         vid_cmds = []
         if codec in nzbtomedia.VCODEC_ALLOW:
             video_cmd.extend(['-c:v', 'copy'])
@@ -163,6 +166,8 @@ def buildCommands(file, newDir):
             map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
             audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            if nzbtomedia.ACODEC == 'aac':
+                audio_cmd.extend(['-strict', '-2'])
             if nzbtomedia.ABITRATE:
                 audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE)])
             if nzbtomedia.OUTPUTQUALITYPERCENT:
@@ -171,6 +176,8 @@ def buildCommands(file, newDir):
             map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
             audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            if nzbtomedia.ACODEC == 'aac':
+                audio_cmd.extend(['-strict', '-2'])
             if nzbtomedia.ABITRATE:
                 audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE)])
             if nzbtomedia.OUTPUTQUALITYPERCENT:
@@ -192,6 +199,8 @@ def buildCommands(file, newDir):
                 map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
                 audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                if nzbtomedia.ACODEC2 == 'aac':
+                    audio_cmd.extend(['-strict', '-2'])
                 if nzbtomedia.ABITRATE2:
                     audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE2)])
                 if nzbtomedia.OUTPUTQUALITYPERCENT:
@@ -200,12 +209,14 @@ def buildCommands(file, newDir):
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
                 audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                if nzbtomedia.ACODEC2 == 'aac':
+                    audio_cmd.extend(['-strict', '-2'])
                 if nzbtomedia.ABITRATE2:
                     audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE2)])
                 if nzbtomedia.OUTPUTQUALITYPERCENT:
                     audio_cmd.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
 
-        if nzbtomedia.AINCLUDE and audio3:  # just pick the default audio track
+        if nzbtomedia.AINCLUDE and audio3 and nzbtomedia.ACODEC3:  # just pick the default audio track
             for audio in audioStreams:
                 if audio["index"] in a_mapped:
                     continue
@@ -218,7 +229,9 @@ def buildCommands(file, newDir):
                     if nzbtomedia.ABITRATE3 and not (nzbtomedia.ABITRATE3 * 0.9 < bitrate < nzbtomedia.ABITRATE3 * 1.1):
                         audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
                 else:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3_ALLOW])
+                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3])
+                    if nzbtomedia.ACODEC3 == 'aac':
+                        audio_cmd.extend(['-strict', '-2'])
                     if nzbtomedia.ABITRATE3:
                         audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
                 if nzbtomedia.OUTPUTQUALITYPERCENT > 0:
@@ -350,7 +363,7 @@ def Transcode_directory(dirName):
         makeDir(newDir)
     else:
         newDir = dirName
-    for file in nzbtomedia.listMediaFiles(dirName):
+    for file in nzbtomedia.listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
         if os.path.splitext(file)[1] in nzbtomedia.IGNOREEXTENSIONS:
             continue
         command = buildCommands(file, newDir)
