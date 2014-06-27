@@ -406,6 +406,6 @@ def Transcode_directory(dirName):
                 if not os.path.isfile(newpath):
                     os.rename(sub, newpath)
 
-    if not nzbtomedia.PROCESSOUTPUT and not nzbtomedia.DUPLICATE:  # We postprocess the original files to CP/SB 
+    if not nzbtomedia.PROCESSOUTPUT and nzbtomedia.DUPLICATE:  # We postprocess the original files to CP/SB 
         newDir = dirName
     return final_result, newDir
