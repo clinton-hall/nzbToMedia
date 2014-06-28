@@ -881,10 +881,12 @@ def import_subs(filename):
         return
 
     logger.debug("Attempting to download subtitles for %s" %(filename), 'SUBTITLES')
-
-    video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
-    subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
-    subliminal.save_subtitles(subtitles) 
+    try:
+        video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
+        subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
+        subliminal.save_subtitles(subtitles)
+    except:
+        logger.error("Failed to download subtitles for %s" %(filename), 'SUBTITLES') 
 
 def backupVersionedFile(old_file, version):
     numTries = 0

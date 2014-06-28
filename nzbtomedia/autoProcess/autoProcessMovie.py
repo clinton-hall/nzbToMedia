@@ -279,9 +279,9 @@ class autoProcessMovie:
                 logger.postprocess("SUCCESS: Snatched the next highest release ...", section)
                 return 0
             else:
-                logger.postprocess("FAILED: Unable to find a higher ranked release then %s to snatch!" % (inputName),
-                                   section)
-                return 1
+                logger.postprocess("SUCCESS: Unable to find a higher ranked release then %s to snatch now. CP will keep searching!" 
+                                   % (inputName), section)
+                return 0  #
 
         # Added a releease that was not in the wanted list so confirm rename successful by finding this movie media.list.
         if not release:
