@@ -259,6 +259,7 @@ class autoProcessMovie:
                 logger.postprocess("SUCCESS: %s has been set to ignored ..." % (inputName), section)
             else:
                 logger.warning("FAILED: Unable to set %s to ignored!" % (inputName), section)
+                return 1
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
@@ -279,8 +280,7 @@ class autoProcessMovie:
                 logger.postprocess("SUCCESS: Snatched the next highest release ...", section)
                 return 0
             else:
-                logger.postprocess("SUCCESS: Unable to find a higher ranked release then %s to snatch now. CP will keep searching!" 
-                                   % (inputName), section)
+                logger.postprocess("SUCCESS: Unable to find a new release to snatch now. CP will keep searching!", section)
                 return 0  #
 
         # Added a releease that was not in the wanted list so confirm rename successful by finding this movie media.list.
