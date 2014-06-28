@@ -3,7 +3,7 @@ import time
 import requests
 import nzbtomedia
 
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia import logger
 
