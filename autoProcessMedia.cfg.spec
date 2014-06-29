@@ -17,6 +17,8 @@
     log_debug = 0
     # Enable/Disable logging database messages to nzbtomedia.log
     log_db = 0
+    # Enable/Disable logging environment variables to nzbtomedia.log (helpful to track down errors calling external tools.)
+    log_env = 0
     # Set to where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
     # Enable/Disable media file checking using ffprobe.

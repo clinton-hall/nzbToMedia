@@ -63,6 +63,7 @@ NZBGET_POSTPROCESS_NONE = 95
 CFG = None
 LOG_DEBUG = None
 LOG_DB = None
+LOG_ENV = None
 SYS_ENCODING = None
 
 AUTO_UPDATE = None
@@ -187,7 +188,7 @@ def initialize(section=None):
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS
+        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV
 
     if __INITIALIZED__:
         return False
@@ -242,6 +243,11 @@ def initialize(section=None):
     # Enable/Disable DEBUG Logging
     LOG_DEBUG = int(CFG['General']['log_debug'])
     LOG_DB = int(CFG['General']['log_db'])
+    LOG_ENV = int(CFG['General']['log_env'])
+
+    if LOG_ENV:
+        for item in os.environ:
+            logger.info("%s: %s" % (item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
     nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
