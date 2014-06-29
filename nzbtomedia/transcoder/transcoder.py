@@ -6,7 +6,6 @@ import urllib2
 import traceback
 import nzbtomedia
 import json
-import time
 from subprocess import call
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import makeDir
@@ -47,10 +46,9 @@ def getVideoDetails(videofile):
     command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
     try:
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
-        while proc.poll() is None:
-            time.sleep(0.5)
+        out, err = proc.communicate()
         result = proc.returncode
-        video_details = json.loads(proc.stdout.read())
+        video_details = json.loads(out)
     except:
         logger.error("Checking [%s] has failed" % (videofile), 'TRANSCODER')
     return video_details, result
