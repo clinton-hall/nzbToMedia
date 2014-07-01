@@ -5,6 +5,7 @@ Provides an efficient way to handle postprocessing for [CouchPotatoServer](https
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/ "SABnzbd") and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
 This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli") and further contributions by [schumi2004](https://github.com/schumi2004 "schumi2004") and [hugbug](https://sourceforge.net/apps/phpbb/nzbget/memberlist.php?mode=viewprofile&u=67 "hugbug").
 Torrent suport added by [jkaberg](https://github.com/jkaberg "jkaberg") and [berkona](https://github.com/berkona "berkona")
+Corrupt video checking, auto SickBeard fork determination and a whole lot of code improvement was done by [echel0n](https://github.com/echel0n "echel0n")
 
 Introduction
 ------------
@@ -23,6 +24,9 @@ To enable Torrent extraction, on Windows, you need to install [7-zip](http://www
 	
 	"unrar", "unzip", "tar", "7zr"
 	note: "7zr" is available from the p7zip package. Available on optware.
+
+In order to use the transcoding option, and corrupt video checking you will need to install ffmpeg (and ffprobe).
+Installation instructions for this are available in the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki/Transcoder "wiki")
 	
 Contribution
 ------------
@@ -32,12 +36,11 @@ Founder: [clinton-hall](https://github.com/clinton-hall "clinton-hall")
 
 Contributors: Can be viewed [here](https://github.com/clinton-hall/nzbToMedia/contributors "here")
 
-In order to use the transcoding option you will need to install ffmpeg.
-Installation instructions for this are available in the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki/Transcoder "wiki")
-
 
 Installation
 ------------
+
+**See more detailed instructions in the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki "wiki")** 
 
 ### Windows
 

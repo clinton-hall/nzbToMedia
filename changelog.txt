@@ -1,5 +1,15 @@
 Change_LOG / History
 
+V9.4 xx/xx/2014
+
+Impacts All
+Changed to python2 (some systems now come with python = python3 as default).
+Major changes to Transcoder. Only copy streams where possible.
+Pre-defined Transcode options for some devices.
+Added log_env option to capture environment variables.
+Improved remote directory handling.
+Various fixes.
+
 V9.3 09/06/2014
 
 Impacts Torrents
