@@ -9,13 +9,13 @@ Corrupt video checking, auto SickBeard fork determination and a whole lot of cod
 
 Introduction
 ------------
-Originally this was modifed from the SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly scanning the download directory. 
+Originally this was modified from the SickBeard version to allow for "on-demand" renaming and not have My QNAP TS-412 NAS constantly scanning the download directory. 
 Later, a few failed downloads prompted me to incorporate "failed download" handling.
-Failed download handling is now provided for sabnzbd, by CouchPotatoServer; however on arm processors (e.g. small NAS systems) this can be un-reliable.
+Failed download handling is now provided for SABnzbd, by CouchPotatoServer; however on arm processors (e.g. small NAS systems) this can be un-reliable.
 
 Failed download handling for SickBeard is available by using the development branch from fork [SickBeard-failed](https://github.com/Tolstyak/Sick-Beard.git "SickBeard-failed")
 To use this feature, in autoProcessTV.cfg set the parameter "fork=failed". Default is "fork=default" and will work with standard version of SickBeard and just ignores failed downloads. 
-Additional forks exist for ThePirateBay (does its own extraction and linking). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/sickbeard-branches "SickBeard Forks") for a lit of known forks.
+Additional forks exist for ThePirateBay (does its own extraction and linking). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/sickbeard-branches "SickBeard Forks") for a list of known forks.
 
 Full support is provided for [SickRage](https://github.com/echel0n/SickRage "SickRage"). 
 
@@ -23,14 +23,14 @@ Torrent support has been added with the assistance of jkaberg and berkona. Curre
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
 	
 	"unrar", "unzip", "tar", "7zr"
-	note: "7zr" is available from the p7zip package. Available on optware.
+	note: "7zr" is available from the p7zip package. Available on Optware.
 
 In order to use the transcoding option, and corrupt video checking you will need to install ffmpeg (and ffprobe).
 Installation instructions for this are available in the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki/Transcoder "wiki")
 	
 Contribution
 ------------
-We who have developed nzbToMedia believe in the openess of open-source, and as such we hope that any modifications will lead back to the [orignal repo](https://github.com/clinton-hall/nzbToMedia "orignal repo") via pull requests.
+We who have developed nzbToMedia believe in the openness of open-source, and as such we hope that any modifications will lead back to the [orignal repo](https://github.com/clinton-hall/nzbToMedia "orignal repo") via pull requests.
 
 Founder: [clinton-hall](https://github.com/clinton-hall "clinton-hall")
 
@@ -44,38 +44,25 @@ Installation
 
 ### Windows
 
-Download the the compiled versions of this code from the links provided here [nzbToMedia installation](https://github.com/clinton-hall/nzbToMedia/wiki/installation)
+Support of the compiled versions of this code has ceased. Compiling this expanding code is becoming very difficult and time-consuming. Installing Python and running from source is not too complex. Please follow the instructions on the Wiki link above.
+Sorry for any inconvenience caused here.
+
 
 ### General
 
 1. Install python 2.7.
 
-2. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your nzb client) 
+2. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your download client) 
    and change the permission accordingly so the download client can access these files.
 	
-	git clone git://github.com/clinton-hall/nzbToMedia.git
+  `git clone git://github.com/clinton-hall/nzbToMedia.git`
 
 ### Configuration
 
-1. Rename the file autoProcessMedia.cfg.sample to autoProcessMedia.cfg and fill in the appropriate 
-   fields in [SickBeard], [CouchPotato], [Torrent]as they apply to your installation.
+1. Please read the [wiki](https://github.com/clinton-hall/nzbToMedia/wiki "wiki") pages for configuration settings appropriate to your system.
 
-2. Please read the wiki pages on this repo for further configuration settings appropriate to your system.
+2. Please add to the wiki pages to help assist others ;)
 
-3. Please add to the wiki pages to help assist others ;)
-
-### NZBGet (V11+)
-
-1. Place the nzbToMedia folder inside the ppscripts folder. These scripts can now be configured via the web UI.
-
-2. Run scripts (for all required categories) in this order.
-
-	DeleteSamples.py, nzbToMedia*.py, Email.py, Logger.py
-
-3. For Windows compiled versions, set the same config for all categories.
-
-	DeleteSamples.bat, nzbToMedia.bat
- 
 ### Issues
 
-1. Please report all issues, or potential enhancements using the issues page on this repo.
+1. Please report all issues, or potential enhancements using the [issues](https://github.com/clinton-hall/nzbToMedia/issues "issues") page on this repo.
