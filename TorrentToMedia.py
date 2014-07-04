@@ -9,6 +9,7 @@ import nzbtomedia
 from subprocess import Popen
 from nzbtomedia import logger, nzbToMediaDB
 from nzbtomedia.nzbToMediaUtil import convert_to_ascii, CharReplace
+from nzbtomedia.nzbToMediaUserScript import external_script
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
@@ -83,35 +84,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     except:
         extract = 0
 
-    if sectionName == "UserScript":
-        try:
-            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = section[usercat]["user_script_mediaExtensions"]
-        except:
-            nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS = None
-        try:
-            nzbtomedia.USER_SCRIPT = section[usercat]["user_script_path"]
-        except:
-            nzbtomedia.USER_SCRIPT = None
-        try:
-            nzbtomedia.USER_SCRIPT_PARAM = section[usercat]["user_script_param"]
-        except:
-            nzbtomedia.USER_SCRIPT_PARAM = None
-        try:
-            nzbtomedia.USER_SCRIPT_SUCCESSCODES = section[usercat]["user_script_successCodes"]
-        except:
-            nzbtomedia.USER_SCRIPT_SUCCESSCODES = 0
-        try:
-            nzbtomedia.USER_SCRIPT_CLEAN = int(section[usercat]["user_script_clean"])
-        except:
-            nzbtomedia.USER_SCRIPT_CLEAN = 1
-        try:
-            nzbtomedia.USER_SCRIPT_RUNONCE = int(section[usercat]["user_script_runOnce"])
-        except:
-            nzbtomedia.USER_SCRIPT_RUNONCE = 1
-        try:
-            uniquePath = int(section[usercat]["unique_path"])
-        except:
-            uniquePath = 1
+    try:
+        uniquePath = int(section[usercat]["unique_path"])
+    except:
+        uniquePath = 1
 
     if clientAgent != 'manual':
         nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
@@ -213,9 +189,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     result = 0
     if sectionName == 'UserScript':
-        result = external_script(outputDestination, inputName, inputCategory)
+        result = external_script(outputDestination, inputName, inputCategory, section[usercat])
 
-    if sectionName == 'CouchPotato':
+    elif sectionName == 'CouchPotato':
         result = nzbtomedia.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
                                                        inputCategory)
     elif sectionName in ['SickBeard','NzbDrone']:
@@ -247,83 +223,6 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             nzbtomedia.cleanDir(outputDestination, sectionName, inputCategory)
 
     return result
-
-
-def external_script(outputDestination, torrentName, torrentLabel):
-    if nzbtomedia.USER_SCRIPT is None or nzbtomedia.USER_SCRIPT == "None":  # do nothing and return success.
-        return 0
-    final_result = 0  # start at 0.
-    num_files = 0
-    for dirpath, dirnames, filenames in os.walk(outputDestination):
-        for file in filenames:
-
-            filePath = nzbtomedia.os.path.join(dirpath, file)
-            fileName, fileExtension = os.path.splitext(file)
-
-            if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS:
-                num_files = num_files + 1
-                if nzbtomedia.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
-                    continue
-                command = [nzbtomedia.USER_SCRIPT]
-                for param in nzbtomedia.USER_SCRIPT_PARAM:
-                    if param == "FN":
-                        command.append(file)
-                        continue
-                    elif param == "FP":
-                        command.append(filePath)
-                        continue
-                    elif param == "TN":
-                        command.append(torrentName)
-                        continue
-                    elif param == "TL":
-                        command.append(torrentLabel)
-                        continue
-                    elif param == "DN":
-                        if nzbtomedia.USER_SCRIPT_RUNONCE == 1:
-                            command.append(outputDestination)
-                        else:
-                            command.append(dirpath)
-                        continue
-                    else:
-                        command.append(param)
-                        continue
-                cmd = ""
-                for item in command:
-                    cmd = cmd + " " + item
-                logger.info("Running script %s on file %s." % (cmd, filePath))
-                try:
-                    p = Popen(command)
-                    res = p.wait()
-                    if str(res) in nzbtomedia.USER_SCRIPT_SUCCESSCODES:  # Linux returns 0 for successful.
-                        logger.info("UserScript %s was successfull" % (command[0]))
-                        result = 0
-                    else:
-                        logger.error("UserScript %s has failed with return code: %s" % (command[0], res))
-                        logger.info(
-                            "If the UserScript completed successfully you should add %s to the user_script_successCodes" % (
-                                res))
-                        result = int(1)
-                except:
-                    logger.error("UserScript %s has failed" % (command[0]))
-                    result = int(1)
-                final_result = final_result + result
-
-    num_files_new = 0
-    for dirpath, dirnames, filenames in os.walk(outputDestination):
-        for file in filenames:
-            filePath = nzbtomedia.os.path.join(dirpath, file)
-            fileName, fileExtension = os.path.splitext(file)
-
-            if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
-                num_files_new = num_files_new + 1
-
-    if nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
-        logger.info("All files have been processed. Cleaning outputDirectory %s" % (outputDestination))
-        shutil.rmtree(outputDestination)
-    elif nzbtomedia.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
-        logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned." % (
-            num_files, num_files_new))
-    return final_result
 
 
 def main(args):

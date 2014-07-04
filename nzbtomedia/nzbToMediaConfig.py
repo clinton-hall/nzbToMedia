@@ -395,6 +395,21 @@ class ConfigObj(configobj.ConfigObj, Section):
                     value = os.environ[key]
                     CFG_NEW[section][option] = value
 
+            section = "UserScript"
+            envCatKey = 'NZBPO_USCATEGORY'
+            envKeys = ['USVIDEO_CORRUPTION_CHECK', 'USREMOTE_PATH', 'USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE', 'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY']
+            cfgKeys = ['video_corruption_check', 'remote_path', 'user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce', 'user_script_successCodes', 'user_script_clean', 'delay']
+            if os.environ.has_key(envCatKey):
+                for index in range(len(envKeys)):
+                    key = 'NZBPO_' + envKeys[index]
+                    if os.environ.has_key(key):
+                        option = cfgKeys[index]
+                        value = os.environ[key]
+                        if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                            CFG_NEW[section][os.environ[envCatKey]] = {}
+                        CFG_NEW[section][os.environ[envCatKey]][option] = value
+                CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+
         except Exception, e:
             logger.debug("Error %s when applying NZBGet config" % (e))
 

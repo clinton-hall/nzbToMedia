@@ -414,6 +414,60 @@
 #wolhost=192.168.1.37
 #wolport=80
 
+## UserScript
+
+# User Script category.
+#
+# category that gets called for post-processing with user script (accepts "UNCAT", "ALL", or a defined category).
+#usCategory=mine
+
+# Video Corruptio Check (0,1).
+#
+# Check video for corruption.
+#usvideo_corruption_check=0
+
+# User Script Remote Path (0,1).
+#
+# Script calls commands on another system.
+#usremote_path=0
+
+# User Script extensions.
+#
+# What extension do you want to process? Specify all the extension, or use "ALL" to process all files.
+#user_script_mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg
+
+# User Script Path
+#
+# Specify the path to your custom script.
+#user_script_path=/nzbToMedia/userscripts/script.sh
+
+# User Script arguments.
+#
+# Specify the argument(s) passed to script, comma separated in order.
+# for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
+# So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
+#user_script_param=FN
+
+# User Script Run Once (0,1).
+#
+# Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
+#user_script_runOnce=0
+
+# User Script Success Codes.
+#
+# Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
+#user_script_successCodes=0
+
+# User Script Clean After (0,1).
+#
+# Clean after? Note that delay function is used to prevent possible mistake :) Delay is intended as seconds
+#user_script_clean=1
+
+# User Script Delay.
+#
+# Delay in seconds after processing.
+#usdelay=120
+
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 import os
@@ -426,6 +480,7 @@ from nzbtomedia.autoProcess.autoProcessMovie import autoProcessMovie
 from nzbtomedia.autoProcess.autoProcessMusic import autoProcessMusic
 from nzbtomedia.autoProcess.autoProcessTV import autoProcessTV
 from nzbtomedia.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii
+from nzbtomedia.nzbToMediaUserScript import external_script
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
@@ -455,12 +510,19 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         myDB.upsert("downloads", newValueDict, controlValueDict)
 
     # auto-detect section
+    if inputCategory is None:
+        inputCategory = 'UNCAT'
+    usercat = inputCategory
     section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
     if section is None:
-        logger.error(
-            'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
-            inputCategory))
-        return -1
+        section = nzbtomedia.CFG.findsection("ALL").isenabled()
+        if section is None:
+            logger.error(
+                'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
+                inputCategory))
+            return -1
+        else:
+            usercat = "ALL"
 
     if len(section) > 1:
         logger.error(
@@ -477,18 +539,18 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         return -1
 
     try:
-        extract = int(section[inputCategory]['extract'])
+        extract = int(section[usercat]['extract'])
     except:
         extract = 0
 
     try:
-        if int(section[inputCategory]['remote_path']) and not nzbtomedia.REMOTEPATHS:
+        if int(section[usercat]['remote_path']) and not nzbtomedia.REMOTEPATHS:
             logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
                 sectionName, inputCategory))
             return -1
     except:
         logger.error('Remote Path %s is not valid for %s:%s Please set this to either 0 to disable or 1 to enable!' % (
-            section[inputCategory]['remote_path'], sectionName, inputCategory))
+            section[usercat]['remote_path'], sectionName, inputCategory))
 
     inputName, inputDirectory = convert_to_ascii(inputName, inputDirectory)
 
@@ -511,6 +573,8 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
                                                     inputCategory)
     elif sectionName == "Gamez":
         result = autoProcessGames().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
+    elif sectionName == 'UserScript':
+        result = external_script(inputDirectory, inputName, inputCategory, section[usercat])
     else:
         result = -1
 
