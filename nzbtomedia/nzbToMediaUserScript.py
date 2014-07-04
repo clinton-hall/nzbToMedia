@@ -55,6 +55,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                     else:
                         logger.info("Corrupt video files found. Deleting.", "USERSCRIPT")
                         os.unlink(file)
+                        continue
                 num_files = num_files + 1
                 if nzbtomedia.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
