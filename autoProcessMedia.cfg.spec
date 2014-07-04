@@ -304,7 +304,6 @@
         enabled = 0
         Torrent_NoLink = 0
         extract = 1
-        video_corruption_check = 0
         #Enable if you are sending commands to a remote server for this category
         remote_path = 0
         #What extension do you want to process? Specify all the extension, or use "ALL" to process all files.

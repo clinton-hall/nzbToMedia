@@ -20,10 +20,6 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     except:
         nzbtomedia.USER_SCRIPT = None
     try:
-        nzbtomedia.USER_SCRIPT_VIDEO_CHECK = int(settings["video_corruption_check"])
-    except:
-        nzbtomedia.USER_SCRIPT_VIDEO_CHECK = 0
-    try:
         nzbtomedia.USER_SCRIPT_PARAM = settings["user_script_param"]
         if isinstance(nzbtomedia.USER_SCRIPT_PARAM, str): nzbtomedia.USER_SCRIPT_PARAM = nzbtomedia.USER_SCRIPT_PARAM.split(',')
     except:
@@ -42,7 +38,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     except:
         nzbtomedia.USER_SCRIPT_RUNONCE = 1
 
-    if nzbtomedia.USER_SCRIPT_VIDEO_CHECK:
+    if nzbtomedia.CHECK_MEDIA:
         for video in listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False):
             if transcoder.isVideoGood(video, 0):
                 import_subs(video)

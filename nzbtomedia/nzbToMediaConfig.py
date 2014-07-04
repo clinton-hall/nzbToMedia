@@ -397,8 +397,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "UserScript"
             envCatKey = 'NZBPO_USCATEGORY'
-            envKeys = ['USVIDEO_CORRUPTION_CHECK', 'USREMOTE_PATH', 'USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE', 'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY']
-            cfgKeys = ['video_corruption_check', 'remote_path', 'user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce', 'user_script_successCodes', 'user_script_clean', 'delay']
+            envKeys = ['USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE', 'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH']
+            cfgKeys = ['user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce', 'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
             if os.environ.has_key(envCatKey):
                 for index in range(len(envKeys)):
                     key = 'NZBPO_' + envKeys[index]

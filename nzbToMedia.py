@@ -421,11 +421,6 @@
 # category that gets called for post-processing with user script (accepts "UNCAT", "ALL", or a defined category).
 #usCategory=mine
 
-# Video Corruptio Check (0,1).
-#
-# Check video for corruption.
-#usvideo_corruption_check=0
-
 # User Script Remote Path (0,1).
 #
 # Script calls commands on another system.
