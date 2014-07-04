@@ -2,7 +2,7 @@ import os
 import nzbtomedia
 from subprocess import Popen
 from nzbtomedia.transcoder import transcoder
-from nzbtomedia.nzbToMediaUtil import import_subs
+from nzbtomedia.nzbToMediaUtil import import_subs, listMediaFiles
 from nzbtomedia import logger
 
 def external_script(outputDestination, torrentName, torrentLabel, settings):
@@ -42,6 +42,14 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     except:
         nzbtomedia.USER_SCRIPT_RUNONCE = 1
 
+    if nzbtomedia.USER_SCRIPT_VIDEO_CHECK:
+        for video in listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False):
+            if transcoder.isVideoGood(video, 0):
+                import_subs(video)
+            else:
+                logger.info("Corrupt video file found %s. Deleting." % (video), "USERSCRIPT")
+                os.unlink(video)
+
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
 
@@ -49,13 +57,6 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in nzbtomedia.USER_SCRIPT_MEDIAEXTENSIONS:
-                if nzbtomedia.USER_SCRIPT_VIDEO_CHECK and fileExtension in nzbtomedia.MEDIACONTAINER:
-                    if transcoder.isVideoGood(file, 0):
-                        import_subs(file)
-                    else:
-                        logger.info("Corrupt video files found. Deleting.", "USERSCRIPT")
-                        os.unlink(file)
-                        continue
                 num_files = num_files + 1
                 if nzbtomedia.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
