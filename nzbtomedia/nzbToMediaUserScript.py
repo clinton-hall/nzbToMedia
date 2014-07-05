@@ -59,22 +59,22 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 command = [nzbtomedia.USER_SCRIPT]
                 for param in nzbtomedia.USER_SCRIPT_PARAM:
                     if param == "FN":
-                        command.append(file)
+                        command.append('%s' % file)
                         continue
                     elif param == "FP":
-                        command.append(filePath)
+                        command.append('%s' % filePath)
                         continue
                     elif param == "TN":
-                        command.append(torrentName)
+                        command.append('%s' % torrentName)
                         continue
                     elif param == "TL":
-                        command.append(torrentLabel)
+                        command.append('%s' % torrentLabel)
                         continue
                     elif param == "DN":
                         if nzbtomedia.USER_SCRIPT_RUNONCE == 1:
-                            command.append(outputDestination)
+                            command.append('%s' % outputDestination)
                         else:
-                            command.append(dirpath)
+                            command.append('%s' % dirpath)
                         continue
                     else:
                         command.append(param)
