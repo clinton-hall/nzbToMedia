@@ -159,14 +159,14 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             except:
                 logger.error("Failed to link: %s to %s" % (inputFile, targetFile))
 
-    if not inputCategory in nzbtomedia.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
-        nzbtomedia.flatten(outputDestination)
-
     inputName, outputDestination = convert_to_ascii(inputName, outputDestination)
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
         nzbtomedia.extractFiles(outputDestination)
+
+    if not inputCategory in nzbtomedia.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
+        nzbtomedia.flatten(outputDestination)
 
     # Now check if video files exist in destination:
     if sectionName in ["SickBeard", "NzbDrone", "CouchPotato"]:

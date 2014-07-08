@@ -630,7 +630,7 @@ def create_torrent_class(clientAgent):
 
 
 def pause_torrent(clientAgent, inputHash, inputID, inputName):
-    logger.debug("Stoping torrent %s in %s while processing" % (inputName, clientAgent))
+    logger.debug("Stopping torrent %s in %s while processing" % (inputName, clientAgent))
 
     if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
         nzbtomedia.TORRENT_CLASS.stop(inputHash)
@@ -836,32 +836,33 @@ def find_imdbid(dirName, inputName):
 
 def extractFiles(src, dst=None):
     extracted_folder = []
+    extracted_archive = []
 
     for inputFile in listMediaFiles(src, media=False, audio=False, meta=False, archives=True):
         dirPath = os.path.dirname(inputFile)
         fullFileName = os.path.basename(inputFile)
+        archiveName = os.path.splitext(fullFileName)[0]
+        archiveName = re.sub(r"part[0-9]+", "", archiveName)
 
-        if dirPath in extracted_folder:
-            break
+        if dirPath in extracted_folder and archiveName in extracted_archive:
+            continue  # no need to extract this, but keep going to look for other archives and sub directories.
 
         try:
             if extractor.extract(inputFile, dirPath or dst):
                 extracted_folder.append(dirPath or dst)
+                extracted_archive.append(archiveName)
         except Exception, e:
             logger.error("Extraction failed for: %s" % (fullFileName))
 
-    if extracted_folder:
-        for folder in extracted_folder:
-            for inputFile in listMediaFiles(folder):
-                fullFileName = os.path.basename(inputFile)
-
-                if is_archive_file(inputFile):
-                    logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
-                    try:
-                        os.remove(inputFile)
-                        time.sleep(1)
-                    except:
-                        logger.debug("Unable to remove file %s" % (inputFile))
+    for folder in extracted_folder:
+        for inputFile in listMediaFiles(folder, media=False, audio=False, meta=False, archives=True):
+            fullFileName = os.path.basename(inputFile)
+            logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
+            try:
+                os.remove(inputFile)
+                time.sleep(1)
+            except:
+                logger.debug("Unable to remove file %s" % (inputFile))
 
 def import_subs(filename):
     if not nzbtomedia.GETSUBS:
