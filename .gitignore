@@ -3,7 +3,8 @@
 *.pyc
 *.pyo
 *.log
+*.pid
+*.db
 /userscripts/
 /logs/
 /.idea/
-*.db
