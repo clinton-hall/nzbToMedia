@@ -12,6 +12,7 @@
     git_user =
     # GitHUB branch for repo
     git_branch =
+    # Enable/Disable forceful cleaning of leftover files following postprocess 
     force_clean = 0
     # Enable/Disable logging debug messages to nzbtomedia.log
     log_debug = 0

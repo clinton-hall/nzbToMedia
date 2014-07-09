@@ -297,7 +297,7 @@ def main(args):
         logger.info("The %s script completed successfully." % (args[0]))
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))
-
+    del nzbtomedia.MYAPP
     return result
 
 

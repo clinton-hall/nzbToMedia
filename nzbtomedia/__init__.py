@@ -4,6 +4,7 @@ import re
 import subprocess
 import sys
 import platform
+import time
 
 # init libs
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
@@ -15,11 +16,13 @@ SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
 APP_NAME = os.path.basename(APP_FILENAME)
 LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
-LOG_FILE = os.path.join(LOG_DIR, 'postprocess.log')
+LOG_FILE = os.path.join(LOG_DIR, 'nzbtomedia.log')
+PID_FILE = os.path.join(LOG_DIR, 'nzbtomedia.pid')
 CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
 CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
 CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
 CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
+MYAPP = None
 
 from nzbtomedia.autoProcess.autoProcessComics import autoProcessComics
 from nzbtomedia.autoProcess.autoProcessGames import autoProcessGames
@@ -31,7 +34,7 @@ from nzbtomedia.nzbToMediaConfig import config
 from nzbtomedia.nzbToMediaUtil import category_search, sanitizeName, copy_link, parse_args, flatten, getDirs, \
     rmReadOnly,rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, \
     extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir, \
-    create_torrent_class, listMediaFiles
+    create_torrent_class, listMediaFiles, RunningProcess
 from nzbtomedia.transcoder import transcoder
 from nzbtomedia.databases import mainDB
 
@@ -188,10 +191,15 @@ def initialize(section=None):
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV
+        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP
 
     if __INITIALIZED__:
         return False
+
+    MYAPP = RunningProcess()
+    while MYAPP.alreadyrunning():
+        print("!!! Waiting for existing session to end!")
+        time.sleep(30)
 
     try:
         locale.setlocale(locale.LC_ALL, "")
@@ -272,6 +280,9 @@ def initialize(section=None):
             updated = versionCheck.CheckVersion().update()
             if updated:
                 # restart nzbToMedia
+                try:
+                    del MYAPP
+                except: pass
                 restart()
             else:
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")

@@ -7,6 +7,7 @@ import struct
 import shutil
 import time
 import datetime
+import platform
 import guessit
 import beets
 import requests
@@ -933,3 +934,74 @@ def get_downloadInfo(inputName, status):
                              [unicode(inputName), status])
 
     return sqlResults
+
+class RunningProcess():
+    """ Limits application to single instance """
+
+    def __init__(self):
+        if platform.system() == 'Windows':
+            self.process = WindowsProcess()
+        else:
+            self.process = PosixProcess()
+
+    def alreadyrunning(self):
+        return self.process.alreadyrunning()
+
+    #def __del__(self):
+    #    self.process.__del__()
+
+class WindowsProcess():
+
+    if platform.system() == 'Windows':
+        from win32event import CreateMutex
+        from win32api import CloseHandle, GetLastError
+        from winerror import ERROR_ALREADY_EXISTS
+
+    def __init__(self):
+        self.mutexname = "nzbtomedia_{D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
+   
+    def alreadyrunning(self):
+        self.mutex = CreateMutex(None, False, self.mutexname)
+        self.lasterror = GetLastError()
+        return (self.lasterror == ERROR_ALREADY_EXISTS)
+
+    def __del__(self):
+        if self.mutex:
+            CloseHandle(self.mutex)
+
+class PosixProcess():
+
+    def __init__(self):
+        self.pidpath = nzbtomedia.PID_FILE
+
+    def alreadyrunning(self):
+        if os.path.exists(self.pidpath):
+            # Make sure it is not a "stale" pidFile
+            try:
+                pid = int(open(self.pidpath, 'r').read().strip())
+            except:
+                pid = None
+            # Check list of running pids, if not running it is stale so overwrite
+            if isinstance(pid, int):
+                try:
+                    os.kill(pid, 0)
+                    self.lasterror = True
+                except OSError:
+                    self.lasterror = False
+            else:
+                self.lasterror = False
+        else:
+                self.lasterror = False
+
+        if not self.lasterror:
+            # Write my pid into pidFile to keep multiple copies of program from running
+            fp = open(self.pidpath, 'w')
+            fp.write(str(os.getpid()))
+            fp.close()
+
+        return self.lasterror
+
+    def __del__(self):
+        if not self.lasterror:
+            if os.path.isfile(self.pidpath):
+                os.unlink(self.pidpath)

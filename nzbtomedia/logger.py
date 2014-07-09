@@ -242,7 +242,7 @@ class DispatchingFormatter:
         formatter = self._formatters.get(record.name, self._default_formatter)
         return formatter.format(record)
 
-ntm_log_instance = NTMRotatingLogHandler("nzbtomedia.log", NUM_LOGS, LOG_SIZE)
+ntm_log_instance = NTMRotatingLogHandler(nzbtomedia.LOG_FILE, NUM_LOGS, LOG_SIZE)
 
 def log(toLog, logLevel=MESSAGE, section='MAIN'):
     ntm_log_instance.log(toLog, logLevel, section)
