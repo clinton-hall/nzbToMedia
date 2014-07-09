@@ -952,22 +952,31 @@ class RunningProcess():
 
 class WindowsProcess():
 
-    if platform.system() == 'Windows':
-        from win32event import CreateMutex
-        from win32api import CloseHandle, GetLastError
-        from winerror import ERROR_ALREADY_EXISTS
-
     def __init__(self):
         self.mutexname = "nzbtomedia_{D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
+        if platform.system() == 'Windows':
+            print "importing Mutex"
+            from win32event import CreateMutex
+            from win32api import CloseHandle, GetLastError
+            from winerror import ERROR_ALREADY_EXISTS
+            self.CreateMutex = CreateMutex
+            self.CloseHandle = CloseHandle
+            self.GetLastError = GetLastError
+            self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
    
     def alreadyrunning(self):
-        self.mutex = CreateMutex(None, False, self.mutexname)
-        self.lasterror = GetLastError()
-        return (self.lasterror == ERROR_ALREADY_EXISTS)
+        self.mutex = self.CreateMutex(None, 0, self.mutexname)
+        self.lasterror = self.GetLastError()
+        if (self.lasterror == self.ERROR_ALREADY_EXISTS):
+            self.CloseHandle(self.mutex)
+            return True
+        else:
+            return False
+            
 
     def __del__(self):
         if self.mutex:
-            CloseHandle(self.mutex)
+            self.CloseHandle(self.mutex)
 
 class PosixProcess():
 
