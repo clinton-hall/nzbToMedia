@@ -126,7 +126,7 @@ def buildCommands(file, newDir):
         except:
             framerate = 0
         vid_cmds = []
-        if codec in nzbtomedia.VCODEC_ALLOW:
+        if codec in nzbtomedia.VCODEC_ALLOW or not nzbtomedia.VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
         else:
             video_cmd.extend(['-c:v', nzbtomedia.VCODEC])
@@ -165,7 +165,10 @@ def buildCommands(file, newDir):
         elif audio1:  # right language wrong codec.
             map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
-            audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            if nzbtomedia.ACODEC:
+                audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            else:
+                audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
             if nzbtomedia.ACODEC == 'aac':
                 audio_cmd.extend(['-strict', '-2'])
             if nzbtomedia.ABITRATE:
@@ -175,7 +178,10 @@ def buildCommands(file, newDir):
         elif audio3:  # just pick the default audio track
             map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
-            audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            if nzbtomedia.ACODEC:
+                audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
+            else:
+                audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
             if nzbtomedia.ACODEC == 'aac':
                 audio_cmd.extend(['-strict', '-2'])
             if nzbtomedia.ABITRATE:
@@ -198,7 +204,10 @@ def buildCommands(file, newDir):
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
-                audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                if nzbtomedia.ACODEC2:
+                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                else:
+                    audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                 if nzbtomedia.ACODEC2 == 'aac':
                     audio_cmd.extend(['-strict', '-2'])
                 if nzbtomedia.ABITRATE2:
@@ -208,7 +217,10 @@ def buildCommands(file, newDir):
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
-                audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                if nzbtomedia.ACODEC2:
+                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                else:
+                    audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                 if nzbtomedia.ACODEC2 == 'aac':
                     audio_cmd.extend(['-strict', '-2'])
                 if nzbtomedia.ABITRATE2:
@@ -229,7 +241,10 @@ def buildCommands(file, newDir):
                     if nzbtomedia.ABITRATE3 and not (nzbtomedia.ABITRATE3 * 0.9 < bitrate < nzbtomedia.ABITRATE3 * 1.1):
                         audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
                 else:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3])
+                    if nzbtomedia.ACODEC3:
+                        audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3])
+                    else:
+                        audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                     if nzbtomedia.ACODEC3 == 'aac':
                         audio_cmd.extend(['-strict', '-2'])
                     if nzbtomedia.ABITRATE3:

@@ -362,21 +362,31 @@ def initialize(section=None):
     VCODEC_ALLOW = CFG["Transcoder"]["VideoCodecAllow"].strip()
     if isinstance(VCODEC_ALLOW, str): VCODEC_ALLOW = VCODEC_ALLOW.split(',')
     VPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
-    VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
-    VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k','000'))
+    try:
+        VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
+    except: pass
+    try:
+        VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k','000'))
+    except: pass
     VRESOLUTION = CFG["Transcoder"]["outputVideoResolution"]
     ACODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
     ACODEC_ALLOW = CFG["Transcoder"]["AudioCodecAllow"].strip()
     if isinstance(ACODEC_ALLOW, str): ACODEC_ALLOW = ACODEC_ALLOW.split(',')
-    ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k','000'))
+    try:
+        ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k','000'))
+    except: pass
     ACODEC2 = CFG["Transcoder"]["outputAudioTrack2Codec"].strip()
     ACODEC2_ALLOW = CFG["Transcoder"]["AudioCodec2Allow"].strip()
     if isinstance(ACODEC2_ALLOW, str): ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
-    ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k','000'))
+    try:
+        ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k','000'))
+    except: pass
     ACODEC3 = CFG["Transcoder"]["outputAudioOtherCodec"].strip()
     ACODEC3_ALLOW = CFG["Transcoder"]["AudioOtherCodecAllow"].strip()
     if isinstance(ACODEC3_ALLOW, str): ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
-    ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k','000'))
+    try:
+        ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k','000'))
+    except: pass
     SCODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
     BURN = int(CFG["Transcoder"]["burnInSubtitle"].strip())
     DEFAULTS = CFG["Transcoder"]["outputDefault"].strip()
