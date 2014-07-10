@@ -29,9 +29,16 @@ class autoProcessMovie:
             r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
-            return
+            return results
 
-        result = r.json()
+        try:
+            result = r.json()
+        except:
+            logger.error("CouchPotato returned the following non-json data")
+            for line in r.iter_lines():
+                logger.error("%s" %(line))
+            return results
+
         if not result['success']:
             if 'error' in result:
                 logger.error(str(result['error']))
