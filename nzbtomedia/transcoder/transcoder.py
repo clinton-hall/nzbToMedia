@@ -149,9 +149,15 @@ def buildCommands(file, newDir):
     used_audio = 0
     a_mapped = []
     if audioStreams:
-        audio1 = [ item for item in audioStreams if item["tags"]["language"] == nzbtomedia.ALANGUAGE ]
+        try:
+            audio1 = [ item for item in audioStreams if item["tags"]["language"] == nzbtomedia.ALANGUAGE ]
+        except:  # no language tags. Assume only 1 language.
+            audio1 = audioStreams
         audio2 = [ item for item in audio1 if item["codec_name"] in nzbtomedia.ACODEC_ALLOW ]
-        audio3 = [ item for item in audioStreams if item["tags"]["language"] != nzbtomedia.ALANGUAGE ]
+        try:
+            audio3 = [ item for item in audioStreams if item["tags"]["language"] != nzbtomedia.ALANGUAGE ]
+        except:
+            audio3 = []
 
         if audio2:  # right language and codec...
             map_cmd.extend(['-map', '0:' + str(audio2[0]["index"])])
