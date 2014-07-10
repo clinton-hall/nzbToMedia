@@ -6,8 +6,6 @@ from nzbtomedia.nzbToMediaUtil import import_subs, listMediaFiles
 from nzbtomedia import logger
 
 def external_script(outputDestination, torrentName, torrentLabel, settings):
-    if nzbtomedia.USER_SCRIPT is None or nzbtomedia.USER_SCRIPT == "None":  # do nothing and return success.
-        return 0
     final_result = 0  # start at 0.
     num_files = 0
     try:
@@ -19,6 +17,8 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
         nzbtomedia.USER_SCRIPT = settings["user_script_path"]
     except:
         nzbtomedia.USER_SCRIPT = None
+    if nzbtomedia.USER_SCRIPT is None or nzbtomedia.USER_SCRIPT == "None":  # do nothing and return success.
+        return 0
     try:
         nzbtomedia.USER_SCRIPT_PARAM = settings["user_script_param"]
         if isinstance(nzbtomedia.USER_SCRIPT_PARAM, str): nzbtomedia.USER_SCRIPT_PARAM = nzbtomedia.USER_SCRIPT_PARAM.split(',')
