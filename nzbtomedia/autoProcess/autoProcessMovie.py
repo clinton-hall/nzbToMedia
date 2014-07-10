@@ -23,7 +23,7 @@ class autoProcessMovie:
             params['id'] = release_id or imdbid
 
         url = baseURL + cmd
-        logger.debug("Opening URL: %s" % url)
+        logger.debug("Opening URL: %s with PARAMS: %s" % (url, params))
 
         try:
             r = requests.get(url, params=params, verify=False)
