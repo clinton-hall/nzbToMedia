@@ -534,13 +534,15 @@ def getDirs(section, subsection):
             to_return.extend(processDir(watch_dir))
         elif os.path.exists(nzbtomedia.CFG[section][subsection]["watch_dir"]):
             to_return.extend(processDir(nzbtomedia.CFG[section][subsection]["watch_dir"]))
-    except:pass
+    except:
+        logger.error("Failed to add directories from %s for post-processing." % (nzbtomedia.CFG[section][subsection]["watch_dir"]))
 
     try:
         outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
         if os.path.exists(outputDirectory):
             to_return.extend(processDir(outputDirectory))
-    except:pass
+    except:
+        logger.error("Failed to add directories from %s for post-processing." % (nzbtomedia.OUTPUTDIRECTORY))
 
     if not to_return:
         logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))
