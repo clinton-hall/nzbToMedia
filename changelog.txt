@@ -1,5 +1,22 @@
 Change_LOG / History
 
+V10.1 11/07/2014
+
+Impacts All
+Improved Transcoder
+Minor Bug Fixes
+Now accepts Number of Audio Channels for Transcoder options.
+Userscript can perform video corruption check first.
+Improved extraction. Extract all subdirs and multiple "unique" archives in a directory.
+Check if already running and wait for complete before continuing.
+
+Impacts NZBs
+Allow UserScript for NZBs
+
+Impacts Torrents
+Do Extraction Before Flatten
+
+
 V10.0 03/07/2014
 
 Impacts All
