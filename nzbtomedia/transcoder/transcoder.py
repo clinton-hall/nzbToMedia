@@ -100,7 +100,7 @@ def buildCommands(file, newDir):
         if nzbtomedia.OUTPUTQUALITYPERCENT:
             audio_cmd.extend(['-q:a', str(nzbtomedia.OUTPUTQUALITYPERCENT)])
 
-        if nzbtomedia.OUTPUTSUBTITLECODEC and nzbtomedia.ALLOWSUBS:
+        if nzbtomedia.SCODEC and nzbtomedia.ALLOWSUBS:
             sub_cmd.extend(['-c:s', nzbtomedia.SCODEC])
         elif nzbtomedia.ALLOWSUBS:  # Not every subtitle codec can be used for every video container format!
             sub_cmd.extend(['-c:s', 'copy'])
