@@ -312,6 +312,15 @@ class autoProcessMovie:
                         return 0  # success
                 except:
                     pass
+            if not os.path.isdir(dirName):
+                logger.postprocess("SUCCESS: Input Directory [%s] has been processed and removed" % (
+                    dirName), section)
+                return 0
+
+            elif not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=True):
+                logger.postprocess("SUCCESS: Input Directory [%s] has no remaining media files. This has been fully processed." % (
+                    dirName), section)
+                return 0
 
             # pause and let CouchPotatoServer catch its breath
             time.sleep(10 * wait_for)
