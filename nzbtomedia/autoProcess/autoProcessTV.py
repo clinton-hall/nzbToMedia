@@ -174,7 +174,7 @@ class autoProcessTV:
                     del fork_params[param]
 
             if param == "force":
-                if force:
+                if force and clientAgent == "manual":
                     fork_params[param] = force
                 else:
                     del fork_params[param]
