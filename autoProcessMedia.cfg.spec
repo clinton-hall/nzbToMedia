@@ -280,12 +280,15 @@
     outputVideoBitrate = 800000
     outputAudioCodec = ac3
     AudioCodecAllow = 
-    outputAudioBitrate = 160000
+    outputAudioChannels = 6
+    outputAudioBitrate = 640k
     outputAudioTrack2Codec = libfaac
     AudioCodec2Allow = 
+    outputAudioTrack2Channels = 2 
     outputAudioTrack2Bitrate = 128000
     outputAudioOtherCodec = libmp3lame
     AudioOtherCodecAllow = 
+    outputAudioOtherChannels =
     outputAudioOtherBitrate = 128000
     outputSubtitleCodec =
 

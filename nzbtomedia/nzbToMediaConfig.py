@@ -373,11 +373,13 @@ class ConfigObj(configobj.ConfigObj, Section):
             envKeys = ['TRANSCODE', 'DUPLICATE', 'NICENESS', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH', 'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES', 
                           'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR', 'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW', 
                           'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS', 
-                          'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE', 'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE', 'OUTPUTSUBTITLECODEC']
+                          'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE', 'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE', 
+                          'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS', 'OUTPUTAUDIOOTHERCHANNELS']
             cfgKeys = ['transcode', 'duplicate', 'niceness', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath', 'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages', 
                           'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir', 'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow', 
                           'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec', 'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs', 
-                          'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate', 'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate', 'outputSubtitleCodec']
+                          'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate', 'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate', 
+                          'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels', 'outputAudioOtherChannels']
             for index in range(len(envKeys)):
                 key = 'NZBPO_' + envKeys[index]
                 if os.environ.has_key(key):
