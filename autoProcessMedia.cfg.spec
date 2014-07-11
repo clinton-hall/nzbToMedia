@@ -70,6 +70,8 @@
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         process_method =
+        # force processing of already processed content when running a manual scan.
+        force = 0
         extract = 1
         nzbExtractionBy = Downloader
         # Set this to minimum required size to consider a media file valid (in MB)

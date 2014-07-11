@@ -54,8 +54,9 @@ FORK_FAILED_TORRENT = "failed-torrent"
 FORKS[FORK_DEFAULT] = {"dir": None, "method": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
-SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT]
-SICKBEARD_TORRENT = [FORK_FAILED_TORRENT]
+FORKS[FORK_SICKRAGE] = {"dir": None, "failed": None, "process_method": None, "force": None}
+SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT, FORK_SICKRAGE]
+SICKBEARD_TORRENT = [FORK_FAILED_TORRENT, FORK_SICKRAGE]
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PARCHECK = 92

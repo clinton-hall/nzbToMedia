@@ -75,6 +75,10 @@ class autoProcessTV:
             wait_for = int(nzbtomedia.CFG[section][inputCategory]["wait_for"])
         except:
             wait_for = 2
+        try:
+            force = int(nzbtomedia.CFG[section][inputCategory]["force"])
+        except:
+            force = 0
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -166,6 +170,12 @@ class autoProcessTV:
             if param == "process_method":
                 if process_method:
                     fork_params[param] = process_method
+                else:
+                    del fork_params[param]
+
+            if param == "force":
+                if force:
+                    fork_params[param] = force
                 else:
                     del fork_params[param]
 
