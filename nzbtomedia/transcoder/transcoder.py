@@ -201,7 +201,7 @@ def buildCommands(file, newDir):
             if audio4:  # right language and codec.
                 map_cmd.extend(['-map', '0:' + str(audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
-                bitrate = int(audio3[0]["bit_rate"])/1000
+                bitrate = int(audio4[0]["bit_rate"])/1000
                 audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                 if nzbtomedia.ABITRATE2 and not (nzbtomedia.ABITRATE2 * 0.9 < bitrate < nzbtomedia.ABITRATE2 * 1.1):
                     audio_cmd.extend(['-b:a' + str(used_audio), str(nzbtomedia.ABITRATE2)])

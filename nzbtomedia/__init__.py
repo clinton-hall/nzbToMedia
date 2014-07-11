@@ -345,8 +345,12 @@ def initialize(section=None):
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
     if isinstance(IGNOREEXTENSIONS, str): IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
-    OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
-    NICENESS = int(CFG["Transcoder"]["niceness"])
+    try:
+        OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
+    except: pass
+    try:
+        NICENESS = int(CFG["Transcoder"]["niceness"])
+    except: pass
     OUTPUTVIDEOPATH = CFG["Transcoder"]["outputVideoPath"]
     PROCESSOUTPUT = int(CFG["Transcoder"]["processOutput"])
     ALANGUAGE = CFG["Transcoder"]["audioLanguage"]
