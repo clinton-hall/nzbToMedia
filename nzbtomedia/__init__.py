@@ -51,6 +51,7 @@ FORKS = {}
 FORK_DEFAULT = "default"
 FORK_FAILED = "failed"
 FORK_FAILED_TORRENT = "failed-torrent"
+FORK_SICKRAGE = "sickrage"
 FORKS[FORK_DEFAULT] = {"dir": None, "method": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
