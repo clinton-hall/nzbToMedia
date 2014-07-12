@@ -201,6 +201,9 @@ def initialize(section=None):
     if __INITIALIZED__:
         return False
 
+    if not makeDir(LOG_DIR):
+        print("!!! No log folder, logging to screen only!")
+
     MYAPP = RunningProcess()
     while MYAPP.alreadyrunning():
         print("!!! Waiting for existing session to end!")
@@ -230,9 +233,6 @@ def initialize(section=None):
             sys.exit(NZBGET_POSTPROCESS_ERROR)
         else:
             sys.exit(1)
-
-    if not makeDir(LOG_DIR):
-        print("!!! No log folder, logging to screen only!")
 
     # init logging
     logger.ntm_log_instance.initLogging()
