@@ -1005,9 +1005,11 @@ class PosixProcess():
 
         if not self.lasterror:
             # Write my pid into pidFile to keep multiple copies of program from running
-            fp = open(self.pidpath, 'w')
-            fp.write(str(os.getpid()))
-            fp.close()
+            try:
+                fp = open(self.pidpath, 'w')
+                fp.write(str(os.getpid()))
+                fp.close()
+            except: pass
 
         return self.lasterror
 
