@@ -333,7 +333,7 @@ def initialize(section=None):
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
     try:
-        NICENESS.extend(['nice', '-n', int(CFG["Posix"]["niceness"])])
+        NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
     except: pass
     try:
         NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
@@ -344,8 +344,6 @@ def initialize(section=None):
         else:
             NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
     except: pass
-    if 'ionice' in NICENESS:
-        NICENESS.extend(['-t'])
 
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                   re.compile('.part\d+.rar$', re.I),
