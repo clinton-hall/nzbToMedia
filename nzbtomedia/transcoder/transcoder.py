@@ -43,14 +43,22 @@ def getVideoDetails(videofile):
     result = 1
     if not nzbtomedia.FFPROBE:
         return video_details, result
-    command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
     try:
+        command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
         video_details = json.loads(out)
-    except:
-        logger.error("Checking [%s] has failed" % (videofile), 'TRANSCODER')
+    except: pass
+    if not video_details:
+        try:
+            command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', videofile]
+            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            out, err = proc.communicate()
+            result = proc.returncode
+            video_details = json.loads(out)
+        except:
+            logger.error("Checking [%s] has failed" % (videofile), 'TRANSCODER')
     return video_details, result
 
 def buildCommands(file, newDir):
