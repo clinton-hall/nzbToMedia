@@ -318,7 +318,7 @@ def buildCommands(file, newDir):
     command.extend(other_cmd)
     command.append(newfilePath)
     if platform.system() != 'Windows':
-        command = ['nice', '-%d' % nzbtomedia.NICENESS] + command
+        command = nzbtomedia.NICENESS + command
     return command
 
 def get_subs(file):
@@ -350,7 +350,7 @@ def extract_subs(file, newfilePath, bitbucket):
             outputFile = os.path.join(subdir, "%s(%s)%s.srt" %(name, n, lan))
         command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', sub, '-vn', '-an', '-codec:s:' + str(n), 'srt', outputFile]
         if platform.system() != 'Windows':
-            command = ['nice', '-%d' % nzbtomedia.NICENESS] + command
+            command = nzbtomedia.NICENESS + command
 
         logger.info("Extracting %s Subtitle from: %s" % (lan, file))
         cmd = ""

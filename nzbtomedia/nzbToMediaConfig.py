@@ -171,6 +171,10 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == "forceClean":
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
+                if section in ["Transcoder"]:
+                    if option in ["niceness"]:
+                        CFG_NEW['Posix'][option] = value
+                        values.pop(option)
                 if option == "remote_path":
                     if value and not value in ['0', '1', 0, 1]:
                         value = 1
@@ -369,13 +373,23 @@ class ConfigObj(configobj.ConfigObj, Section):
                     value = os.environ[key]
                     CFG_NEW[section][option] = value
 
+            section = "Posix"
+            envKeys = ['NICENESS', 'IONICE_CLASS', 'IONICE_CLASSDATA']
+            cfgKeys = ['niceness', 'ionice_class', 'ionice_classdata']
+            for index in range(len(envKeys)):
+                key = 'NZBPO_' + envKeys[index]
+                if os.environ.has_key(key):
+                    option = cfgKeys[index]
+                    value = os.environ[key]
+                    CFG_NEW[section][option] = value
+
             section = "Transcoder"
-            envKeys = ['TRANSCODE', 'DUPLICATE', 'NICENESS', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH', 'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES', 
+            envKeys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH', 'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES', 
                           'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR', 'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW', 
                           'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS', 
                           'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE', 'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE', 
                           'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS', 'OUTPUTAUDIOOTHERCHANNELS']
-            cfgKeys = ['transcode', 'duplicate', 'niceness', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath', 'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages', 
+            cfgKeys = ['transcode', 'duplicate', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath', 'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages', 
                           'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir', 'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow', 
                           'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec', 'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs', 
                           'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate', 'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate', 

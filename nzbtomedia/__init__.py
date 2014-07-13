@@ -164,7 +164,7 @@ OUTPUTQUALITYPERCENT = None
 FFMPEG = None
 FFPROBE = None
 CHECK_MEDIA = None
-NICENESS = None
+NICENESS = []
 
 PASSWORDSFILE = None
 DOWNLOADINFO = None
@@ -332,6 +332,21 @@ def initialize(section=None):
     if REMOTEPATHS:
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
+    try:
+        NICENESS.extend(['nice', '-n', int(CFG["Posix"]["niceness"])])
+    except: pass
+    try:
+        NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
+    except: pass
+    try:
+        if 'ionice' in NICENESS:
+            NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+        else:
+            NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+    except: pass
+    if 'ionice' in NICENESS:
+        NICENESS.extend(['-t'])
+
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                   re.compile('.part\d+.rar$', re.I),
                   re.compile('.rar$', re.I)]
@@ -352,9 +367,6 @@ def initialize(section=None):
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
     try:
         OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
-    except: pass
-    try:
-        NICENESS = int(CFG["Transcoder"]["niceness"])
     except: pass
     OUTPUTVIDEOPATH = CFG["Transcoder"]["outputVideoPath"]
     PROCESSOUTPUT = int(CFG["Transcoder"]["processOutput"])

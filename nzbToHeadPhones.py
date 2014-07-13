@@ -65,6 +65,23 @@
 # Enable to replace local path with the path as per the mountPoints below.
 #hpremote_path=0
 
+## Posix
+
+# Niceness for external tasks Extractor and Transcoder.
+#
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
+#niceness=10
+
+# ionice scheduling class (0, 1, 2, 3).
+#
+# Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
+#ionice_class=2
+
+# ionice scheduling class data.
+#
+# Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
+#ionice_classdata=4
+
 ## Network
 
 # Network Mount Points (Needed for remote path above)

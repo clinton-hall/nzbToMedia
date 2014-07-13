@@ -85,6 +85,23 @@
 # This is a list of media extensions that are used to verify that the download does contain valid media.
 #mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
 
+## Posix
+
+# Niceness for external tasks Extractor and Transcoder.
+#
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
+#niceness=10
+
+# ionice scheduling class (0, 1, 2, 3).
+#
+# Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
+#ionice_class=2
+
+# ionice scheduling class data.
+#
+# Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
+#ionice_classdata=4
+
 ## Transcoder
 
 # getSubs (0, 1).
@@ -106,11 +123,6 @@
 #
 # set to 1 to cretae a new file or 0 to replace the original
 #duplicate=1
-
-# set niceness level.
-#
-# Only works on Linux. Highest priority is -20, lowest priority is 19.
-#niceness = 0
 
 # ignore extensions.
 #

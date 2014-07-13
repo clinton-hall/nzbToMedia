@@ -27,6 +27,15 @@
     # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectories by mistake.
     safe_mode = 1
 
+[Posix]
+    ### Process priority setting for External commands (Extractor and Transcoder) on Posix (Unix/Linux/OSX) systems.
+    # Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
+    niceness = 10
+    # Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
+    ionice_class = 2
+    # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
+    ionice_classdata = 4
+
 [CouchPotato]
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS
@@ -244,8 +253,6 @@
     transcode = 0
     ###### duplicate =1 will cretae a new file. =0 will replace the original
     duplicate = 1
-    # Only works on Linux. Highest priority is -20, lowest priority is 19.
-    niceness = 0
     ignoreExtensions = .avi,.mkv,.mp4
     # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
     outputFastStart = 0

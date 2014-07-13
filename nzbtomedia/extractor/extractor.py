@@ -88,6 +88,8 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
     try:  # now works same for nt and *nix
         cmd.append(filePath)  # add filePath to final cmd arg.
+        if platform.system() != 'Windows':
+            cmd = nzbtomedia.NICENESS + cmd
         cmd2 = cmd
         cmd2.append("-p-")  # don't prompt for password.
         p = Popen(cmd2)  # should extract files fine.
