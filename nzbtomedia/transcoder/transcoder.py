@@ -126,14 +126,19 @@ def buildCommands(file, newDir):
 
     for video in videoStreams:
         codec = video["codec_name"]
-        fr = video["avg_frame_rate"]
-        width = video["width"]
-        height = video["height"]
+        try:
+            fr = video["avg_frame_rate"]
+        except: fr = 0
+        try:
+            width = video["width"]
+        except: width = 0
+        try:
+            height = video["height"]
+        except: height = 0
         scale = nzbtomedia.VRESOLUTION
         try:
             framerate = float(fr.split('/')[0])/float(fr.split('/')[1])
-        except:
-            framerate = 0
+        except: framerate = 0
         vid_cmds = []
         if codec in nzbtomedia.VCODEC_ALLOW or not nzbtomedia.VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
@@ -171,14 +176,22 @@ def buildCommands(file, newDir):
         if audio2:  # right language and codec...
             map_cmd.extend(['-map', '0:' + str(audio2[0]["index"])])
             a_mapped.extend([audio2[0]["index"]])
-            bitrate = int(audio2[0]["bit_rate"])/1000
-            channels = int(audio2[0]["channels"])
+            try:
+                bitrate = int(audio2[0]["bit_rate"])/1000
+            except: bitrate = 0
+            try:
+                channels = int(audio2[0]["channels"])
+            except: channels = 0
             audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
         elif audio1:  # right language wrong codec.
             map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
-            bitrate = int(audio1[0]["bit_rate"])/1000
-            channels = int(audio1[0]["channels"])
+            try:
+                bitrate = int(audio1[0]["bit_rate"])/1000
+            except: bitrate = 0
+            try:
+                channels = int(audio1[0]["channels"])
+            except: channels = 0
             if nzbtomedia.ACODEC:
                 audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
             else:
@@ -188,8 +201,12 @@ def buildCommands(file, newDir):
         elif audio3:  # just pick the default audio track
             map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
-            bitrate = int(audio3[0]["bit_rate"])/1000
-            channels = int(audio3[0]["channels"])
+            try:
+                bitrate = int(audio3[0]["bit_rate"])/1000
+            except: bitrate = 0
+            try:
+                channels = int(audio3[0]["channels"])
+            except: channels = 0
             if nzbtomedia.ACODEC:
                 audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC])
             else:
@@ -197,7 +214,7 @@ def buildCommands(file, newDir):
             if nzbtomedia.ACODEC == 'aac':
                 audio_cmd.extend(['-strict', '-2'])
 
-        if nzbtomedia.ACHANNELS and channels > nzbtomedia.ACHANNELS:
+        if nzbtomedia.ACHANNELS and channels and channels > nzbtomedia.ACHANNELS:
             audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS)])
         if nzbtomedia.ABITRATE and not (nzbtomedia.ABITRATE * 0.9 < bitrate < nzbtomedia.ABITRATE * 1.1):
             audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE)])
@@ -210,14 +227,22 @@ def buildCommands(file, newDir):
             if audio4:  # right language and codec.
                 map_cmd.extend(['-map', '0:' + str(audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
-                bitrate = int(audio4[0]["bit_rate"])/1000
-                channels = int(audio4[0]["channels"])
+                try:
+                    bitrate = int(audio4[0]["bit_rate"])/1000
+                except: bitrate = 0
+                try:
+                    channels = int(audio4[0]["channels"])
+                except: channels = 0
                 audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
-                bitrate = int(audio1[0]["bit_rate"])/1000
-                channels = int(audio1[0]["channels"])
+                try:
+                    bitrate = int(audio1[0]["bit_rate"])/1000
+                except: bitrate = 0
+                try:
+                    channels = int(audio1[0]["channels"])
+                except: channels = 0
                 if nzbtomedia.ACODEC2:
                     audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
                 else:
@@ -227,8 +252,12 @@ def buildCommands(file, newDir):
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
-                bitrate = int(audio3[0]["bit_rate"])/1000
-                channels = int(audio3[0]["channels"])
+                try:
+                    bitrate = int(audio3[0]["bit_rate"])/1000
+                except: bitrate = 0
+                try:
+                    channels = int(audio3[0]["channels"])
+                except: channels = 0
                 if nzbtomedia.ACODEC2:
                     audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
                 else:
@@ -236,7 +265,7 @@ def buildCommands(file, newDir):
                 if nzbtomedia.ACODEC2 == 'aac':
                     audio_cmd.extend(['-strict', '-2'])
 
-            if nzbtomedia.ACHANNELS2 and channels > nzbtomedia.ACHANNELS2:
+            if nzbtomedia.ACHANNELS2 and channels and channels > nzbtomedia.ACHANNELS2:
                 audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
             if nzbtomedia.ABITRATE2 and not (nzbtomedia.ABITRATE2 * 0.9 < bitrate < nzbtomedia.ABITRATE2 * 1.1):
                 audio_cmd.extend(['-b:a' + str(used_audio), str(nzbtomedia.ABITRATE2)])
@@ -249,8 +278,12 @@ def buildCommands(file, newDir):
                     continue
                 used_audio += 1
                 map_cmd.extend(['-map', '0:' + str(audio["index"])])
-                bitrate = int(audio["bit_rate"])/1000
-                channels = int(audio["channels"])
+                try:
+                    bitrate = int(audio["bit_rate"])/1000
+                except: bitrate = 0
+                try:
+                    channels = int(audio["channels"])
+                except: channels = 0
                 if audio["codec_name"] in nzbtomedia.ACODEC3_ALLOW:
                     audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                 else:
@@ -260,7 +293,7 @@ def buildCommands(file, newDir):
                         audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
                     if nzbtomedia.ACODEC3 == 'aac':
                         audio_cmd.extend(['-strict', '-2'])
-                if nzbtomedia.ACHANNELS3 and channels > nzbtomedia.ACHANNELS3:
+                if nzbtomedia.ACHANNELS3 and channels and channels > nzbtomedia.ACHANNELS3:
                     audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS3)])
                 if nzbtomedia.ABITRATE3 and not (nzbtomedia.ABITRATE3 * 0.9 < bitrate < nzbtomedia.ABITRATE3 * 1.1):
                     audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
