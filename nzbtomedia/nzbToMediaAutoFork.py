@@ -62,7 +62,7 @@ def autoFork(section, inputCategory):
 
     elif fork == "auto":
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
-        for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=False):
+        for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=True):
             url = "%s%s:%s%s/home/postprocess/processEpisode?%s" % (protocol,host,port,web_root,urllib.urlencode(fork[1]))
 
             # attempting to auto-detect fork
