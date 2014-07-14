@@ -265,7 +265,7 @@ def rmReadOnly(filename):
 #Wake function
 def WakeOnLan(ethernet_address):
     addr_byte = ethernet_address.split(':')
-    hw_addr = struct.pack('BBBBBB', int(addr_byte[0], 16),
+    hw_addr = struct.pack(b'BBBBBB', int(addr_byte[0], 16),
                           int(addr_byte[1], 16),
                           int(addr_byte[2], 16),
                           int(addr_byte[3], 16),
@@ -274,7 +274,7 @@ def WakeOnLan(ethernet_address):
 
     # Build the Wake-On-LAN "Magic Packet"...
 
-    msg = '\xff' * 6 + hw_addr * 16
+    msg = b'\xff' * 6 + hw_addr * 16
 
     # ...and send it to the broadcast address using UDP
 
