@@ -578,7 +578,10 @@ def cleanDir(path, section, subsection):
     if not os.path.exists(path):
         logger.info('Directory %s has been processed and removed ...' % (path), 'CLEANDIR')
         return
-
+    if nzbtomedia.FORCE_CLEAN:
+        logger.info('Doing Forceful Clean of %s' % (path), 'CLEANDIR')
+        rmDir(path)
+        return
     try:
         minSize = int(nzbtomedia.CFG[section][subsection]['minSize'])
     except:minSize = 0
