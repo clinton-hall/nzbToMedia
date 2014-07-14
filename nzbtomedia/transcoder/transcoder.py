@@ -374,7 +374,7 @@ def get_subs(file):
     return subfiles
 
 def extract_subs(file, newfilePath, bitbucket):
-    video_details = getVideoDetails(file)
+    video_details, result = getVideoDetails(file)
     if not video_details:
         return
     subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle"]
