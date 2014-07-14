@@ -5,6 +5,7 @@ import nzbtomedia
 from subprocess import call, Popen
 
 def extract(filePath, outputDestination):
+    success = 0
     # Using Windows
     if platform.system() == 'Windows':
         chplocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/chp.exe')
@@ -94,12 +95,12 @@ def extract(filePath, outputDestination):
         cmd2.append("-p-")  # don't prompt for password.
         p = Popen(cmd2)  # should extract files fine.
         res = p.wait()
-        if (
-                res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+        if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s" % (filePath, outputDestination))
+            success = 1
         elif len(passwords) > 0:
             nzbtomedia.logger.info("EXTRACTOR: Attempting to extract with passwords")
-            pass_success = int(0)
+            success = 0
             for password in passwords:
                 if password == "":  # if edited in windows or otherwise if blank lines.
                     continue
@@ -109,22 +110,23 @@ def extract(filePath, outputDestination):
                 cmd2.append(passcmd)
                 p = Popen(cmd2)  # should extract files fine.
                 res = p.wait()
-                if (
-                        res >= 0 and platform == 'Windows') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+                if (res >= 0 and platform == 'Windows') or res == 0:
                     nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s" % (
                     filePath, outputDestination, password))
-                    pass_success = int(1)
+                    success = 1
                     break
                 else:
                     continue
-            if pass_success == int(0):
-                nzbtomedia.logger.error("EXTRACTOR: Extraction failed for %s. 7zip result was %s" % (filePath, res))
     except:
         nzbtomedia.logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s" % (filePath, cmd))
+        os.chdir(pwd)
+        return False
 
     os.chdir(pwd)  # Go back to our Original Working Directory
-
-    # sleep to let files finish writing to disk
-    sleep (3)
-
-    return True
+    if success:
+        # sleep to let files finish writing to disk
+        sleep (3)
+        return True
+    else:
+        nzbtomedia.logger.error("EXTRACTOR: Extraction failed for %s. Result was %s" % (filePath, res))
+        return False
