@@ -222,14 +222,14 @@ class autoProcessTV:
                 logger.debug("path: %s" % (dirName),section)
                 data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
 
-        logger.debug("Opening URL: %s" % (url),section)
-
         try:
             if section == "SickBeard":
+                logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
                 r = None
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
                 start_numMissing = self.numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
+                logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
