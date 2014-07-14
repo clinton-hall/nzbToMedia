@@ -860,6 +860,10 @@ def extractFiles(src, dst=None):
     for folder in extracted_folder:
         for inputFile in listMediaFiles(folder, media=False, audio=False, meta=False, archives=True):
             fullFileName = os.path.basename(inputFile)
+            archiveName = os.path.splitext(fullFileName)[0]
+            archiveName = re.sub(r"part[0-9]+", "", archiveName)
+            if not archiveName in extracted_archive:
+                continue  # don't remove if we haven't extracted this archive.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:
                 os.remove(inputFile)
