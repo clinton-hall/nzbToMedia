@@ -100,7 +100,6 @@ def extract(filePath, outputDestination):
             success = 1
         elif len(passwords) > 0:
             nzbtomedia.logger.info("EXTRACTOR: Attempting to extract with passwords")
-            success = 0
             for password in passwords:
                 if password == "":  # if edited in windows or otherwise if blank lines.
                     continue
