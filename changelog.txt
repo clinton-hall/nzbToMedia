@@ -1,5 +1,11 @@
 Change_LOG / History
 
+V10.2 15/07/2014
+
+Impacts All
+Bug Fixes.
+If extracting files and extraction not successful, return Failure and Don't delete archives.
+
 V10.1 11/07/2014
 
 Impacts All
