@@ -202,11 +202,11 @@ def initialize(section=None):
         return False
 
     if not makeDir(LOG_DIR):
-        print("!!! No log folder, logging to screen only!")
+        print("No log folder, logging to screen only!")
 
     MYAPP = RunningProcess()
     while MYAPP.alreadyrunning():
-        print("!!! Waiting for existing session to end!")
+        print("Waiting for existing session to end!")
         time.sleep(30)
 
     try:
