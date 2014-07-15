@@ -62,7 +62,10 @@ def autoFork(section, inputCategory):
 
     elif fork == "auto":
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
-        for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=True):
+        # define the order to test. Default must be first since the default fork doesn't reject parameters.
+        # then in order of most unique parameters.
+        for name in [ nzbtomedia.FORK_DEFAULT, nzbtomedia.FORK_FAILED, nzbtomedia.FORK_SICKRAGE, nzbtomedia.FORK_FAILED_TORRENT ]:
+            fork = [name, nzbtomedia.FORKS[name]]
             url = "%s%s:%s%s/home/postprocess/processEpisode?%s" % (protocol,host,port,web_root,urllib.urlencode(fork[1]))
 
             # attempting to auto-detect fork

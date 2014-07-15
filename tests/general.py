@@ -3,6 +3,7 @@ import os
 import datetime
 import re
 import nzbtomedia
+from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia import nzbToMediaDB
 from nzbtomedia.nzbToMediaUtil import get_downloadInfo
 
@@ -12,6 +13,7 @@ nzbtomedia.initialize()
 test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
 section = nzbtomedia.CFG.findsection('tv').isenabled()
 print section
+fork, fork_params = autoFork('SickBeard', 'tv')
 
 from babelfish import Language
 print Language('eng')
