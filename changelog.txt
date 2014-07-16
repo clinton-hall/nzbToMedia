@@ -1,5 +1,10 @@
 Change_LOG / History
 
+V10.3 15/07/2014
+
+Impacts All
+Fix auto-fork to identify default fork.
+
 V10.2 15/07/2014
 
 Impacts All
