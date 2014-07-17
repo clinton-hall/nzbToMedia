@@ -737,14 +737,14 @@ def main(args, section=None):
     if result[0] == 0:
         logger.info("The %s script completed successfully." % args[0])
         if result[1]:
-            print result[1]  # For SABnzbd Status display.
+            print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del nzbtomedia.MYAPP
             return (nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
         logger.error("A problem was reported in the %s script." % args[0])
         if result[1]:
-            print result[1]  # For SABnzbd Status display.
+            print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del nzbtomedia.MYAPP
             return (nzbtomedia.NZBGET_POSTPROCESS_ERROR)
