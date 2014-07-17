@@ -499,7 +499,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         logger.error(
             'The input directory:[%s] is the Default Download Directory. Please configure category directories to prevent processing of other media.' % (
             inputDirectory))
-        return -1
+        return [-1, ""]
 
     if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
@@ -530,7 +530,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
             logger.error(
                 'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
                 inputCategory))
-            return -1
+            return [-1, ""]
         else:
             usercat = "ALL"
 
@@ -538,7 +538,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
             inputCategory, section.keys()))
-        return -1
+        return [-1, ""]
 
     if section:
         sectionName = section.keys()[0]
@@ -546,7 +546,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     else:
         logger.error("Unable to locate a section with subsection:%s enabled in your autoProcessMedia.cfg, exiting!" % (
             inputCategory))
-        return -1
+        return [-1, ""]
 
     try:
         extract = int(section[usercat]['extract'])
@@ -557,7 +557,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         if int(section[usercat]['remote_path']) and not nzbtomedia.REMOTEPATHS:
             logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
                 sectionName, inputCategory))
-            return -1
+            return [-1, ""]
     except:
         logger.error('Remote Path %s is not valid for %s:%s Please set this to either 0 to disable or 1 to enable!' % (
             section[usercat]['remote_path'], sectionName, inputCategory))
@@ -586,9 +586,9 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     elif sectionName == 'UserScript':
         result = external_script(inputDirectory, inputName, inputCategory, section[usercat])
     else:
-        result = -1
+        result = [-1, ""]
 
-    if result == 0:
+    if result[0] == 0:
         if clientAgent != 'manual':
             # update download status in our DB
             update_downloadInfoStatus(inputName, 1)
@@ -614,7 +614,7 @@ def main(args, section=None):
     logger.debug("Options passed into nzbToMedia: %s" % args)
 
     # Post-Processing Result
-    result = 0
+    result = [0, ""]
     status = 0
 
     # NZBGet
@@ -729,23 +729,27 @@ def main(args, section=None):
 
                     results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,
                                       download_id=download_id, inputCategory=subsection)
-                    if results != 0:
+                    if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (
                         section, subsection))
                         result = results
 
-    if result == 0:
+    if result[0] == 0:
         logger.info("The %s script completed successfully." % args[0])
+        if result[1]:
+            print result[1]  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del nzbtomedia.MYAPP
             return (nzbtomedia.NZBGET_POSTPROCESS_SUCCESS)
     else:
         logger.error("A problem was reported in the %s script." % args[0])
+        if result[1]:
+            print result[1]  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del nzbtomedia.MYAPP
             return (nzbtomedia.NZBGET_POSTPROCESS_ERROR)
     del nzbtomedia.MYAPP
-    return (result)
+    return (result[0])
 
 
 if __name__ == '__main__':

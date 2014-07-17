@@ -56,7 +56,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             logger.error(
                 'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
                     inputCategory))
-            return -1
+            return [-1, ""]
         else:
             usercat = "ALL"
 
@@ -64,7 +64,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error(
             'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
                 usercat, section.keys()))
-        return -1
+        return [-1, ""]
 
     if section:
         sectionName = section.keys()[0]
@@ -72,7 +72,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     else:
         logger.error("Unable to locate a section with subsection:%s enabled in your autoProcessMedia.cfg, exiting!" % (
             inputCategory))
-        return -1
+        return [-1, ""]
 
     try:
         Torrent_NoLink = int(section[usercat]["Torrent_NoLink"])
@@ -105,7 +105,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.error(
             'The output directory:[%s] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting' % (
             inputDirectory))
-        return -1
+        return [-1, ""]
 
     logger.debug("Scanning files in directory: %s" % (inputDirectory))
 
@@ -187,7 +187,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
 
-    result = 0
+    result = [ 0, "" ]
     if sectionName == 'UserScript':
         result = external_script(outputDestination, inputName, inputCategory, section[usercat])
 
@@ -205,7 +205,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     elif sectionName == 'Gamez':
         result = nzbtomedia.autoProcessGames().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
 
-    if result != 0:
+    if result[0] != 0:
         if clientAgent != 'manual':
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
@@ -240,7 +240,7 @@ def main(args):
     logger.debug("Options passed into TorrentToMedia: %s" % (args))
 
     # Post-Processing Result
-    result = 0
+    result = [ 0, "" ]
 
     try:
         inputDirectory, inputName, inputCategory, inputHash, inputID = nzbtomedia.parse_args(clientAgent, args)
@@ -288,17 +288,17 @@ def main(args):
 
                     results = processTorrent(dirName, os.path.basename(dirName), subsection, inputHash, inputID,
                                              clientAgent)
-                    if results != 0:
+                    if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (
                             section, subsection))
                         result = results
 
-    if result == 0:
+    if result[0] == 0:
         logger.info("The %s script completed successfully." % (args[0]))
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))
     del nzbtomedia.MYAPP
-    return result
+    return result[0]
 
 
 if __name__ == "__main__":

@@ -54,7 +54,7 @@ class autoProcessGames:
             r = requests.get(url, params=params, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL")
-            return 1  # failure
+            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
 
         result = r.json()
         logger.postprocess("%s" % (result),section)
@@ -64,17 +64,17 @@ class autoProcessGames:
                 shutil.move(dirName, os.path.join(library, inputName))
             except:
                 logger.error("Unable to move %s to %s" % (dirName, os.path.join(library, inputName)), section)
-                return 1
+                return [1, "%s: Failed to post-process - Unable to move files" % (section) ]
         else:
             logger.error("No library specified to move files to. Please edit your configuration.", section)
-            return 1
+            return [1, "%s: Failed to post-process - No library defined in %s" % (section, section) ]
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return 1
+            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
         elif result['success']:
             logger.postprocess("SUCCESS: Status for %s has been set to %s in Gamez" % (gamezID, downloadStatus),section)
-            return 0 # Success
+            return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
         else:
             logger.error("FAILED: Status for %s has NOT been updated in Gamez" % (gamezID),section)
-            return 1 # failure
+            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]

@@ -11,7 +11,7 @@ class autoProcessComics:
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         if int(status) != 0:
             logger.warning("FAILED DOWNLOAD DETECTED, nothing to process.",section)
-            return 0
+            return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ]
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -58,18 +58,18 @@ class autoProcessComics:
             r = requests.get(url, auth=(username, password), params=params, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL", section)
-            return 1 # failure
+            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
         for line in r.iter_lines():
             if line: logger.postprocess("%s" % (line), section)
             if ("Post Processing SUCCESSFUL!" or "Post Processing SUCCESSFULL!")in line: success = True
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return 1
+            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
 
         if success:
             logger.postprocess("SUCCESS: This issue has been processed successfully",section)
-            return 0
+            return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
         else:
             logger.warning("The issue does not appear to have successfully processed. Please check your Logs",section)
-            return 1  # failure
+            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]

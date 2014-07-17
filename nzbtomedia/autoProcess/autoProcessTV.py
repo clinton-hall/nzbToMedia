@@ -147,7 +147,7 @@ class autoProcessTV:
                 flatten(dirName) 
             elif clientAgent == "manual":
                 logger.warning("No media files found in directory %s to manually process." % (dirName), section)
-                return 0  # Success (as far as this script is concerned)
+                return [0, ""]   # Success (as far as this script is concerned)
             else:
                 logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
                 status = 1
@@ -192,7 +192,7 @@ class autoProcessTV:
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                     logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
                     rmDir(dirName)
-                return 0 # Success (as far as this script is concerned)
+                return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ] # Return as failed to flag this in the downloader.
 
         if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
             result, newDirName = transcoder.Transcode_directory(dirName)
@@ -234,11 +234,11 @@ class autoProcessTV:
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
-            return 1 # failure
+            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return 1
+            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
 
         Success = False
         Started = False
@@ -255,7 +255,7 @@ class autoProcessTV:
             rmDir(dirName)
 
         if Success:
-            return 0
+            return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
         elif section == "NzbDrone" and Started:
             n = 0
             current_numMissing = start_numMissing
@@ -277,12 +277,12 @@ class autoProcessTV:
                 logger.debug(
                 "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 
                 (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
-                return 0
+                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
             else:
                 # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
                 logger.warning(
                 "The number of missing episodes: %s does not appear to have changed status after %s minutes, Please check your logs." % 
                 (str(start_numMissing), str(wait_for)), section)
-                return 1
+                return [1, "%s: Failed to post-process - No change in wanted status" % (section) ]
         else:
-            return 1  # We did not receive Success confirmation.
+            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]  # We did not receive Success confirmation.
