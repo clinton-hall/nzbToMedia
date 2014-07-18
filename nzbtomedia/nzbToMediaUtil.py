@@ -519,7 +519,7 @@ def getDirs(section, subsection):
                     makeDir(newPath)
 
                 # move file to its new path
-                shutil.move(mediafile, os.path.join(newPath, os.path.split(mediafile)[1]))
+                copy_link(mediafile, os.path.join(newPath, os.path.split(mediafile)[1]), 'hard')
 
         removeEmptyFolders(path, removeRoot=False)
 
