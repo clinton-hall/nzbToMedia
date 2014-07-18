@@ -3,7 +3,7 @@ import time
 import requests
 import nzbtomedia
 
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles, server_responding
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia import logger
 
@@ -58,6 +58,12 @@ class autoProcessMusic:
         else:
             protocol = "http://"
 
+
+        url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
+        if not server_responding(url):
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
@@ -79,8 +85,6 @@ class autoProcessMusic:
         if listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and status:
             logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as successful." % (str(good_files)), section)
             status = 0
-
-        url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
 
         if status == 0:
 

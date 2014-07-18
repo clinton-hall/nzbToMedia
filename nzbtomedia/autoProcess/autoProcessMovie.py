@@ -4,7 +4,7 @@ import requests
 import nzbtomedia
 
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir, import_subs
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir, import_subs, server_responding
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -125,6 +125,9 @@ class autoProcessMovie:
             protocol = "http://"
 
         baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
+        if not server_responding(baseURL):
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
 
         imdbid = find_imdbid(dirName, inputName)
         release = self.get_release(baseURL, imdbid, download_id)

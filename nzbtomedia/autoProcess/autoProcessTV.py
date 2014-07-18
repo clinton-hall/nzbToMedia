@@ -8,7 +8,7 @@ import nzbtomedia
 
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles, remoteDir, import_subs
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles, remoteDir, import_subs, server_responding
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -32,11 +32,27 @@ class autoProcessTV:
         return missing
 
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
+        host = nzbtomedia.CFG[section][inputCategory]["host"]
+        port = nzbtomedia.CFG[section][inputCategory]["port"]
+        try:
+            ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
+        except:
+            ssl = 0
+        if ssl:
+            protocol = "https://"
+        else:
+            protocol = "http://"
+        try:
+            web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
+        except:
+            web_root = ""
+        if not server_responding("%s%s:%s%s" % (protocol,host,port,web_root)):
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
 
-        host = nzbtomedia.CFG[section][inputCategory]["host"]
-        port = nzbtomedia.CFG[section][inputCategory]["port"]
         try:
             username = nzbtomedia.CFG[section][inputCategory]["username"]
             password = nzbtomedia.CFG[section][inputCategory]["password"]
@@ -47,14 +63,6 @@ class autoProcessTV:
             apikey = nzbtomedia.CFG[section][inputCategory]["apikey"]
         except:
             apikey = ""
-        try:
-            ssl = int(nzbtomedia.CFG[section][inputCategory]["ssl"])
-        except:
-            ssl = 0
-        try:
-            web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
-        except:
-            web_root = ""
         try:
             delete_failed = int(nzbtomedia.CFG[section][inputCategory]["delete_failed"])
         except:
@@ -201,11 +209,6 @@ class autoProcessTV:
                 dirName = newDirName
             else:
                 logger.warning("FAILED: Transcoding failed for files in %s" % (dirName), section)
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
 
         url = None
         if section == "SickBeard":

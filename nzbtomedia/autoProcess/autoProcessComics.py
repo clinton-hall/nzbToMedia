@@ -3,7 +3,7 @@ import time
 import nzbtomedia
 import requests
 import time
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, remoteDir, server_responding
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia import logger
 
@@ -30,6 +30,16 @@ class autoProcessComics:
         except:
             remote_path = 0
 
+        if ssl:
+            protocol = "https://"
+        else:
+            protocol = "http://"
+
+        url = "%s%s:%s%s/post_process" % (protocol, host, port, web_root)
+        if not server_responding(url):
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+
         inputName, dirName = convert_to_ascii(inputName, dirName)
         clean_name, ext = os.path.splitext(inputName)
         if len(ext) == 4:  # we assume this was a standrard extension. 
@@ -43,13 +53,6 @@ class autoProcessComics:
 
         if inputName != None:
             params['nzb_name'] = inputName
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
-
-        url = "%s%s:%s%s/post_process" % (protocol, host, port, web_root)
 
         success = False
 

@@ -1,7 +1,7 @@
 import nzbtomedia
 import requests
 import shutil
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, server_responding
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
 from nzbtomedia import logger
 
@@ -30,9 +30,12 @@ class autoProcessGames:
         else:
             protocol = "http://"
 
-        inputName, dirName = convert_to_ascii(inputName, dirName)
-
         url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
+        if not server_responding(url):
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+
+        inputName, dirName = convert_to_ascii(inputName, dirName)
 
         fields = inputName.split("-")
 

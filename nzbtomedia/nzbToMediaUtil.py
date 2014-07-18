@@ -899,6 +899,13 @@ def import_subs(filename):
     except:
         logger.error("Failed to download subtitles for %s" %(filename), 'SUBTITLES') 
 
+def server_responding(baseURL):
+    try:
+        requests.get(baseURL, timeout=60)
+        return True
+    except (requests.ConnectionError, requests.exceptions.Timeout):
+        return False
+
 def backupVersionedFile(old_file, version):
     numTries = 0
 
