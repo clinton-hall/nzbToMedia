@@ -480,56 +480,55 @@ def getDirs(section, subsection):
 
         logger.info("Searching %s for mediafiles to post-process ..." % (path))
 
-        # search for single files and move them into there own folder for post-processing
-        for mediafile in listMediaFiles(path):
-            parentDir = os.path.dirname(mediafile)
-            if parentDir == path:
-                logger.debug("Found file %s in root directory %s." % (mediafile, path)) 
-                newPath = None
-                fileExt = os.path.splitext(os.path.basename(mediafile))[1]
+        # search for single files and move them into their own folder for post-processing
+        for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
+                            os.path.isfile(os.path.join(path, o)) ]:
+            logger.debug("Found file %s in root directory %s." % (mediafile, path)) 
+            newPath = None
+            fileExt = os.path.splitext(os.path.basename(mediafile))[1]
 
-                try:
-                    if fileExt in nzbtomedia.AUDIOCONTAINER:
-                        f = beets.mediafile.MediaFile(mediafile)
+            try:
+                if fileExt in nzbtomedia.AUDIOCONTAINER:
+                    f = beets.mediafile.MediaFile(mediafile)
 
-                        # get artist and album info
-                        artist = f.artist
-                        album = f.album
+                    # get artist and album info
+                    artist = f.artist
+                    album = f.album
 
-                        # create new path
-                        newPath = os.path.join(parentDir, "%s - %s" % (sanitizeName(artist), sanitizeName(album)))
-                    elif fileExt in nzbtomedia.MEDIACONTAINER:
-                        f = guessit.guess_video_info(mediafile)
+                    # create new path
+                    newPath = os.path.join(path, "%s - %s" % (sanitizeName(artist), sanitizeName(album)))
+                elif fileExt in nzbtomedia.MEDIACONTAINER:
+                    f = guessit.guess_video_info(mediafile)
 
-                        # get title
-                        title = None
-                        try:
-                            title = f['series']
-                        except:
-                            title = f['title']
+                    # get title
+                    title = None
+                    try:
+                        title = f['series']
+                    except:
+                        title = f['title']
 
-                        if not title:
-                            title = os.path.splitext(os.path.basename(mediafile))[0]
+                    if not title:
+                        title = os.path.splitext(os.path.basename(mediafile))[0]
 
-                        newPath = os.path.join(parentDir, sanitizeName(title))
-                except Exception, e:
-                    logger.error("Exception parsing name for media file: %s: %s" % (mediafile, e))
+                    newPath = os.path.join(path, sanitizeName(title))
+            except Exception, e:
+                logger.error("Exception parsing name for media file: %s: %s" % (mediafile, e))
 
-                if not newPath:
-                    title = os.path.splitext(os.path.basename(mediafile))[0]
-                    newPath = os.path.join(parentDir, sanitizeName(title))
+            if not newPath:
+                title = os.path.splitext(os.path.basename(mediafile))[0]
+                newPath = os.path.join(path, sanitizeName(title))
 
-                # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
-                if os.path.isfile(newPath):
-                    newPath2 = os.path.join(os.path.join(os.path.split(newPath)[0], 'new'), os.path.split(newPath)[1])
-                    newPath = newPath2
+            # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
+            if os.path.isfile(newPath):
+                newPath2 = os.path.join(os.path.join(os.path.split(newPath)[0], 'new'), os.path.split(newPath)[1])
+                newPath = newPath2
 
-                # create new path if it does not exist
-                if not os.path.exists(newPath):
-                    makeDir(newPath)
+            # create new path if it does not exist
+            if not os.path.exists(newPath):
+                makeDir(newPath)
 
-                # move file to its new path
-                copy_link(mediafile, os.path.join(newPath, os.path.split(mediafile)[1]), 'hard')
+            # move file to its new path
+            copy_link(mediafile, os.path.join(newPath, os.path.split(mediafile)[1]), 'hard')
 
         removeEmptyFolders(path, removeRoot=False)
 
