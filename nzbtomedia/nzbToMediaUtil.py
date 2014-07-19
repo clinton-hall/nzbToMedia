@@ -484,6 +484,7 @@ def getDirs(section, subsection):
         for mediafile in listMediaFiles(path):
             parentDir = os.path.dirname(mediafile)
             if parentDir == path:
+                logger.debug("Found file %s in root directory %s." % (mediafile, path)) 
                 newPath = None
                 fileExt = os.path.splitext(os.path.basename(mediafile))[1]
 
@@ -508,11 +509,20 @@ def getDirs(section, subsection):
                             title = f['title']
 
                         if not title:
-                            title = os.path.basename(mediafile)
+                            title = os.path.splitext(os.path.basename(mediafile))[0]
 
                         newPath = os.path.join(parentDir, sanitizeName(title))
                 except Exception, e:
-                    logger.info("Exception from MediaFile for: %s: %s" % (dir, e))
+                    logger.error("Exception parsing name for media file: %s: %s" % (mediafile, e))
+
+                if not newPath:
+                    title = os.path.splitext(os.path.basename(mediafile))[0]
+                    newPath = os.path.join(parentDir, sanitizeName(title))
+
+                # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
+                if os.path.isfile(newPath):
+                    newPath2 = os.path.join(os.path.join(os.path.split(newPath)[0], 'new'), os.path.split(newPath)[1])
+                    newPath = newPath2
 
                 # create new path if it does not exist
                 if not os.path.exists(newPath):
