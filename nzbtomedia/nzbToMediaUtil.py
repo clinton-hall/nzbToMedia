@@ -484,9 +484,10 @@ def getDirs(section, subsection):
         for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isfile(os.path.join(path, o)) ]:
             try:
-                logger.debug("Found file %s in root directory %s." % (sanitizeName(os.path.split(mediafile)[1]), path)) 
+                encoded, mediafile2 = CharReplace(mediafile)
+                logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile2)[1], path)) 
                 newPath = None
-                fileExt = os.path.splitext(os.path.basename(mediafile))[1]
+                fileExt = os.path.splitext(mediafile)[1]
                 try:
                     if fileExt in nzbtomedia.AUDIOCONTAINER:
                         f = beets.mediafile.MediaFile(mediafile)
@@ -508,14 +509,14 @@ def getDirs(section, subsection):
                             title = f['title']
 
                         if not title:
-                            title = os.path.splitext(os.path.basename(mediafile))[0]
+                            title = os.path.splitext(os.path.basename(mediafile2))[0]
 
                         newPath = os.path.join(path, sanitizeName(title))
                 except Exception, e:
-                    logger.error("Exception parsing name for media file: %s: %s" % (sanitizeName(os.path.split(mediafile)[1]), e))
+                    logger.error("Exception parsing name for media file: %s: %s" % (os.path.split(mediafile2)[1], e))
 
                 if not newPath:
-                    title = os.path.splitext(os.path.basename(mediafile))[0]
+                    title = os.path.splitext(os.path.basename(mediafile2))[0]
                     newPath = os.path.join(path, sanitizeName(title))
 
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
@@ -527,10 +528,10 @@ def getDirs(section, subsection):
                 if not os.path.exists(newPath):
                     makeDir(newPath)
 
-                # move file to its new path
-                copy_link(mediafile, os.path.join(newPath, os.path.split(mediafile)[1]), 'hard')
+                # link file to its new path
+                copy_link(mediafile, os.path.join(newPath, sanitizeName(os.path.split(mediafile2)[1])), 'hard')
             except:
-                logger.error("Failed to move %s to its own directory" % (sanitizeName(os.path.split(mediafile)[1])))
+                logger.error("Failed to move %s to its own directory" % (os.path.split(mediafile2)[1]))
 
         removeEmptyFolders(path, removeRoot=False)
 
