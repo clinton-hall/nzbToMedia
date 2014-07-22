@@ -512,7 +512,7 @@ def getDirs(section, subsection):
 
                         newPath = os.path.join(path, sanitizeName(title))
                 except Exception as e:
-                    logger.error("Exception parsing name for media file: %s: %s" % (os.path.split(mediafile2)[1], e))
+                    logger.error("Exception parsing name for media file: %s: %s" % (os.path.split(mediafile)[1], e))
 
                 if not newPath:
                     title = os.path.splitext(os.path.basename(mediafile))[0]
