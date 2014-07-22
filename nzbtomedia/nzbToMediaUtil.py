@@ -484,8 +484,7 @@ def getDirs(section, subsection):
         for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isfile(os.path.join(path, o)) ]:
             try:
-                encoded, mediafile2 = CharReplace(mediafile)
-                logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile2)[1], path)) 
+                logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path)) 
                 newPath = None
                 fileExt = os.path.splitext(mediafile)[1]
                 try:
@@ -509,14 +508,14 @@ def getDirs(section, subsection):
                             title = f['title']
 
                         if not title:
-                            title = os.path.splitext(os.path.basename(mediafile2))[0]
+                            title = os.path.splitext(os.path.basename(mediafile))[0]
 
                         newPath = os.path.join(path, sanitizeName(title))
-                except Exception, e:
+                except Exception as e:
                     logger.error("Exception parsing name for media file: %s: %s" % (os.path.split(mediafile2)[1], e))
 
                 if not newPath:
-                    title = os.path.splitext(os.path.basename(mediafile2))[0]
+                    title = os.path.splitext(os.path.basename(mediafile))[0]
                     newPath = os.path.join(path, sanitizeName(title))
 
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
@@ -529,9 +528,9 @@ def getDirs(section, subsection):
                     makeDir(newPath)
 
                 # link file to its new path
-                copy_link(mediafile, os.path.join(newPath, sanitizeName(os.path.split(mediafile2)[1])), 'hard')
-            except:
-                logger.error("Failed to move %s to its own directory" % (os.path.split(mediafile2)[1]))
+                copy_link(mediafile, os.path.join(newPath, sanitizeName(os.path.split(mediafile)[1])), 'hard')
+            except Exception as e:
+                logger.error("Failed to move %s to its own directory: %s" % (os.path.split(mediafile)[1], e))
 
         removeEmptyFolders(path, removeRoot=False)
 
@@ -546,15 +545,15 @@ def getDirs(section, subsection):
             to_return.extend(processDir(watch_dir))
         elif os.path.exists(nzbtomedia.CFG[section][subsection]["watch_dir"]):
             to_return.extend(processDir(nzbtomedia.CFG[section][subsection]["watch_dir"]))
-    except:
-        logger.error("Failed to add directories from %s for post-processing." % (nzbtomedia.CFG[section][subsection]["watch_dir"]))
+    except Exception as e:
+        logger.error("Failed to add directories from %s for post-processing: %s" % (nzbtomedia.CFG[section][subsection]["watch_dir"], e))
 
     try:
         outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
         if os.path.exists(outputDirectory):
             to_return.extend(processDir(outputDirectory))
-    except:
-        logger.error("Failed to add directories from %s for post-processing." % (nzbtomedia.OUTPUTDIRECTORY))
+    except Exception as e:
+        logger.error("Failed to add directories from %s for post-processing: %s" % (nzbtomedia.OUTPUTDIRECTORY, e))
 
     if not to_return:
         logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))
