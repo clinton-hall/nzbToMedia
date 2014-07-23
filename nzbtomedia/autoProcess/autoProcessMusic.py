@@ -94,7 +94,7 @@ class autoProcessMusic:
 
             params['dir'] = os.path.dirname(dirName)
             if remote_path:
-                params['dir'] = remoteDir(dirName)
+                params['dir'] = remoteDir(os.path.dirname(dirName))
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:

@@ -126,6 +126,9 @@ class autoProcessTV:
                 logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
+        elif clientAgent == "manual" and not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=True):
+                logger.warning("No media files found in directory %s to manually process." % (dirName), section)
+                return [0, ""]   # Success (as far as this script is concerned)
 
         if fork not in nzbtomedia.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:

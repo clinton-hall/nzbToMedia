@@ -727,7 +727,15 @@ def main(args, section=None):
                     if clientAgent.lower() not in nzbtomedia.NZB_CLIENTS and clientAgent != 'manual':
                         continue
 
-                    results = process(dirName, os.path.basename(dirName), 0, clientAgent=clientAgent,
+                    try:
+                        dirName = dirName.encode(nzbtomedia.SYS_ENCODING)
+                    except: pass
+                    inputName = os.path.basename(dirName)
+                    try:
+                        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+                    except: pass
+
+                    results = process(dirName, inputName, 0, clientAgent=clientAgent,
                                       download_id=download_id, inputCategory=subsection)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (

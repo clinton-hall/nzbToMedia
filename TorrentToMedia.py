@@ -39,12 +39,17 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     inputDirectory, inputName, inputCategory, root = nzbtomedia.category_search(inputDirectory, inputName,
                                                                                         inputCategory, root,
-                                                                                        nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure
-
+                                                                                        nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure 
     if inputCategory == "":
         inputCategory = "UNCAT"
 
     usercat = inputCategory
+    try:
+        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
+    try:
+        inputDirectory = inputDirectory.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
 
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
@@ -98,6 +103,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     else:
         outputDestination = os.path.normpath(
             nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory))
+    try:
+        outputDestination = outputDestination.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
@@ -129,7 +137,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                     nzbtomedia.os.path.join(outputDestination, os.path.basename(filePath)), fullFileName)
                 logger.debug(
                     "Setting outputDestination to %s to preserve folder structure" % (os.path.dirname(targetFile)))
-
+        try:
+            targetFile = targetFile.encode(nzbtomedia.SYS_ENCODING)
+        except: pass
         if root == 1:
             if not foundFile:
                 logger.debug("Looking for %s in: %s" % (inputName, inputFile))
@@ -286,7 +296,15 @@ def main(args):
                     if clientAgent.lower() not in nzbtomedia.TORRENT_CLIENTS and clientAgent != 'manual':
                         continue
 
-                    results = processTorrent(dirName, os.path.basename(dirName), subsection, inputHash, inputID,
+                    try:
+                        dirName = dirName.encode(nzbtomedia.SYS_ENCODING)
+                    except: pass
+                    inputName = os.path.basename(dirName)
+                    try:
+                        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+                    except: pass
+
+                    results = processTorrent(dirName, inputName, subsection, inputHash, inputID,
                                              clientAgent)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (

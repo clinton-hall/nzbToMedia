@@ -40,6 +40,9 @@ def sanitizeName(name):
 
     # remove leading/trailing periods and spaces
     name = name.strip(' .')
+    try:
+        name = name.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
 
     return name
      
@@ -68,6 +71,13 @@ def remoteDir(path):
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     tordir = False
+
+    try:
+        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
+    try:
+        inputDirectory = inputDirectory.encode(nzbtomedia.SYS_ENCODING)
+    except: pass
 
     if inputDirectory is None:  # =Nothing to process here.
         return inputDirectory, inputName, inputCategory, root
@@ -518,6 +528,10 @@ def getDirs(section, subsection):
                     title = os.path.splitext(os.path.basename(mediafile))[0]
                     newPath = os.path.join(path, sanitizeName(title))
 
+                try:
+                   newPath = newPath.encode(nzbtomedia.SYS_ENCODING)
+                except: pass
+
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
                 if os.path.isfile(newPath):
                     newPath2 = os.path.join(os.path.join(os.path.split(newPath)[0], 'new'), os.path.split(newPath)[1])
@@ -527,8 +541,13 @@ def getDirs(section, subsection):
                 if not os.path.exists(newPath):
                     makeDir(newPath)
 
+                newfile = os.path.join(newPath, sanitizeName(os.path.split(mediafile)[1]))
+                try:
+                    newfile = newfile.encode(nzbtomedia.SYS_ENCODING)
+                except: pass
+
                 # link file to its new path
-                copy_link(mediafile, os.path.join(newPath, sanitizeName(os.path.split(mediafile)[1])), 'hard')
+                copy_link(mediafile, newfile, 'hard')
             except Exception as e:
                 logger.error("Failed to move %s to its own directory: %s" % (os.path.split(mediafile)[1], e))
 
@@ -548,12 +567,13 @@ def getDirs(section, subsection):
     except Exception as e:
         logger.error("Failed to add directories from %s for post-processing: %s" % (nzbtomedia.CFG[section][subsection]["watch_dir"], e))
 
-    try:
-        outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
-        if os.path.exists(outputDirectory):
-            to_return.extend(processDir(outputDirectory))
-    except Exception as e:
-        logger.error("Failed to add directories from %s for post-processing: %s" % (nzbtomedia.OUTPUTDIRECTORY, e))
+    if nzbtomedia.USELINK == 'move':
+        try:
+            outputDirectory = os.path.join(nzbtomedia.OUTPUTDIRECTORY, subsection)
+            if os.path.exists(outputDirectory):
+                to_return.extend(processDir(outputDirectory))
+        except Exception as e:
+            logger.error("Failed to add directories from %s for post-processing: %s" % (nzbtomedia.OUTPUTDIRECTORY, e))
 
     if not to_return:
         logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))
