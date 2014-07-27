@@ -339,13 +339,15 @@ def initialize(section=None):
     except: pass
     try:
         subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
-    except: pass
-    try:
-        if 'ionice' in NICENESS:
-            NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
-        else:
-            NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+        try:
+            NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
+        except: pass
+        try:
+            if 'ionice' in NICENESS:
+                NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+            else:
+                NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+        except: pass
     except: pass
     devnull.close()
 
