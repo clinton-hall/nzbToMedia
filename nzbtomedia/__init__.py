@@ -332,18 +332,27 @@ def initialize(section=None):
     if REMOTEPATHS:
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
+    devnull = open(os.devnull) 
     try:
-        NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
+        try:
+            subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
+            NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
+        except: pass
+        try:
+            subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
+            try:
+                NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
+            except: pass
+            try:
+                if 'ionice' in NICENESS:
+                    NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+                else:
+                    NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+            except: pass
+        except: pass
     except: pass
-    try:
-        NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
-    except: pass
-    try:
-        if 'ionice' in NICENESS:
-            NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
-        else:
-            NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
-    except: pass
+
+    devnull.close()
 
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                   re.compile('.part\d+.rar$', re.I),
