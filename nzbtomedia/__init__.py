@@ -332,10 +332,13 @@ def initialize(section=None):
     if REMOTEPATHS:
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
+    devnull = open(os.devnull)
     try:
+        subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
         NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
     except: pass
     try:
+        subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
         NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
     except: pass
     try:
@@ -344,6 +347,7 @@ def initialize(section=None):
         else:
             NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
     except: pass
+    devnull.close()
 
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                   re.compile('.part\d+.rar$', re.I),
@@ -581,9 +585,21 @@ def initialize(section=None):
             if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')):
                 FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
 
+        if not FFMPEG and not FFPROBE:
+            try:
+                FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
+                FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+            except:
+                if os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')):
+                    FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
+                if os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')):
+                    FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
+
         if not FFMPEG:
             if os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
                 FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
+            elif os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
+                FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
             else:
                 FFMPEG = None
                 logger.warning("Failed to locate ffmpeg, transcoding disabled!")
@@ -592,6 +608,8 @@ def initialize(section=None):
         if not FFPROBE and CHECK_MEDIA:
             if os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
                 FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
+            elif os.access(os.path.join(FFMPEG_PATH, 'avprobe'), os.X_OK):
+                FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
             else:
                 FFPROBE = None
                 logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
