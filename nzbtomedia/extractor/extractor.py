@@ -43,8 +43,9 @@ def extract(filePath, outputDestination):
         }
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
+            devnull = open(os.devnull)
             for cmd in required_cmds:
-                if call(['which', cmd]):  #note, returns 0 if exists, or 1 if doesn't exist.
+                if call(['which', cmd], stdout=devnull, stderr=devnull):  #note, returns 0 if exists, or 1 if doesn't exist.
                     if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
                         EXTRACT_COMMANDS[".7z"] = ["7z", "x"]
                     else: 
@@ -52,6 +53,7 @@ def extract(filePath, outputDestination):
                             if cmd in v[0]:
                                 nzbtomedia.logger.error("EXTRACTOR: %s not found, disabling support for %s" % (cmd, k))
                                 del EXTRACT_COMMANDS[k]
+            devnull.close()
         else:
             nzbtomedia.logger.warning("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
 
@@ -87,13 +89,14 @@ def extract(filePath, outputDestination):
 
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
+    devnull = open(os.devnull)
     try:  # now works same for nt and *nix
         cmd.append(filePath)  # add filePath to final cmd arg.
         if platform.system() != 'Windows':
             cmd = nzbtomedia.NICENESS + cmd
         cmd2 = cmd
         cmd2.append("-p-")  # don't prompt for password.
-        p = Popen(cmd2)  # should extract files fine.
+        p = Popen(cmd2, stdout=devnull, stderr=devnull)  # should extract files fine.
         res = p.wait()
         if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s" % (filePath, outputDestination))
@@ -107,7 +110,7 @@ def extract(filePath, outputDestination):
                 #append password here.
                 passcmd = "-p" + password
                 cmd2.append(passcmd)
-                p = Popen(cmd2)  # should extract files fine.
+                p = Popen(cmd2, stdout=devnull, stderr=devnull)  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s" % (
@@ -121,6 +124,7 @@ def extract(filePath, outputDestination):
         os.chdir(pwd)
         return False
 
+    devnull.close()
     os.chdir(pwd)  # Go back to our Original Working Directory
     if success:
         # sleep to let files finish writing to disk
