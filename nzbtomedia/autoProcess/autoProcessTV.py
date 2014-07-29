@@ -278,7 +278,7 @@ class autoProcessTV:
 
             if not os.path.exists(dirName):
                 logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
-                return 0
+                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
             elif current_numMissing < start_numMissing:
                 logger.debug(
                 "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 

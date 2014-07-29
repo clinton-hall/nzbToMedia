@@ -305,7 +305,9 @@ def buildCommands(file, newDir):
     subs1 = []
     burnt = 0
     for lan in nzbtomedia.SLANGUAGES:
-        subs1 = [ item for item in subStreams if item["tags"]["language"] == lan ]
+        try:
+            subs1 = [ item for item in subStreams if item["tags"]["language"] == lan ]
+        except: subs1 = []
         if nzbtomedia.BURN and not subs1 and not burnt:
             for subfile in get_subs(file):
                 if lan in os.path.split(subfile)[1]:
