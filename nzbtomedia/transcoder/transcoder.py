@@ -122,7 +122,8 @@ def buildCommands(file, newDir):
         videoStreams = [item for item in video_details["streams"] if item["codec_type"] == "video"]
         audioStreams = [item for item in video_details["streams"] if item["codec_type"] == "audio"]
         subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle"]
-  
+        if nzbtomedia.VEXTENSION not in ['.mkv', '.mpegts']:
+            subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
 
     for video in videoStreams:
         codec = video["codec_name"]
@@ -377,7 +378,7 @@ def extract_subs(file, newfilePath, bitbucket):
     video_details, result = getVideoDetails(file)
     if not video_details:
         return
-    subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle"]
+    subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
     if nzbtomedia.SUBSDIR:
         subdir = nzbtomedia.SUBSDIR
     else:

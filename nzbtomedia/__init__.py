@@ -378,6 +378,7 @@ def initialize(section=None):
     AINCLUDE = int(CFG["Transcoder"]["allAudioLanguages"])
     SLANGUAGES = CFG["Transcoder"]["subLanguages"]
     if isinstance(SLANGUAGES, str): SLANGUAGES = SLANGUAGES.split(',')
+    if SLANGUAGES == ['']: SLANGUAGES = []
     SINCLUDE = int(CFG["Transcoder"]["allSubLanguages"])
     SEXTRACT = int(CFG["Transcoder"]["extractSubs"])
     SEMBED = int(CFG["Transcoder"]["embedSubs"])
