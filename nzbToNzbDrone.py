@@ -185,6 +185,11 @@
 # If you want to use your own profile, set None and set the remaining options below.
 #outputDefault = None
 
+# hwAccel (0,1).
+#
+# hwAccel. 1 will set ffmpeg to enable hardware acceleration (this requires a recent ffmpeg).
+#hwAccel=0
+
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264

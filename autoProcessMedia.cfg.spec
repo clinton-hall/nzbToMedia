@@ -280,6 +280,8 @@
     # If you want to use your own profile, leave this blank and set the remaining options below.
     # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, Roku-1080p, Roku-720p, Roku-480p
     outputDefault =
+    # hwAccel. 1 will set ffmpeg to enable hardware acceleration (this requires a recent ffmpeg)
+    hwAccel = 0
     #### Define custom settings below.
     outputVideoExtension = .mp4
     outputVideoCodec = libx264

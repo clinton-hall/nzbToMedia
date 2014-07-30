@@ -165,6 +165,7 @@ FFMPEG = None
 FFPROBE = None
 CHECK_MEDIA = None
 NICENESS = []
+HWACCEL = False
 
 PASSWORDSFILE = None
 DOWNLOADINFO = None
@@ -192,7 +193,7 @@ def initialize(section=None):
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
         VFRAMERATE, LOG_DB, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, \
         ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
-        SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, \
+        SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, \
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
@@ -425,6 +426,7 @@ def initialize(section=None):
     SCODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
     BURN = int(CFG["Transcoder"]["burnInSubtitle"].strip())
     DEFAULTS = CFG["Transcoder"]["outputDefault"].strip()
+    HWACCEL = int(CFG["Transcoder"]["hwAccel"])
 
     allow_subs = ['.mkv','.mp4', '.m4v', 'asf', 'wma', 'wmv']
     codec_alias = {
@@ -438,7 +440,7 @@ def initialize(section=None):
             'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None, 'ACHANNELS':2,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS':None,
+            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
             'SCODEC':'mov_text'
             },
         'iPad-1080p':{
