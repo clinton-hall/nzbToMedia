@@ -304,6 +304,7 @@ def buildCommands(file, newDir):
     s_mapped = []
     subs1 = []
     burnt = 0
+    n = 0
     for lan in nzbtomedia.SLANGUAGES:
         try:
             subs1 = [ item for item in subStreams if item["tags"]["language"] == lan ]
@@ -399,7 +400,7 @@ def extract_subs(file, newfilePath, bitbucket):
         logger.info("Extracting %s Subtitle from: %s" % (lan, file))
         cmd = ""
         for item in command:
-            cmd = cmd + " " + item
+            cmd = cmd + " " + str(item)
         logger.debug("calling command:%s" % (cmd))
         result = 1 # set result to failed in case call fails.
         try:
@@ -445,7 +446,7 @@ def Transcode_directory(dirName):
         logger.info("Transcoding video: %s" % (file))
         cmd = ""
         for item in command:
-            cmd = cmd + " " + item
+            cmd = cmd + " " + str(item)
         logger.debug("calling command:%s" % (cmd))
         result = 1 # set result to failed in case call fails.
         try:
