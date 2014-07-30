@@ -1,5 +1,20 @@
 Change_LOG / History
 
+V10.4 30/07/2014
+
+Impacts All
+Supress printed messages from extractor.
+Allow no sub languages to be specified.
+Ignore hdmv_pgs_subtitle codecs in transcoder.
+Fix remote directory use with HeadPhones.
+Only use nice and ionice when available.
+
+Impacts NZBs
+Cleaner exit logging for SABnzbd.
+
+Impacts Torrents
+Improved manual run handling.
+
 V10.3 15/07/2014
 
 Impacts All
