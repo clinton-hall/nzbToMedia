@@ -347,7 +347,12 @@ def buildCommands(file, newDir):
     if nzbtomedia.OUTPUTFASTSTART:
         other_cmd.extend(['-movflags', '+faststart'])
 
-    command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', file]
+    command = [nzbtomedia.FFMPEG, '-loglevel', 'warning']
+
+    if nzbtomedia.HWACCEL:
+        command.extend(['-hwaccel', 'auto'])
+
+    command.extend([ '-i', file])
 
     if nzbtomedia.SEMBED:
         filenum = 1
