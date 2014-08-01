@@ -388,6 +388,7 @@ def initialize(section=None):
     VCODEC = CFG["Transcoder"]["outputVideoCodec"].strip()
     VCODEC_ALLOW = CFG["Transcoder"]["VideoCodecAllow"].strip()
     if isinstance(VCODEC_ALLOW, str): VCODEC_ALLOW = VCODEC_ALLOW.split(',')
+    if VCODEC_ALLOW == ['']: VCODEC_ALLOW = []
     VPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
     try:
         VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
@@ -399,6 +400,7 @@ def initialize(section=None):
     ACODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
     ACODEC_ALLOW = CFG["Transcoder"]["AudioCodecAllow"].strip()
     if isinstance(ACODEC_ALLOW, str): ACODEC_ALLOW = ACODEC_ALLOW.split(',')
+    if ACODEC_ALLOW == ['']: ACODEC_ALLOW = []
     try:
         ACHANNELS = int(CFG["Transcoder"]["outputAudioChannels"].strip())
     except: pass
@@ -408,6 +410,7 @@ def initialize(section=None):
     ACODEC2 = CFG["Transcoder"]["outputAudioTrack2Codec"].strip()
     ACODEC2_ALLOW = CFG["Transcoder"]["AudioCodec2Allow"].strip()
     if isinstance(ACODEC2_ALLOW, str): ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
+    if ACODEC2_ALLOW == ['']: ACODEC2_ALLOW = []
     try:
         ACHANNELS2 = int(CFG["Transcoder"]["outputAudioTrack2Channels"].strip())
     except: pass
@@ -417,6 +420,7 @@ def initialize(section=None):
     ACODEC3 = CFG["Transcoder"]["outputAudioOtherCodec"].strip()
     ACODEC3_ALLOW = CFG["Transcoder"]["AudioOtherCodecAllow"].strip()
     if isinstance(ACODEC3_ALLOW, str): ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
+    if ACODEC3_ALLOW == ['']: ACODEC3_ALLOW = []
     try:
         ACHANNELS3 = int(CFG["Transcoder"]["outputAudioOtherChannels"].strip())
     except: pass
