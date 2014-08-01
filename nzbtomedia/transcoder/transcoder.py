@@ -460,14 +460,6 @@ def Transcode_directory(dirName):
         # transcoding files may remove the original file, so make sure to extract subtitles first
         if nzbtomedia.SEXTRACT:
             extract_subs(file, newfilePath, bitbucket)
-        if nzbtomedia.SUBSDIR:
-            for sub in get_subs(file):
-                name = os.path.splitext(os.path.split(file)[1])[0]
-                subname = os.path.split(sub)[1]
-                newname = os.path.splitext(os.path.split(newfilePath)[1])[0]
-                newpath = os.path.join(nzbtomedia.SUBSDIR, subname.replace(name, newname))
-                if not os.path.isfile(newpath):
-                    os.rename(sub, newpath)
 
         try: # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfilePath)
@@ -487,6 +479,15 @@ def Transcode_directory(dirName):
             result = call(command, stdout=bitbucket, stderr=bitbucket)
         except:
             logger.error("Transcoding of video %s has failed" % (file))
+
+        if nzbtomedia.SUBSDIR:
+            for sub in get_subs(file):
+                name = os.path.splitext(os.path.split(file)[1])[0]
+                subname = os.path.split(sub)[1]
+                newname = os.path.splitext(os.path.split(newfilePath)[1])[0]
+                newpath = os.path.join(nzbtomedia.SUBSDIR, subname.replace(name, newname))
+                if not os.path.isfile(newpath):
+                    os.rename(sub, newpath)
 
         if result == 0:
             try:
