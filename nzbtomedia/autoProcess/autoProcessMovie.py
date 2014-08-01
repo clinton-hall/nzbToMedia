@@ -246,33 +246,34 @@ class autoProcessMovie:
                 logger.postprocess("Deleting failed files and folder %s" % dirName, section)
                 rmDir(dirName)
 
-            if not download_id:
+            if not release_id and not media_id:
                 logger.error("Could not find a downloaded movie in the database matching %s, exiting!" % inputName,
                              section)
                 return [1, "%s: Failed to post-process - Failed download not found in %s" % (section, section) ]
 
-            logger.postprocess("Setting failed release %s to ignored ..." % (inputName), section)
+            if release_id:
+                logger.postprocess("Setting failed release %s to ignored ..." % (inputName), section)
 
-            url = baseURL + "/release.ignore"
-            params = {'id': release_id}
+                url = baseURL + "/release.ignore"
+                params = {'id': release_id}
 
-            logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
+                logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
-            try:
-                r = requests.get(url, params=params, verify=False)
-            except requests.ConnectionError:
-                logger.error("Unable to open URL %s" % (url), section)
-                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+                try:
+                    r = requests.get(url, params=params, verify=False)
+                except requests.ConnectionError:
+                    logger.error("Unable to open URL %s" % (url), section)
+                    return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
 
-            result = r.json()
-            if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-                logger.error("Server returned status %s" % (str(r.status_code)), section)
-                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
-            elif result['success']:
-                logger.postprocess("SUCCESS: %s has been set to ignored ..." % (inputName), section)
-            else:
-                logger.warning("FAILED: Unable to set %s to ignored!" % (inputName), section)
-                return [1, "%s: Failed to post-process - Unable to set %s to ignored" % (section, inputName) ]
+                result = r.json()
+                if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+                    logger.error("Server returned status %s" % (str(r.status_code)), section)
+                    return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+                elif result['success']:
+                    logger.postprocess("SUCCESS: %s has been set to ignored ..." % (inputName), section)
+                else:
+                    logger.warning("FAILED: Unable to set %s to ignored!" % (inputName), section)
+                    return [1, "%s: Failed to post-process - Unable to set %s to ignored" % (section, inputName) ]
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
