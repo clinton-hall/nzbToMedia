@@ -179,7 +179,7 @@
 # externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
 #externalSubDir =
 
-# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, Roku-1080p, Roku-720p, Roku-480p).
+# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p).
 #
 # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
 # If you want to use your own profile, set None and set the remaining options below.

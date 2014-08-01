@@ -6,6 +6,7 @@ import urllib2
 import traceback
 import nzbtomedia
 import json
+import shutil
 from subprocess import call
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import makeDir
@@ -393,7 +394,10 @@ def extract_subs(file, newfilePath, bitbucket):
         subdir = os.path.split(newfilePath)[0]
     name = os.path.splitext(os.path.split(newfilePath)[1])[0]
 
-    subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["tags"]["language"] in nzbtomedia.SLANGUAGES and item["codec_name"] != "hdmv_pgs_subtitle"]
+    try:
+        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["tags"]["language"] in nzbtomedia.SLANGUAGES and item["codec_name"] != "hdmv_pgs_subtitle"]
+    except:
+        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
     num = len(subStreams)
     for n in range(num):
         sub = subStreams[n]
@@ -424,9 +428,12 @@ def extract_subs(file, newfilePath, bitbucket):
             logger.error("Extracting subtitle has failed")
 
         if result == 0:
+            try:
+                shutil.copymode(file, outputFile)
+            except: pass
             logger.info("Extracting %s subtitle from %s has succeeded" % (lan, file))
         else:
-            logger.error("Extracting subtitles has failed")        
+            logger.error("Extracting subtitles has failed")       
 
 def Transcode_directory(dirName):
     if platform.system() == 'Windows':
@@ -482,6 +489,9 @@ def Transcode_directory(dirName):
             logger.error("Transcoding of video %s has failed" % (file))
 
         if result == 0:
+            try:
+                shutil.copymode(file, newfilePath)
+            except: pass
             logger.info("Transcoding of video %s to %s succeeded" % (file, newfilePath))
             if not nzbtomedia.DUPLICATE and os.path.isfile(newfilePath): # we get rid of the original file
                 os.unlink(file)
