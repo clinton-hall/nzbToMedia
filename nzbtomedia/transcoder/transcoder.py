@@ -401,6 +401,7 @@ def extract_subs(file, newfilePath, bitbucket):
     num = len(subStreams)
     for n in range(num):
         sub = subStreams[n]
+        idx = sub["index"]
         try:
           lan = sub["tags"]["language"]
         except:
@@ -415,7 +416,7 @@ def extract_subs(file, newfilePath, bitbucket):
           if os.path.isfile(outputFile):
               outputFile = os.path.join(subdir, "%s.%s.%s.srt" %(name, lan, n))
 
-        command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', '-codec:s:' + str(n), 'srt', outputFile]
+        command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', '-codec:' + str(idx), 'srt', outputFile]
         if platform.system() != 'Windows':
             command = nzbtomedia.NICENESS + command
 
