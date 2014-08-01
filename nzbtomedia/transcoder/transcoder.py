@@ -401,7 +401,10 @@ def extract_subs(file, newfilePath, bitbucket):
     num = len(subStreams)
     for n in range(num):
         sub = subStreams[n]
-        lan = sub["tags"]["language"]
+        try:
+          lan = sub["tags"]["language"]
+        except:
+          lan = "unk"
 
         if num == 1:
           outputFile = os.path.join(subdir, "%s.srt" %(name))
