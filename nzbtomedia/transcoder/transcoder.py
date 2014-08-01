@@ -386,38 +386,47 @@ def extract_subs(file, newfilePath, bitbucket):
     video_details, result = getVideoDetails(file)
     if not video_details:
         return
-    subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
+
     if nzbtomedia.SUBSDIR:
         subdir = nzbtomedia.SUBSDIR
     else:
         subdir = os.path.split(newfilePath)[0]
     name = os.path.splitext(os.path.split(newfilePath)[1])[0]
-    for n in range(len(subStreams)):
+
+    subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["tags"]["language"] in nzbtomedia.SLANGUAGES and item["codec_name"] != "hdmv_pgs_subtitle"]
+    num = len(subStreams)
+    for n in range(num):
         sub = subStreams[n]
         lan = sub["tags"]["language"]
-        outputFile = os.path.join(subdir, "%s(%s).srt" %(name, lan))
-        if os.path.isfile(outputFile):
-            outputFile = os.path.join(subdir, "%s(%s)%s.srt" %(name, n, lan))
-        command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', sub, '-vn', '-an', '-codec:s:' + str(n), 'srt', outputFile]
+
+        if num == 1:
+          outputFile = os.path.join(subdir, "%s.srt" %(name))
+          if os.path.isfile(outputFile):
+              outputFile = os.path.join(subdir, "%s.%s.srt" %(name, n))
+        else:
+          outputFile = os.path.join(subdir, "%s.%s.srt" %(name, lan))
+          if os.path.isfile(outputFile):
+              outputFile = os.path.join(subdir, "%s.%s.%s.srt" %(name, lan, n))
+
+        command = [nzbtomedia.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', '-codec:s:' + str(n), 'srt', outputFile]
         if platform.system() != 'Windows':
             command = nzbtomedia.NICENESS + command
 
-        logger.info("Extracting %s Subtitle from: %s" % (lan, file))
+        logger.info("Extracting %s subtitle from: %s" % (lan, file))
         cmd = ""
         for item in command:
             cmd = cmd + " " + str(item)
-        logger.debug("calling command:%s" % (cmd))
+        logger.debug("Calling command: %s" % (cmd))
         result = 1 # set result to failed in case call fails.
         try:
             result = call(command, stdout=bitbucket, stderr=bitbucket)
         except:
-            logger.error("Extracting subtitles has failed")
+            logger.error("Extracting subtitle has failed")
 
         if result == 0:
-            logger.info("Extracting %s Subtitle from %s has succeeded" % (lan, file))
+            logger.info("Extracting %s subtitle from %s has succeeded" % (lan, file))
         else:
-            logger.error("Extracting subtitles has failed")
-        
+            logger.error("Extracting subtitles has failed")        
 
 def Transcode_directory(dirName):
     if platform.system() == 'Windows':
@@ -440,6 +449,19 @@ def Transcode_directory(dirName):
             continue
         command = buildCommands(file, newDir)
         newfilePath = command[-1]
+
+        # transcoding files may remove the original file, so make sure to extract subtitles first
+        if nzbtomedia.SEXTRACT:
+            extract_subs(file, newfilePath, bitbucket)
+        if nzbtomedia.SUBSDIR:
+            for sub in get_subs(file):
+                name = os.path.splitext(os.path.split(file)[1])[0]
+                subname = os.path.split(sub)[1]
+                newname = os.path.splitext(os.path.split(newfilePath)[1])[0]
+                newpath = os.path.join(nzbtomedia.SUBSDIR, subname.replace(name, newname))
+                if not os.path.isfile(newpath):
+                    os.rename(sub, newpath)
+
         try: # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfilePath)
         except OSError, e:
@@ -467,16 +489,6 @@ def Transcode_directory(dirName):
             logger.error("Transcoding of video %s to %s failed" % (file, newfilePath))
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
-        if nzbtomedia.SEXTRACT:
-            extract_subs(file, newfilePath, bitbucket)
-        if nzbtomedia.SUBSDIR:
-            for sub in get_subs(file):
-                name = os.path.splitext(os.path.split(file)[1])[0]
-                subname = os.path.split(sub)[1]
-                newname = os.path.splitext(os.path.split(newfilePath)[1])[0]
-                newpath = os.path.join(nzbtomedia.SUBSDIR, subname.replace(name, newname))
-                if not os.path.isfile(newpath):
-                    os.rename(sub, newpath)
 
     if not nzbtomedia.PROCESSOUTPUT and nzbtomedia.DUPLICATE:  # We postprocess the original files to CP/SB 
         newDir = dirName
