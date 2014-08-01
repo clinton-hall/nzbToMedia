@@ -158,7 +158,9 @@ def buildCommands(file, newDir):
             else:  # lower or mathcing ratio, scale by height only.
                scale = "-1:" + scale.split(':')[1]
                if h_scale != 1:
-                   video_cmd.extend(['-vf', 'scale=' + scale])        
+                   video_cmd.extend(['-vf', 'scale=' + scale])
+        if ('-vf' in video_cmd or '-r' in video_cmd) and video_cmd[1] == 'copy':
+            video_cmd[1] = nzbtomedia.VCODEC       
         map_cmd.extend(['-map', '0:' + str(video["index"])])
         break  # Only one video needed
 
