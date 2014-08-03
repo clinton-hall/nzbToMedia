@@ -124,7 +124,7 @@ def buildCommands(file, newDir):
         audioStreams = [item for item in video_details["streams"] if item["codec_type"] == "audio"]
         subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle"]
         if nzbtomedia.VEXTENSION not in ['.mkv', '.mpegts']:
-            subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
+            subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
 
     for video in videoStreams:
         codec = video["codec_name"]
@@ -397,9 +397,9 @@ def extract_subs(file, newfilePath, bitbucket):
     name = os.path.splitext(os.path.split(newfilePath)[1])[0]
 
     try:
-        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["tags"]["language"] in nzbtomedia.SLANGUAGES and item["codec_name"] != "hdmv_pgs_subtitle"]
+        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["tags"]["language"] in nzbtomedia.SLANGUAGES and item["codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
     except:
-        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle"]
+        subStreams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
     num = len(subStreams)
     for n in range(num):
         sub = subStreams[n]
