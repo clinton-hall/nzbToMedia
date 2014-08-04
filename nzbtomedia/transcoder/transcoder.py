@@ -44,8 +44,12 @@ def getVideoDetails(videofile):
     result = 1
     if not nzbtomedia.FFPROBE:
         return video_details, result
+    if 'avprobe' in nzbtomedia.FFPROBE:
+        print_format = '-of'
+    else:
+        print_format = '-print_format'
     try:
-        command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', '-show_error', videofile]
+        command = [nzbtomedia.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
@@ -53,7 +57,7 @@ def getVideoDetails(videofile):
     except: pass
     if not video_details:
         try:
-            command = [nzbtomedia.FFPROBE, '-v', 'quiet', '-print_format', 'json', '-show_format', '-show_streams', videofile]
+            command = [nzbtomedia.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
             proc = subprocess.Popen(command, stdout=subprocess.PIPE)
             out, err = proc.communicate()
             result = proc.returncode

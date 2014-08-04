@@ -706,7 +706,7 @@ def main(args, section=None):
 
         for section, subsections in nzbtomedia.SECTIONS.items():
             for subsection in subsections:
-                for dirName in getDirs(section, subsection):
+                for dirName in getDirs(section, subsection, link = 'move'):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 
                     logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
