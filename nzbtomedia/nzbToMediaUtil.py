@@ -482,7 +482,7 @@ def parse_args(clientAgent, args):
         return None, None, None, None, None
 
 
-def getDirs(section, subsection):
+def getDirs(section, subsection, link = 'hard'):
     to_return = []
 
     def processDir(path):
@@ -547,7 +547,7 @@ def getDirs(section, subsection):
                 except: pass
 
                 # link file to its new path
-                copy_link(mediafile, newfile, 'hard')
+                copy_link(mediafile, newfile, link)
             except Exception as e:
                 logger.error("Failed to move %s to its own directory: %s" % (os.path.split(mediafile)[1], e))
 
