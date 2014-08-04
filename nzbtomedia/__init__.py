@@ -587,53 +587,47 @@ def initialize(section=None):
             logger.warning("Failed to locate ffmpeg.exe, transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not (os.path.isfile(FFPROBE)) and CHECK_MEDIA:  # problem
+        if not (os.path.isfile(FFPROBE)):
             FFPROBE = None
-            logger.warning("Failed to locate ffprobe.exe, video corruption detection disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            if CHECK_MEDIA:
+                logger.warning("Failed to locate ffprobe.exe, video corruption detection disabled!")
+                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     else:
-        try:
-            FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
-            FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-        except:
-            if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')):
-                FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
-            if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')):
-                FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
-
-        if not FFMPEG and not FFPROBE:
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
+            FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
+            FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
+        else:
             try:
-                FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
-                FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except:
-                if os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')):
-                    FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
-                if os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')):
-                    FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
-
+                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
+            except: pass
+            if not FFMPEG: 
+                try:
+                    FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
+                except: pass
         if not FFMPEG:
-            if os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
-                FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
-            elif os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
-                FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
-            else:
-                FFMPEG = None
-                logger.warning("Failed to locate ffmpeg, transcoding disabled!")
-                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            FFMPEG = None
+            logger.warning("Failed to locate ffmpeg, transcoding disabled!")
+            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if not FFPROBE and CHECK_MEDIA:
-            if os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
-                FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
-            elif os.access(os.path.join(FFMPEG_PATH, 'avprobe'), os.X_OK):
-                FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
-            else:
-                FFPROBE = None
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
+            FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(os.path.join(FFMPEG_PATH, 'avprobe'), os.X_OK):
+            FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
+        else:
+            try:
+                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+            except: pass
+            if not FFPROBE: 
+                try:
+                    FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+                except: pass
+        if not FFPROBE:
+            FFPROBE = None
+            if CHECK_MEDIA:
                 logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
-
-    if not CHECK_MEDIA:  # allow users to bypass this.
-        FFPROBE = None
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
