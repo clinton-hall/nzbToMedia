@@ -14,7 +14,7 @@ from nzbtomedia.nzbToMediaUtil import makeDir
 def isVideoGood(videofile, status):
     fileNameExt = os.path.basename(videofile)
     fileName, fileExt = os.path.splitext(fileNameExt)
-    if fileExt not in nzbtomedia.MEDIACONTAINER or not nzbtomedia.FFPROBE:
+    if fileExt not in nzbtomedia.MEDIACONTAINER or not nzbtomedia.FFPROBE or not nzbtomedia.CHECK_MEDIA:
         if status:  # if the download was "failed", assume bad. If it was successful, assume good.
             return False
         else:
