@@ -497,6 +497,8 @@ def getDirs(section, subsection, link = 'hard'):
                 logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path)) 
                 newPath = None
                 fileExt = os.path.splitext(mediafile)[1]
+                if fileExt == '.!sync':
+                    continue
                 try:
                     if fileExt in nzbtomedia.AUDIOCONTAINER:
                         f = beets.mediafile.MediaFile(mediafile)
