@@ -64,24 +64,27 @@ def autoFork(section, inputCategory):
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
-        for name in [ nzbtomedia.FORK_DEFAULT, nzbtomedia.FORK_FAILED, nzbtomedia.FORK_SICKRAGE, nzbtomedia.FORK_FAILED_TORRENT ]:
-            fork = [name, nzbtomedia.FORKS[name]]
-            url = "%s%s:%s%s/home/postprocess/processEpisode?%s" % (protocol,host,port,web_root,urllib.urlencode(fork[1]))
-
-            # attempting to auto-detect fork
-            try:
-                if username and password:
-                    r = requests.get(url, auth=(username, password), verify=False)
-                else:
-                    r = requests.get(url, verify=False)
-            except requests.ConnectionError:
-                logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
-                break
-
-            if r.ok:
-                detected = True
-                break
-
+        url = "%s%s:%s%s/home/postprocess/" % (protocol,host,port,web_root)
+        # attempting to auto-detect fork
+        try:
+            if username and password:
+                r = requests.get(url, auth=(username, password), verify=False)
+            else:
+                r = requests.get(url, verify=False)
+        except requests.ConnectionError:
+            logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
+        if r.ok:
+            params = nzbtomedia.ALL_FORKS
+            rem_params = []
+            for param in params:
+                if not 'name="%s"' %(param) in r.text:
+                    rem_params.append(param)
+            for param in rem_params:
+                params.pop(param) 
+            for fork in sorted(nzbtomedia.FORKS.iteritems(), reverse=False):
+                if params == fork[1]:
+                    detected = True
+                    break
         if detected:
             logger.info("%s:%s fork auto-detection successful ..." % (section, inputCategory))
         else:
