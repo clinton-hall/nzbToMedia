@@ -1,5 +1,12 @@
 Change_LOG / History
 
+V10.5 05/08/2014
+
+Impacts All
+Bug Fixes for Transcoder.
+Support for lib-av as well as ffmpeg.
+Fixed SickBeard aut-fork detection.
+
 V10.4 30/07/2014
 
 Impacts All
