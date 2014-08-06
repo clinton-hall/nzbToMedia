@@ -47,11 +47,14 @@ class autoProcessMusic:
             web_root = nzbtomedia.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
-
         try:
             remote_path = int(nzbtomedia.CFG[section][inputCategory]["remote_path"])
         except:
             remote_path = 0
+        try:
+            extract = int(section[inputCategory]["extract"])
+        except:
+            extract = 0
 
         if ssl:
             protocol = "https://"
@@ -77,7 +80,7 @@ class autoProcessMusic:
         process_all_exceptions(inputName.lower(), dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
-        if not listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
+        if not listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
             logger.debug('Checking for archives to extract in directory: %s' % (dirName))
             nzbtomedia.extractFiles(dirName)
             inputName, dirName = convert_to_ascii(inputName, dirName)

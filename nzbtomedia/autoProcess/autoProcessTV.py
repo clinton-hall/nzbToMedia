@@ -87,6 +87,10 @@ class autoProcessTV:
             force = int(nzbtomedia.CFG[section][inputCategory]["force"])
         except:
             force = 0
+        try:
+            extract = int(section[inputCategory]["extract"])
+        except:
+            extract = 0
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -138,7 +142,7 @@ class autoProcessTV:
             # Now check if tv files exist in destination. 
             if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
                 flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
-            elif listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True):
+            elif listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
                 logger.debug('Checking for archives to extract in directory: %s' % (dirName))
                 nzbtomedia.extractFiles(dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
