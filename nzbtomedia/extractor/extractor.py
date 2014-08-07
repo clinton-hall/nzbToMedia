@@ -43,7 +43,7 @@ def extract(filePath, outputDestination):
         }
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
-            devnull = open(os.devnull)
+            devnull = open(os.devnull, 'w')
             for cmd in required_cmds:
                 if call(['which', cmd], stdout=devnull, stderr=devnull):  #note, returns 0 if exists, or 1 if doesn't exist.
                     if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
@@ -89,7 +89,7 @@ def extract(filePath, outputDestination):
 
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
-    devnull = open(os.devnull)
+    devnull = open(os.devnull, 'w')
     try:  # now works same for nt and *nix
         cmd.append(filePath)  # add filePath to final cmd arg.
         if platform.system() != 'Windows':

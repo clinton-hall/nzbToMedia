@@ -334,7 +334,7 @@ def initialize(section=None):
     if REMOTEPATHS:
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
-    devnull = open(os.devnull)
+    devnull = open(os.devnull, 'w')
     try:
         subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
         NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
