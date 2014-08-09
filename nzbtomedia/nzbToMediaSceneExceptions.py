@@ -41,7 +41,7 @@ def replace_filename(filename, dirname, name):
     else:
         logger.warning("No name replacement determined for %s" % (head), "EXCEPTION")
         return 
-    newfile = newname + fileExtension
+    newfile = newname.replace(' ', '.') + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
@@ -67,7 +67,7 @@ def reverse_filename(filename, dirname, name):
     else:
         newname = head[::-1].title()
     logger.debug("Reversing filename %s to %s" % (head, newname), "EXCEPTION")
-    newfile = newname + fileExtension
+    newfile = newname.replace(' ', '.') + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
