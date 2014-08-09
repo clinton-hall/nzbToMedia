@@ -836,7 +836,12 @@ def find_imdbid(dirName, inputName):
         imdbid = m.group(1)
         logger.info("Found imdbID [%s]" % imdbid)
         return imdbid
-
+    for file in os.listdir(dirName):
+        m = re.search('(tt\d{7})', file)
+        if m:
+            imdbid = m.group(1)
+            logger.info("Found imdbID [%s]" % imdbid)
+            return imdbid  
     logger.info('Searching IMDB for imdbID ...')
     guess = guessit.guess_movie_info(inputName)
     if guess:
