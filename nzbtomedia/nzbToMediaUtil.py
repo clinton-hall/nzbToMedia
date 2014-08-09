@@ -840,8 +840,17 @@ def find_imdbid(dirName, inputName):
         m = re.search('(tt\d{7})', file)
         if m:
             imdbid = m.group(1)
-            logger.info("Found imdbID [%s]" % imdbid)
-            return imdbid  
+            logger.info("Found imdbID [%s] via file name" % imdbid)
+            return imdbid
+    if os.environ.has_key('NZBPR__DNZB_MOREINFO'):
+        dnzb_more_info=os.environ.get('NZBPR__DNZB_MOREINFO', '')
+        if dnzb_more_info != '':
+            regex = re.compile(r'^http://www.imdb.com/title/(tt[0-9]+)/$', re.IGNORECASE)
+            m = regex.match(dnzb_more_info)
+            if m:
+                imdbid = m.group(1)
+                logger.info("Found imdbID [%s] from DNZB-MoreInfo" % imdbid)
+                return imdbid	
     logger.info('Searching IMDB for imdbID ...')
     guess = guessit.guess_movie_info(inputName)
     if guess:
