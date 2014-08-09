@@ -136,7 +136,7 @@ class autoProcessTV:
 
         if fork not in nzbtomedia.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
-                process_all_exceptions(inputName.lower(), dirName)
+                process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
 
             # Now check if tv files exist in destination. 

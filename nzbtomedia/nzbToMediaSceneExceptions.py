@@ -32,10 +32,10 @@ def process_all_exceptions(name, dirname):
 
 def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
-    if media_pattern.search(os.path.basename(dirname)) is not None: 
+    if media_pattern.search(os.path.basename(dirname).replace(' ','.')) is not None: 
         newname = os.path.basename(dirname)
         logger.debug("Replacing file name %s with directory name %s" % (head, newname), "EXCEPTION")
-    elif media_pattern.search(name) is not None:
+    elif media_pattern.search(name.replace(' ','.').lower()) is not None:
         newname = name
         logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
     else:

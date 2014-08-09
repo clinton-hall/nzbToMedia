@@ -161,7 +161,7 @@ class autoProcessMovie:
         if os.path.isdir(SpecificPath):
             dirName = SpecificPath
 
-        process_all_exceptions(inputName.lower(), dirName)
+        process_all_exceptions(inputName, dirName)
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
         if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:

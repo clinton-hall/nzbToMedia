@@ -61,6 +61,8 @@ def autoFork(section, inputCategory):
         fork = ['default', {}]
 
     elif fork == "auto":
+        params = nzbtomedia.ALL_FORKS
+        rem_params = []
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
@@ -74,8 +76,6 @@ def autoFork(section, inputCategory):
         except requests.ConnectionError:
             logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
         if r.ok:
-            params = nzbtomedia.ALL_FORKS
-            rem_params = []
             for param in params:
                 if not 'name="%s"' %(param) in r.text:
                     rem_params.append(param)
@@ -87,6 +87,9 @@ def autoFork(section, inputCategory):
                     break
         if detected:
             logger.info("%s:%s fork auto-detection successful ..." % (section, inputCategory))
+        elif rem_params:
+            logger.info("%s:%s fork auto-detection found custom params %s" % (section, inputCategory, params))
+            fork = ['custom', params]
         else:
             logger.info("%s:%s fork auto-detection failed" % (section, inputCategory))
             fork = nzbtomedia.FORKS.items()[nzbtomedia.FORKS.keys().index(nzbtomedia.FORK_DEFAULT)]
