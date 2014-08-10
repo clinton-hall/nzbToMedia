@@ -33,15 +33,15 @@ def process_all_exceptions(name, dirname):
 def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
     if media_pattern.search(os.path.basename(dirname).replace(' ','.')) is not None: 
-        newname = os.path.basename(dirname)
+        newname = os.path.basename(dirname).replace(' ', '.')
         logger.debug("Replacing file name %s with directory name %s" % (head, newname), "EXCEPTION")
     elif media_pattern.search(name.replace(' ','.').lower()) is not None:
-        newname = name
+        newname = name.replace(' ', '.')
         logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
     else:
         logger.warning("No name replacement determined for %s" % (head), "EXCEPTION")
         return 
-    newfile = newname.replace(' ', '.') + fileExtension
+    newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
@@ -66,8 +66,9 @@ def reverse_filename(filename, dirname, name):
         newname = new_words[::-1] + na_parts.group(1)[::-1]
     else:
         newname = head[::-1].title()
+    newname = newname.replace(' ', '.')
     logger.debug("Reversing filename %s to %s" % (head, newname), "EXCEPTION")
-    newfile = newname.replace(' ', '.') + fileExtension
+    newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     try:
         os.rename(filename, newfilePath)
