@@ -489,16 +489,16 @@ def getDirs(section, subsection, link = 'hard'):
         folders = []
 
         logger.info("Searching %s for mediafiles to post-process ..." % (path))
-
+        sync = [ o for o in os.listdir(path) if os.path.splitext(o)[1] == '.!sync' ]
         # search for single files and move them into their own folder for post-processing
         for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isfile(os.path.join(path, o)) ]:
+            if len(sync) > 0:
+                break
             try:
                 logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path)) 
                 newPath = None
                 fileExt = os.path.splitext(mediafile)[1]
-                if fileExt == '.!sync':
-                    continue
                 try:
                     if fileExt in nzbtomedia.AUDIOCONTAINER:
                         f = beets.mediafile.MediaFile(mediafile)
@@ -556,8 +556,12 @@ def getDirs(section, subsection, link = 'hard'):
         removeEmptyFolders(path, removeRoot=False)
 
         if os.listdir(path):
-            folders.extend([os.path.join(path, o) for o in os.listdir(path) if
-                            os.path.isdir(os.path.join(path, o))])
+            for dir in [os.path.join(path, o) for o in os.listdir(path) if
+                            os.path.isdir(os.path.join(path, o))]:
+                sync = [ o for o in os.listdir(dir) if os.path.splitext(o)[1] == '.!sync' ]
+                if len(sync) > 0:
+                    continue
+                folders.extend([dir])
         return folders
 
     try:
