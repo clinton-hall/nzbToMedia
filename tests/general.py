@@ -5,10 +5,16 @@ import re
 import nzbtomedia
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia import nzbToMediaDB
+from nzbtomedia.transcoder import transcoder
 from nzbtomedia.nzbToMediaUtil import get_downloadInfo, server_responding
 
 # Initialize the config
 nzbtomedia.initialize()
+
+if transcoder.isVideoGood(nzbtomedia.TEST_FILE, 0):
+    print "FFPROBE Works"
+else:
+    print "FFPROBE FAILED"
 
 test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
 section = nzbtomedia.CFG.findsection('tv').isenabled()
@@ -32,3 +38,4 @@ print Language('eng')
 import subliminal
 
 subliminal.cache_region.configure('dogpile.cache.memory')
+del nzbtomedia.MYAPP

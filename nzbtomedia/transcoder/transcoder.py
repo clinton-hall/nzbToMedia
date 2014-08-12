@@ -14,11 +14,25 @@ from nzbtomedia.nzbToMediaUtil import makeDir
 def isVideoGood(videofile, status):
     fileNameExt = os.path.basename(videofile)
     fileName, fileExt = os.path.splitext(fileNameExt)
+    disable = False
     if fileExt not in nzbtomedia.MEDIACONTAINER or not nzbtomedia.FFPROBE or not nzbtomedia.CHECK_MEDIA:
-        if status:  # if the download was "failed", assume bad. If it was successful, assume good.
-            return False
-        else:
-            return True
+        disable = True
+    else:
+        test_details, res = getVideoDetails(nzbtomedia.TEST_FILE)
+        if res !=0 or test_details.get("error"):
+            disable = True
+            logger.info("DISABLED: ffprobe failed to analyse test file. Stopping corruption check.", 'TRANSCODER')
+        if test_details.get("streams"):
+            vidStreams = [item for item in test_details["streams"] if item["codec_type"] == "video"]
+            audStreams = [item for item in test_details["streams"] if item["codec_type"] == "audio"]
+            if not (len(vidStreams) > 0 and len(audStreams) > 0):
+                disable = True
+                logger.info("DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.", 'TRANSCODER')
+        if disable:
+            if status:  # if the download was "failed", assume bad. If it was successful, assume good.
+                return False
+            else:
+                return True
 
     logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
     video_details, result = getVideoDetails(videofile)

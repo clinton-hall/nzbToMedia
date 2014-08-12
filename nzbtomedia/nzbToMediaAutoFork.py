@@ -75,7 +75,8 @@ def autoFork(section, inputCategory):
                 r = requests.get(url, verify=False)
         except requests.ConnectionError:
             logger.info("Could not connect to %s:%s to perform auto-fork detection!" % (section, inputCategory))
-        if r.ok:
+            r = []
+        if r and r.ok:
             for param in params:
                 if not 'name="%s"' %(param) in r.text:
                     rem_params.append(param)
