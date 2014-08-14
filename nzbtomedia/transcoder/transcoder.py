@@ -504,7 +504,7 @@ def Transcode_directory(dirName):
         except:
             logger.error("Transcoding of video %s has failed" % (file))
 
-        if nzbtomedia.SUBSDIR:
+        if nzbtomedia.SUBSDIR and result == 0:
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]

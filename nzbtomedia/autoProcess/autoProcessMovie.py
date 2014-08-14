@@ -204,8 +204,9 @@ class autoProcessMovie:
                     logger.debug("Transcoding succeeded for files in %s" % (dirName), section)
                     dirName = newDirName
                 else:
-                    logger.warning("Transcoding failed for files in %s" % (dirName), section)
-
+                    logger.error("Transcoding failed for files in %s" % (dirName), section)
+                    return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
+                    
             if method == "manage":
                 command = "/manage.update"
             else:

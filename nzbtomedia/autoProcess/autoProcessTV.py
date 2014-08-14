@@ -215,7 +215,8 @@ class autoProcessTV:
                 logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
                 dirName = newDirName
             else:
-                logger.warning("FAILED: Transcoding failed for files in %s" % (dirName), section)
+                logger.error("FAILED: Transcoding failed for files in %s" % (dirName), section)
+                return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
 
         url = None
         if section == "SickBeard":
