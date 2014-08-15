@@ -8,7 +8,7 @@ import nzbtomedia
 
 from nzbtomedia.nzbToMediaAutoFork import autoFork
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles, remoteDir, import_subs, server_responding
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles, remoteDir, import_subs, server_responding, reportNzb
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -31,7 +31,7 @@ class autoProcessTV:
                 pass
         return missing
 
-    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None):
+    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None, failureLink=None):
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         try:
@@ -130,6 +130,10 @@ class autoProcessTV:
                 logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
+                if ('NZBNA_EVENT' in os.environ or 'NZBPP_DIRECTORY' in os.environ) and 'NZBOP_ARTICLECACHE' in os.environ:
+                    print('[NZB] MARK=BAD')
+                if failureLink:
+                    failureLink = failureLink + '&corrupt=true'
         elif clientAgent == "manual" and not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=True):
                 logger.warning("No media files found in directory %s to manually process." % (dirName), section)
                 return [0, ""]   # Success (as far as this script is concerned)
@@ -200,6 +204,8 @@ class autoProcessTV:
         if status == 0:
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
+            if failureLink:
+                reportNzb(failureLink)
             if fork in nzbtomedia.SICKBEARD_FAILED or section == "NzbDrone":
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             else:

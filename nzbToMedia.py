@@ -499,7 +499,7 @@ from nzbtomedia.nzbToMediaUserScript import external_script
 from nzbtomedia import logger, nzbToMediaDB
 
 # post-processing
-def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None):
+def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None, failureLink=None):
     if nzbtomedia.SAFE_MODE and inputDirectory == nzbtomedia.NZB_DEFAULTDIR:
         logger.error(
             'The input directory:[%s] is the Default Download Directory. Please configure category directories to prevent processing of other media.' % (
@@ -577,10 +577,10 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     if sectionName == "CouchPotato":
         result = autoProcessMovie().process(sectionName, inputDirectory, inputName, status, clientAgent, download_id,
-                                            inputCategory)
+                                            inputCategory, failureLink)
     elif sectionName in ["SickBeard", "NzbDrone"]:
         result = autoProcessTV().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
-                                                inputCategory)
+                                                inputCategory, failureLink)
     elif sectionName == "HeadPhones":
         result = autoProcessMusic().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
     elif sectionName == "Mylar":
@@ -670,7 +670,8 @@ def main(args, section=None):
         # All checks done, now launching the script.
         clientAgent = 'nzbget'
         result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBNAME'], status=status,
-                         clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'])
+                         clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'],
+                         failureLink=os.environ.get('NZBPR__DNZB_FAILURE'))
     # SABnzbd Pre 0.7.17
     elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -699,7 +700,7 @@ def main(args, section=None):
         clientAgent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd 0.7.17+")
         result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
-                         download_id='')
+                         download_id='', failureLink=args[8])
     else:
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")

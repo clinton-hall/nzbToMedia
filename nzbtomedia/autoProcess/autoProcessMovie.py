@@ -4,7 +4,7 @@ import requests
 import nzbtomedia
 
 from nzbtomedia.nzbToMediaSceneExceptions import process_all_exceptions
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir, import_subs, server_responding
+from nzbtomedia.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_download, listMediaFiles, remoteDir, import_subs, server_responding, reportNzb
 from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
@@ -97,7 +97,7 @@ class autoProcessMovie:
 
         return results
 
-    def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None):
+    def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None, failureLink=None):
 
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -189,6 +189,10 @@ class autoProcessMovie:
                 status = 0
         elif num_files > 0 and good_files < num_files:
             logger.info("Status shown as success from Downloader, but corrupt video files found. Setting as failed.", section)
+            if ('NZBNA_EVENT' in os.environ or 'NZBPP_DIRECTORY' in os.environ) and 'NZBOP_ARTICLECACHE' in os.environ:
+                print('[NZB] MARK=BAD')
+            if failureLink:
+                failureLink = failureLink + '&corrupt=true'
             status = 1
         elif clientAgent == "manual":
             logger.warning("No media files found in directory %s to manually process." % (dirName), section)
@@ -246,6 +250,8 @@ class autoProcessMovie:
 
         else:
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
+            if failureLink:
+                reportNzb(failureLink)
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s" % dirName, section)
