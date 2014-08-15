@@ -671,7 +671,7 @@ def main(args, section=None):
         clientAgent = 'nzbget'
         result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBNAME'], status=status,
                          clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'],
-                         failureLink=os.environ.get('NZBPR__DNZB_FAILURE'))
+                         failureLink=os.environ['NZBPR__DNZB_FAILURE'])
     # SABnzbd Pre 0.7.17
     elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
