@@ -251,7 +251,7 @@ class autoProcessMovie:
         else:
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
             if failureLink:
-                reportNzb(failureLink)
+                reportNzb(failureLink, clientAgent)
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder %s" % dirName, section)

@@ -22,12 +22,16 @@ from nzbtomedia.utorrent.client import UTorrentClient
 from nzbtomedia.transmissionrpc.client import Client as TransmissionClient
 from nzbtomedia import logger, nzbToMediaDB
 
-def reportNzb(failure_link):
+def reportNzb(failure_link, clientAgent):
     # Contact indexer site
     logger.info("Sending failure notification to indexer site")
-    headers = None
-    try:
+    if clientAgent == 'nzbget':
         headers = {'User-Agent' : 'NZBGet / nzbToMedia.py'}
+    elif clientAgent == 'sabnzbd':
+        headers = {'User-Agent' : 'SABnzbd / nzbToMedia.py'}
+    else:
+        return
+    try:
         r = requests.post(failure_link, headers=headers)
     except requests.ConnectionError:
         logger.error("Unable to open URL %s" % failure_link)
