@@ -664,14 +664,17 @@ def main(args, section=None):
 
         # Check for download_id to pass to CouchPotato
         download_id = ""
+        failureLink = None
         if os.environ.has_key('NZBPR_COUCHPOTATO'):
             download_id = os.environ['NZBPR_COUCHPOTATO']
+        if os.environ.has_key('NZBPR__DNZB_FAILURE'):
+            failureLink = os.environ['NZBPR__DNZB_FAILURE']
 
         # All checks done, now launching the script.
         clientAgent = 'nzbget'
         result = process(os.environ['NZBPP_DIRECTORY'], inputName=os.environ['NZBPP_NZBNAME'], status=status,
                          clientAgent=clientAgent, download_id=download_id, inputCategory=os.environ['NZBPP_CATEGORY'],
-                         failureLink=os.environ['NZBPR__DNZB_FAILURE'])
+                         failureLink=failureLink)
     # SABnzbd Pre 0.7.17
     elif len(args) == nzbtomedia.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
