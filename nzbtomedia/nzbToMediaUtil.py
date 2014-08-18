@@ -568,13 +568,13 @@ def getDirs(section, subsection, link = 'hard'):
             except Exception as e:
                 logger.error("Failed to move %s to its own directory: %s" % (os.path.split(mediafile)[1], e))
 
-        removeEmptyFolders(path, removeRoot=False)
+        #removeEmptyFolders(path, removeRoot=False)
 
         if os.listdir(path):
             for dir in [os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isdir(os.path.join(path, o))]:
                 sync = [ o for o in os.listdir(dir) if os.path.splitext(o)[1] == '.!sync' ]
-                if len(sync) > 0:
+                if len(sync) > 0 or len(os.listdir(dir)) == 0:
                     continue
                 folders.extend([dir])
         return folders
