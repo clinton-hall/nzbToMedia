@@ -28,11 +28,11 @@ def isVideoGood(videofile, status):
             if not (len(vidStreams) > 0 and len(audStreams) > 0):
                 disable = True
                 logger.info("DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.", 'TRANSCODER')
-        if disable:
-            if status:  # if the download was "failed", assume bad. If it was successful, assume good.
-                return False
-            else:
-                return True
+    if disable:
+        if status:  # if the download was "failed", assume bad. If it was successful, assume good.
+            return False
+        else:
+            return True
 
     logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
     video_details, result = getVideoDetails(videofile)
