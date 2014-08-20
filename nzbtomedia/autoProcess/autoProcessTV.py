@@ -295,6 +295,9 @@ class autoProcessTV:
                 "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 
                 (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
                 return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+            elif status != 0:
+                logger.debug("The Failed download has been processed by NZBDrone.", section)
+                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
             else:
                 # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
                 logger.warning(
