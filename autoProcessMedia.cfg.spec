@@ -6,7 +6,7 @@
     version_notify = 1
     # Enable/Disable automatic updates
     auto_update = 0
-    # Set to where your git executable is located
+    # Set to the full path to the git executable
     git_path =
     # GitHUB user for repo
     git_user =
@@ -20,7 +20,7 @@
     log_db = 0
     # Enable/Disable logging environment variables to nzbtomedia.log (helpful to track down errors calling external tools.)
     log_env = 0
-    # Set to where your ffmpeg/ffprobe executables are located
+    # Set to the directory where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
     # Enable/Disable media file checking using ffprobe.
     check_media = 1
