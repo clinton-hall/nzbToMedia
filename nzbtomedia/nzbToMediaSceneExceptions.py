@@ -53,7 +53,7 @@ def reverse_filename(filename, dirname, name):
     na_parts = season_pattern.search(head)
     if na_parts is not None:
         word_p = word_pattern.findall(na_parts.group(2))
-        if word_P:
+        if word_p:
             new_words = ""
             for wp in word_p:
                 if wp[0] == ".":
