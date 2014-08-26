@@ -130,7 +130,7 @@ class autoProcessTV:
                 logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
-                if ('NZBNA_EVENT' in os.environ or 'NZBPP_DIRECTORY' in os.environ) and 'NZBOP_ARTICLECACHE' in os.environ:
+                if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                     print('[NZB] MARK=BAD')
                 if failureLink:
                     failureLink = failureLink + '&corrupt=true'

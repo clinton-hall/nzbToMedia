@@ -189,7 +189,7 @@ class autoProcessMovie:
                 status = 0
         elif num_files > 0 and good_files < num_files:
             logger.info("Status shown as success from Downloader, but corrupt video files found. Setting as failed.", section)
-            if ('NZBNA_EVENT' in os.environ or 'NZBPP_DIRECTORY' in os.environ) and 'NZBOP_ARTICLECACHE' in os.environ:
+            if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
             if failureLink:
                 failureLink = failureLink + '&corrupt=true'

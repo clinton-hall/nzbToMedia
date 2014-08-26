@@ -1,5 +1,13 @@
 Change_LOG / History
 
+V10.6 26/08/2014
+
+Impacts All
+Bug Fixes.
+
+Impacts NZBs
+Added FailureLink style feedback to dognzb for failed and corrupt downloads.
+
 V10.5 05/08/2014
 
 Impacts All
