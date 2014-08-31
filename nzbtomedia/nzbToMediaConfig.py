@@ -42,6 +42,10 @@ class Section(configobj.Section):
 
             if not value:
                 del to_return[subsection]
+            else:
+                for category in to_return[subsection]:
+                    if category != key:
+                        del to_return[subsection][category]
 
         # cleanout empty sections and subsections
         for key in [k for (k, v) in to_return.items() if not v]:

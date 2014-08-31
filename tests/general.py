@@ -17,8 +17,10 @@ else:
     print "FFPROBE FAILED"
 
 test = nzbtomedia.CFG['SickBeard','NzbDrone']['tv'].isenabled()
+print test
 section = nzbtomedia.CFG.findsection('tv').isenabled()
 print section
+print len(section)
 fork, fork_params = autoFork('SickBeard', 'tv')
 
 if server_responding("http://127.0.0.1:5050"):
