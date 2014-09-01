@@ -290,9 +290,9 @@ def buildCommands(file, newDir):
             if nzbtomedia.ACHANNELS2 and channels and channels > nzbtomedia.ACHANNELS2:
                 audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
             if nzbtomedia.ABITRATE2 and not (nzbtomedia.ABITRATE2 * 0.9 < bitrate < nzbtomedia.ABITRATE2 * 1.1):
-                audio_cmd.extend(['-b:a' + str(used_audio), str(nzbtomedia.ABITRATE2)])
+                audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE2)])
             if nzbtomedia.OUTPUTQUALITYPERCENT:
-                audio_cmd.extend(['-q:a' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+                audio_cmd.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
 
         if nzbtomedia.AINCLUDE and audio3 and nzbtomedia.ACODEC3:
             for audio in audioStreams:
