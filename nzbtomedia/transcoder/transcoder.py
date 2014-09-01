@@ -382,6 +382,8 @@ def buildCommands(file, newDir):
             map_cmd.extend(['-map', n])
             n += 1
 
+    if nzbtomedia.GENERALOPTS:
+        command.extend(nzbtomedia.GENERALOPTS)
     command.extend(map_cmd)
     command.extend(video_cmd)
     command.extend(audio_cmd)
