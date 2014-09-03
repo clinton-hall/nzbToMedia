@@ -159,7 +159,6 @@ def buildCommands(file, newDir):
         try:
             framerate = float(fr.split('/')[0])/float(fr.split('/')[1])
         except: framerate = 0
-        vid_cmds = []
         if codec in nzbtomedia.VCODEC_ALLOW or not nzbtomedia.VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
         else:
@@ -178,7 +177,9 @@ def buildCommands(file, newDir):
                if h_scale != 1:
                    video_cmd.extend(['-vf', 'scale=' + scale])
         if ('-vf' in video_cmd or '-r' in video_cmd) and video_cmd[1] == 'copy':
-            video_cmd[1] = nzbtomedia.VCODEC       
+            video_cmd[1] = nzbtomedia.VCODEC
+        if nzbtomedia.VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
+            video_cmd = ['-c:v', 'copy']  
         map_cmd.extend(['-map', '0:' + str(video["index"])])
         break  # Only one video needed
 
