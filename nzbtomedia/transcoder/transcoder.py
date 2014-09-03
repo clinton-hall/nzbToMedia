@@ -132,7 +132,7 @@ def buildCommands(file, newDir):
         elif nzbtomedia.ALLOWSUBS:  # Not every subtitle codec can be used for every video container format!
             sub_cmd.extend(['-c:s', 'copy'])
         else:  # http://en.wikibooks.org/wiki/FFMPEG_An_Intermediate_Guide/subtitle_options
-            sub_cmd.extend('-sn')  # Don't copy the subtitles over
+            sub_cmd.extend(['-sn'])  # Don't copy the subtitles over
   
         if nzbtomedia.OUTPUTFASTSTART:
             other_cmd.extend(['-movflags', '+faststart'])
@@ -357,8 +357,8 @@ def buildCommands(file, newDir):
                 continue
             map_cmd.extend(['-map', '0:' + str(sub["index"])])
             s_mapped.extend([sub["index"]]) 
-    if not nzbtomedia.ALLOWSUBS:
-        sub_cmd.extend('-sn')
+    if not nzbtomedia.ALLOWSUBS or not s_mapped:
+        sub_cmd.extend(['-sn'])
     else:       
         if nzbtomedia.SCODEC:
             sub_cmd.extend(['-c:s', nzbtomedia.SCODEC])
