@@ -243,8 +243,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         try:
             if os.environ.has_key('NZBPO_NDCATEGORY') and os.environ.has_key('NZBPO_SBCATEGORY'):
-                if os.environ('NZBPO_NDCATEGORY') == os.environ('NZBPO_SBCATEGORY'):
-                    logger.warning("%s category is set for SickBeard and NzbDrone. Please check your config in NZBGet" % (os.environ('NZBPO_NDCATEGORY')))
+                if os.environ['NZBPO_NDCATEGORY'] == os.environ['NZBPO_SBCATEGORY']:
+                    logger.warning("%s category is set for SickBeard and NzbDrone. Please check your config in NZBGet" % (os.environ['NZBPO_NDCATEGORY']))
 
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
