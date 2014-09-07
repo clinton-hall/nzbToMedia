@@ -334,6 +334,7 @@ def initialize(section=None):
 
     REMOTEPATHS = CFG["Network"]["mount_points"] or None
     if REMOTEPATHS:
+        if isinstance(REMOTEPATHS, list): REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
 
     devnull = open(os.devnull, 'w')
