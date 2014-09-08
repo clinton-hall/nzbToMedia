@@ -652,7 +652,7 @@ def cleanDir(path, section, subsection):
     try:
         shutil.rmtree(path, onerror=onerror)
     except:
-        logger.error("Unable to delete directory %s" % (dirName))
+        logger.error("Unable to delete directory %s" % (path))
 
 def create_torrent_class(clientAgent):
     # Hardlink solution for Torrents
