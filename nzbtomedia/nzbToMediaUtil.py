@@ -180,7 +180,11 @@ def is_minSize(inputName, minSize):
     # audio files we need to check directory size not file size
     inputSize = os.path.getsize(inputName)
     if fileExt in (nzbtomedia.AUDIOCONTAINER):
-        inputSize = getDirSize(os.path.dirname(inputName))
+        try:
+            inputSize = getDirSize(os.path.dirname(inputName))
+        except:
+            logger.error("Failed to get file size for %s", % (inputName))
+            return True
 
     # Ignore files under a certain size
     if inputSize > minSize * 1048576:
