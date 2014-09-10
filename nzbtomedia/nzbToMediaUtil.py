@@ -183,7 +183,7 @@ def is_minSize(inputName, minSize):
         try:
             inputSize = getDirSize(os.path.dirname(inputName))
         except:
-            logger.error("Failed to get file size for %s", % (inputName))
+            logger.error("Failed to get file size for %s" % (inputName), 'MINSIZE')
             return True
 
     # Ignore files under a certain size
