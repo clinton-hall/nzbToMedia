@@ -710,6 +710,8 @@ def main(args, section=None):
 
         for section, subsections in nzbtomedia.SECTIONS.items():
             for subsection in subsections:
+                if not nzbtomedia.CFG[section][subsection].isenabled():
+                    continue
                 for dirName in getDirs(section, subsection, link = 'move'):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 

@@ -99,13 +99,17 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
     pathlist = os.path.normpath(inputDirectory).split(os.sep)
 
-    try:
-        inputCategory = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
-        logger.debug("SEARCH: Found Category: %s in directory structure" % (inputCategory))
-    except IndexError:
-        inputCategory = ""
-        logger.debug("SEARCH: Could not find a category in the directory structure")
-
+    if inputCategory and inputCategory in pathlist: 
+        logger.debug("SEARCH: Found the Category: %s in directory structure" % (inputCategory))
+    elif inputCategory:
+        logger.debug("SEARCH: Could not find the category: %s in the directory structure" % (inputCategory))
+    else:
+        try:
+            inputCategory = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
+            logger.debug("SEARCH: Found Category: %s in directory structure" % (inputCategory))
+        except IndexError:
+            inputCategory = ""
+            logger.debug("SEARCH: Could not find a category in the directory structure")
     if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file
         if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
         return inputDirectory, inputName, inputCategory, root

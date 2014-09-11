@@ -648,7 +648,8 @@ def initialize(section=None):
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
-    map(CATEGORIES.extend,([subsection.sections for section,subsection in SECTIONS.items()]))
+    for section,subsections in SECTIONS.items():
+        CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
     CATEGORIES = list(set(CATEGORIES))
 
     # create torrent class
