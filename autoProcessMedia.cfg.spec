@@ -18,8 +18,10 @@
     log_debug = 0
     # Enable/Disable logging database messages to nzbtomedia.log
     log_db = 0
-    # Enable/Disable logging environment variables to nzbtomedia.log (helpful to track down errors calling external tools.)
+    # Enable/Disable logging environment variables to debug nzbtomedia.log (helpful to track down errors calling external tools.)
     log_env = 0
+    # Enable/Disable logging git output to debug nzbtomedia.log (helpful to track down update failures.)
+    log_git = 0
     # Set to the directory where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
     # Enable/Disable media file checking using ffprobe.
@@ -282,7 +284,7 @@
     generalOptions =
     # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
     # If you want to use your own profile, leave this blank and set the remaining options below.
-    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p
+    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv
     outputDefault =
     #### Define custom settings below.
     outputVideoExtension = .mp4

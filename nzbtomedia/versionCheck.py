@@ -171,7 +171,8 @@ class GitUpdateManager(UpdateManager):
 
             if output:
                 output = output.strip()
-            logger.log(u"git output: " + output, logger.DEBUG)
+            if nzbtomedia.LOG_GIT:
+                logger.log(u"git output: " + output, logger.DEBUG)
 
         except OSError:
             logger.log(u"Command " + cmd + " didn't work")
@@ -182,15 +183,18 @@ class GitUpdateManager(UpdateManager):
             exit_status = 0
 
         elif exit_status == 1:
-            logger.log(cmd + u" returned : " + output, logger.DEBUG)
+            if nzbtomedia.LOG_GIT:
+                logger.log(cmd + u" returned : " + output, logger.DEBUG)
             exit_status = 1
 
         elif exit_status == 128 or 'fatal:' in output or err:
-            logger.log(cmd + u" returned : " + output, logger.DEBUG)
+            if nzbtomedia.LOG_GIT:
+                logger.log(cmd + u" returned : " + output, logger.DEBUG)
             exit_status = 128
 
         else:
-            logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.DEBUG)
+            if nzbtomedia.LOG_GIT:
+                logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.DEBUG)
             exit_status = 1
 
         return (output, err, exit_status)

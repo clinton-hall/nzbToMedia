@@ -71,6 +71,7 @@ CFG = None
 LOG_DEBUG = None
 LOG_DB = None
 LOG_ENV = None
+LOG_GIT = None
 SYS_ENCODING = None
 
 AUTO_UPDATE = None
@@ -190,7 +191,7 @@ def initialize(section=None):
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENTAGENT, USELINK, OUTPUTDIRECTORY, \
         NOFLATTEN, UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, \
         TRANSMISSIONHOST, TRANSMISSIONPORT, TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, \
-        METACONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, \
+        METACONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, LOG_GIT, \
         __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, GIT_PATH, GIT_USER, \
         GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
@@ -261,6 +262,7 @@ def initialize(section=None):
     LOG_DEBUG = int(CFG['General']['log_debug'])
     LOG_DB = int(CFG['General']['log_db'])
     LOG_ENV = int(CFG['General']['log_env'])
+    LOG_GIT = int(CFG['General']['log_git'])
 
     if LOG_ENV:
         for item in os.environ:
@@ -532,6 +534,14 @@ def initialize(section=None):
             'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':160000, 'ACHANNELS':2,
             'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
             'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
+            'SCODEC':'mov_text'
+            },
+        'mkv':{
+            'VEXTENSION':'.mkv','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,
+            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
+            'ACODEC':'dts','ACODEC_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE':None, 'ACHANNELS':8,
+            'ACODEC2':'ac3','ACODEC2_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE2':None, 'ACHANNELS2':8,
+            'ACODEC3':'ac3','ACODEC3_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE3':None, 'ACHANNELS3':8,
             'SCODEC':'mov_text'
             }
         }
