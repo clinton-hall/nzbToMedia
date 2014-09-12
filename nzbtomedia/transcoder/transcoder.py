@@ -517,10 +517,10 @@ def ripISO(item, newDir, name, bitbucket):
         result = call(cmd, stdout=bitbucket, stderr=bitbucket)
         if os.path.isdir(os.path.join(temp_iso, 'VIDEO_TS')):
             vtsPath = os.path.join(temp_iso, 'VIDEO_TS')
-            newFiles.extend(combineVTS(vtsPath, newDir, name))
+            newFiles.extend(combineVTS(vtsPath, newDir, name, bitbucket))
         else:
             logger.error("No VIDEO_TS folder found in .iso file %s" % (item), "TRANSCODER")
-            return [failure_dir]
+            newFiles = [failure_dir]
     except:
         logger.error("Failed to mount .iso file %s" % (item), "TRANSCODER")
         return [failure_dir]
@@ -530,52 +530,39 @@ def ripISO(item, newDir, name, bitbucket):
     else:
         cmd = ['umount', temp_iso]
     try:
-        logger.debug("Attempting to unmount .iso file" % (item), "TRANSCODER")
+        logger.debug("Attempting to unmount .iso file %s" % (item), "TRANSCODER")
         print_cmd(cmd)
         result = call(cmd, stdout=bitbucket, stderr=bitbucket)
         if not platform.system() == 'Windows': 
             os.unlink(temp_iso)
     except:
-        logger.error("Failed to unmount .iso file" % (item), "TRANSCODER") 
+        logger.error("Failed to unmount .iso file %s" % (item), "TRANSCODER") 
     return newFiles
 
 def combineVTS(vtsPath, newDir, name, bitbucket):
     newFiles = []
     failure_dir = '/this/is/not/real'
     for n in range(99):
-        if platform.system() == 'Windows':
-            cmd = ['copy', '/b']
-        else: 
-            cmd = ['cat']
-        cmd2 = []
+        files = []
         m = 1
         while True:
             if os.path.isfile(os.path.join(vtsPath, 'VTS_0%s_%s.VOB' % (str(n+1), str(m)))):
-                cmd.append(os.path.join(vtsPath, 'VTS_0%s_%s.VOB' % (str(n+1), str(m))))
+                files.append(os.path.join(vtsPath, 'VTS_0%s_%s.VOB' % (str(n+1), str(m))))
                 m += 1
             else:
                 break
-        if not cmd2:
+        if not files:
             break
-        elif platform.system() == 'Windows':
-            for e in cmd2:
-                cmd.append(e)
-                cmd.append('+')
-            cmd.pop()
-        else:
-            cmd.extend(cmd2)
-        logger.debug("Attempting to extract video track %s from disk image" % (str(n)), "TRANSCODER")
+        logger.debug("Attempting to extract video track %s from disk image" % (str(n+1)), "TRANSCODER")
         newfile = os.path.join(newDir, '%s.cd%s.vob' % (name, str(n+1)))
-        if platform.system() == 'Windows':
-            cmd.append(newfile)
-        else:
-            cmd.extend(['>', newfile])
         try:
-            print_cmd(cmd)
-            result = call(cmd, stdout=bitbucket, stderr=bitbucket)
+            f = open(newfile, "wb")
+            for file in files:
+                shutil.copyfileobj(open(file, 'rb'), f)
+            f.close()
             newFiles.append(newfile)
         except:
-            logger.debug("Failed to extract video track %s from disk image" % (str(n)), "TRANSCODER")
+            logger.debug("Failed to extract video track %s from disk image" % (str(n+1)), "TRANSCODER")
             return [failure_dir]
     return newFiles
 
@@ -605,7 +592,7 @@ def Transcode_directory(dirName):
     List, remList, newList, success = processList(List, newDir, movieName, bitbucket)
     if not success:
         bitbucket.close()
-        return final_result, dirName
+        return 1, dirName
 
     for file in List:
         if os.path.splitext(file)[1] in nzbtomedia.IGNOREEXTENSIONS:
