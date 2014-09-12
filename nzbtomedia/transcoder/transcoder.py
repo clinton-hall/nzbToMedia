@@ -493,7 +493,7 @@ def processList(List, newDir, name, bitbucket):
         for item in remList:
             List.remove(item)
         logger.debug("Successfully extracted .vob file %s from disk image" % (newList[0]), "TRANSCODER")
-    else:
+    elif newList and not success:
         newList = []
         remList = []
         logger.error("Failed extracting .vob files from disk image. Stopping transcoding.", "TRANSCODER")
@@ -596,16 +596,17 @@ def Transcode_directory(dirName):
         makeDir(newDir)
     else:
         newDir = dirName
-    movieName = os.path.splitext(os.path.split(dirName)[1])[0]
-    List = nzbtomedia.listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False)
-    List, remList, newList, success = processList(List, newDir, movieName, bitbucket)
-    if not success:
-        return final_result, dirName
-
     if platform.system() == 'Windows':
         bitbucket = open('NUL')
     else:
         bitbucket = open('/dev/null')
+    movieName = os.path.splitext(os.path.split(dirName)[1])[0]
+    List = nzbtomedia.listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False)
+    List, remList, newList, success = processList(List, newDir, movieName, bitbucket)
+    if not success:
+        bitbucket.close()
+        return final_result, dirName
+
     for file in List:
         if os.path.splitext(file)[1] in nzbtomedia.IGNOREEXTENSIONS:
             continue
