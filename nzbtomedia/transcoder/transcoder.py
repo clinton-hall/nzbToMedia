@@ -65,6 +65,7 @@ def getVideoDetails(videofile):
         print_format = '-print_format'
     try:
         command = [nzbtomedia.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
+        print_cmd(command)
         proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
@@ -81,10 +82,16 @@ def getVideoDetails(videofile):
             logger.error("Checking [%s] has failed" % (videofile), 'TRANSCODER')
     return video_details, result
 
-def buildCommands(file, newDir):
+def buildCommands(file, newDir, movieName):
+    inputFile = file
+    if '"concat:' in file:
+        file = file.split('|')[0].replace('concat:', '')
     video_details, result = getVideoDetails(file)
     dir, name = os.path.split(file)
     name, ext = os.path.splitext(name)
+    check = re.match("VTS_([0-9][0-9])_[0-9]+", name)
+    if check:
+        name = ('%s.cd%s' % (movieName, check.groups()[0]))
     if ext == nzbtomedia.VEXTENSION and newDir == dir: # we need to change the name to prevent overwriting itself.
         nzbtomedia.VEXTENSION = '-transcoded' + nzbtomedia.VEXTENSION # adds '-transcoded.ext'
 
@@ -344,7 +351,7 @@ def buildCommands(file, newDir):
                     if sunStreams[index]["index"] == sub["index"]:
                         subloc = index
                         break
-                video_cmd.extend(['-vf', 'subtitles=' + file + ":si=" + subloc])
+                video_cmd.extend(['-vf', 'subtitles=' + inputFile + ":si=" + subloc])
                 burnt = 1
             if not nzbtomedia.ALLOWSUBS:
                 break
@@ -377,7 +384,7 @@ def buildCommands(file, newDir):
     if nzbtomedia.GENERALOPTS:
         command.extend(nzbtomedia.GENERALOPTS)
 
-    command.extend([ '-i', file])
+    command.extend([ '-i', inputFile])
 
     if nzbtomedia.SEMBED:
         filenum = 1
@@ -460,17 +467,20 @@ def extract_subs(file, newfilePath, bitbucket):
         else:
             logger.error("Extracting subtitles has failed")
 
-def processList(List, newDir, name, bitbucket):
+def processList(List, newDir, bitbucket):
     remList = []
     newList = []
     delList = []
+    mounted = []
     vtsPath = None
     success = True
     for item in List:
         newfile = None
         if os.path.splitext(item)[1].lower() == '.iso' and not '.iso' in nzbtomedia.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip .iso image: %s" % (item), "TRANSCODER")
-            newList.extend(ripISO(item, newDir, name, bitbucket))
+            temp_list, temp_mounted = ripISO(item, newDir, bitbucket)
+            newList.extend(temp_list)
+            mounted.extend(temp_mounted)
             remList.append(item)
         elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and not '.vob' in nzbtomedia.IGNOREEXTENSIONS:
             logger.debug("Found VIDEO_TS image file: %s" % (item), "TRANSCODER")
@@ -483,9 +493,9 @@ def processList(List, newDir, name, bitbucket):
             remList.append(item)
         else: continue     
     if vtsPath:
-        newList.extend(combineVTS(vtsPath, newDir, name, bitbucket))
+        newList.extend(combineVTS(vtsPath))
     for file in newList:
-        if not os.path.isfile(file):
+        if not 'concat:' in file and not os.path.isfile(file):
             success = False
             break
     if success and newList:
@@ -497,73 +507,71 @@ def processList(List, newDir, name, bitbucket):
         newList = []
         remList = []
         logger.error("Failed extracting .vob files from disk image. Stopping transcoding.", "TRANSCODER")
-    return List, remList, newList, success 
+    return List, remList, newList, mounted, success 
 
-def ripISO(item, newDir, name, bitbucket):
+def ripISO(item, newDir, bitbucket):
     newFiles = []
-    failure_dir = '/this/is/not/real'
+    mounted = []
+    failure_dir = 'failure'
 
     # Mount the ISO in your OS and call combineVTS.
     if platform.system() == 'Windows':
         temp_iso = item  # pfm mounts in place.
-        cmd = ['pfm', 'mount', item]
+        cmd = ['pfm', 'mount', temp_iso]
     else:
-        temp_iso = os.path.join(newDir, 'tmp_iso')
+        temp_iso = os.path.join(newDir, 'temp_iso')
         os.makedirs(temp_iso)
         cmd = ['mount', '-o',  'rw', 'loop', item, temp_iso]
     try:
         logger.debug("Attempting to mount .iso file %s to extract .vob" % (item), "TRANSCODER")
         print_cmd(cmd)
         result = call(cmd, stdout=bitbucket, stderr=bitbucket)
+        mounted.extend([temp_iso])
         if os.path.isdir(os.path.join(temp_iso, 'VIDEO_TS')):
             vtsPath = os.path.join(temp_iso, 'VIDEO_TS')
-            newFiles.extend(combineVTS(vtsPath, newDir, name, bitbucket))
+            newFiles.extend(combineVTS(vtsPath))
         else:
             logger.error("No VIDEO_TS folder found in .iso file %s" % (item), "TRANSCODER")
             newFiles = [failure_dir]
     except:
         logger.error("Failed to mount .iso file %s" % (item), "TRANSCODER")
-        return [failure_dir]
-    # Unmount and delete.
-    if platform.system() == 'Windows':
-        cmd = ['pfm', 'unmount', item]
-    else:
-        cmd = ['umount', temp_iso]
-    try:
-        logger.debug("Attempting to unmount .iso file %s" % (item), "TRANSCODER")
-        print_cmd(cmd)
-        result = call(cmd, stdout=bitbucket, stderr=bitbucket)
-        if not platform.system() == 'Windows': 
-            os.unlink(temp_iso)
-    except:
-        logger.error("Failed to unmount .iso file %s" % (item), "TRANSCODER") 
-    return newFiles
+        newFiles = [failure_dir]  
+    return newFiles, mounted
 
-def combineVTS(vtsPath, newDir, name, bitbucket):
+def unmountISO(mounted, bitbucket):
+    for item in mounted:
+        # Unmount and delete.
+        if platform.system() == 'Windows':
+            cmd = ['pfm', 'unmount', item]
+        else:
+            cmd = ['umount', item]
+        try:
+            logger.debug("Attempting to unmount .iso file %s" % (item), "TRANSCODER")
+            print_cmd(cmd)
+            result = call(cmd, stdout=bitbucket, stderr=bitbucket)
+            if not platform.system() == 'Windows': 
+                os.unlink(item)
+        except:
+            logger.error("Failed to unmount .iso file %s" % (item), "TRANSCODER")
+
+def combineVTS(vtsPath):
     newFiles = []
-    failure_dir = '/this/is/not/real'
     for n in range(99):
-        files = []
+        concat = ''
         m = 1
         while True:
-            if os.path.isfile(os.path.join(vtsPath, 'VTS_0%s_%s.VOB' % (str(n+1), str(m)))):
-                files.append(os.path.join(vtsPath, 'VTS_0%s_%s.VOB' % (str(n+1), str(m))))
+            if n + 1 < 10:
+                vtsName = 'VTS_0%s_%s.VOB' % (str(n+1), str(m))
+            else:
+                vtsName = 'VTS_%s_%s.VOB' % (str(n+1), str(m))
+            if os.path.isfile(os.path.join(vtsPath, vtsName)):
+                concat = concat + '%s|' % (os.path.join(vtsPath, vtsName))
                 m += 1
             else:
                 break
-        if not files:
+        if not concat:
             break
-        logger.debug("Attempting to extract video track %s from disk image" % (str(n+1)), "TRANSCODER")
-        newfile = os.path.join(newDir, '%s.cd%s.vob' % (name, str(n+1)))
-        try:
-            f = open(newfile, "wb")
-            for file in files:
-                shutil.copyfileobj(open(file, 'rb'), f)
-            f.close()
-            newFiles.append(newfile)
-        except:
-            logger.debug("Failed to extract video track %s from disk image" % (str(n+1)), "TRANSCODER")
-            return [failure_dir]
+        newFiles.append('concat:%s' % concat[:-1])
     return newFiles
 
 def print_cmd(command):
@@ -589,15 +597,16 @@ def Transcode_directory(dirName):
         bitbucket = open('/dev/null')
     movieName = os.path.splitext(os.path.split(dirName)[1])[0]
     List = nzbtomedia.listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False)
-    List, remList, newList, success = processList(List, newDir, movieName, bitbucket)
+    List, remList, newList, mounted, success = processList(List, newDir, bitbucket)
     if not success:
+        unmountISO(mounted, bitbucket)
         bitbucket.close()
         return 1, dirName
 
     for file in List:
         if os.path.splitext(file)[1] in nzbtomedia.IGNOREEXTENSIONS:
             continue
-        command = buildCommands(file, newDir)
+        command = buildCommands(file, newDir, movieName)
         newfilePath = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
@@ -616,7 +625,7 @@ def Transcode_directory(dirName):
         print_cmd(command)
         result = 1 # set result to failed in case call fails.
         try:
-            result = call(command, stdout=bitbucket, stderr=bitbucket)
+            result = call(command) #, stdout=bitbucket, stderr=bitbucket)
         except:
             logger.error("Transcoding of video %s has failed" % (file))
 
@@ -642,6 +651,7 @@ def Transcode_directory(dirName):
             logger.error("Transcoding of video %s to %s failed" % (file, newfilePath))
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
+    unmountISO(mounted, bitbucket)
     if final_result == 0 and not nzbtomedia.DUPLICATE:
         for file in remList:
             try:
