@@ -178,11 +178,6 @@ class autoProcessMovie:
             if transcoder.isVideoGood(video, status):
                 import_subs(video)
                 good_files += 1
-                if not release and not ".cp(tt" in video and imdbid:
-                    videoName, videoExt = os.path.splitext(video)
-                    video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
-                    logger.debug('Renaming: %s to: %s' % (video, video2))
-                    os.rename(video, video2)
         if num_files > 0 and good_files == num_files:
             if status:
                 logger.info("Status shown as failed from Downloader, but %s valid video files found. Setting as success." % (str(good_files)), section)
@@ -210,7 +205,12 @@ class autoProcessMovie:
                 else:
                     logger.error("Transcoding failed for files in %s" % (dirName), section)
                     return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
-                    
+            for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False): 
+                if not release and not ".cp(tt" in video and imdbid:
+                    videoName, videoExt = os.path.splitext(video)
+                    video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
+                    logger.debug('Renaming: %s to: %s' % (video, video2))
+                    os.rename(video, video2)        
             if method == "manage":
                 command = "/manage.update"
             else:
