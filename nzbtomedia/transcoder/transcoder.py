@@ -10,7 +10,7 @@ import shutil
 import re
 from subprocess import call
 from nzbtomedia import logger
-from nzbtomedia.nzbToMediaUtil import makeDir
+from nzbtomedia.nzbToMediaUtil import makeDir, copy_link
 
 def isVideoGood(videofile, status):
     fileNameExt = os.path.basename(videofile)
@@ -476,17 +476,27 @@ def processList(List, newDir, bitbucket):
     success = True
     for item in List:
         newfile = None
-        if os.path.splitext(item)[1].lower() == '.iso' and not '.iso' in nzbtomedia.IGNOREEXTENSIONS:
+        ext = os.path.splitext(item)[1].lower()
+        if ext == '.iso' and not '.iso' in nzbtomedia.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip .iso image: %s" % (item), "TRANSCODER")
             temp_list, temp_mounted = ripISO(item, newDir, bitbucket)
             newList.extend(temp_list)
             mounted.extend(temp_mounted)
             remList.append(item)
+        elif ext == '.bin' and not '.bin' in nzbtomedia.IGNOREEXTENSIONS:
+            logger.debug("Attempting to rip .bin image: %s" % (item), "TRANSCODER")
+            item2 = '%s.iso' % (os.path.splitext(item)[0])
+            copy_link(item, item2, hard)
+            temp_list, temp_mounted = ripISO(item2, newDir, bitbucket)
+            newList.extend(temp_list)
+            mounted.extend(temp_mounted)
+            remList.extend([item, item2])
         elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and not '.vob' in nzbtomedia.IGNOREEXTENSIONS:
             logger.debug("Found VIDEO_TS image file: %s" % (item), "TRANSCODER")
             if not vtsPath:
-                vtsPath = re.match(".+VIDEO_TS",item).group()
-                if not vtsPath:
+                try:
+                    vtsPath = re.match(".+VIDEO_TS",item).group()
+                except:
                     vtsPath = os.path.split(item)[0]
             remList.append(item)
         elif re.match(".+VIDEO_TS.", item) or re.match(".+VTS_[0-9][0-9]_[0-9].", item):
