@@ -354,3 +354,9 @@
     # enter the full path to a text file containing passwords to be used for extraction attempts.
     # In the passwords file, every password should be on a new line
     PassWordFile =
+
+[Custom]
+    # enter a list (comma separated) of Group Tags you want removed from filenames to help with subtitle matching.
+    # e.g remove_group = [rarbag],-NZBgeek
+    # be careful if your "group" is a common "real" word. Please report if you have any group replacments that would fall in this category.
+    remove_group = 

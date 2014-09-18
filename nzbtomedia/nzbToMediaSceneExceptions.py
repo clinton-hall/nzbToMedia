@@ -1,5 +1,6 @@
 import os
 import re
+import nzbtomedia
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
@@ -20,6 +21,7 @@ char_replace = [[r"(\w)1\.(\w)",r"\1i\2"]
 def process_all_exceptions(name, dirname):
     rename_script(dirname)
     for filename in listMediaFiles(dirname):
+        newfilename = None
         parentDir = os.path.dirname(filename)
         head, fileExtension = os.path.splitext(os.path.basename(filename))
         if reverse_pattern.search(head) is not None:
@@ -27,8 +29,33 @@ def process_all_exceptions(name, dirname):
         elif garbage_name.search(head) is not None:
             exception = replace_filename
         else:
-            continue
-        exception(filename, parentDir, name)
+            exception = None
+            newfilename = filename
+        if not newfilename:
+            newfilename = exception(filename, parentDir, name)
+        if nzbtomedia.GROUPS:
+            newfilename = strip_groups(newfilename)
+        if newfilename != filename:
+            rename_file(filename, newfilename) 
+
+def strip_groups(filename):
+    if not nzbtomedia.GROUPS:
+        return filename
+    head, fileExtension = os.path.splitext(os.path.basename(filename))
+    newname = head.replace(' ', '.')
+    for group in nzbtomedia.GROUPS:
+        newname = newname.replace(group, '')
+        newname = newname.replace('[]', '') 
+    newfile = newname + fileExtension
+    newfilePath = os.path.join(dirname, newfile)
+    return newfilePath
+
+def rename_file(filename, newfilePath):
+    logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
+    try:
+        os.rename(filename, newfilePath)
+    except Exception,e:
+        logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 def replace_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
@@ -43,10 +70,7 @@ def replace_filename(filename, dirname, name):
         return 
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
-    try:
-        os.rename(filename, newfilePath)
-    except Exception,e:
-        logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
+    return newfilePath
 
 def reverse_filename(filename, dirname, name):
     head, fileExtension = os.path.splitext(os.path.basename(filename))
@@ -70,10 +94,7 @@ def reverse_filename(filename, dirname, name):
     logger.debug("Reversing filename %s to %s" % (head, newname), "EXCEPTION")
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
-    try:
-        os.rename(filename, newfilePath)
-    except Exception,e:
-        logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
+    return newfilePath
 
 def rename_script(dirname):
     rename_file = ""
