@@ -531,7 +531,7 @@ def ripISO(item, newDir, bitbucket):
     else:
         temp_iso = os.path.join(newDir, 'temp_iso')
         os.makedirs(temp_iso)
-        cmd = ['mount', '-o',  'rw', 'loop', item, temp_iso]
+        cmd = ['mount', '-o', 'loop', item, temp_iso]
     try:
         logger.debug("Attempting to mount .iso file %s to extract .vob" % (item), "TRANSCODER")
         print_cmd(cmd)
