@@ -54,16 +54,16 @@ def isVideoGood(videofile, status):
             logger.info("FAILED: [%s] has %s video streams and %s audio streams. Assume corruption." % (fileNameExt, str(len(videoStreams)), str(len(audioStreams))), 'TRANSCODER')
             return False
 
-def zip_out(file, img):
+def zip_out(file, img, bitbucket):
     procin = None
     cmd = [nzbtomedia.SEVENZIP, '-so', 'e', img, file]
     try:
-        procin = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        procin = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
     except:
         logger.error("Extracting [%s] has failed" % (file), 'TRANSCODER')
     return procin
 
-def getVideoDetails(videofile, img=None):
+def getVideoDetails(videofile, img=None, bitbucket=None):
     video_details = {}
     result = 1
     file = videofile
@@ -79,7 +79,7 @@ def getVideoDetails(videofile, img=None):
         command = [nzbtomedia.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
         print_cmd(command)
         if img:
-            procin = zip_out(file, img)
+            procin = zip_out(file, img, bitbucket)
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=procin.stdout)
             procin.stdout.close()
         else:
@@ -106,7 +106,7 @@ def getVideoDetails(videofile, img=None):
             logger.error("Checking [%s] has failed" % (file), 'TRANSCODER')
     return video_details, result
 
-def buildCommands(file, newDir, movieName):
+def buildCommands(file, newDir, movieName, bitbucket):
     if isinstance(file, str):
         inputFile = file
         if '"concat:' in file:
@@ -122,7 +122,7 @@ def buildCommands(file, newDir, movieName):
     else:
         img, data = file.iteritems().next()
         name = data['name']
-        video_details, result = getVideoDetails(data['files'][0], img)
+        video_details, result = getVideoDetails(data['files'][0], img, bitbucket)
         inputFile = '-'
         file = '-'
 
@@ -551,7 +551,7 @@ def ripISO(item, newDir, bitbucket):
     try:
         logger.debug("Attempting to extract .vob from image file %s" % (item), "TRANSCODER")
         print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
         result = proc.returncode
         fileList = [ re.match(".+(VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line) ]
@@ -631,7 +631,7 @@ def Transcode_directory(dirName):
     for file in List:
         if isinstance(file, str) and os.path.splitext(file)[1] in nzbtomedia.IGNOREEXTENSIONS:
             continue
-        command = buildCommands(file, newDir, movieName)
+        command = buildCommands(file, newDir, movieName, bitbucket)
         newfilePath = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
@@ -654,10 +654,9 @@ def Transcode_directory(dirName):
                 result = call(command, stdout=bitbucket, stderr=bitbucket)
             else:
                 img, data = file.iteritems().next()
-                #procin = zip_out(data['files'][0], img)
-                proc = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket, stdin=subprocess.PIPE)
                 for vob in data['files']:
-                    procin = zip_out(vob, img)
+                    procin = zip_out(vob, img, bitbucket)
                     if procin:
                         shutil.copyfileobj(procin.stdout, proc.stdin)
                         procin.stdout.close()
