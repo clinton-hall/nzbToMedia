@@ -9,16 +9,15 @@ def extract(filePath, outputDestination):
     # Using Windows
     if platform.system() == 'Windows':
         chplocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/chp.exe')
-        sevenzipLocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/' + platform.machine() + '/7z.exe')
 
-        if not os.path.exists(sevenzipLocation):
+        if not os.path.exists(nzbtomedia.SEVENZIP):
             nzbtomedia.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
         else:
             if not os.path.exists(chplocation):
-                cmd_7zip = [sevenzipLocation, "x", "-y"]
+                cmd_7zip = [nzbtomedia.SEVENZIP, "x", "-y"]
             else:
-                cmd_7zip = [chplocation, sevenzipLocation, "x", "-y"]
+                cmd_7zip = [chplocation, nzbtomedia.SEVENZIP, "x", "-y"]
             ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
             EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix

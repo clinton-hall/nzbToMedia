@@ -166,6 +166,7 @@ SCODEC = None
 OUTPUTFASTSTART = None
 OUTPUTQUALITYPERCENT = None
 FFMPEG = None
+SEVENZIP = None
 FFPROBE = None
 CHECK_MEDIA = None
 NICENESS = []
@@ -192,7 +193,7 @@ def initialize(section=None):
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENTAGENT, USELINK, OUTPUTDIRECTORY, \
         NOFLATTEN, UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, \
         TRANSMISSIONHOST, TRANSMISSIONPORT, TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, \
-        METACONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, LOG_GIT, GROUPS, \
+        METACONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, LOG_GIT, GROUPS, SEVENZIP, \
         __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, GIT_PATH, GIT_USER, \
         GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
@@ -598,10 +599,11 @@ def initialize(section=None):
 
     PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
 
-    # Setup FFMPEG and FFPROBE locations
+    # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
+        SEVENZIP = os.path.join(PROGRAM_DIR, 'nzbtomedia/extractor/bin/' + platform.machine() + '/7z.exe')
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
@@ -615,6 +617,16 @@ def initialize(section=None):
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     else:
+        try:
+            SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
+        except: pass
+        if not SEVENZIP: 
+            try:
+                SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
+            except: pass
+        if not SEVENZIP:
+            SEVENZIP = None
+            logger.warning("Failed to locate 7zip, transcosing of disk images ane extraction of .7z files will not be possible!")
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
         elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
