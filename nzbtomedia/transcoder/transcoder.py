@@ -559,10 +559,7 @@ def ripISO(item, newDir, bitbucket):
             concat = []
             m = 1
             while True:
-                if n + 1 < 10:
-                    vtsName = 'VIDEO_TS%sVTS_0%s_%s.VOB' % (os.sep, str(n+1), str(m))
-                else:
-                    vtsName = 'VIDEO_TS%sVTS_%s_%s.VOB' % (os.sep, str(n+1), str(m))
+                vtsName = 'VIDEO_TS%sVTS_%02d_%s.VOB' % (os.sep, n+1, str(m))
                 if vtsName in fileList:
                     concat.append(vtsName)
                     m += 1
@@ -587,10 +584,7 @@ def combineVTS(vtsPath):
         concat = ''
         m = 1
         while True:
-            if n + 1 < 10:
-                vtsName = 'VTS_0%s_%s.VOB' % (str(n+1), str(m))
-            else:
-                vtsName = 'VTS_%s_%s.VOB' % (str(n+1), str(m))
+            vtsName = 'VTS_%02d_%s.VOB' % (str(n+1), str(m))
             if os.path.isfile(os.path.join(vtsPath, vtsName)):
                 concat = concat + '%s|' % (os.path.join(vtsPath, vtsName))
                 m += 1
