@@ -584,7 +584,7 @@ def combineVTS(vtsPath):
         concat = ''
         m = 1
         while True:
-            vtsName = 'VTS_%02d_%s.VOB' % (str(n+1), str(m))
+            vtsName = 'VTS_%02d_%s.VOB' % (n+1, str(m))
             if os.path.isfile(os.path.join(vtsPath, vtsName)):
                 concat = concat + '%s|' % (os.path.join(vtsPath, vtsName))
                 m += 1
