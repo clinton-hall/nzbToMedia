@@ -41,7 +41,8 @@ def process_all_exceptions(name, dirname):
 def strip_groups(filename):
     if not nzbtomedia.GROUPS:
         return filename
-    head, fileExtension = os.path.splitext(os.path.basename(filename))
+    dirname, file = os.path.split(filename)
+    head, fileExtension = os.path.splitext(file)
     newname = head.replace(' ', '.')
     for group in nzbtomedia.GROUPS:
         newname = newname.replace(group, '')
