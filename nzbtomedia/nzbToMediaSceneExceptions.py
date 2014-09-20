@@ -52,7 +52,7 @@ def strip_groups(filename):
     return newfilePath
 
 def rename_file(filename, newfilePath):
-    logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
+    logger.debug("Replacing file name %s with download name %s" % (filename, newfilePath), "EXCEPTION")
     try:
         os.rename(filename, newfilePath)
     except Exception,e:
