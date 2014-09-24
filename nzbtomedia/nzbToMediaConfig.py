@@ -187,7 +187,9 @@ class ConfigObj(configobj.ConfigObj, Section):
                     values[option] = value
                 # remove any options that we no longer need so they don't migrate into our new config
                 if not list(ConfigObj.find_key(CFG_NEW, option)):
-                    values.pop(option)
+                    try:
+                        values.pop(option)
+                    except: pass
 
             return values
 
