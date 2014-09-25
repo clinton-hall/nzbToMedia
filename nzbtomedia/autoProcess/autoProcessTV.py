@@ -31,6 +31,23 @@ class autoProcessTV:
                 pass
         return missing
 
+    def CDH(self, url2, headers):
+        r = None
+        try:
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False)
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: %s" % (url2), section)
+            return False
+        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return False
+        else:
+            try:
+                res = json.loads(r.content)
+                return res["enableCompletedDownloadHandling"]
+            except:
+                return False
+
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None, failureLink=None):
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
@@ -230,6 +247,7 @@ class autoProcessTV:
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
             url1 = "%s%s:%s%s/api/missing" % (protocol, host, port, web_root)
+            url2 = "%s%s:%s%s/api/config/downloadClient" % (protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
@@ -245,6 +263,9 @@ class autoProcessTV:
                 r = None
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
+                if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
+                    logger.debug("Complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
+                    return [0, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
                 start_numMissing = self.numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
