@@ -265,7 +265,7 @@ class autoProcessTV:
             elif section == "NzbDrone":
                 if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
                     logger.debug("Complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
-                    return [0, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
+                    return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
                 start_numMissing = self.numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
