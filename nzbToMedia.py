@@ -597,7 +597,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         if clientAgent != 'manual':
             # update download status in our DB
             update_downloadInfoStatus(inputName, 1)
-        if not sectionName == 'UserScript':
+        if not sectionName in ['UserScript', 'NzbDrone']:
             # cleanup our processing folders of any misc unwanted files and empty directories
             cleanDir(inputDirectory, sectionName, inputCategory)
 
