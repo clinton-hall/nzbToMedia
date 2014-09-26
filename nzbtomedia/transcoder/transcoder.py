@@ -99,8 +99,6 @@ def getVideoDetails(videofile, img=None, bitbucket=None):
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE)
             out, err = proc.communicate()
             result = proc.returncode
-            if procin:
-                procin.terminate()
             video_details = json.loads(out)
         except:
             logger.error("Checking [%s] has failed" % (file), 'TRANSCODER')
