@@ -603,7 +603,7 @@ def initialize(section=None):
     if platform.system() == 'Windows':
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
-        SEVENZIP = os.path.join(PROGRAM_DIR, 'nzbtomedia/extractor/bin/' + platform.machine() + '/7z.exe')
+        SEVENZIP = os.path.join(PROGRAM_DIR, 'nzbtomedia', 'extractor', 'bin', platform.machine(), '7z.exe')
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None

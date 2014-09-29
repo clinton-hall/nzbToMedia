@@ -8,7 +8,7 @@ def extract(filePath, outputDestination):
     success = 0
     # Using Windows
     if platform.system() == 'Windows':
-        chplocation = nzbtomedia.os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia/extractor/bin/chp.exe')
+        chplocation = os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia', 'extractor', 'bin', 'chp.exe')
 
         if not os.path.exists(nzbtomedia.SEVENZIP):
             nzbtomedia.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
