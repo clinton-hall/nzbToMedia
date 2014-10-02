@@ -255,6 +255,8 @@
     transcode = 0
     ###### duplicate =1 will cretae a new file. =0 will replace the original
     duplicate = 1
+    # concat. joins cd1 cd2 etc into a single video.
+    concat = 1
     ignoreExtensions = .avi,.mkv,.mp4
     # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
     outputFastStart = 0

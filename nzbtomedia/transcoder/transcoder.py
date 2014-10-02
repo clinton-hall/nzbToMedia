@@ -500,6 +500,7 @@ def processList(List, newDir, bitbucket):
     remList = []
     newList = []
     delList = []
+    combine = []
     vtsPath = None
     success = True
     for item in List:
@@ -519,9 +520,14 @@ def processList(List, newDir, bitbucket):
             remList.append(item)
         elif re.match(".+VIDEO_TS.", item) or re.match(".+VTS_[0-9][0-9]_[0-9].", item):
             remList.append(item)
+        elif nzbtomedia.CONCAT and re.match(".+[cC][dD][0-9].", item):
+            remList.append(item)
+            combine.append(item)
         else: continue     
     if vtsPath:
         newList.extend(combineVTS(vtsPath))
+    if combine:
+        newList.extend(combineCD(combine))
     for file in newList:
         if isinstance(file, str) and not 'concat:' in file and not os.path.isfile(file):
             success = False
@@ -553,6 +559,7 @@ def ripISO(item, newDir, bitbucket):
         out, err = proc.communicate()
         result = proc.returncode
         fileList = [ re.match(".+(VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line) ]
+        combined = []
         for n in range(99):
             concat = []
             m = 1
@@ -565,9 +572,14 @@ def ripISO(item, newDir, bitbucket):
                     break
             if not concat:
                 break
+            if nzbtomedia.CONCAT:
+                combined.extend(concat)
+                continue
             name = '%s.cd%s' % (os.path.splitext(os.path.split(item)[1])[0] ,str(n+1))
             newFiles.append({item: {'name': name , 'files': concat}})
-        
+        if nzbtomedia.CONCAT:
+            name = os.path.splitext(os.path.split(item)[1])[0]
+            newFiles.append({item: {'name': name , 'files': combined}})
         if not newFiles:
             logger.error("No VIDEO_TS folder found in image file %s" % (item), "TRANSCODER")
             newFiles = [failure_dir]
@@ -578,6 +590,7 @@ def ripISO(item, newDir, bitbucket):
 
 def combineVTS(vtsPath):
     newFiles = []
+    combined = ''
     for n in range(99):
         concat = ''
         m = 1
@@ -590,7 +603,26 @@ def combineVTS(vtsPath):
                 break
         if not concat:
             break
+        if nzbtomedia.CONCAT:
+            combined = combined + concat + '|'
+            continue
         newFiles.append('concat:%s' % concat[:-1])
+    if nzbtomedia.CONCAT:
+        newFiles.append('concat:%s' % combined[:-1])
+    return newFiles
+
+def combineCD(combine):
+    newFiles = []
+    for item in set([ re.match("(.+)[cC][dD][0-9].",item).groups()[0] for item in combine ]):
+        concat = ''
+        for n in range(99):
+            files = [ file for file in combine if n+1 == int(re.match(".+[cC][dD]([0-9]).",file).groups()[0]) and item in file ] 
+            if files:
+                concat = concat + files[0] + '|'
+            else:
+                break
+        if concat:
+            newFiles.append('concat:%s' % concat[:-1])
     return newFiles
 
 def print_cmd(command):
