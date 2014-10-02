@@ -490,6 +490,41 @@ def parse_transmission(args):
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
+def parse_vuze(args):
+    # vuze usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D%N%L%I%K%F"
+    try:
+        input = args[1].split(',')
+    except:
+        input = []
+    try:
+        inputDirectory = os.path.normpath(input[0])
+    except:
+        inputDirectory = ''
+    try:
+        inputName = input[1]
+    except:
+        inputName = ''
+    try:
+        inputCategory = input[2]
+    except:
+        inputCategory = ''
+    try:
+        inputHash = input[3]
+    except:
+        inputHash = ''
+    try:
+        inputID = input[3]
+    except:
+        inputID = ''
+    try:
+        if input[4] == 'single':
+            inputName = input[5]
+    except:
+        pass
+
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
+
+
 def parse_args(clientAgent, args):
     clients = {
         'other': parse_other,
@@ -497,6 +532,7 @@ def parse_args(clientAgent, args):
         'utorrent': parse_utorrent,
         'deluge': parse_deluge,
         'transmission': parse_transmission,
+        'vuze': parse_vuze,
     }
 
     try:

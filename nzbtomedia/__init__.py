@@ -316,7 +316,7 @@ def initialize(section=None):
     if isinstance(GROUPS, str): GROUPS = GROUPS.split(',')
     if GROUPS == ['']: GROUPS = None
 
-    TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | other
+    TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | vuze |other
     USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
     OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
     TORRENT_DEFAULTDIR = CFG["Torrent"]["default_downloadDirectory"]
