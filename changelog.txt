@@ -1,5 +1,19 @@
 Change_LOG / History
 
+V10.7 06/10/2014
+
+Impacts All
+Add Transcoding of iso/images and VIDEO_TS structures.
+Improved multiple session handling.
+Improve NZBDrone handling (including Torrent Branch).
+Multiple bug-fixes.
+
+Impacts NZBs
+Add custom "group" replacements to allow better subtitle searching.
+
+Impacts Torrents
+Add Vuze Torrent Client support.
+
 V10.6 26/08/2014
 
 Impacts All
