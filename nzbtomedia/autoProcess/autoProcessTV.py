@@ -13,7 +13,7 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
-    def numMissing(self, url1, params, headers):
+    def numMissing(self, url1, params, headers, section):
         r = None
         missing = 0
         try:
@@ -266,7 +266,7 @@ class autoProcessTV:
                 if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
                     logger.debug("Complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
                     return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
-                start_numMissing = self.numMissing(url1, params, headers)  # get current number of outstanding eppisodes.
+                start_numMissing = self.numMissing(url1, params, headers, section)  # get current number of outstanding eppisodes.
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
@@ -301,7 +301,7 @@ class autoProcessTV:
                 time.sleep(10 * wait_for)
                 if not os.path.exists(dirName):
                     break
-                new_numMissing = self.numMissing(url1, params, headers)
+                new_numMissing = self.numMissing(url1, params, headers, section)
                 if new_numMissing == current_numMissing:  # nothing processed since last call
                     n += 1
                 else:
