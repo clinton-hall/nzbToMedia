@@ -33,8 +33,8 @@ def reportNzb(failure_link, clientAgent):
         return
     try:
         r = requests.post(failure_link, headers=headers)
-    except requests.ConnectionError:
-        logger.error("Unable to open URL %s" % failure_link)
+    except Exception as e:
+        logger.error("Unable to open URL %s due to %s" % (failure_link, e))
     return
 
 def sanitizeName(name):
