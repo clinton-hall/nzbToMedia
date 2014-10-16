@@ -208,6 +208,10 @@ def initialize(section=None):
 
     if __INITIALIZED__:
         return False
+        
+    if os.environ.has_key('NTM_LOGFILE'):
+        LOG_FILE = os.environ['NTM_LOGFILE']
+        LOG_DIR = os.path.split(LOG_FILE)[0]
 
     if not makeDir(LOG_DIR):
         print("No log folder, logging to screen only")
