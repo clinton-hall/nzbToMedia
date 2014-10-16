@@ -703,7 +703,7 @@ def main(args, section=None):
         clientAgent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd 0.7.17+")
         result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
-                         download_id='', failureLink=str(args[8:]))
+                        download_id='', failureLink=''.join(args[8:]))
     else:
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
