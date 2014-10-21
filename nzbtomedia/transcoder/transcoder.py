@@ -113,8 +113,12 @@ def buildCommands(file, newDir, movieName, bitbucket):
         dir, name = os.path.split(file)
         name, ext = os.path.splitext(name)
         check = re.match("VTS_([0-9][0-9])_[0-9]+", name)
-        if check:
+        if check and nzbtomedia.CONCAT:
+            name = movieName
+        elif check:
             name = ('%s.cd%s' % (movieName, check.groups()[0]))
+        elif nzbtomedia.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
+            name = re.match("(.+)[cC][dD][0-9]", name).groups()[0][:-1]
         if ext == nzbtomedia.VEXTENSION and newDir == dir: # we need to change the name to prevent overwriting itself.
             nzbtomedia.VEXTENSION = '-transcoded' + nzbtomedia.VEXTENSION # adds '-transcoded.ext'
     else:
@@ -616,7 +620,7 @@ def combineCD(combine):
     for item in set([ re.match("(.+)[cC][dD][0-9].",item).groups()[0] for item in combine ]):
         concat = ''
         for n in range(99):
-            files = [ file for file in combine if n+1 == int(re.match(".+[cC][dD]([0-9]).",file).groups()[0]) and item in file ] 
+            files = [ file for file in combine if n+1 == int(re.match(".+[cC][dD]([0-9]+).",file).groups()[0]) and item in file ] 
             if files:
                 concat = concat + files[0] + '|'
             else:
