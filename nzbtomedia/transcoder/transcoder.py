@@ -118,7 +118,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         elif check:
             name = ('%s.cd%s' % (movieName, check.groups()[0]))
         elif nzbtomedia.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
-            name = re.match("(.+)[cC][dD][0-9]", name).groups()[0][:-1]
+            name = re.sub("([\ \.\-\_\=\:]+[cC][dD][0-9])", "", name)
         if ext == nzbtomedia.VEXTENSION and newDir == dir: # we need to change the name to prevent overwriting itself.
             nzbtomedia.VEXTENSION = '-transcoded' + nzbtomedia.VEXTENSION # adds '-transcoded.ext'
     else:
