@@ -613,13 +613,13 @@ def initialize(section=None):
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
-            logger.warning("Failed to locate ffmpeg.exe, transcoding disabled!")
+            logger.warning("Failed to locate ffmpeg.exe. Transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
         if not (os.path.isfile(FFPROBE)):
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning("Failed to locate ffprobe.exe, video corruption detection disabled!")
+                logger.warning("Failed to locate ffprobe.exe. Video corruption detection disabled!")
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     else:
@@ -632,7 +632,7 @@ def initialize(section=None):
             except: pass
         if not SEVENZIP:
             SEVENZIP = None
-            logger.warning("Failed to locate 7zip, transcosing of disk images ane extraction of .7z files will not be possible!")
+            logger.warning("Failed to locate 7zip. Transcosing of disk images and extraction of .7z files will not be possible!")
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
         elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
@@ -647,7 +647,7 @@ def initialize(section=None):
                 except: pass
         if not FFMPEG:
             FFMPEG = None
-            logger.warning("Failed to locate ffmpeg, transcoding disabled!")
+            logger.warning("Failed to locate ffmpeg. Transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
@@ -665,7 +665,7 @@ def initialize(section=None):
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning("Failed to locate ffprobe, video corruption detection disabled!")
+                logger.warning("Failed to locate ffprobe. Video corruption detection disabled!")
                 logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
     # check for script-defied section and if None set to allow sections
