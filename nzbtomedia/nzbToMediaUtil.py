@@ -684,8 +684,10 @@ def cleanDir(path, section, subsection):
     try:
         delete_ignored = int(nzbtomedia.CFG[section][subsection]['delete_ignored'])
     except:delete_ignored = 0
-
-    num_files = len(listMediaFiles(path, minSize=minSize, delete_ignored=delete_ignored))
+    try:
+        num_files = len(listMediaFiles(path, minSize=minSize, delete_ignored=delete_ignored))
+    except:
+        num_files = 'unknown'
     if num_files > 0:
         logger.info(
             "Directory %s still contains %s unprocessed file(s), skipping ..." % (path, num_files),
