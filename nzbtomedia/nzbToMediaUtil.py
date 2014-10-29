@@ -899,12 +899,13 @@ def find_imdbid(dirName, inputName):
         imdbid = m.group(1)
         logger.info("Found imdbID [%s]" % imdbid)
         return imdbid
-    for file in os.listdir(dirName):
-        m = re.search('(tt\d{7})', file)
-        if m:
-            imdbid = m.group(1)
-            logger.info("Found imdbID [%s] via file name" % imdbid)
-            return imdbid
+    if os.path.isdir(dirName):
+        for file in os.listdir(dirName):
+            m = re.search('(tt\d{7})', file)
+            if m:
+                imdbid = m.group(1)
+                logger.info("Found imdbID [%s] via file name" % imdbid)
+                return imdbid
     if os.environ.has_key('NZBPR__DNZB_MOREINFO'):
         dnzb_more_info=os.environ.get('NZBPR__DNZB_MOREINFO', '')
         if dnzb_more_info != '':
