@@ -47,6 +47,8 @@ def extract(filePath, outputDestination):
                 if call(['which', cmd], stdout=devnull, stderr=devnull):  #note, returns 0 if exists, or 1 if doesn't exist.
                     if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
                         EXTRACT_COMMANDS[".7z"] = ["7z", "x"]
+                    elif cmd == "7zr" and not call(["which", "7za"]):  # we do have "7za" command
+                        EXTRACT_COMMANDS[".7z"] = ["7za", "x"]
                     else: 
                         for k, v in EXTRACT_COMMANDS.items():
                             if cmd in v[0]:

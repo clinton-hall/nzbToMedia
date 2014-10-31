@@ -630,6 +630,10 @@ def initialize(section=None):
             try:
                 SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
             except: pass
+        if not SEVENZIP: 
+            try:
+                SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
+            except: pass
         if not SEVENZIP:
             SEVENZIP = None
             logger.warning("Failed to locate 7zip. Transcosing of disk images and extraction of .7z files will not be possible!")
