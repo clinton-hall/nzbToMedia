@@ -68,7 +68,7 @@ def replace_filename(filename, dirname, name):
         logger.debug("Replacing file name %s with download name %s" % (head, newname), "EXCEPTION")
     else:
         logger.warning("No name replacement determined for %s" % (head), "EXCEPTION")
-        return 
+        newname = name 
     newfile = newname + fileExtension
     newfilePath = os.path.join(dirname, newfile)
     return newfilePath
