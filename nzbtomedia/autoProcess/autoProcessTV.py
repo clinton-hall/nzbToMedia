@@ -283,7 +283,7 @@ class autoProcessTV:
         for line in r.iter_lines():
             if line: 
                 logger.postprocess("%s" % (line), section)
-                if section == "SickBeard" and "Processing succeeded" in line:
+                if section == "SickBeard" and ("Processing succeeded" in line or "Successfully processed" in line):
                     Success = True
                 elif section == "NzbDrone" and "stateChangeTime" in line:
                     Started = True
