@@ -284,9 +284,8 @@ class autoProcessTV:
         elif section == "NzbDrone":
             try:
                 res = json.loads(r.content)
-                if res["message"] == "Starting":
-                    scan_id = int(res['id'])
-                    Started = True
+                scan_id = int(res['id'])
+                Started = True
             except:
                 scan_id = None
                 Started = False
