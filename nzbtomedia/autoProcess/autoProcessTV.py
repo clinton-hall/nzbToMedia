@@ -13,23 +13,23 @@ from nzbtomedia import logger
 from nzbtomedia.transcoder import transcoder
 
 class autoProcessTV:
-    def numMissing(self, url1, params, headers, section):
+    def command_complete(self, url, params, headers, section):
         r = None
-        missing = 0
         try:
-            r = requests.get(url1, params=params, headers=headers, stream=True, verify=False)
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url1), section)
-            return missing
+            return None
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
+            return None
         else:
             try:
                 res = json.loads(r.content)
-                missing = int(res['totalRecords'])
+                return res['state']
             except:
-                pass
-        return missing
+                logger.error("%s did not return expected json data." % section, section)
+                return None
 
     def CDH(self, url2, headers):
         r = None
@@ -246,7 +246,6 @@ class autoProcessTV:
             url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
-            url1 = "%s%s:%s%s/api/missing" % (protocol, host, port, web_root)
             url2 = "%s%s:%s%s/api/config/downloadClient" % (protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
@@ -263,10 +262,6 @@ class autoProcessTV:
                 r = None
                 r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
-                if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
-                    logger.debug("Complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
-                    return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
-                start_numMissing = self.numMissing(url1, params, headers, section)  # get current number of outstanding eppisodes.
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
@@ -280,13 +275,21 @@ class autoProcessTV:
 
         Success = False
         Started = False
-        for line in r.iter_lines():
-            if line: 
-                logger.postprocess("%s" % (line), section)
-                if section == "SickBeard" and ("Processing succeeded" in line or "Successfully processed" in line):
-                    Success = True
-                elif section == "NzbDrone" and "stateChangeTime" in line:
+        if section == "SickBeard":
+            for line in r.iter_lines():
+                if line: 
+                    logger.postprocess("%s" % (line), section)
+                    if "Processing succeeded" in line or "Successfully processed" in line:
+                        Success = True
+        elif section == "NzbDrone":
+            try:
+                res = json.loads(r.content)
+                if res["message"] == "Starting":
+                    scan_id = int(res['id'])
                     Started = True
+            except:
+                scan_id = None
+                Started = False
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
             logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
@@ -296,34 +299,31 @@ class autoProcessTV:
             return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
         elif section == "NzbDrone" and Started:
             n = 0
-            current_numMissing = start_numMissing
-            while n < 6:  # set up wait_for minutes of no change in numMissing.
+            params = {}
+            url = url + "/" + str(scan_id)
+            while n < 6:  # set up wait_for minutes to see if command completes..
                 time.sleep(10 * wait_for)
-                if not os.path.exists(dirName):
-                    break
-                new_numMissing = self.numMissing(url1, params, headers, section)
-                if new_numMissing == current_numMissing:  # nothing processed since last call
-                    n += 1
-                else:
-                    n = 0
-                    current_numMissing = new_numMissing  # reset counter and start loop again with this many missing.
-
+                command_status = self.command_complete(url, params, headers, section)
+                if command_status and command_status in ['completed', 'failed']:    
+                     break
+                n += 1
             if not os.path.exists(dirName):
                 logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
                 return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
-            elif current_numMissing < start_numMissing:
-                logger.debug(
-                "The number of missing episodes changes from %s to %s and then remained the same for %s minutes. Consider this successful" % 
-                (str(start_numMissing), str(current_numMissing), str(wait_for)), section)
+            elif command_status and command_status in ['completed']:
+                logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
                 return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
-            elif status != 0:
-                logger.debug("The Failed download has been processed by NZBDrone.", section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+            elif command_status and command_status in ['failed']:
+                logger.debug("The Scan command has failed. Renaming was not successful.", section)
+                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+            elif command_status and command_status in ['pending', 'running']:
+                logger.warning("The Scan has not finished after %s minutes. Renaming was not successful." % wait_for , section)
+                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+            elif self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
+                logger.debug("Commadn Processing failed, but complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
+                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
             else:
-                # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
-                logger.warning(
-                "The number of missing episodes: %s does not appear to have changed status after %s minutes, Please check your logs." % 
-                (str(start_numMissing), str(wait_for)), section)
-                return [1, "%s: Failed to post-process - No change in wanted status" % (section) ]
+                logger.warning("The Scan did not return a valid status. Renaming was not successful.", section)
+                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
         else:
             return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]  # We did not receive Success confirmation.
