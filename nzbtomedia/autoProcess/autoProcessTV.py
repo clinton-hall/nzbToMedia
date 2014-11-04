@@ -48,7 +48,7 @@ class autoProcessTV:
             except:
                 return False
 
-    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", inputCategory=None, failureLink=None):
+    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", download_id=None, inputCategory=None, failureLink=None):
         host = nzbtomedia.CFG[section][inputCategory]["host"]
         port = nzbtomedia.CFG[section][inputCategory]["port"]
         try:
@@ -251,11 +251,14 @@ class autoProcessTV:
             params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
                 logger.debug("remote_path: %s" % (remoteDir(dirName)),section)
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": remoteDir(dirName)})
+                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id}
             else:
                 logger.debug("path: %s" % (dirName),section)
-                data = json.dumps({"name": "DownloadedEpisodesScan", "path": dirName})
-
+                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id}
+            if not download_id:
+                data.pop("downloadClientId")
+            data = json.dumps(data)
+                
         try:
             if section == "SickBeard":
                 logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)

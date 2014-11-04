@@ -506,6 +506,9 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
             inputDirectory))
         return [-1, ""]
 
+    if not download_id and clientAgent == 'sabnzbd':
+        download_id = get_nzoid(inputName) 
+
     if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
 
@@ -580,7 +583,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
                                             inputCategory, failureLink)
     elif sectionName in ["SickBeard", "NzbDrone"]:
         result = autoProcessTV().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
-                                                inputCategory, failureLink)
+                                                download_id, inputCategory, failureLink)
     elif sectionName == "HeadPhones":
         result = autoProcessMusic().process(sectionName, inputDirectory, inputName, status, clientAgent, inputCategory)
     elif sectionName == "Mylar":
@@ -667,6 +670,8 @@ def main(args, section=None):
         failureLink = None
         if os.environ.has_key('NZBPR_COUCHPOTATO'):
             download_id = os.environ['NZBPR_COUCHPOTATO']
+        elif os.environ.has_key('NZBPR_DRONE'):
+            download_id = os.environ['NZBPR_DRONE']
         if os.environ.has_key('NZBPR__DNZB_FAILURE'):
             failureLink = os.environ['NZBPR__DNZB_FAILURE']
 

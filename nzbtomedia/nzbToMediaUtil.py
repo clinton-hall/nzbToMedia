@@ -809,6 +809,27 @@ def find_download(clientAgent, download_id):
             return True
     return False
 
+def get_nzoid(inputName):
+    nzoid = None
+    logger.debug("Searching for nzoid from SAbnzbd ...")
+    baseURL = "http://%s:%s/api" % (nzbtomedia.SABNZBDHOST, nzbtomedia.SABNZBDPORT)
+    url = baseURL
+    params = {}
+    params['apikey'] = nzbtomedia.SABNZBDAPIKEY
+    params['mode'] = "queue"
+    params['output'] = 'json'
+    try:
+        r = requests.get(url, params=params, verify=False)
+    except requests.ConnectionError:
+        logger.error("Unable to open URL")
+        return nzoid  # failure
+    result = r.json()
+    for slot in result['slots']:
+        if slot['filename'] == inputName:
+            nzoid = slot['nzo_id']
+            break
+    return nzoid
+
 
 def cleanFileName(filename):
     """Cleans up nzb name by removing any . and _
