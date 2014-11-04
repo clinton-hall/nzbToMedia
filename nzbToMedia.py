@@ -672,6 +672,8 @@ def main(args, section=None):
             download_id = os.environ['NZBPR_COUCHPOTATO']
         elif os.environ.has_key('NZBPR_DRONE'):
             download_id = os.environ['NZBPR_DRONE']
+        elif os.environ.has_key('NZBPR_SONARR'):
+            download_id = os.environ['NZBPR_SONARR']
         if os.environ.has_key('NZBPR__DNZB_FAILURE'):
             failureLink = os.environ['NZBPR__DNZB_FAILURE']
 
