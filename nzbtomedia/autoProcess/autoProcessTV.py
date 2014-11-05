@@ -317,15 +317,12 @@ class autoProcessTV:
                 return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
-                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            elif command_status and command_status in ['pending', 'running']:
-                logger.warning("The Scan has not finished after %s minutes. Renaming was not successful." % wait_for , section)
-                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            elif self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
-                logger.debug("Commadn Processing failed, but complete DownLoad Handling is enabled. Passing back to %s." % (section), section)
+                #return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+            if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
+                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
                 return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
             else:
-                logger.warning("The Scan did not return a valid status. Renaming was not successful.", section)
+                logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
                 return [1, "%s: Failed to post-process %s" % (section, inputName) ]
         else:
             return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]  # We did not receive Success confirmation.
