@@ -133,6 +133,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
     map_cmd = []
     video_cmd = []
     audio_cmd = []
+    audio_cmd2 = []
+    audio_cmd3 = []
     sub_cmd = []
     other_cmd = []
 
@@ -154,6 +156,12 @@ def buildCommands(file, newDir, movieName, bitbucket):
             video_cmd.extend(['-b:v', str(nzbtomedia.VBITRATE)])
         if nzbtomedia.VRESOLUTION:
             video_cmd.extend(['-vf', 'scale=' + nzbtomedia.VRESOLUTION])
+        if nzbtomedia.VPRESET:
+            video_cmd.extend(['-preset', nzbtomedia.VPRESET])
+        if nzbtomedia.VCRF:
+            video_cmd.extend(['-crf', str(nzbtomedia.VCRF)])
+        if nzbtomedia.VLEVEL:
+            video_cmd.extend(['-level', str(nzbtomedia.VLEVEL)])
 
         if nzbtomedia.ACODEC:
             audio_cmd.extend(['-c:a', nzbtomedia.ACODEC])
@@ -217,7 +225,16 @@ def buildCommands(file, newDir, movieName, bitbucket):
                scale = "-1:" + scale.split(':')[1]
                if h_scale != 1:
                    video_cmd.extend(['-vf', 'scale=' + scale])
-        if ('-vf' in video_cmd or '-r' in video_cmd) and video_cmd[1] == 'copy':
+        if nzbtomedia.VBITRATE:
+            video_cmd.extend(['-b:v', str(nzbtomedia.VBITRATE)])
+        if nzbtomedia.VPRESET:
+            video_cmd.extend(['-preset', nzbtomedia.VPRESET])
+        if nzbtomedia.VCRF:
+            video_cmd.extend(['-crf', str(nzbtomedia.VCRF)])
+        if nzbtomedia.VLEVEL:
+            video_cmd.extend(['-level', str(nzbtomedia.VLEVEL)])
+        no_copy = ['-vf', '-r', '-crf', '-level', '-preset', '-b:v']
+        if video_cmd[1] == 'copy' and any(i in video_cmd for i in no_copy):
             video_cmd[1] = nzbtomedia.VCODEC
         if nzbtomedia.VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
             video_cmd = ['-c:v', 'copy']  
@@ -280,10 +297,16 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
         if nzbtomedia.ACHANNELS and channels and channels > nzbtomedia.ACHANNELS:
             audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS)])
+            if audio_cmd[1] == 'copy':
+                audio_cmd[1] = nzbtomedia.ACODEC
         if nzbtomedia.ABITRATE and not (nzbtomedia.ABITRATE * 0.9 < bitrate < nzbtomedia.ABITRATE * 1.1):
             audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE)])
+            if audio_cmd[1] == 'copy':
+                audio_cmd[1] = nzbtomedia.ACODEC
         if nzbtomedia.OUTPUTQUALITYPERCENT:
             audio_cmd.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+            if audio_cmd[1] == 'copy':
+                audio_cmd[1] = nzbtomedia.ACODEC
 
         if nzbtomedia.ACODEC2_ALLOW:
             used_audio += 1
@@ -297,7 +320,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 try:
                     channels = int(audio4[0]["channels"])
                 except: channels = 0
-                audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+                audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
@@ -308,11 +331,11 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     channels = int(audio1[0]["channels"])
                 except: channels = 0
                 if nzbtomedia.ACODEC2:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                    audio_cmd2.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
                 else:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
                 if nzbtomedia.ACODEC2 == 'aac':
-                    audio_cmd.extend(['-strict', '-2'])
+                    audio_cmd2.extend(['-strict', '-2'])
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
@@ -323,18 +346,25 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     channels = int(audio3[0]["channels"])
                 except: channels = 0
                 if nzbtomedia.ACODEC2:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
+                    audio_cmd2.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC2])
                 else:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
                 if nzbtomedia.ACODEC2 == 'aac':
-                    audio_cmd.extend(['-strict', '-2'])
+                    audio_cmd2.extend(['-strict', '-2'])
 
             if nzbtomedia.ACHANNELS2 and channels and channels > nzbtomedia.ACHANNELS2:
-                audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
+                audio_cmd2.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
+                if audio_cmd2[1] == 'copy':
+                    audio_cmd2[1] = nzbtomedia.ACODEC2
             if nzbtomedia.ABITRATE2 and not (nzbtomedia.ABITRATE2 * 0.9 < bitrate < nzbtomedia.ABITRATE2 * 1.1):
-                audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE2)])
+                audio_cmd2.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE2)])
+                if audio_cmd2[1] == 'copy':
+                    audio_cmd2[1] = nzbtomedia.ACODEC2
             if nzbtomedia.OUTPUTQUALITYPERCENT:
-                audio_cmd.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+                audio_cmd2.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+                if audio_cmd2[1] == 'copy':
+                    audio_cmd2[1] = nzbtomedia.ACODEC2
+            audio_cmd.extend(audio_cmd2)
 
         if nzbtomedia.AINCLUDE and audio3 and nzbtomedia.ACODEC3:
             for audio in audioStreams:
@@ -342,6 +372,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     continue
                 used_audio += 1
                 map_cmd.extend(['-map', '0:' + str(audio["index"])])
+                audio_cmd3 = []
                 try:
                     bitrate = int(audio["bit_rate"])/1000
                 except: bitrate = 0
@@ -349,20 +380,28 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     channels = int(audio["channels"])
                 except: channels = 0
                 if audio["codec_name"] in nzbtomedia.ACODEC3_ALLOW:
-                    audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
                 else:
                     if nzbtomedia.ACODEC3:
-                        audio_cmd.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3])
+                        audio_cmd3.extend(['-c:a:' + str(used_audio), nzbtomedia.ACODEC3])
                     else:
-                        audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+                        audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
                     if nzbtomedia.ACODEC3 == 'aac':
-                        audio_cmd.extend(['-strict', '-2'])
+                        audio_cmd3.extend(['-strict', '-2'])
+
                 if nzbtomedia.ACHANNELS3 and channels and channels > nzbtomedia.ACHANNELS3:
-                    audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS3)])
+                    audio_cmd3.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS3)])
+                    if audio_cmd3[1] == 'copy':
+                        audio_cmd3[1] = nzbtomedia.ACODEC3
                 if nzbtomedia.ABITRATE3 and not (nzbtomedia.ABITRATE3 * 0.9 < bitrate < nzbtomedia.ABITRATE3 * 1.1):
-                    audio_cmd.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
+                    audio_cmd3.extend(['-b:a:' + str(used_audio), str(nzbtomedia.ABITRATE3)])
+                    if audio_cmd3[1] == 'copy':
+                        audio_cmd3[1] = nzbtomedia.ACODEC3
                 if nzbtomedia.OUTPUTQUALITYPERCENT > 0:
-                    audio_cmd.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+                    audio_cmd3.extend(['-q:a:' + str(used_audio), str(nzbtomedia.OUTPUTQUALITYPERCENT)])
+                    if audio_cmd3[1] == 'copy':
+                        audio_cmd3[1] = nzbtomedia.ACODEC3
+                audio_cmd.extend(audio_cmd3)
 
     s_mapped = []
     subs1 = []
