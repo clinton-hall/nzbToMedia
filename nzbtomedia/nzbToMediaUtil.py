@@ -823,11 +823,15 @@ def get_nzoid(inputName):
     except requests.ConnectionError:
         logger.error("Unable to open URL")
         return nzoid  # failure
-    result = r.json()
-    for slot in result['slots']:
-        if slot['filename'] == inputName:
-            nzoid = slot['nzo_id']
-            break
+    try:
+        result = r.json()
+        for slot in result['queue']['slots']:
+            if slot['filename'] == inputName:
+                nzoid = slot['nzo_id']
+                logger.debug("Found nzoid: %s" % nzoid)
+                break
+    except:
+        logger.warning("Data from SABnzbd could not be parsed")
     return nzoid
 
 
