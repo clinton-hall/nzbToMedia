@@ -474,9 +474,9 @@ def parse_deluge(args):
     # Deluge usage: call TorrentToMedia.py TORRENT_ID TORRENT_NAME TORRENT_DIR
     inputDirectory = os.path.normpath(args[3])
     inputName = args[2]
-    inputCategory = ''  # We dont have a category yet
     inputHash = args[1]
     inputID = args[1]
+    inputCategory = nzbtomedia.TORRENT_CLASS.core.get_torrent_status(inputID, ['label']).get()['label']
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
@@ -732,7 +732,6 @@ def create_torrent_class(clientAgent):
 
     return tc
 
-
 def pause_torrent(clientAgent, inputHash, inputID, inputName):
     logger.debug("Stopping torrent %s in %s while processing" % (inputName, clientAgent))
 
@@ -744,7 +743,6 @@ def pause_torrent(clientAgent, inputHash, inputID, inputName):
         nzbtomedia.TORRENT_CLASS.core.pause_torrent([inputID])
 
     time.sleep(5)
-
 
 def resume_torrent(clientAgent, inputHash, inputID, inputName):
     logger.debug("Starting torrent %s in %s" % (inputName, clientAgent))

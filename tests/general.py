@@ -1,5 +1,6 @@
 #! /usr/bin/env python2
 import os
+import sys
 import datetime
 import re
 import nzbtomedia
@@ -10,6 +11,9 @@ from nzbtomedia.nzbToMediaUtil import get_downloadInfo, server_responding
 
 # Initialize the config
 nzbtomedia.initialize()
+
+#label = nzbtomedia.TORRENT_CLASS.core.get_torrent_status("f33a9c4b15cbd9170722d700069af86746817ade", ["label"]).get()['label']
+#print label
 
 if transcoder.isVideoGood(nzbtomedia.TEST_FILE, 0):
     print "FFPROBE Works"
