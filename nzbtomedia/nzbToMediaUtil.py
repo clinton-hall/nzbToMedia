@@ -823,8 +823,9 @@ def get_nzoid(inputName):
         return nzoid  # failure
     try:
         result = r.json()
+        cleanName = os.path.splitext(os.path.split(inputName)[1])[0]
         for slot in result['queue']['slots']:
-            if slot['filename'] == inputName:
+            if slot['filename'] in [inputName, cleanName]:
                 nzoid = slot['nzo_id']
                 logger.debug("Found nzoid: %s" % nzoid)
                 break
