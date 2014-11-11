@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 from time import sleep
 import nzbtomedia
 from subprocess import call, Popen
@@ -88,6 +89,11 @@ def extract(filePath, outputDestination):
         nzbtomedia.logger.info("Extracting %s to %s" % (filePath, outputDestination))
         nzbtomedia.logger.debug("Extracting %s %s %s" % (cmd, filePath, outputDestination))
 
+    origFiles = []
+    for dir, subdirs, files in os.walk(outputDestination):
+        for file in files:
+            origFiles.append(os.path.join(dir, file))
+
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
     devnull = open(os.devnull, 'w')
@@ -130,6 +136,12 @@ def extract(filePath, outputDestination):
     if success:
         # sleep to let files finish writing to disk
         sleep (3)
+        for dir, subdirs, files in os.walk(outputDestination):
+            for file in files:
+                if not os.path.join(dir, file) in origFiles:
+                    try:
+                        shutil.copymode(filePath, os.path.join(dir, file))
+                    except: pass
         return True
     else:
         nzbtomedia.logger.error("EXTRACTOR: Extraction failed for %s. Result was %s" % (filePath, res))
