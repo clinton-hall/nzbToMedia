@@ -1,6 +1,7 @@
 import os
 import platform
 import shutil
+import stat
 from time import sleep
 import nzbtomedia
 from subprocess import call, Popen
@@ -90,7 +91,10 @@ def extract(filePath, outputDestination):
         nzbtomedia.logger.debug("Extracting %s %s %s" % (cmd, filePath, outputDestination))
 
     origFiles = []
+    origDirs = []
     for dir, subdirs, files in os.walk(outputDestination):
+        for subdir in subdirs:
+            origDirs.append(os.path.join(dir, subdir))
         for file in files:
             origFiles.append(os.path.join(dir, file))
 
@@ -136,7 +140,13 @@ def extract(filePath, outputDestination):
     if success:
         # sleep to let files finish writing to disk
         sleep (3)
+        perms = oct(stat.S_IMODE(os.lstat(filePath).st_mode))
         for dir, subdirs, files in os.walk(outputDestination):
+            for subdir in subdirs:
+                if not os.path.join(dir, subdir) in origFiles:
+                    try:
+                        os.chmod(os.path.join(dir, file), perms)
+                    except: pass
             for file in files:
                 if not os.path.join(dir, file) in origFiles:
                     try:
