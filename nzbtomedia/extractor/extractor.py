@@ -140,7 +140,7 @@ def extract(filePath, outputDestination):
     if success:
         # sleep to let files finish writing to disk
         sleep (3)
-        perms = oct(stat.S_IMODE(os.lstat(os.path.split(filePath)[0]).st_mode))
+        perms = stat.S_IMODE(os.lstat(os.path.split(filePath)[0]).st_mode)
         for dir, subdirs, files in os.walk(outputDestination):
             for subdir in subdirs:
                 if not os.path.join(dir, subdir) in origFiles:
