@@ -223,8 +223,11 @@ class autoProcessTV:
         else:
             if failureLink:
                 reportNzb(failureLink, clientAgent)
-            if fork in nzbtomedia.SICKBEARD_FAILED or section == "NzbDrone":
+            if fork in nzbtomedia.SICKBEARD_FAILED:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
+            elif section == "NzbDrone":
+                logger.postprocess("FAILED: The download failed. Sending failed download to %s for CDH processing" % (fork), section)
+                return [1, "%s: Downlaod Failed. Sending back to %s" % (section, section) ] # Return as failed to flag this in the downloader.
             else:
                 logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
