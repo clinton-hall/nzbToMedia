@@ -461,9 +461,9 @@ def buildCommands(file, newDir, movieName, bitbucket):
     if nzbtomedia.SEMBED and os.path.isfile(file):
         filenum = 1
         for subfile in get_subs(file):
+            n += 1
             command.extend(['-i', subfile])
             map_cmd.extend(['-map', n])
-            n += 1
 
     command.extend(map_cmd)
     command.extend(video_cmd)
