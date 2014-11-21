@@ -1006,10 +1006,12 @@ def extractFiles(src, dst=None):
                 continue  # don't remove if we haven't extracted this archive.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:
+                if not os.access(inputFile, os.W_OK):
+                    os.chmod(inputFile, stat.S_IWUSR)
                 os.remove(inputFile)
                 time.sleep(1)
-            except:
-                logger.debug("Unable to remove file %s" % (inputFile))
+            except Exception as e:
+                logger.error("Unable to remove file %s due to: %s" % (inputFile, e))
 
 def import_subs(filename):
     if not nzbtomedia.GETSUBS:
