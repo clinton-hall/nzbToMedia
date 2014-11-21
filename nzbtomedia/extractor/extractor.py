@@ -87,8 +87,9 @@ def extract(filePath, outputDestination):
         passwords = [line.strip() for line in open(os.path.normpath(nzbtomedia.PASSWORDSFILE))]
     else:
         passwords = []
-        nzbtomedia.logger.info("Extracting %s to %s" % (filePath, outputDestination))
-        nzbtomedia.logger.debug("Extracting %s %s %s" % (cmd, filePath, outputDestination))
+
+    nzbtomedia.logger.info("Extracting %s to %s" % (filePath, outputDestination))
+    nzbtomedia.logger.debug("Extracting %s %s %s" % (cmd, filePath, outputDestination))
 
     origFiles = []
     origDirs = []

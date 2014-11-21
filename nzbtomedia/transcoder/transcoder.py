@@ -463,7 +463,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         for subfile in get_subs(file):
             n += 1
             command.extend(['-i', subfile])
-            map_cmd.extend(['-map', n])
+            #map_cmd.extend(['-map', n]) #Commented out as this appears to break the transcode.
 
     command.extend(map_cmd)
     command.extend(video_cmd)
