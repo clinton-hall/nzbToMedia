@@ -291,8 +291,10 @@ class autoProcessTV:
             try:
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
+                logger.debug("Scan started with id: %s" % (str(scan_id)), section)
                 Started = True
-            except:
+            except Exception as e:
+                logger.warning("No scan id was returned due to: %s" % (e), section)
                 scan_id = None
                 Started = False
 
@@ -312,6 +314,8 @@ class autoProcessTV:
                 if command_status and command_status in ['completed', 'failed']:    
                      break
                 n += 1
+            if command_status:
+                logger.debug("The Scan command return status: %s" % (command_status), section)
             if not os.path.exists(dirName):
                 logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
                 return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
@@ -321,7 +325,7 @@ class autoProcessTV:
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
                 #return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            if self.CDH(url2, headers) and clientAgent in ['sabnzbd', 'nzbget']:
+            if self.CDH(url2, headers):
                 logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
                 return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
             else:
