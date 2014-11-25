@@ -296,7 +296,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(['-strict', '-2'])
 
         if nzbtomedia.ACHANNELS and channels and channels > nzbtomedia.ACHANNELS:
-            audio_cmd.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS)])
+            audio_cmd.extend(['-ac:a:' + str(used_audio), str(nzbtomedia.ACHANNELS)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = nzbtomedia.ACODEC
         if nzbtomedia.ABITRATE and not (nzbtomedia.ABITRATE * 0.9 < bitrate < nzbtomedia.ABITRATE * 1.1):
@@ -353,7 +353,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd2.extend(['-strict', '-2'])
 
             if nzbtomedia.ACHANNELS2 and channels and channels > nzbtomedia.ACHANNELS2:
-                audio_cmd2.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
+                audio_cmd2.extend(['-ac:a:' + str(used_audio), str(nzbtomedia.ACHANNELS2)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = nzbtomedia.ACODEC2
             if nzbtomedia.ABITRATE2 and not (nzbtomedia.ABITRATE2 * 0.9 < bitrate < nzbtomedia.ABITRATE2 * 1.1):
@@ -390,7 +390,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                         audio_cmd3.extend(['-strict', '-2'])
 
                 if nzbtomedia.ACHANNELS3 and channels and channels > nzbtomedia.ACHANNELS3:
-                    audio_cmd3.extend(['-ac:' + str(used_audio), str(nzbtomedia.ACHANNELS3)])
+                    audio_cmd3.extend(['-ac:a:' + str(used_audio), str(nzbtomedia.ACHANNELS3)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = nzbtomedia.ACODEC3
                 if nzbtomedia.ABITRATE3 and not (nzbtomedia.ABITRATE3 * 0.9 < bitrate < nzbtomedia.ABITRATE3 * 1.1):
