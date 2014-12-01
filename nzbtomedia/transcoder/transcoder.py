@@ -420,7 +420,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
             if nzbtomedia.BURN and not burnt and os.path.isfile(inputFile):
                 subloc = 0
                 for index in range(len(subStreams)):
-                    if sunStreams[index]["index"] == sub["index"]:
+                    if subStreams[index]["index"] == sub["index"]:
                         subloc = index
                         break
                 video_cmd.extend(['-vf', 'subtitles=' + inputFile + ":si=" + subloc])
