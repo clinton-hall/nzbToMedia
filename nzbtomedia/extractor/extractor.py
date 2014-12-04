@@ -10,18 +10,13 @@ def extract(filePath, outputDestination):
     success = 0
     # Using Windows
     if platform.system() == 'Windows':
-        chplocation = os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia', 'extractor', 'bin', 'chp.exe')
-
         if not os.path.exists(nzbtomedia.SEVENZIP):
             nzbtomedia.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
-        else:
-            if not os.path.exists(chplocation):
-                cmd_7zip = [nzbtomedia.SEVENZIP, "x", "-y"]
-            else:
-                cmd_7zip = [chplocation, nzbtomedia.SEVENZIP, "x", "-y"]
-            ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
-            EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
+        invislocation = os.path.join(nzbtomedia.PROGRAM_DIR, 'nzbtomedia', 'extractor', 'bin', 'invisible.cmd')
+        cmd_7zip = [invislocation, nzbtomedia.SEVENZIP, "x", "-y"]
+        ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
+        EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
     else:
         required_cmds = ["unrar", "unzip", "tar", "unxz", "unlzma", "7zr", "bunzip2"]
