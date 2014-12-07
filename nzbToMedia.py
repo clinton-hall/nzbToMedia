@@ -121,7 +121,7 @@
 
 # SickBeard process method.
 #
-# set this to move, copy, hardlin, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
+# set this to move, copy, hardlink, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
 #sbprocess_method=
 
 # SickBeard and NZBGet are a different system (0, 1).
