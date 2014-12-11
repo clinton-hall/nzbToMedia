@@ -266,7 +266,11 @@ class autoProcessTV:
             if section == "SickBeard":
                 logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
                 r = None
-                r = requests.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
+                s = requests.Session()
+                login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
+                login_params = {'username': username, 'password': password}
+                s.post(login, data=login_params, stream=True, verify=False)
+                r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
             elif section == "NzbDrone":
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None

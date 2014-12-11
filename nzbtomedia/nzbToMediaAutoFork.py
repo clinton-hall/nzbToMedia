@@ -70,7 +70,11 @@ def autoFork(section, inputCategory):
         # attempting to auto-detect fork
         try:
             if username and password:
-                r = requests.get(url, auth=(username, password), verify=False)
+                s = requests.Session()
+                login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
+                login_params = {'username': username, 'password': password}
+                s.post(login, data=login_params, stream=True, verify=False)
+                r = s.get(url, auth=(username, password), verify=False)
             else:
                 r = requests.get(url, verify=False)
         except requests.ConnectionError:
