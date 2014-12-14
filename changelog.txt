@@ -1,5 +1,27 @@
 Change_LOG / History
 
+V10.8 15/12/2014
+
+Impacts All
+Removed "stand alone" scripts DeleteSamples and ResetDateTimes. These are now in https://github.com/clinton-hall/GetScripts
+Removed chp.exe and replaced with vb script.
+Improved Sonarr(NZBDrone) CDH support.
+Use folder Permissions to set permissions for sub directories and files following extract.
+Added support fro new SickRage Login.
+
+Impacts NZBs
+Get NZOID from SABnzbd for better release matching.
+
+Impacts Torrents
+Now gets Label from Deluge.
+Changed SSL version for updated Deluge (0.3.11+)
+
+Impacts Transcoding
+Fixed reported bugs.
+Fix Audio mapping.
+Fix Subtitle mapping from external files.
+Fixed scaling errors.
+
 V10.7 06/10/2014
 
 Impacts All
