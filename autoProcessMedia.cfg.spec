@@ -229,7 +229,7 @@
     uTorrentPWD = your password
     ###### Transmission (You must edit this if your using TorrentToMedia.py with uTorrent)
     TransmissionHost = localhost
-    TransmissionPort = 8084
+    TransmissionPort = 9091
     TransmissionUSR = your username
     TransmissionPWD = your password
     #### Deluge (You must edit this if your using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
