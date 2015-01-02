@@ -292,7 +292,7 @@ class autoProcessMovie:
             logger.debug("Opening URL: %s" % (url), section)
 
             try:
-                r = requests.get(url, params={'media_id': media_id})
+                r = requests.get(url, params={'media_id': media_id}, verify=False)
             except requests.ConnectionError:
                 logger.error("Unable to open URL %s" % (url), section)
                 return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
