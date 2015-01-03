@@ -211,10 +211,6 @@ class autoProcessMovie:
                     video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
                     logger.debug('Renaming: %s to: %s' % (video, video2))
                     os.rename(video, video2)        
-            if method == "manage":
-                command = "/manage.update"
-            else:
-                command = "/renamer.scan"
 
             params = {}
             if download_id:
@@ -224,6 +220,12 @@ class autoProcessMovie:
             params['media_folder'] = dirName
             if remote_path:
                 params['media_folder'] = remoteDir(dirName)
+
+            if method == "manage":
+                command = "/manage.update"
+                params = {}
+            else:
+                command = "/renamer.scan"
 
             url = "%s%s" % (baseURL, command)
 
@@ -243,6 +245,8 @@ class autoProcessMovie:
                 return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
             elif result['success']:
                 logger.postprocess("SUCCESS: Finished %s scan for folder %s" % (method, dirName), section)
+                if method == "manage":
+                    return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
             else:
                 logger.error("FAILED: %s scan was unable to finish for folder %s. exiting!" % (method, dirName),
                              section)
