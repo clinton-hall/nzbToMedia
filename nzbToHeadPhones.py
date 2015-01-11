@@ -35,6 +35,8 @@
 #hpapikey=
 
 # HeadPhones host.
+#
+# The ipaddress for your HeadPhones server. e.g For the Same system use localhost or 127.0.0.1
 #hphost=localhost
 
 # HeadPhones port.

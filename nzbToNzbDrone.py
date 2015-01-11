@@ -37,6 +37,8 @@
 #ndCategory=tv2
 
 # NzbDrone host.
+#
+# The ipaddress for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
 #ndhost=localhost
 
 # NzbDrone port.

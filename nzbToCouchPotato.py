@@ -40,6 +40,8 @@
 #cpsapikey=
 
 # CouchPotato host.
+#
+# The ipaddress for your CouchPotato server. e.g For the Same system use localhost or 127.0.0.1
 #cpshost=localhost
 
 # CouchPotato port.

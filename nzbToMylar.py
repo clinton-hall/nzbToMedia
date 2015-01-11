@@ -33,6 +33,8 @@
 #myCategory=comics
 
 # Mylar host.
+#
+# The ipaddress for your Mylar server. e.g For the Same system use localhost or 127.0.0.1
 #myhost=localhost
 
 # Mylar port.
