@@ -476,7 +476,10 @@ def parse_deluge(args):
     inputName = args[2]
     inputHash = args[1]
     inputID = args[1]
-    inputCategory = nzbtomedia.TORRENT_CLASS.core.get_torrent_status(inputID, ['label']).get()['label']
+    try:
+        inputCategory = nzbtomedia.TORRENT_CLASS.core.get_torrent_status(inputID, ['label']).get()['label']
+    except:
+        inputCategory = ''
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 
