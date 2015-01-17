@@ -1,1 +1,1 @@
-start /wait wscript "%~dp0\invisible.vbs" %*
+start /B /wait wscript "%~dp0\invisible.vbs" %*
