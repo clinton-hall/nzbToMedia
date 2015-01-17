@@ -95,10 +95,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         uniquePath = 1
 
     if clientAgent != 'manual':
-        try:
-            nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
-        except:
-            logger.warning("Failed to pause torrent %s in %s" % (inputName, clientAgent))
+        nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
     if uniquePath:
         outputDestination = os.path.normpath(
@@ -224,20 +221,15 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         if clientAgent != 'manual':
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-            try:
-                nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, inputName)
-            except:
-                logger.warning("Failed to resume torrent %s in %s" % (inputName, clientAgent))
+            nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, inputName)
+
     else:
         if clientAgent != 'manual':
             # update download status in our DB
             nzbtomedia.update_downloadInfoStatus(inputName, 1)
 
             # remove torrent
-            try:
-                nzbtomedia.remove_torrent(clientAgent, inputHash, inputID, inputName)
-            except:
-                logger.warning("Failed to delete torrent %s in %s" % (inputName, clientAgent))
+            nzbtomedia.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories

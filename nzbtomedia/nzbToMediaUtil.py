@@ -737,42 +737,44 @@ def create_torrent_class(clientAgent):
 
 def pause_torrent(clientAgent, inputHash, inputID, inputName):
     logger.debug("Stopping torrent %s in %s while processing" % (inputName, clientAgent))
-
-    if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.stop(inputHash)
-    if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.stop_torrent(inputID)
-    if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.core.pause_torrent([inputID])
-
-    time.sleep(5)
+    try:
+        if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.stop(inputHash)
+        if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.stop_torrent(inputID)
+        if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.core.pause_torrent([inputID])
+        time.sleep(5)
+    except:
+        logger.warning("Failed to stop torrent %s in %s" % (inputName, clientAgent))
 
 def resume_torrent(clientAgent, inputHash, inputID, inputName):
     logger.debug("Starting torrent %s in %s" % (inputName, clientAgent))
-
-    if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.start(inputHash)
-    if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.start_torrent(inputID)
-    if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
-        nzbtomedia.TORRENT_CLASS.core.resume_torrent([inputID])
-
-    time.sleep(5)
+    try:
+        if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.start(inputHash)
+        if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.start_torrent(inputID)
+        if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
+            nzbtomedia.TORRENT_CLASS.core.resume_torrent([inputID])
+        time.sleep(5)
+    except:
+        logger.warning("Failed to start torrent %s in %s" % (inputName, clientAgent))
 
 def remove_torrent(clientAgent, inputHash, inputID, inputName):
     if nzbtomedia.DELETE_ORIGINAL == 1 or nzbtomedia.USELINK == 'move':
         logger.debug("Deleting torrent %s from %s" % (inputName, clientAgent))
-
-        if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
-            nzbtomedia.TORRENT_CLASS.removedata(inputHash)
-            nzbtomedia.TORRENT_CLASS.remove(inputHash)
-        if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
-            nzbtomedia.TORRENT_CLASS.remove_torrent(inputID, True)
-        if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
-            nzbtomedia.TORRENT_CLASS.core.remove_torrent(inputID, True)
-
-        time.sleep(5)
-
+        try:
+            if clientAgent == 'utorrent' and nzbtomedia.TORRENT_CLASS != "":
+                nzbtomedia.TORRENT_CLASS.removedata(inputHash)
+                nzbtomedia.TORRENT_CLASS.remove(inputHash)
+            if clientAgent == 'transmission' and nzbtomedia.TORRENT_CLASS != "":
+                nzbtomedia.TORRENT_CLASS.remove_torrent(inputID, True)
+            if clientAgent == 'deluge' and nzbtomedia.TORRENT_CLASS != "":
+                nzbtomedia.TORRENT_CLASS.core.remove_torrent(inputID, True)
+            time.sleep(5)
+        except:
+            logger.warning("Failed to delete torrent %s in %s" % (inputName, clientAgent))
     else:
         resume_torrent(clientAgent, inputHash, inputID, inputName)
 
