@@ -215,8 +215,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if nzbtomedia.VFRAMERATE and not (nzbtomedia.VFRAMERATE * 0.999 <= fr <= nzbtomedia.VFRAMERATE * 1.001):
             video_cmd.extend(['-r', str(nzbtomedia.VFRAMERATE)])
         if scale:
-            w_scale = width/int(scale.split(':')[0])
-            h_scale = height/int(scale.split(':')[1])
+            w_scale = width/float(scale.split(':')[0])
+            h_scale = height/float(scale.split(':')[1])
             if w_scale > h_scale: # widescreen, Scale by width only.
                scale = scale.split(':')[0] + ":trunc(ih/2)*2"
                if w_scale != 1:
