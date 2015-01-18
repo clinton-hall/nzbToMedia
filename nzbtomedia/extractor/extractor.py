@@ -98,12 +98,13 @@ def extract(filePath, outputDestination):
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
     devnull = open(os.devnull, 'w')
     
-    info = subprocess.STARTUPINFO()
-    info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
-    
     try:  # now works same for nt and *nix
+        info = None
         cmd.append(filePath)  # add filePath to final cmd arg.
-        if platform.system() != 'Windows':
+        if platform.system() == 'Windows':
+            info = subprocess.STARTUPINFO()
+            info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+        else:
             cmd = nzbtomedia.NICENESS + cmd
         cmd2 = cmd
         cmd2.append("-p-")  # don't prompt for password.

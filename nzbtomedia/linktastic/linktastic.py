@@ -25,8 +25,9 @@ import subprocess
 from subprocess import CalledProcessError
 import os
 
-info = subprocess.STARTUPINFO()
-info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+if os.name == 'nt':
+    info = subprocess.STARTUPINFO()
+    info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
 # Prevent spaces from messing with us!
 def _escape_param(param):
