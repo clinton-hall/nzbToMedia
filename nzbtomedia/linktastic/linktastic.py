@@ -25,8 +25,6 @@ import subprocess
 from subprocess import CalledProcessError
 import os
 
-info = subprocess.STARTUPINFO()
-info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
 # Prevent spaces from messing with us!
 def _escape_param(param):
@@ -38,7 +36,7 @@ def _link_windows(src, dest):
     try:
         subprocess.check_output(
             'cmd /C mklink /H %s %s' % (_escape_param(dest), _escape_param(src)),
-            stderr=subprocess.STDOUT, startupinfo=info)
+            stderr=subprocess.STDOUT)
     except CalledProcessError as err:
 
         raise IOError(err.output.decode('utf-8'))
@@ -52,7 +50,7 @@ def _symlink_windows(src, dest):
     try:
         subprocess.check_output(
             'cmd /C mklink %s %s' % (_escape_param(dest), _escape_param(src)),
-            stderr=subprocess.STDOUT, startupinfo=info)
+            stderr=subprocess.STDOUT)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
@@ -64,7 +62,7 @@ def _dirlink_windows(src, dest):
     try:
         subprocess.check_output(
             'cmd /C mklink /J %s %s' % (_escape_param(dest), _escape_param(src)),
-            stderr=subprocess.STDOUT, startupinfo=info)
+            stderr=subprocess.STDOUT)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
@@ -76,7 +74,7 @@ def _junctionlink_windows(src, dest):
     try:
         subprocess.check_output(
             'cmd /C mklink /D %s %s' % (_escape_param(dest), _escape_param(src)),
-            stderr=subprocess.STDOUT, startupinfo=info)
+            stderr=subprocess.STDOUT)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
