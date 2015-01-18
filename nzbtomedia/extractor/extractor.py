@@ -97,13 +97,17 @@ def extract(filePath, outputDestination):
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
     devnull = open(os.devnull, 'w')
+    
+    info = subprocess.STARTUPINFO()
+    info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
+    
     try:  # now works same for nt and *nix
         cmd.append(filePath)  # add filePath to final cmd arg.
         if platform.system() != 'Windows':
             cmd = nzbtomedia.NICENESS + cmd
         cmd2 = cmd
         cmd2.append("-p-")  # don't prompt for password.
-        p = Popen(cmd2, stdout=devnull, stderr=devnull)  # should extract files fine.
+        p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
         if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s" % (filePath, outputDestination))
@@ -117,7 +121,7 @@ def extract(filePath, outputDestination):
                 #append password here.
                 passcmd = "-p" + password
                 cmd2.append(passcmd)
-                p = Popen(cmd2, stdout=devnull, stderr=devnull)  # should extract files fine.
+                p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     nzbtomedia.logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s" % (
