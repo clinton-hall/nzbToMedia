@@ -36,6 +36,8 @@
 #gzapikey=
 
 # Gamez host.
+#
+# The ipaddress for your Gamez server. e.g For the Same system use localhost or 127.0.0.1
 #gzhost=localhost
 
 # Gamez port.

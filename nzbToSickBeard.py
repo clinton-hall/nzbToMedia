@@ -42,6 +42,8 @@
 #sbCategory=tv
 
 # SickBeard host.
+#
+# The ipaddress for your SickBeard/SickRage server. e.g For the Same system use localhost or 127.0.0.1
 #sbhost=localhost
 
 # SickBeard port.

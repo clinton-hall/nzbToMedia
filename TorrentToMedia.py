@@ -205,8 +205,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         result = nzbtomedia.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
                                                        inputCategory)
     elif sectionName in ['SickBeard','NzbDrone']:
+        if inputHash:
+            inputHash = inputHash.upper()
         result = nzbtomedia.autoProcessTV().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
-                                                           inputHash.upper(), inputCategory)
+                                                           inputHash, inputCategory)
     elif sectionName == 'HeadPhones':
         result = nzbtomedia.autoProcessMusic().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
     elif sectionName == 'Mylar':
@@ -220,6 +222,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
             nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, inputName)
+
     else:
         if clientAgent != 'manual':
             # update download status in our DB

@@ -40,6 +40,8 @@
 #cpsapikey=
 
 # CouchPotato host.
+#
+# The ipaddress for your CouchPotato server. e.g For the Same system use localhost or 127.0.0.1
 #cpshost=localhost
 
 # CouchPotato port.
@@ -83,6 +85,8 @@
 #sbCategory=tv
 
 # SickBeard host.
+#
+# The ipaddress for your SickBeard/SickRage server. e.g For the Same system use localhost or 127.0.0.1
 #sbhost=localhost
 
 # SickBeard port.
@@ -137,6 +141,8 @@
 #ndCategory=tv2
 
 # NzbDrone host.
+#
+# The ipaddress for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
 #ndhost=localhost
 
 # NzbDrone port.
@@ -181,6 +187,8 @@
 #hpapikey=
 
 # HeadPhones host.
+#
+# The ipaddress for your HeadPhones server. e.g For the Same system use localhost or 127.0.0.1
 #hphost=localhost
 
 # HeadPhones port.
@@ -209,6 +217,8 @@
 #myCategory=comics
 
 # Mylar host.
+#
+# The ipaddress for your Mylar server. e.g For the Same system use localhost or 127.0.0.1
 #myhost=localhost
 
 # Mylar port.
@@ -251,6 +261,8 @@
 #gzapikey=
 
 # Gamez host.
+#
+# The ipaddress for your Gamez server. e.g For the Same system use localhost or 127.0.0.1
 #gzhost=localhost
 
 # Gamez port.
