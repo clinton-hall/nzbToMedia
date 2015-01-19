@@ -136,6 +136,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
     audio_cmd2 = []
     audio_cmd3 = []
     sub_cmd = []
+    meta_cmd = []
     other_cmd = []
 
     if not video_details or not video_details.get("streams"):  # we couldn't read streams with ffprobe. Set defaults to try transcoding.
@@ -452,11 +453,16 @@ def buildCommands(file, newDir, movieName, bitbucket):
     command.extend([ '-i', inputFile])
 
     if nzbtomedia.SEMBED and os.path.isfile(file):
-        filenum = 1
         for subfile in get_subs(file):
-            n += 1
+            sub_details, result = getVideoDetails(videofile)
+            if result != 0 or not sub_details.get("streams"):
+                continue
+            lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
             command.extend(['-i', subfile])
-            #map_cmd.extend(['-map', n]) #Commented out as this appears to break the transcode.
+            meta_cmd.extend(['-metadata:s:s:' + str(len(s_mapped) + n), 'language=' + lan[1:]])
+            n += 1
+            map_cmd.extend(['-map', n + ':0'])
+
     if not nzbtomedia.ALLOWSUBS or (not s_mapped and not n):
         sub_cmd.extend(['-sn'])
     else:       
@@ -469,6 +475,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
     command.extend(video_cmd)
     command.extend(audio_cmd)
     command.extend(sub_cmd)
+    command.extend(meta_cmd)
     command.extend(other_cmd)
     command.append(newfilePath)
     if platform.system() != 'Windows':
