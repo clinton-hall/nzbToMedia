@@ -1040,8 +1040,8 @@ def import_subs(filename):
         video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
         subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
         subliminal.save_subtitles(subtitles)
-    except:
-        logger.error("Failed to download subtitles for %s" %(filename), 'SUBTITLES') 
+    except Exception as e:
+        logger.error("Failed to download subtitles for %s due to: %s" %(filename, e), 'SUBTITLES') 
 
 def server_responding(baseURL):
     try:
