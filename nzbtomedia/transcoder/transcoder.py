@@ -438,13 +438,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 continue
             map_cmd.extend(['-map', '0:' + str(sub["index"])])
             s_mapped.extend([sub["index"]]) 
-    if not nzbtomedia.ALLOWSUBS or not s_mapped:
-        sub_cmd.extend(['-sn'])
-    else:       
-        if nzbtomedia.SCODEC:
-            sub_cmd.extend(['-c:s', nzbtomedia.SCODEC])
-        else:
-            sub_cmd.extend(['-c:s', 'copy'])
 
     if nzbtomedia.OUTPUTFASTSTART:
         other_cmd.extend(['-movflags', '+faststart'])
@@ -464,6 +457,13 @@ def buildCommands(file, newDir, movieName, bitbucket):
             n += 1
             command.extend(['-i', subfile])
             #map_cmd.extend(['-map', n]) #Commented out as this appears to break the transcode.
+    if not nzbtomedia.ALLOWSUBS or (not s_mapped and not n):
+        sub_cmd.extend(['-sn'])
+    else:       
+        if nzbtomedia.SCODEC:
+            sub_cmd.extend(['-c:s', nzbtomedia.SCODEC])
+        else:
+            sub_cmd.extend(['-c:s', 'copy'])
 
     command.extend(map_cmd)
     command.extend(video_cmd)
