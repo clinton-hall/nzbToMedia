@@ -8,7 +8,6 @@ import nzbtomedia
 import json
 import shutil
 import re
-from subprocess import call
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import makeDir
 
@@ -534,7 +533,9 @@ def extract_subs(file, newfilePath, bitbucket):
         print_cmd(command)
         result = 1 # set result to failed in case call fails.
         try:
-            result = call(command, stdout=bitbucket, stderr=bitbucket)
+            proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
+            proc.communicate()
+            result = proc.returncode
         except:
             logger.error("Extracting subtitle has failed")
 
@@ -725,7 +726,7 @@ def Transcode_directory(dirName):
         result = 1 # set result to failed in case call fails.
         try:
             if isinstance(file, str):
-                result = call(command, stdout=bitbucket, stderr=bitbucket)
+                proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             else:
                 img, data = file.iteritems().next()
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket, stdin=subprocess.PIPE)
@@ -734,8 +735,8 @@ def Transcode_directory(dirName):
                     if procin:
                         shutil.copyfileobj(procin.stdout, proc.stdin)
                         procin.stdout.close()
-                proc.communicate()
-                result = proc.returncode
+            proc.communicate()
+            result = proc.returncode
         except:
             logger.error("Transcoding of video %s has failed" % (newfilePath))
 

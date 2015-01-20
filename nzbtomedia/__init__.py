@@ -392,6 +392,8 @@ def initialize(section=None):
     GENERALOPTS = (CFG["Transcoder"]["generalOptions"])
     if isinstance(GENERALOPTS, str): GENERALOPTS = GENERALOPTS.split(',')
     if GENERALOPTS == ['']: GENERALOPTS = []
+    if not '-fflags' in GENERALOPTS: GENERALOPTS.append('-fflags')
+    if not '+genpts' in GENERALOPTS: GENERALOPTS.append('+genpts')
     try:
         OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
     except: pass
