@@ -454,7 +454,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
     if nzbtomedia.SEMBED and os.path.isfile(file):
         for subfile in get_subs(file):
-            sub_details, result = getVideoDetails(videofile)
+            sub_details, result = getVideoDetails(subfile)
             if result != 0 or not sub_details.get("streams"):
                 continue
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
