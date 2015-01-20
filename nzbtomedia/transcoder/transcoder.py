@@ -455,13 +455,13 @@ def buildCommands(file, newDir, movieName, bitbucket):
     if nzbtomedia.SEMBED and os.path.isfile(file):
         for subfile in get_subs(file):
             sub_details, result = getVideoDetails(subfile)
-            if result != 0 or not sub_details.get("streams"):
+            if not sub_details or not sub_details.get("streams"):
                 continue
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
             command.extend(['-i', subfile])
             meta_cmd.extend(['-metadata:s:s:' + str(len(s_mapped) + n), 'language=' + lan[1:]])
             n += 1
-            map_cmd.extend(['-map', n + ':0'])
+            map_cmd.extend(['-map', str(n) + ':0'])
 
     if not nzbtomedia.ALLOWSUBS or (not s_mapped and not n):
         sub_cmd.extend(['-sn'])
