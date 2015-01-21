@@ -189,6 +189,15 @@ class autoProcessTV:
                 status = 1
                 failed = 1
 
+        if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
+            result, newDirName = transcoder.Transcode_directory(dirName)
+            if result == 0:
+                logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
+                dirName = newDirName
+            else:
+                logger.error("FAILED: Transcoding failed for files in %s" % (dirName), section)
+                return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
+
         # configure SB params to pass
         fork_params['quiet'] = 1
         if inputName is not None:
@@ -234,15 +243,6 @@ class autoProcessTV:
                     logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
                     rmDir(dirName)
                 return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ] # Return as failed to flag this in the downloader.
-
-        if status == 0 and nzbtomedia.TRANSCODE == 1: # only transcode successful downlaods
-            result, newDirName = transcoder.Transcode_directory(dirName)
-            if result == 0:
-                logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
-                dirName = newDirName
-            else:
-                logger.error("FAILED: Transcoding failed for files in %s" % (dirName), section)
-                return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
 
         url = None
         if section == "SickBeard":
