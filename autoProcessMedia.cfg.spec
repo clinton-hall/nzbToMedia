@@ -32,11 +32,11 @@
 [Posix]
     ### Process priority setting for External commands (Extractor and Transcoder) on Posix (Unix/Linux/OSX) systems.
     # Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-    niceness = 10
+    niceness = 0
     # Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
-    ionice_class = 2
+    ionice_class = 0
     # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
-    ionice_classdata = 4
+    ionice_classdata = 0
 
 [CouchPotato]
     #### autoProcessing for Movies
