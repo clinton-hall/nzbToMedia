@@ -759,7 +759,7 @@ def Transcode_directory(dirName):
                     os.unlink(file)
                 except: pass 
         else:
-            logger.error("Transcoding of video to %s failed" % (newfilePath))
+            logger.error("Transcoding of video to %s failed with result %s" % (newfilePath, str(result)))
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
     if final_result == 0 and not nzbtomedia.DUPLICATE:
