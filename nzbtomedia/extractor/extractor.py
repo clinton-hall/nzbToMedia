@@ -5,6 +5,7 @@ import stat
 from time import sleep
 import nzbtomedia
 from subprocess import call, Popen
+import subprocess
 
 def extract(filePath, outputDestination):
     success = 0
