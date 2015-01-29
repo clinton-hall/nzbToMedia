@@ -1,5 +1,11 @@
 Change_LOG / History
 
+
+V10.10 29/01/2015
+
+Fix error when extracting on windows. (added import of subprocess)
+Fix subtitles download and emdedding.
+
 V10.9 19/01/2015
 
 Prevent Errors when trying next release from CouchPotato (CouchPotato failed handling)
@@ -8,7 +14,6 @@ Better Tooltip for "host" in NZBGet settings.
 Continue if failed to connect to Torrent Client.
 Fixed resolution settings in Transcoder.
 Make Windows Linking and extraction invisible.
-
 
 V10.8 15/12/2014
 
