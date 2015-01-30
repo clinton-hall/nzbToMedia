@@ -1143,6 +1143,14 @@ class PosixProcess():
         self.pidpath = nzbtomedia.PID_FILE
 
     def alreadyrunning(self):
+        try:
+            nzbtomedia.LOCK_SOCKET = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            nzbtomedia.LOCK_SOCKET.bind('\0' + 'nzbtomedia')
+            return False
+        except socket.error as e:
+            if "Address already in use" in e:
+                return True
+        except AttributeError: pass
         if os.path.exists(self.pidpath):
             # Make sure it is not a "stale" pidFile
             try:
