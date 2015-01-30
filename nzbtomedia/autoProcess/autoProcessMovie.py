@@ -26,7 +26,7 @@ class autoProcessMovie:
         logger.debug("Opening URL: %s with PARAMS: %s" % (url, params))
 
         try:
-            r = requests.get(url, params=params, verify=False)
+            r = requests.get(url, params=params, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
             return results
@@ -234,7 +234,7 @@ class autoProcessMovie:
             logger.postprocess("Starting %s scan for %s" % (method, inputName), section)
 
             try:
-                r = requests.get(url, params=params, verify=False)
+                r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
                 return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
@@ -275,7 +275,7 @@ class autoProcessMovie:
                 logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
                 try:
-                    r = requests.get(url, params=params, verify=False)
+                    r = requests.get(url, params=params, verify=False, timeout=(30, 120))
                 except requests.ConnectionError:
                     logger.error("Unable to open URL %s" % (url), section)
                     return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
@@ -296,7 +296,7 @@ class autoProcessMovie:
             logger.debug("Opening URL: %s" % (url), section)
 
             try:
-                r = requests.get(url, params={'media_id': media_id}, verify=False)
+                r = requests.get(url, params={'media_id': media_id}, verify=False, timeout=(30, 600))
             except requests.ConnectionError:
                 logger.error("Unable to open URL %s" % (url), section)
                 return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]

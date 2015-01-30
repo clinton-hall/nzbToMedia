@@ -58,7 +58,7 @@ class autoProcessComics:
 
         logger.debug("Opening URL: %s" % (url), section)
         try:
-            r = requests.get(url, auth=(username, password), params=params, stream=True, verify=False)
+            r = requests.get(url, auth=(username, password), params=params, stream=True, verify=False, timeout=(30, 300))
         except requests.ConnectionError:
             logger.error("Unable to open URL", section)
             return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]

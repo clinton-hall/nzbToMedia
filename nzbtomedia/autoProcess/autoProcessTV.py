@@ -16,7 +16,7 @@ class autoProcessTV:
     def command_complete(self, url, params, headers, section):
         r = None
         try:
-            r = requests.get(url, params=params, headers=headers, stream=True, verify=False)
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url1), section)
             return None
@@ -34,7 +34,7 @@ class autoProcessTV:
     def CDH(self, url2, headers):
         r = None
         try:
-            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False)
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url2), section)
             return False
@@ -269,12 +269,12 @@ class autoProcessTV:
                 s = requests.Session()
                 login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
                 login_params = {'username': username, 'password': password}
-                s.post(login, data=login_params, stream=True, verify=False)
-                r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False)
+                s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
+                r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
             elif section == "NzbDrone":
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
                 r = None
-                r = requests.post(url, data=data, headers=headers, stream=True, verify=False)
+                r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
             return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]

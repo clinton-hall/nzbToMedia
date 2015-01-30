@@ -32,7 +32,7 @@ def reportNzb(failure_link, clientAgent):
     else:
         return
     try:
-        r = requests.post(failure_link, headers=headers)
+        r = requests.post(failure_link, headers=headers, timeout=(30, 300))
     except Exception as e:
         logger.error("Unable to open URL %s due to %s" % (failure_link, e))
     return
@@ -802,7 +802,7 @@ def find_download(clientAgent, download_id):
         params['output'] = 'json'
         params['value'] = download_id
         try:
-            r = requests.get(url, params=params, verify=False)
+            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
         except requests.ConnectionError:
             logger.error("Unable to open URL")
             return False  # failure
@@ -822,7 +822,7 @@ def get_nzoid(inputName):
     params['mode'] = "queue"
     params['output'] = 'json'
     try:
-        r = requests.get(url, params=params, verify=False)
+        r = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
         logger.error("Unable to open URL")
         return nzoid  # failure
@@ -964,7 +964,7 @@ def find_imdbid(dirName, inputName):
         logger.debug("Opening URL: %s" % url)
 
         try:
-            r = requests.get(url, params={'y': year, 't': title}, verify=False)
+            r = requests.get(url, params={'y': year, 't': title}, verify=False, timeout=(60, 300))
         except requests.ConnectionError:
             logger.error("Unable to open URL %s" % url)
             return
@@ -1045,7 +1045,7 @@ def import_subs(filename):
 
 def server_responding(baseURL):
     try:
-        requests.get(baseURL, timeout=60, verify=False)
+        requests.get(baseURL, timeout=(30, 60), verify=False)
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
         return False
@@ -1141,15 +1141,18 @@ class PosixProcess():
 
     def __init__(self):
         self.pidpath = nzbtomedia.PID_FILE
+        self.lock_socket = None
 
     def alreadyrunning(self):
         try:
-            nzbtomedia.LOCK_SOCKET = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            nzbtomedia.LOCK_SOCKET.bind('\0' + 'nzbtomedia')
-            return False
+            self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+            self.lock_socket.bind('\0' + self.pidpath)
+            self.lasterror = False
+            return self.lasterror
         except socket.error as e:
             if "Address already in use" in e:
-                return True
+                self.lasterror = True
+                return self.lasterror
         except AttributeError: pass
         if os.path.exists(self.pidpath):
             # Make sure it is not a "stale" pidFile
@@ -1181,5 +1184,7 @@ class PosixProcess():
 
     def __del__(self):
         if not self.lasterror:
+            if self.lock_socket:
+                self.lock_socket.close()
             if os.path.isfile(self.pidpath):
                 os.unlink(self.pidpath)
