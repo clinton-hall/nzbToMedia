@@ -219,11 +219,11 @@ def buildCommands(file, newDir, movieName, bitbucket):
             h_scale = height/float(scale.split(':')[1])
             if w_scale > h_scale: # widescreen, Scale by width only.
                scale = scale.split(':')[0] + ":" + str(int((height/w_scale)/2)*2)
-               if w_scale != 1:
+               if w_scale > 1:
                    video_cmd.extend(['-vf', 'scale=' + scale])
             else:  # lower or mathcing ratio, scale by height only.
                scale = str(int((width/h_scale)/2)*2) + ":" + scale.split(':')[1]
-               if h_scale != 1:
+               if h_scale > 1:
                    video_cmd.extend(['-vf', 'scale=' + scale])
         if nzbtomedia.VBITRATE:
             video_cmd.extend(['-b:v', str(nzbtomedia.VBITRATE)])
