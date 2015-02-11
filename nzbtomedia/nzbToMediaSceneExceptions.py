@@ -101,7 +101,7 @@ def rename_script(dirname):
     rename_file = ""
     for dir, dirs, files in os.walk(dirname):
         for file in files:
-            if re.search('(rename\S*\.(sh|bat))',file):
+            if re.search('(rename\S*\.(sh|bat)$)',file,re.IGNORECASE):
                 rename_file = os.path.join(dir, file)
                 dirname = dir
                 break
