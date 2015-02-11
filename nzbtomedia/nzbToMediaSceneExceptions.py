@@ -1,6 +1,7 @@
 import os
 import re
 import nzbtomedia
+import shlex 
 from nzbtomedia import logger
 from nzbtomedia.nzbToMediaUtil import listMediaFiles
 
