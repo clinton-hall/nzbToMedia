@@ -108,7 +108,10 @@ def rename_script(dirname):
     if rename_file: 
         rename_lines = [line.strip() for line in open(rename_file)]
         for line in rename_lines:
-            cmd = filter(None, re.split('mv|Move\s(\S*)\s(\S*)',line))
+            if re.search('^(mv|Move)', line, re.IGNORECASE):
+                cmd = shlex.split(line)[1:]
+            else:
+                continue
             if len(cmd) == 2 and os.path.isfile(os.path.join(dirname, cmd[0])):
                 orig = os.path.join(dirname, cmd[0])
                 dest = os.path.join(dirname, cmd[1].split('\\')[-1].split('/')[-1])
