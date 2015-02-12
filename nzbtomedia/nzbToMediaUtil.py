@@ -981,6 +981,7 @@ def find_imdbid(dirName, inputName):
             return imdbid
 
     logger.warning('Unable to find a imdbID for %s' % (inputName))
+    return imdbid
 
 def extractFiles(src, dst=None):
     extracted_folder = []
