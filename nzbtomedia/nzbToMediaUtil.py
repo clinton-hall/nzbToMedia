@@ -551,7 +551,7 @@ def getDirs(section, subsection, link = 'hard'):
         folders = []
 
         logger.info("Searching %s for mediafiles to post-process ..." % (path))
-        sync = [ o for o in os.listdir(path) if os.path.splitext(o)[1] == '.!sync' ]
+        sync = [ o for o in os.listdir(path) if os.path.splitext(o)[1] in ['.!sync','.bts'] ]
         # search for single files and move them into their own folder for post-processing
         for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isfile(os.path.join(path, o)) ]:
@@ -620,7 +620,7 @@ def getDirs(section, subsection, link = 'hard'):
         if os.listdir(path):
             for dir in [os.path.join(path, o) for o in os.listdir(path) if
                             os.path.isdir(os.path.join(path, o))]:
-                sync = [ o for o in os.listdir(dir) if os.path.splitext(o)[1] == '.!sync' ]
+                sync = [ o for o in os.listdir(dir) if os.path.splitext(o)[1] in ['.!sync','.bts'] ]
                 if len(sync) > 0 or len(os.listdir(dir)) == 0:
                     continue
                 folders.extend([dir])
