@@ -557,6 +557,8 @@ def getDirs(section, subsection, link = 'hard'):
                             os.path.isfile(os.path.join(path, o)) ]:
             if len(sync) > 0:
                 break
+            if os.path.split(mediafile)[1] in ['Thumbs.db', 'thumbs.db']:
+                continue
             try:
                 logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path)) 
                 newPath = None
