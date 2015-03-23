@@ -769,7 +769,7 @@ def Transcode_directory(dirName):
             except: pass
     if not os.listdir(newDir):  #this is an empty directory and we didn't transcode into it.
         os.rmdir(newDir)
-        newDir = dirname
+        newDir = dirName
     if not nzbtomedia.PROCESSOUTPUT and nzbtomedia.DUPLICATE:  # We postprocess the original files to CP/SB 
         newDir = dirName
     bitbucket.close()
