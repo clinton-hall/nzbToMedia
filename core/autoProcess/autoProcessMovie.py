@@ -195,6 +195,8 @@ class autoProcessMovie:
         else:
             logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
             status = 1
+            if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+                print('[NZB] MARK=BAD')
 
         if status == 0:
             if core.TRANSCODE == 1:

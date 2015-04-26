@@ -129,6 +129,21 @@ class autoProcessTV:
             if e.errno != errno.EEXIST:
                 raise
 
+        if fork not in core.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+            if inputName:
+                process_all_exceptions(inputName, dirName)
+                inputName, dirName = convert_to_ascii(inputName, dirName)
+
+            # Now check if tv files exist in destination. 
+            if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
+                if listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
+                    logger.debug('Checking for archives to extract in directory: %s' % (dirName))
+                    core.extractFiles(dirName)
+                    inputName, dirName = convert_to_ascii(inputName, dirName)
+
+            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
+                flatten(dirName) 
+            
         # Check video files for corruption
         status = int(failed)
         good_files = 0
@@ -151,45 +166,17 @@ class autoProcessTV:
                     print('[NZB] MARK=BAD')
                 if failureLink:
                     failureLink = failureLink + '&corrupt=true'
-        elif clientAgent == "manual" and not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=True):
-                logger.warning("No media files found in directory %s to manually process." % (dirName), section)
-                return [0, ""]   # Success (as far as this script is concerned)
+        elif clientAgent == "manual":
+            logger.warning("No media files found in directory %s to manually process." % (dirName), section)
+            return [0, ""]   # Success (as far as this script is concerned)
+        else:
+            logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
+            status = 1
+            failed = 1
+            if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+                print('[NZB] MARK=BAD')
 
-        if fork not in core.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
-            if inputName:
-                process_all_exceptions(inputName, dirName)
-                inputName, dirName = convert_to_ascii(inputName, dirName)
-
-            # Now check if tv files exist in destination. 
-            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName) # to make sure SickBeard can find the video (not in sub-folder)
-            elif listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
-                logger.debug('Checking for archives to extract in directory: %s' % (dirName))
-                core.extractFiles(dirName)
-                inputName, dirName = convert_to_ascii(inputName, dirName)
-                good_files = 0
-                num_files = 0
-                for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
-                    num_files += 1
-                    if transcoder.isVideoGood(video, status):
-                        good_files += 1
-                        import_subs(video)
-                if num_files > 0 and good_files == num_files:
-                    logger.info('Found Valid Videos. Setting status Success')
-                    status = 0
-                    failed = 0
-
-            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName) 
-            elif clientAgent == "manual":
-                logger.warning("No media files found in directory %s to manually process." % (dirName), section)
-                return [0, ""]   # Success (as far as this script is concerned)
-            else:
-                logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
-                status = 1
-                failed = 1
-
-        if status == 0 and core.TRANSCODE == 1: # only transcode successful downlaods
+        if status == 0 and core.TRANSCODE == 1: # only transcode successful downloads
             result, newDirName = transcoder.Transcode_directory(dirName)
             if result == 0:
                 logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
