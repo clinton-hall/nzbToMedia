@@ -1048,7 +1048,7 @@ def import_subs(filename):
 
 def server_responding(baseURL):
     try:
-        requests.get(baseURL, timeout=(30, 60), verify=False)
+        requests.get(baseURL, timeout=(60, 120), verify=False)
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
         return False
