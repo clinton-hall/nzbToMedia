@@ -4,12 +4,12 @@ import os
 import time
 import shutil
 import sys
-import nzbtomedia
+import core
 
 from subprocess import Popen
-from nzbtomedia import logger, nzbToMediaDB
-from nzbtomedia.nzbToMediaUtil import convert_to_ascii, CharReplace
-from nzbtomedia.nzbToMediaUserScript import external_script
+from core import logger, nzbToMediaDB
+from core.nzbToMediaUtil import convert_to_ascii, CharReplace
+from core.nzbToMediaUserScript import external_script
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
@@ -17,7 +17,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     foundFile = 0
     uniquePath = 1
 
-    if clientAgent != 'manual' and not nzbtomedia.DOWNLOADINFO:
+    if clientAgent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory %s to database' % (inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
@@ -37,26 +37,26 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.debug("Received Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
-    inputDirectory, inputName, inputCategory, root = nzbtomedia.category_search(inputDirectory, inputName,
+    inputDirectory, inputName, inputCategory, root = core.category_search(inputDirectory, inputName,
                                                                                         inputCategory, root,
-                                                                                        nzbtomedia.CATEGORIES)  # Confirm the category by parsing directory structure 
+                                                                                        core.CATEGORIES)  # Confirm the category by parsing directory structure 
     if inputCategory == "":
         inputCategory = "UNCAT"
 
     usercat = inputCategory
     try:
-        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+        inputName = inputName.encode(core.SYS_ENCODING)
     except: pass
     try:
-        inputDirectory = inputDirectory.encode(nzbtomedia.SYS_ENCODING)
+        inputDirectory = inputDirectory.encode(core.SYS_ENCODING)
     except: pass
 
     logger.debug("Determined Directory: %s | Name: %s | Category: %s" % (inputDirectory, inputName, inputCategory))
 
     # auto-detect section
-    section = nzbtomedia.CFG.findsection(inputCategory).isenabled()
+    section = core.CFG.findsection(inputCategory).isenabled()
     if section is None:
-        section = nzbtomedia.CFG.findsection("ALL").isenabled()
+        section = core.CFG.findsection("ALL").isenabled()
         if section is None:
             logger.error(
                 'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
@@ -95,21 +95,21 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         uniquePath = 1
 
     if clientAgent != 'manual':
-        nzbtomedia.pause_torrent(clientAgent, inputHash, inputID, inputName)
+        core.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
     if uniquePath:
         outputDestination = os.path.normpath(
-            nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory, nzbtomedia.sanitizeName(inputName)))
+            core.os.path.join(core.OUTPUTDIRECTORY, inputCategory, core.sanitizeName(inputName)))
     else:
         outputDestination = os.path.normpath(
-            nzbtomedia.os.path.join(nzbtomedia.OUTPUTDIRECTORY, inputCategory))
+            core.os.path.join(core.OUTPUTDIRECTORY, inputCategory))
     try:
-        outputDestination = outputDestination.encode(nzbtomedia.SYS_ENCODING)
+        outputDestination = outputDestination.encode(core.SYS_ENCODING)
     except: pass
 
     logger.info("Output directory set to: %s" % (outputDestination))
 
-    if nzbtomedia.SAFE_MODE and outputDestination == nzbtomedia.TORRENT_DEFAULTDIR:
+    if core.SAFE_MODE and outputDestination == core.TORRENT_DEFAULTDIR:
         logger.error(
             'The output directory:[%s] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting' % (
             inputDirectory))
@@ -118,33 +118,33 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     logger.debug("Scanning files in directory: %s" % (inputDirectory))
 
     if sectionName == 'HeadPhones':
-        nzbtomedia.NOFLATTEN.extend(
+        core.NOFLATTEN.extend(
             inputCategory)  # Make sure we preserve folder structure for HeadPhones.
 
     now = datetime.datetime.now()
 
-    inputFiles = nzbtomedia.listMediaFiles(inputDirectory)
+    inputFiles = core.listMediaFiles(inputDirectory)
     logger.debug("Found %s files in %s" % (str(len(inputFiles)), inputDirectory))
     for inputFile in inputFiles:
         filePath = os.path.dirname(inputFile)
         fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
         fullFileName = os.path.basename(inputFile)
 
-        targetFile = nzbtomedia.os.path.join(outputDestination, fullFileName)
-        if inputCategory in nzbtomedia.NOFLATTEN:
+        targetFile = core.os.path.join(outputDestination, fullFileName)
+        if inputCategory in core.NOFLATTEN:
             if not os.path.basename(filePath) in outputDestination:
-                targetFile = nzbtomedia.os.path.join(
-                    nzbtomedia.os.path.join(outputDestination, os.path.basename(filePath)), fullFileName)
+                targetFile = core.os.path.join(
+                    core.os.path.join(outputDestination, os.path.basename(filePath)), fullFileName)
                 logger.debug(
                     "Setting outputDestination to %s to preserve folder structure" % (os.path.dirname(targetFile)))
         try:
-            targetFile = targetFile.encode(nzbtomedia.SYS_ENCODING)
+            targetFile = targetFile.encode(core.SYS_ENCODING)
         except: pass
         if root == 1:
             if not foundFile:
                 logger.debug("Looking for %s in: %s" % (inputName, inputFile))
-            if (nzbtomedia.sanitizeName(inputName) in nzbtomedia.sanitizeName(inputFile)) or (
-                        nzbtomedia.sanitizeName(fileName) in nzbtomedia.sanitizeName(inputName)):
+            if (core.sanitizeName(inputName) in core.sanitizeName(inputFile)) or (
+                        core.sanitizeName(fileName) in core.sanitizeName(inputName)):
                 foundFile = True
                 logger.debug("Found file %s that matches Torrent Name %s" % (fullFileName, inputName))
             else:
@@ -164,8 +164,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         if Torrent_NoLink == 0:
             try:
-                nzbtomedia.copy_link(inputFile, targetFile, nzbtomedia.USELINK)
-                nzbtomedia.rmReadOnly(targetFile)
+                core.copy_link(inputFile, targetFile, core.USELINK)
+                core.rmReadOnly(targetFile)
             except:
                 logger.error("Failed to link: %s to %s" % (inputFile, targetFile))
 
@@ -173,15 +173,15 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
-        nzbtomedia.extractFiles(outputDestination)
+        core.extractFiles(outputDestination)
 
-    if not inputCategory in nzbtomedia.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
-        nzbtomedia.flatten(outputDestination)
+    if not inputCategory in core.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
+        core.flatten(outputDestination)
 
     # Now check if video files exist in destination:
     if sectionName in ["SickBeard", "NzbDrone", "CouchPotato"]:
         numVideos = len(
-            nzbtomedia.listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False))
+            core.listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False))
         if numVideos > 0:
             logger.info("Found %s media files in %s" % (numVideos, outputDestination))
             status = 0
@@ -202,48 +202,48 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         result = external_script(outputDestination, inputName, inputCategory, section[usercat])
 
     elif sectionName == 'CouchPotato':
-        result = nzbtomedia.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
+        result = core.autoProcessMovie().process(sectionName,outputDestination, inputName, status, clientAgent, inputHash,
                                                        inputCategory)
     elif sectionName in ['SickBeard','NzbDrone']:
         if inputHash:
             inputHash = inputHash.upper()
-        result = nzbtomedia.autoProcessTV().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
+        result = core.autoProcessTV().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
                                                            inputHash, inputCategory)
     elif sectionName == 'HeadPhones':
-        result = nzbtomedia.autoProcessMusic().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
+        result = core.autoProcessMusic().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
     elif sectionName == 'Mylar':
-        result = nzbtomedia.autoProcessComics().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
+        result = core.autoProcessComics().processEpisode(sectionName,outputDestination, inputName, status, clientAgent,
                                                                inputCategory)
     elif sectionName == 'Gamez':
-        result = nzbtomedia.autoProcessGames().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
+        result = core.autoProcessGames().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
 
     if result[0] != 0:
         if clientAgent != 'manual':
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
-            nzbtomedia.resume_torrent(clientAgent, inputHash, inputID, inputName)
+            core.resume_torrent(clientAgent, inputHash, inputID, inputName)
 
     else:
         if clientAgent != 'manual':
             # update download status in our DB
-            nzbtomedia.update_downloadInfoStatus(inputName, 1)
+            core.update_downloadInfoStatus(inputName, 1)
 
             # remove torrent
-            nzbtomedia.remove_torrent(clientAgent, inputHash, inputID, inputName)
+            core.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories
-            nzbtomedia.cleanDir(outputDestination, sectionName, inputCategory)
+            core.cleanDir(outputDestination, sectionName, inputCategory)
 
     return result
 
 
 def main(args):
     # Initialize the config
-    nzbtomedia.initialize()
+    core.initialize()
 
     # clientAgent for Torrents
-    clientAgent = nzbtomedia.TORRENT_CLIENTAGENT
+    clientAgent = core.TORRENT_CLIENTAGENT
 
     logger.info("#########################################################")
     logger.info("## ..::[%s]::.. ##" % os.path.basename(__file__))
@@ -256,7 +256,7 @@ def main(args):
     result = [ 0, "" ]
 
     try:
-        inputDirectory, inputName, inputCategory, inputHash, inputID = nzbtomedia.parse_args(clientAgent, args)
+        inputDirectory, inputName, inputCategory, inputHash, inputID = core.parse_args(clientAgent, args)
     except:
         logger.error("There was a problem loading variables")
         return -1
@@ -267,16 +267,16 @@ def main(args):
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
 
-        for section, subsections in nzbtomedia.SECTIONS.items():
+        for section, subsections in core.SECTIONS.items():
             for subsection in subsections:
-                if not nzbtomedia.CFG[section][subsection].isenabled():
+                if not core.CFG[section][subsection].isenabled():
                     continue
-                for dirName in nzbtomedia.getDirs(section, subsection, link='hard'):
+                for dirName in core.getDirs(section, subsection, link='hard'):
                     logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
 
                     logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
-                    nzbtomedia.DOWNLOADINFO = nzbtomedia.get_downloadInfo(os.path.basename(dirName), 0)
-                    if nzbtomedia.DOWNLOADINFO:
+                    core.DOWNLOADINFO = core.get_downloadInfo(os.path.basename(dirName), 0)
+                    if core.DOWNLOADINFO:
                         logger.info(
                             "Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
                     else:
@@ -286,27 +286,27 @@ def main(args):
                         )
 
                     try:
-                        clientAgent = str(nzbtomedia.DOWNLOADINFO[0]['client_agent'])
+                        clientAgent = str(core.DOWNLOADINFO[0]['client_agent'])
                     except:
                         clientAgent = 'manual'
                     try:
-                        inputHash = str(nzbtomedia.DOWNLOADINFO[0]['input_hash'])
+                        inputHash = str(core.DOWNLOADINFO[0]['input_hash'])
                     except:
                         inputHash = None
                     try:
-                        inputID = str(nzbtomedia.DOWNLOADINFO[0]['input_id'])
+                        inputID = str(core.DOWNLOADINFO[0]['input_id'])
                     except:
                         inputID = None
 
-                    if clientAgent.lower() not in nzbtomedia.TORRENT_CLIENTS and clientAgent != 'manual':
+                    if clientAgent.lower() not in core.TORRENT_CLIENTS and clientAgent != 'manual':
                         continue
 
                     try:
-                        dirName = dirName.encode(nzbtomedia.SYS_ENCODING)
+                        dirName = dirName.encode(core.SYS_ENCODING)
                     except: pass
                     inputName = os.path.basename(dirName)
                     try:
-                        inputName = inputName.encode(nzbtomedia.SYS_ENCODING)
+                        inputName = inputName.encode(core.SYS_ENCODING)
                     except: pass
 
                     results = processTorrent(dirName, inputName, subsection, inputHash, inputID,
@@ -320,7 +320,7 @@ def main(args):
         logger.info("The %s script completed successfully." % (args[0]))
     else:
         logger.error("A problem was reported in the %s script." % (args[0]))
-    del nzbtomedia.MYAPP
+    del core.MYAPP
     return result[0]
 
 
