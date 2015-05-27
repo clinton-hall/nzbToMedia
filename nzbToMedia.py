@@ -506,7 +506,7 @@ from core.autoProcess.autoProcessGames import autoProcessGames
 from core.autoProcess.autoProcessMovie import autoProcessMovie
 from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
-from core.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii, get_nzoid
+from core.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii, get_nzoid, plex_update
 from core.nzbToMediaUserScript import external_script
 from core import logger, nzbToMediaDB
 
@@ -607,6 +607,8 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         result = external_script(inputDirectory, inputName, inputCategory, section[usercat])
     else:
         result = [-1, ""]
+
+    plex_update(inputCategory)
 
     if result[0] == 0:
         if clientAgent != 'manual':

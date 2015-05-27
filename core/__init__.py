@@ -116,6 +116,12 @@ DELUGEPORT = None
 DELUGEUSR = None
 DELUGEPWD = None
 
+PLEXSSL = None
+PLEXHOST = None
+PLEXPORT = None
+PLEXTOKEN = None
+PLEXSEC = None
+
 EXTCONTAINER = []
 COMPRESSEDCONTAINER = []
 MEDIACONTAINER = []
@@ -206,7 +212,8 @@ def initialize(section=None):
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3
+        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
+        PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC
 
     if __INITIALIZED__:
         return False
@@ -350,6 +357,15 @@ def initialize(section=None):
     if REMOTEPATHS:
         if isinstance(REMOTEPATHS, list): REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+
+    PLEXSSL = int(CFG["Plex"]["plex_ssl"])
+    PLEXHOST = CFG["Plex"]["plex_host"]
+    PLEXPORT = CFG["Plex"]["plex_port"]
+    PLEXTOKEN = CFG["Plex"]["plex_token"]
+    PLEXSEC = CFG["Plex"]["plex_sections"] or None
+    if PLEXSEC:
+        if isinstance(PLEXSEC, list): PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
+        PLEXSEC = [ tuple(item.split(',')) for item in PLEXSEC.split('|') ]
 
     devnull = open(os.devnull, 'w')
     try:

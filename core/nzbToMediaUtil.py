@@ -1053,6 +1053,25 @@ def server_responding(baseURL):
     except (requests.ConnectionError, requests.exceptions.Timeout):
         return False
 
+def plex_update(category):
+    logger.debug("Attempting to update Plex Library for category %s." %(category), 'PLEX')
+    if core.PLEXSSL:
+        ulr = 'https://'
+    else:
+        url = 'http://'
+    url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'
+    section = None
+    for item in core.PLEXSEC:
+        if item[0] == category:
+            section = item[1]
+
+    if section:
+        url = url + section + '/refresh?X-Plex-Token=' + core.PLEXTOKEN
+        requests.get(url, timeout=(60, 120), verify=False)
+        logger.debug("Plex Library has been refreshed.", 'PLEX')
+    else:
+        logger.debug("Could not identify section for plex update", 'PLEX')
+
 def backupVersionedFile(old_file, version):
     numTries = 0
 

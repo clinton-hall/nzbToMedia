@@ -246,6 +246,15 @@
     audioExtensions = .mp3, .aac, .ogg, .ape, .m4a, .asf, .wma, .flac
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 
+[Plex]
+    plex_host = localhost
+    plex_port = 32400
+    plex_token =
+    plex_ssl = 0 
+    # Enter Plex category to section mapping as Category,section and separate each pair with '|'
+    # e.g. plex_sections = movie,3|tv,4
+    plex_sections = 
+
 [Transcoder]
     # getsubs. enable to download subtitles.
     getSubs = 0

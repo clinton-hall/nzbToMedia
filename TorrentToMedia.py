@@ -8,7 +8,7 @@ import core
 
 from subprocess import Popen
 from core import logger, nzbToMediaDB
-from core.nzbToMediaUtil import convert_to_ascii, CharReplace
+from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
 from core.nzbToMediaUserScript import external_script
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
@@ -216,6 +216,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                                                                inputCategory)
     elif sectionName == 'Gamez':
         result = core.autoProcessGames().process(sectionName,outputDestination, inputName, status, clientAgent, inputCategory)
+
+    plex_update(inputCategory)
 
     if result[0] != 0:
         if clientAgent != 'manual':
