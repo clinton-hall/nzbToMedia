@@ -100,7 +100,7 @@ NOFLATTEN = []
 DELETE_ORIGINAL = None
 TORRENT_DEFAULTDIR = None
 
-REMOTEPATHS = None
+REMOTEPATHS = []
 
 UTORRENTWEBUI = None
 UTORRENTUSR = None
@@ -120,7 +120,7 @@ PLEXSSL = None
 PLEXHOST = None
 PLEXPORT = None
 PLEXTOKEN = None
-PLEXSEC = None
+PLEXSEC = []
 
 EXTCONTAINER = []
 COMPRESSEDCONTAINER = []
@@ -353,7 +353,7 @@ def initialize(section=None):
     DELUGEUSR = CFG["Torrent"]["DelugeUSR"]  # mysecretusr
     DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
 
-    REMOTEPATHS = CFG["Network"]["mount_points"] or None
+    REMOTEPATHS = CFG["Network"]["mount_points"] or []
     if REMOTEPATHS:
         if isinstance(REMOTEPATHS, list): REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
@@ -362,7 +362,7 @@ def initialize(section=None):
     PLEXHOST = CFG["Plex"]["plex_host"]
     PLEXPORT = CFG["Plex"]["plex_port"]
     PLEXTOKEN = CFG["Plex"]["plex_token"]
-    PLEXSEC = CFG["Plex"]["plex_sections"] or None
+    PLEXSEC = CFG["Plex"]["plex_sections"] or []
     if PLEXSEC:
         if isinstance(PLEXSEC, list): PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
         PLEXSEC = [ tuple(item.split(',')) for item in PLEXSEC.split('|') ]

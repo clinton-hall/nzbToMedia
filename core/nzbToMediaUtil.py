@@ -1056,13 +1056,15 @@ def server_responding(baseURL):
         return False
 
 def plex_update(category):
-    logger.debug("Attempting to update Plex Library for category %s." %(category), 'PLEX')
     if core.PLEXSSL:
         ulr = 'https://'
     else:
         url = 'http://'
     url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'
     section = None
+    if not core.PLEXSEC:
+        return
+    logger.debug("Attempting to update Plex Library for category %s." %(category), 'PLEX')
     for item in core.PLEXSEC:
         if item[0] == category:
             section = item[1]
