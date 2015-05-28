@@ -1,5 +1,20 @@
 Change_LOG / History
 
+V10.11 28/05/2015
+
+Use socket to verify if running on Linux. Prevents issues with stale pid.
+Add timeouts and improve single instance handling.
+Prevent Scale Up.
+Improve regex for rename script.
+Improve safe rename functionality.
+Ignore .bts extensions.
+Don't process output when no transcoding needed.
+Ignore Thumbs.db on manual run.
+Rename nzbtomedia to core. To prevent erros on non-case sensitive file systems.
+Mark as bad if no media files found.
+Increase server responding timeout.
+Don't use last modified entry for CP renamer when no imdb id found.
+Add plex library update.
 
 V10.10 29/01/2015
 
