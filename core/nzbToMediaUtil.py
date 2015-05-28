@@ -70,6 +70,8 @@ def makeDir(path):
     return True
 
 def remoteDir(path):
+    if not core.REMOTEPATHS:
+        return path
     for local,remote in core.REMOTEPATHS:
         if local in path:
             base_dirs = path.replace(local,"").split(os.sep)
