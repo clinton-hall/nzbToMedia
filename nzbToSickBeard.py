@@ -29,11 +29,6 @@
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
 #safe_mode=1
 
-# Media Extensions
-#
-# This is a list of media extensions that are used to verify that the download does contain valid media.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
-
 ## SickBeard
 
 # SickBeard script category.
