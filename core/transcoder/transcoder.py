@@ -557,7 +557,7 @@ def processList(List, newDir, bitbucket):
     for item in List:
         newfile = None
         ext = os.path.splitext(item)[1].lower()
-        if ext in ['.iso', '.bin'] and not ext in core.IGNOREEXTENSIONS:
+        if ext in ['.iso', '.bin', '.img'] and not ext in core.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip disk image: %s" % (item), "TRANSCODER")
             newList.extend(ripISO(item, newDir, bitbucket))
             remList.append(item)
