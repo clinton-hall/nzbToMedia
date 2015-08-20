@@ -1,5 +1,10 @@
 Change_LOG / History
 
+V10.12 21/09/2015
+
+Updated Requests Module to Latest Version. Works with Python 2.7.10
+Add .img files to transcoder extraction routines.
+
 V10.11 28/05/2015
 
 Use socket to verify if running on Linux. Prevents issues with stale pid.
