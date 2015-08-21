@@ -277,8 +277,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
             else:
                 audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
-            if core.ACODEC == 'aac':
-                audio_cmd.extend(['-strict', '-2'])
         elif audio3:  # just pick the default audio track
             map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
@@ -292,8 +290,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
             else:
                 audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
-            if core.ACODEC == 'aac':
-                audio_cmd.extend(['-strict', '-2'])
 
         if core.ACHANNELS and channels and channels > core.ACHANNELS:
             audio_cmd.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS)])
@@ -307,6 +303,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
             audio_cmd.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = core.ACODEC
+        if audio_cmd[1] == 'aac':
+            audio_cmd[2:2] = ['-strict', '-2']
 
         if core.ACODEC2_ALLOW:
             used_audio += 1
@@ -334,8 +332,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
                 else:
                     audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
-                if core.ACODEC2 == 'aac':
-                    audio_cmd2.extend(['-strict', '-2'])
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
@@ -349,8 +345,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
                 else:
                     audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
-                if core.ACODEC2 == 'aac':
-                    audio_cmd2.extend(['-strict', '-2'])
 
             if core.ACHANNELS2 and channels and channels > core.ACHANNELS2:
                 audio_cmd2.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS2)])
@@ -364,6 +358,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd2.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = core.ACODEC2
+            if audio_cmd2[1] == 'aac':
+                audio_cmd2[2:2] = ['-strict', '-2']
             audio_cmd.extend(audio_cmd2)
 
         if core.AINCLUDE and audio3 and core.ACODEC3:
@@ -386,8 +382,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                         audio_cmd3.extend(['-c:a:' + str(used_audio), core.ACODEC3])
                     else:
                         audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
-                    if core.ACODEC3 == 'aac':
-                        audio_cmd3.extend(['-strict', '-2'])
 
                 if core.ACHANNELS3 and channels and channels > core.ACHANNELS3:
                     audio_cmd3.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS3)])
@@ -401,6 +395,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd3.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = core.ACODEC3
+                if audio_cmd3[1] == 'aac':
+                    audio_cmd3[2:2] = ['-strict', '-2']
                 audio_cmd.extend(audio_cmd3)
 
     s_mapped = []
