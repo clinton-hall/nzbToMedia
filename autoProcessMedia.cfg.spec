@@ -57,7 +57,7 @@
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Couchpotato is on a remote server for this category
         remote_path = 0
@@ -87,7 +87,7 @@
         nzbExtractionBy = Downloader
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if SickBeard is on a remote server for this category
         remote_path = 0
@@ -115,7 +115,7 @@
         wait_for = 2
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if NzbDrone is on a remote server for this category
         remote_path = 0
@@ -139,7 +139,7 @@
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if HeadPhones is on a remote server for this category
         remote_path = 0
@@ -163,7 +163,7 @@
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Mylar is on a remote server for this category
         remote_path = 0
@@ -188,7 +188,7 @@
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Gamez is on a remote server for this category
         remote_path = 0
@@ -262,10 +262,11 @@
     subLanguages = eng,spa,fra
     # transcode. enable to use transcoder
     transcode = 0
-    ###### duplicate =1 will cretae a new file. =0 will replace the original
+    ###### duplicate =1 will create a new file. =0 will replace the original
     duplicate = 1
     # concat. joins cd1 cd2 etc into a single video.
     concat = 1
+    # IgnoreExtensions is a comma-separated list of extensions that will not be transcoded.
     ignoreExtensions = .avi,.mkv,.mp4
     # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
     outputFastStart = 0
@@ -279,9 +280,9 @@
     audioLanguage = eng
     # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
     allAudioLanguages = 0
-    # allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
+    # allSubLanguages. 1 will keep all existing sub languages. 0 will discard those not in your list above.
     allSubLanguages = 0
-    # embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
+    # embedSubs. 1 will embed external sub/srt subs into your video if this is supported.
     embedSubs = 1
     # burnInSubtitle. burns the default sub language into your video (needed for players that don't support subs)
     burnInSubtitle = 0
@@ -347,7 +348,7 @@
         #for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
         #So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
         user_script_param = FN
-        #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
+        #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on the entire directory).
         user_script_runOnce = 0
         #Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
         user_script_successCodes = 0
@@ -371,5 +372,5 @@
 [Custom]
     # enter a list (comma separated) of Group Tags you want removed from filenames to help with subtitle matching.
     # e.g remove_group = [rarbag],-NZBgeek
-    # be careful if your "group" is a common "real" word. Please report if you have any group replacments that would fall in this category.
+    # be careful if your "group" is a common "real" word. Please report if you have any group replacements that would fall in this category.
     remove_group = 
