@@ -105,6 +105,10 @@ class autoProcessTV:
         except:
             force = 0
         try:
+            delete_on = int(core.CFG[section][inputCategory]["delete_on"])
+        except:
+            delete_on = 0
+        try:
             extract = int(section[inputCategory]["extract"])
         except:
             extract = 0
@@ -208,6 +212,12 @@ class autoProcessTV:
             if param == "force":
                 if force:
                     fork_params[param] = force
+                else:
+                    del fork_params[param]
+
+            if param == "delete_on":
+                if delete_on:
+                    fork_params[param] = delete_on
                 else:
                     del fork_params[param]
 
