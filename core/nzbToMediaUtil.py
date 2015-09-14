@@ -1063,7 +1063,7 @@ def server_responding(baseURL):
 
 def plex_update(category):
     if core.PLEXSSL:
-        ulr = 'https://'
+        url = 'https://'
     else:
         url = 'http://'
     url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'
