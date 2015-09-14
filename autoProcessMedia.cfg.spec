@@ -206,7 +206,7 @@
     ###### clientAgent - Supported clients: sabnzbd, nzbget
     clientAgent = sabnzbd
     ###### SabNZBD (You must edit this if your using nzbToMedia.py with SabNZBD)
-    sabnzbd_host = localhost
+    sabnzbd_host = http://localhost
     sabnzbd_port = 8080
     sabnzbd_apikey =
     ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.

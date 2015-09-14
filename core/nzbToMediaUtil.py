@@ -798,7 +798,10 @@ def find_download(clientAgent, download_id):
     if clientAgent == 'deluge':
         return False
     if clientAgent == 'sabnzbd':
-        baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+        if "http" in core.SABNZBDHOST:
+            baseURL = "%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+        else:
+            baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
         url = baseURL
         params = {}
         params['apikey'] = core.SABNZBDAPIKEY
@@ -819,7 +822,10 @@ def find_download(clientAgent, download_id):
 def get_nzoid(inputName):
     nzoid = None
     logger.debug("Searching for nzoid from SAbnzbd ...")
-    baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+    if "http" in core.SABNZBDHOST:
+        baseURL = "%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+    else:
+        baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
     url = baseURL
     params = {}
     params['apikey'] = core.SABNZBDAPIKEY
