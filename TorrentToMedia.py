@@ -226,7 +226,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     plex_update(inputCategory)
 
     if result[0] != 0:
-        if clientAgent != 'manual':
+        if core.TORRENT_RESUME_ON_FAILURE:
+            logger.error("A problem was reported in the autoProcess* script. torrent won't resume seeding (settings)")
+        elif clientAgent != 'manual':
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
             core.resume_torrent(clientAgent, inputHash, inputID, inputName)
