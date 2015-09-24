@@ -11,6 +11,9 @@ from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
 from core.nzbToMediaUserScript import external_script
 
+# TODO: Add as param
+PROCESSING_CHMOD = 0775
+
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
     root = 0
@@ -97,7 +100,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
-    if uniquePath:
+    # Incase input is not directory, make sure to create one.
+    # This way Processing is isolated.
+    if not os.path.isdir(os.path.join(inputDirectory, inputName)):
+        basename = os.path.splitext(core.sanitizeName(inputName))[0]
+        outputDestination = os.path.join(core.OUTPUTDIRECTORY, inputCategory, basename)
+    elif uniquePath:
         outputDestination = os.path.normpath(
             core.os.path.join(core.OUTPUTDIRECTORY, inputCategory, core.sanitizeName(inputName)))
     else:
@@ -197,6 +205,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
 
+    if core.TORRENT_CHMOD_DIRECTORY:
+        core.rchmod(outputDestination, core.TORRENT_CHMOD_DIRECTORY)
+
     result = [ 0, "" ]
     if sectionName == 'UserScript':
         result = external_script(outputDestination, inputName, inputCategory, section[usercat])
@@ -220,7 +231,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     plex_update(inputCategory)
 
     if result[0] != 0:
-        if clientAgent != 'manual':
+        if core.TORRENT_RESUME_ON_FAILURE:
+            logger.error("A problem was reported in the autoProcess* script. torrent won't resume seeding (settings)")
+        elif clientAgent != 'manual':
             logger.error(
                 "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
             core.resume_torrent(clientAgent, inputHash, inputID, inputName)
