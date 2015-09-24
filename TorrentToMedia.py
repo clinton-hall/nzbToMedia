@@ -197,6 +197,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
 
+    if core.TORRENT_CHMOD_DIRECTORY:
+        core.rchmod(outputDestination, core.TORRENT_CHMOD_DIRECTORY)
+
     result = [ 0, "" ]
     if sectionName == 'UserScript':
         result = external_script(outputDestination, inputName, inputCategory, section[usercat])
