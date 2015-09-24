@@ -100,7 +100,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
-    if uniquePath:
+    # Incase input is not directory, make sure to create one.
+    # This way Processing is isolated.
+    if not os.path.isdir(os.path.join(inputDirectory, inputName)):
+        basename = os.path.splitext(core.sanitizeName(inputName))[0]
+        outputDestination = os.path.join(core.OUTPUTDIRECTORY, inputCategory, basename)
+    elif uniquePath:
         outputDestination = os.path.normpath(
             core.os.path.join(core.OUTPUTDIRECTORY, inputCategory, core.sanitizeName(inputName)))
     else:
