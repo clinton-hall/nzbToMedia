@@ -11,6 +11,9 @@ from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
 from core.nzbToMediaUserScript import external_script
 
+# TODO: Add as param
+PROCESSING_CHMOD = 0775
+
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
     status = 1  # 1 = failed | 0 = success
     root = 0
@@ -196,6 +199,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         status = 0
 
     logger.info("Calling %s:%s to post-process:%s" % (sectionName, usercat, inputName))
+
+    if core.TORRENT_CHMOD_DIRECTORY:
+        core.rchmod(outputDestination, core.TORRENT_CHMOD_DIRECTORY)
 
     result = [ 0, "" ]
     if sectionName == 'UserScript':
