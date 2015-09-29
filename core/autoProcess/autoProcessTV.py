@@ -286,6 +286,8 @@ class autoProcessTV:
             for line in r.iter_lines():
                 if line: 
                     logger.postprocess("%s" % (line), section)
+                    if "Moving file from" in line:
+                        inputName = os.path.split(line)[1]
                     if "Processing succeeded" in line or "Successfully processed" in line:
                         Success = True
         elif section == "NzbDrone":
