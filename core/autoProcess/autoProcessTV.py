@@ -12,6 +12,8 @@ from core.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles
 from core import logger
 from core.transcoder import transcoder
 
+requests.packages.urllib3.disable_warnings()
+
 class autoProcessTV:
     def command_complete(self, url, params, headers, section):
         r = None
