@@ -246,7 +246,7 @@
 
 [Extensions]
     compressedExtensions = .zip,.rar,.7z,.gz,.bz,.tar,.arj,.1,.01,.001
-    mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v
+    mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v,.ts
     audioExtensions = .mp3, .aac, .ogg, .ape, .m4a, .asf, .wma, .flac
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 
