@@ -256,6 +256,7 @@ class autoProcessMovie:
                 return [1, "%s: Failed to post-process - Server did not return success" % (section) ]
 
         else:
+            core.FAILED = True
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
             if failureLink:
                 reportNzb(failureLink, clientAgent)

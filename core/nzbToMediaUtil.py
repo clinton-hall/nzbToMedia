@@ -1062,6 +1062,8 @@ def server_responding(baseURL):
         return False
 
 def plex_update(category):
+    if core.FAILED:
+        return
     if core.PLEXSSL:
         url = 'https://'
     else:

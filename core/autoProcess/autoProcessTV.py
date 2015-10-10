@@ -229,6 +229,7 @@ class autoProcessTV:
         if status == 0:
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
+            core.FAILED = True
             if failureLink:
                 reportNzb(failureLink, clientAgent)
             if fork in core.SICKBEARD_FAILED:
