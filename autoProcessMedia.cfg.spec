@@ -51,6 +51,7 @@
         web_root =
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         method = renamer
         delete_failed = 0
         wait_for = 2
@@ -80,6 +81,7 @@
         delete_failed = 0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         process_method =
         # force processing of already processed content when running a manual scan.
         force = 0
@@ -110,6 +112,7 @@
         delete_failed = 0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         nzbExtractionBy = Downloader
         wait_for = 2
@@ -136,6 +139,7 @@
         wait_for = 2
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
@@ -160,6 +164,7 @@
         ssl=0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
@@ -185,6 +190,7 @@
         web_root =
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
@@ -336,6 +342,7 @@
         #Enable/Disable this subsection category
         enabled = 0
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         #Enable if you are sending commands to a remote server for this category
         remote_path = 0
