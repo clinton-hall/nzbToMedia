@@ -681,7 +681,7 @@ def cleanDir(path, section, subsection):
     if not os.path.exists(path):
         logger.info('Directory %s has been processed and removed ...' % (path), 'CLEANDIR')
         return
-    if core.FORCE_CLEAN:
+    if core.FORCE_CLEAN and not core.FAILED:
         logger.info('Doing Forceful Clean of %s' % (path), 'CLEANDIR')
         rmDir(path)
         return
