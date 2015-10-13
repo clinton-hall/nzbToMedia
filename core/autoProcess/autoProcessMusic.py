@@ -7,6 +7,8 @@ from core.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles, ser
 from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core import logger
 
+requests.packages.urllib3.disable_warnings()
+
 class autoProcessMusic:
     def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))

@@ -12,6 +12,8 @@ from core.nzbToMediaUtil import convert_to_ascii, flatten, rmDir, listMediaFiles
 from core import logger
 from core.transcoder import transcoder
 
+requests.packages.urllib3.disable_warnings()
+
 class autoProcessTV:
     def command_complete(self, url, params, headers, section):
         r = None
@@ -104,6 +106,10 @@ class autoProcessTV:
             force = int(core.CFG[section][inputCategory]["force"])
         except:
             force = 0
+        try:
+            delete_on = int(core.CFG[section][inputCategory]["delete_on"])
+        except:
+            delete_on = 0
         try:
             extract = int(section[inputCategory]["extract"])
         except:
@@ -211,6 +217,12 @@ class autoProcessTV:
                 else:
                     del fork_params[param]
 
+            if param == "delete_on":
+                if delete_on:
+                    fork_params[param] = delete_on
+                else:
+                    del fork_params[param]
+
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k,v in fork_params.items() if v is None]
 
@@ -276,6 +288,8 @@ class autoProcessTV:
             for line in r.iter_lines():
                 if line: 
                     logger.postprocess("%s" % (line), section)
+                    if "Moving file from" in line:
+                        inputName = os.path.split(line)[1]
                     if "Processing succeeded" in line or "Successfully processed" in line:
                         Success = True
         elif section == "NzbDrone":

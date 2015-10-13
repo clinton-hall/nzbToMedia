@@ -3,9 +3,12 @@ import time
 import core
 import requests
 import time
+
 from core.nzbToMediaUtil import convert_to_ascii, remoteDir, server_responding
 from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core import logger
+
+requests.packages.urllib3.disable_warnings()
 
 class autoProcessComics:
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
