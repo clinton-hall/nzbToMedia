@@ -993,7 +993,7 @@ def find_imdbid(dirName, inputName):
     logger.warning('Unable to find a imdbID for %s' % (inputName))
     return imdbid
 
-def extractFiles(src, dst=None):
+def extractFiles(src, dst=None, keep_archive = None):
     extracted_folder = []
     extracted_archive = []
 
@@ -1018,8 +1018,8 @@ def extractFiles(src, dst=None):
             fullFileName = os.path.basename(inputFile)
             archiveName = os.path.splitext(fullFileName)[0]
             archiveName = re.sub(r"part[0-9]+", "", archiveName)
-            if not archiveName in extracted_archive:
-                continue  # don't remove if we haven't extracted this archive.
+            if not archiveName in extracted_archive or keep_archive == True:
+                continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:
                 if not os.access(inputFile, os.W_OK):

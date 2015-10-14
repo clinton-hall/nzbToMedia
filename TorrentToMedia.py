@@ -85,6 +85,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         Torrent_NoLink = 0
 
     try:
+        keep_archive = int(section[usercat]["keep_archive"])
+    except:
+        keep_archive = 0
+
+    try:
         extract = int(section[usercat]['extract'])
     except:
         extract = 0
@@ -178,7 +183,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
-        core.extractFiles(outputDestination)
+        core.extractFiles(inputDirectory, outputDestination, keep_archive)
 
     if not inputCategory in core.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
         core.flatten(outputDestination)
