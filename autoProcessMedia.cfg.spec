@@ -257,6 +257,8 @@
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
 
 [Plex]
+    # Only enter these details if you want to update plex library after processing.
+    # Do not enter these details if you send the plex notifications from Sickbeard/CouchPotato.
     plex_host = localhost
     plex_port = 32400
     plex_token =
