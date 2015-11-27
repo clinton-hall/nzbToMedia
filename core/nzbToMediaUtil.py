@@ -753,17 +753,18 @@ def pause_torrent(clientAgent, inputHash, inputID, inputName):
         logger.warning("Failed to stop torrent %s in %s" % (inputName, clientAgent))
 
 def resume_torrent(clientAgent, inputHash, inputID, inputName):
-    logger.debug("Starting torrent %s in %s" % (inputName, clientAgent))
-    try:
-        if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.start(inputHash)
-        if clientAgent == 'transmission' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.start_torrent(inputID)
-        if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.core.resume_torrent([inputID])
-        time.sleep(5)
-    except:
-        logger.warning("Failed to start torrent %s in %s" % (inputName, clientAgent))
+    if core.RESUME == 1:
+        logger.debug("Starting torrent %s in %s" % (inputName, clientAgent))
+        try:
+            if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.start(inputHash)
+            if clientAgent == 'transmission' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.start_torrent(inputID)
+            if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.core.resume_torrent([inputID])
+            time.sleep(5)
+        except:
+            logger.warning("Failed to start torrent %s in %s" % (inputName, clientAgent))
 
 def remove_torrent(clientAgent, inputHash, inputID, inputName):
     if core.DELETE_ORIGINAL == 1 or core.USELINK == 'move':
