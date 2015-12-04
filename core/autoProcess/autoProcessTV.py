@@ -200,7 +200,7 @@ class autoProcessTV:
             if param == "failed":
                 fork_params[param] = failed
 
-            if param in ["dirName", "dir"]:
+            if param in ["dirName", "dir", "proc_dir"]:
                 fork_params[param] = dirName
                 if remote_path:
                     fork_params[param] = remoteDir(dirName)
