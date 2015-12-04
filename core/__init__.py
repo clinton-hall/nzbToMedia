@@ -56,8 +56,8 @@ FORK_SICKRAGE = "sickrage"
 FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
-FORKS[FORK_SICKRAGE] = {"dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-ALL_FORKS = {"dir": None, "dirName": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT, FORK_SICKRAGE]
 SICKBEARD_TORRENT = [FORK_FAILED_TORRENT, FORK_SICKRAGE]
 
