@@ -8,6 +8,7 @@ from core.nzbToMediaUtil import convert_to_ascii, rmDir, find_imdbid, find_downl
 from core import logger
 from core.transcoder import transcoder
 
+requests.packages.urllib3.disable_warnings()
 
 class autoProcessMovie:
     def get_release(self, baseURL, imdbid=None, download_id=None, release_id=None):
@@ -255,6 +256,7 @@ class autoProcessMovie:
                 return [1, "%s: Failed to post-process - Server did not return success" % (section) ]
 
         else:
+            core.FAILED = True
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR %s" % (inputName), section)
             if failureLink:
                 reportNzb(failureLink, clientAgent)

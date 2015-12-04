@@ -681,7 +681,7 @@ def cleanDir(path, section, subsection):
     if not os.path.exists(path):
         logger.info('Directory %s has been processed and removed ...' % (path), 'CLEANDIR')
         return
-    if core.FORCE_CLEAN:
+    if core.FORCE_CLEAN and not core.FAILED:
         logger.info('Doing Forceful Clean of %s' % (path), 'CLEANDIR')
         rmDir(path)
         return
@@ -798,7 +798,10 @@ def find_download(clientAgent, download_id):
     if clientAgent == 'deluge':
         return False
     if clientAgent == 'sabnzbd':
-        baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+        if "http" in core.SABNZBDHOST:
+            baseURL = "%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+        else:
+            baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
         url = baseURL
         params = {}
         params['apikey'] = core.SABNZBDAPIKEY
@@ -819,7 +822,10 @@ def find_download(clientAgent, download_id):
 def get_nzoid(inputName):
     nzoid = None
     logger.debug("Searching for nzoid from SAbnzbd ...")
-    baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+    if "http" in core.SABNZBDHOST:
+        baseURL = "%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
+    else:
+        baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
     url = baseURL
     params = {}
     params['apikey'] = core.SABNZBDAPIKEY
@@ -987,7 +993,7 @@ def find_imdbid(dirName, inputName):
     logger.warning('Unable to find a imdbID for %s' % (inputName))
     return imdbid
 
-def extractFiles(src, dst=None):
+def extractFiles(src, dst=None, keep_archive = None):
     extracted_folder = []
     extracted_archive = []
 
@@ -1012,8 +1018,8 @@ def extractFiles(src, dst=None):
             fullFileName = os.path.basename(inputFile)
             archiveName = os.path.splitext(fullFileName)[0]
             archiveName = re.sub(r"part[0-9]+", "", archiveName)
-            if not archiveName in extracted_archive:
-                continue  # don't remove if we haven't extracted this archive.
+            if not archiveName in extracted_archive or keep_archive == True:
+                continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:
                 if not os.access(inputFile, os.W_OK):
@@ -1056,8 +1062,10 @@ def server_responding(baseURL):
         return False
 
 def plex_update(category):
+    if core.FAILED:
+        return
     if core.PLEXSSL:
-        ulr = 'https://'
+        url = 'https://'
     else:
         url = 'http://'
     url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'

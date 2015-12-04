@@ -56,8 +56,8 @@ FORK_SICKRAGE = "sickrage"
 FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
-FORKS[FORK_SICKRAGE] = {"dir": None, "failed": None, "process_method": None, "force": None}
-ALL_FORKS = {"dir": None, "dirName": None, "failed": None, "process_method": None, "force": None}
+FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT, FORK_SICKRAGE]
 SICKBEARD_TORRENT = [FORK_FAILED_TORRENT, FORK_SICKRAGE]
 
@@ -73,6 +73,7 @@ LOG_DB = None
 LOG_ENV = None
 LOG_GIT = None
 SYS_ENCODING = None
+FAILED = False
 
 AUTO_UPDATE = None
 NZBTOMEDIA_VERSION = None
@@ -98,7 +99,9 @@ USELINK = None
 OUTPUTDIRECTORY = None
 NOFLATTEN = []
 DELETE_ORIGINAL = None
+TORRENT_CHMOD_DIRECTORY = None
 TORRENT_DEFAULTDIR = None
+TORRENT_RESUME_ON_FAILURE = None
 
 REMOTEPATHS = []
 
@@ -206,13 +209,13 @@ def initialize(section=None):
         __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, GIT_PATH, GIT_USER, \
         GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
-        VFRAMERATE, LOG_DB, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, \
+        VFRAMERATE, LOG_DB, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, FAILED, \
         ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
         SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, LOG_DIR, LOG_FILE, \
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
-        DELETE_ORIGINAL, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
+        DELETE_ORIGINAL, TORRENT_CHMOD_DIRECTORY, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
+        TORRENT_DEFAULTDIR, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
         PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC
 
     if __INITIALIZED__:
@@ -339,6 +342,8 @@ def initialize(section=None):
     if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
     if isinstance(CATEGORIES, str): CATEGORIES = CATEGORIES.split(',')
     DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
+    TORRENT_CHMOD_DIRECTORY = int(CFG["Torrent"]["chmodDirecotry"], 8)
+    TORRENT_RESUME_ON_FAILURE = int(CFG["Torrent"]["resumeOnFailure"])
     UTORRENTWEBUI = CFG["Torrent"]["uTorrentWEBui"]  # http://localhost:8090/gui/
     UTORRENTUSR = CFG["Torrent"]["uTorrentUSR"]  # mysecretusr
     UTORRENTPWD = CFG["Torrent"]["uTorrentPWD"]  # mysecretpwr
@@ -740,3 +745,15 @@ def restart():
         status = p.returncode
 
     os._exit(status)
+
+def rchmod(path, mod):
+    logger.log("Changing file mode of %s to %s" % (path, oct(mod)))
+    os.chmod(path, mod)
+    if not os.path.isdir(path):
+        return # Skip files
+
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), mod)
+        for f in files:
+            os.chmod(os.path.join(root, f), mod)
