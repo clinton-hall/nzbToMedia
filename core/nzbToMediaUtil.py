@@ -753,6 +753,8 @@ def pause_torrent(clientAgent, inputHash, inputID, inputName):
         logger.warning("Failed to stop torrent %s in %s" % (inputName, clientAgent))
 
 def resume_torrent(clientAgent, inputHash, inputID, inputName):
+    if not core.TORRENT_RESUME == 1:
+        return
     logger.debug("Starting torrent %s in %s" % (inputName, clientAgent))
     try:
         if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
