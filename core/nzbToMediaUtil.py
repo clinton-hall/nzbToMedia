@@ -1009,8 +1009,8 @@ def extractFiles(src, dst=None, keep_archive = None):
             continue  # no need to extract this, but keep going to look for other archives and sub directories.
 
         try:
-            if extractor.extract(inputFile, dirPath or dst):
-                extracted_folder.append(dirPath or dst)
+            if extractor.extract(inputFile, dst or dirPath):
+                extracted_folder.append(dst or dirPath)
                 extracted_archive.append(archiveName)
         except Exception, e:
             logger.error("Extraction failed for: %s" % (fullFileName))
