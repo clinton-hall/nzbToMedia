@@ -232,8 +232,9 @@ def copy_link(src, targetLink, useLink):
             return True
         elif useLink == "sym":
             logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            shutil.move(src, targetLink)
-            linktastic.symlink(targetLink, src)
+            #shutil.move(src, targetLink)
+            #linktastic.symlink(targetLink, src)
+            linktastic.symlink(src, targetLink)
             return True
         elif useLink == "move":
             logger.info("Moving SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
