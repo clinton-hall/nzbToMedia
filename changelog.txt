@@ -1,5 +1,21 @@
 Change_LOG / History
 
+V10.13 11/12/2015
+
+Always add -strict -2 to aac codec.
+Add "delete_on" for SickRage.
+Add https handling for SABnzbd.
+Added the ability to chmod Torrent diretory before processing.
+Add option to not resume failed torrent.
+Add Option to not resume successful torrent.
+Add procees name to final SABnzbd message.
+Fix SSL warnings forcomic processing.
+Add .ts to mediaExtensions.
+Don't update plex on failed.
+Add option to preserve archive files after extraction.
+Force_Clean doesn't over-ride delete_failed.
+Added support for SickRageTV and SickRage branches.
+
 V10.12 21/09/2015
 
 Updated Requests Module to Latest Version. Works with Python 2.7.10
