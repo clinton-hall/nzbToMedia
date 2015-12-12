@@ -117,6 +117,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         outputDestination = outputDestination.encode(core.SYS_ENCODING)
     except: pass
 
+    if outputDestination in inputDirectory:
+        outputDestination = inputDirectory
+
     logger.info("Output directory set to: %s" % (outputDestination))
 
     if core.SAFE_MODE and outputDestination == core.TORRENT_DEFAULTDIR:
