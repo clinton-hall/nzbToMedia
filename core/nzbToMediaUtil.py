@@ -232,9 +232,12 @@ def copy_link(src, targetLink, useLink):
             return True
         elif useLink == "sym":
             logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            #shutil.move(src, targetLink)
-            #linktastic.symlink(targetLink, src)
             linktastic.symlink(src, targetLink)
+            return True
+        elif useLink == "move-sym":
+            logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
+            shutil.move(src, targetLink)
+            linktastic.symlink(targetLink, src)
             return True
         elif useLink == "move":
             logger.info("Moving SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
@@ -247,6 +250,19 @@ def copy_link(src, targetLink, useLink):
     shutil.copy(src, targetLink)
 
     return True
+
+def replace_links(link):
+    if not os.path.islink(link):
+        return
+    target = link
+    n = 0
+    while os.path.islink(target):
+        target = os.readlink(target)
+        n = n + 1
+    if n > 1:
+        logger.info("Changing sym-link: %s to point directly to file: %s" % (link, target), 'COPYLINK')
+        os.unlink(link)
+        linktastic.symlink(target, link)
 
 def flatten(outputDestination):
     logger.info("FLATTEN: Flattening directory: %s" % (outputDestination))
@@ -782,7 +798,7 @@ def remove_torrent(clientAgent, inputHash, inputID, inputName):
             time.sleep(5)
         except:
             logger.warning("Failed to delete torrent %s in %s" % (inputName, clientAgent))
-    else:
+    else:    
         resume_torrent(clientAgent, inputHash, inputID, inputName)
 
 def find_download(clientAgent, download_id):

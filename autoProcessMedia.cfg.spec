@@ -221,7 +221,7 @@
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, other
     clientAgent = other
-    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, and no to not use links (copy)
+    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, move-sym to move and link back, and no to not use links (copy)
     useLink = hard
     ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
     outputDirectory = /abs/path/to/complete/

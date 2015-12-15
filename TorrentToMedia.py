@@ -249,6 +249,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             core.update_downloadInfoStatus(inputName, 1)
 
             # remove torrent
+            if core.USELINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
+                inputFiles = core.listMediaFiles(inputDirectory)
+                for link in inputFiles:
+                    core.replace_links(link)
             core.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
