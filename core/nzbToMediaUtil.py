@@ -253,6 +253,7 @@ def copy_link(src, targetLink, useLink):
 
 def replace_links(link):
     if not os.path.islink(link):
+        logger.debug('%s is not a link' % (link))
         return
     target = link
     n = 0
