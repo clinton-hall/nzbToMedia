@@ -252,14 +252,23 @@ def copy_link(src, targetLink, useLink):
     return True
 
 def replace_links(link):
-    if not os.path.islink(link):
-        logger.debug('%s is not a link' % (link))
-        return
-    target = link
     n = 0
-    while os.path.islink(target):
-        target = os.readlink(target)
-        n = n + 1
+    target = link
+    if os.name == 'nt':
+        import jaraco
+        if not jaraco.windows.filesystem.islink(link):
+            logger.debug('%s is not a link' % (link))
+            return
+        while jaraco.windows.filesystem.islink(target):
+            target = jaraco.windows.filesystem.readlink(target)
+            n = n + 1
+    else:
+        if not os.path.islink(link):
+            logger.debug('%s is not a link' % (link))
+            return
+        while os.path.islink(target):
+            target = os.readlink(target)
+            n = n + 1
     if n > 1:
         logger.info("Changing sym-link: %s to point directly to file: %s" % (link, target), 'COPYLINK')
         os.unlink(link)
