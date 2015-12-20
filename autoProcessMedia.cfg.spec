@@ -235,7 +235,7 @@
     uTorrentWEBui = http://localhost:8090/gui/
     uTorrentUSR = your username
     uTorrentPWD = your password
-    ###### Transmission (You must edit this if your using TorrentToMedia.py with uTorrent)
+    ###### Transmission (You must edit this if your using TorrentToMedia.py with Transmission)
     TransmissionHost = localhost
     TransmissionPort = 9091
     TransmissionUSR = your username
