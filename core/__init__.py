@@ -223,7 +223,7 @@ def initialize(section=None):
 
     if __INITIALIZED__:
         return False
-        
+
     if os.environ.has_key('NTM_LOGFILE'):
         LOG_FILE = os.environ['NTM_LOGFILE']
         LOG_DIR = os.path.split(LOG_FILE)[0]
@@ -345,7 +345,7 @@ def initialize(section=None):
     if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
     if isinstance(CATEGORIES, str): CATEGORIES = CATEGORIES.split(',')
     DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
-    TORRENT_CHMOD_DIRECTORY = int(CFG["Torrent"]["chmodDirecotry"], 8)
+    TORRENT_CHMOD_DIRECTORY = int(CFG["Torrent"]["chmodDirectory"], 8)
     TORRENT_RESUME_ON_FAILURE = int(CFG["Torrent"]["resumeOnFailure"])
     TORRENT_RESUME = int(CFG["Torrent"]["resume"])
     UTORRENTWEBUI = CFG["Torrent"]["uTorrentWEBui"]  # http://localhost:8090/gui/
@@ -673,11 +673,11 @@ def initialize(section=None):
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
         except: pass
-        if not SEVENZIP: 
+        if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
             except: pass
-        if not SEVENZIP: 
+        if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
             except: pass
@@ -692,7 +692,7 @@ def initialize(section=None):
             try:
                 FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
             except: pass
-            if not FFMPEG: 
+            if not FFMPEG:
                 try:
                     FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
                 except: pass
@@ -709,7 +709,7 @@ def initialize(section=None):
             try:
                 FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
             except: pass
-            if not FFPROBE: 
+            if not FFPROBE:
                 try:
                     FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
                 except: pass

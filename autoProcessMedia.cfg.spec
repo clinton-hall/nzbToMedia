@@ -12,7 +12,7 @@
     git_user =
     # GitHUB branch for repo
     git_branch =
-    # Enable/Disable forceful cleaning of leftover files following postprocess 
+    # Enable/Disable forceful cleaning of leftover files following postprocess
     force_clean = 0
     # Enable/Disable logging debug messages to nzbtomedia.log
     log_debug = 0
@@ -185,7 +185,7 @@
         apikey =
         host = localhost
         port = 8085
-        ###### 
+        ######
         library = Set to path where you want the processed games to be moved to.
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
@@ -206,7 +206,7 @@
 [Network]
     # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
     # e.g. MountPoints = /volume1/Public/,E:\|/volume2/share/,\\NAS\
-    mount_points = 
+    mount_points =
 
 [Nzb]
     ###### clientAgent - Supported clients: sabnzbd, nzbget
@@ -225,7 +225,7 @@
     useLink = hard
     ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
     outputDirectory = /abs/path/to/complete/
-    ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode. 
+    ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.
     default_downloadDirectory =
     ###### Other categories/labels defined for your downloader. Does not include CouchPotato, SickBeard, HeadPhones, Mylar categories.
     categories = music_videos,pictures,software,manual
@@ -247,7 +247,7 @@
     DelugePWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
-    chmodDirecotry = 0
+    chmodDirectory = 0
     resume = 1
     resumeOnFailure = 1
 
@@ -263,15 +263,15 @@
     plex_host = localhost
     plex_port = 32400
     plex_token =
-    plex_ssl = 0 
+    plex_ssl = 0
     # Enter Plex category to section mapping as Category,section and separate each pair with '|'
     # e.g. plex_sections = movie,3|tv,4
-    plex_sections = 
+    plex_sections =
 
 [Transcoder]
     # getsubs. enable to download subtitles.
     getSubs = 0
-    # subLanguages. create a list of languages in the order you want them in your subtitles. 
+    # subLanguages. create a list of languages in the order you want them in your subtitles.
     subLanguages = eng,spa,fra
     # transcode. enable to use transcoder
     transcode = 0
@@ -286,7 +286,7 @@
     # outputQualityPercent. used as -q:a value. 0 will disable this from being used.
     outputQualityPercent = 0
     # outputVideoPath. Set path you want transcoded videos moved to. Leave blank to disable.
-    outputVideoPath = 
+    outputVideoPath =
     # processOutput. 1 will send the outputVideoPath to SickBeard/CouchPotato. 0 will send original files.
     processOutput = 0
     # audioLanguage. set the 3 letter language code you want as your primary audio track.
@@ -314,7 +314,7 @@
     #### Define custom settings below.
     outputVideoExtension = .mp4
     outputVideoCodec = libx264
-    VideoCodecAllow = 
+    VideoCodecAllow =
     outputVideoPreset = medium
     outputVideoResolution = 1920:1080
     outputVideoFramerate = 24
@@ -322,15 +322,15 @@
     outputVideoCRF = 19
     outputVideoLevel = 3.1
     outputAudioCodec = ac3
-    AudioCodecAllow = 
+    AudioCodecAllow =
     outputAudioChannels = 6
     outputAudioBitrate = 640k
     outputAudioTrack2Codec = libfaac
-    AudioCodec2Allow = 
-    outputAudioTrack2Channels = 2 
+    AudioCodec2Allow =
+    outputAudioTrack2Channels = 2
     outputAudioTrack2Bitrate = 128000
     outputAudioOtherCodec = libmp3lame
-    AudioOtherCodecAllow = 
+    AudioOtherCodecAllow =
     outputAudioOtherChannels =
     outputAudioOtherBitrate = 128000
     outputSubtitleCodec =
@@ -387,4 +387,4 @@
     # enter a list (comma separated) of Group Tags you want removed from filenames to help with subtitle matching.
     # e.g remove_group = [rarbag],-NZBgeek
     # be careful if your "group" is a common "real" word. Please report if you have any group replacements that would fall in this category.
-    remove_group = 
+    remove_group =
