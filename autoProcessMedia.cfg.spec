@@ -247,7 +247,7 @@
     DelugePWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
-    chmodDirecotry = 0
+    chmodDirectory = 0
     resume = 1
     resumeOnFailure = 1
 
