@@ -221,7 +221,7 @@
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, other
     clientAgent = other
-    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, and no to not use links (copy)
+    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, move-sym to move and link back, and no to not use links (copy)
     useLink = hard
     ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
     outputDirectory = /abs/path/to/complete/
@@ -235,7 +235,7 @@
     uTorrentWEBui = http://localhost:8090/gui/
     uTorrentUSR = your username
     uTorrentPWD = your password
-    ###### Transmission (You must edit this if your using TorrentToMedia.py with uTorrent)
+    ###### Transmission (You must edit this if your using TorrentToMedia.py with Transmission)
     TransmissionHost = localhost
     TransmissionPort = 9091
     TransmissionUSR = your username
@@ -247,7 +247,7 @@
     DelugePWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
-    chmodDirecotry = 0
+    chmodDirectory = 0
     resume = 1
     resumeOnFailure = 1
 

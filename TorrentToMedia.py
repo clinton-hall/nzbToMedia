@@ -117,6 +117,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         outputDestination = outputDestination.encode(core.SYS_ENCODING)
     except: pass
 
+    if outputDestination in inputDirectory:
+        outputDestination = inputDirectory
+
     logger.info("Output directory set to: %s" % (outputDestination))
 
     if core.SAFE_MODE and outputDestination == core.TORRENT_DEFAULTDIR:
@@ -246,6 +249,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             core.update_downloadInfoStatus(inputName, 1)
 
             # remove torrent
+            if core.USELINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
+                logger.debug('Checking for sym-links to re-direct in: %s' % (inputDirectory))
+                for dirpath, dirs, files in os.walk(inputDirectory):
+                    for file in files:
+                        logger.debug('Checking symlink: %s' % (os.path.join(dirpath,file)))
+                        core.replace_links(os.path.join(dirpath,file))
             core.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
