@@ -22,6 +22,8 @@ from core.utorrent.client import UTorrentClient
 from core.transmissionrpc.client import Client as TransmissionClient
 from core import logger, nzbToMediaDB
 
+requests.packages.urllib3.disable_warnings()
+
 def reportNzb(failure_link, clientAgent):
     # Contact indexer site
     logger.info("Sending failure notification to indexer site")
@@ -1094,9 +1096,9 @@ def plex_update(category):
     if core.FAILED:
         return
     if core.PLEXSSL:
-        url = 'https://'
+        url = "https://"
     else:
-        url = 'http://'
+        url = "http://"
     url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'
     section = None
     if not core.PLEXSEC:
