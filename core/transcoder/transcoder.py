@@ -686,6 +686,9 @@ def Transcode_directory(dirName):
     if core.OUTPUTVIDEOPATH:
         newDir = core.OUTPUTVIDEOPATH
         makeDir(newDir)
+        name = os.path.splitext(os.path.split(dirName)[1])[0]
+        newDir = os.path.join(newDir, name)
+        makeDir(newDir)
     else:
         newDir = dirName
     if platform.system() == 'Windows':
