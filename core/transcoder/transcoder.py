@@ -165,7 +165,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
         if core.ACODEC:
             audio_cmd.extend(['-c:a', core.ACODEC])
-            if core.ACODEC == 'aac': # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
+            if core.ACODEC in ['aac', 'dts']: # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
                 audio_cmd.extend(['-strict', '-2'])
         else:
             audio_cmd.extend(['-c:a', 'copy'])
@@ -303,7 +303,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
             audio_cmd.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = core.ACODEC
-        if audio_cmd[1] == 'aac':
+        if audio_cmd[1] in ['aac', 'dts']:
             audio_cmd[2:2] = ['-strict', '-2']
 
         if core.ACODEC2_ALLOW:
@@ -358,7 +358,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd2.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = core.ACODEC2
-            if audio_cmd2[1] == 'aac':
+            if audio_cmd2[1] in ['aac', 'dts']:
                 audio_cmd2[2:2] = ['-strict', '-2']
             audio_cmd.extend(audio_cmd2)
 
@@ -395,7 +395,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd3.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = core.ACODEC3
-                if audio_cmd3[1] == 'aac':
+                if audio_cmd3[1] in ['aac', 'dts']:
                     audio_cmd3[2:2] = ['-strict', '-2']
                 audio_cmd.extend(audio_cmd3)
 
