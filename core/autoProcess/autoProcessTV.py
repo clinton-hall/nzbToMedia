@@ -175,6 +175,10 @@ class autoProcessTV:
         elif clientAgent == "manual":
             logger.warning("No media files found in directory %s to manually process." % (dirName), section)
             return [0, ""]   # Success (as far as this script is concerned)
+        elif nzbExtractionBy == "Destination":
+            logger.info("Check for media files ignored because nzbExtractionBy is set to Destination. Setting status Success.")
+            status = 0
+            failed = 0
         else:
             logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
             status = 1
