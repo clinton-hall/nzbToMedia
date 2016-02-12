@@ -177,7 +177,7 @@ class autoProcessTV:
             return [0, ""]   # Success (as far as this script is concerned)
         elif nzbExtractionBy == "Destination":
             logger.info("Check for media files ignored because nzbExtractionBy is set to Destination.")
-            if failed == "0":
+            if int(failed) == 0:
                 logger.info("Setting Status Success.")
                 status = 0
                 failed = 0
