@@ -22,8 +22,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
         myDB = nzbToMediaDB.DBConnection()
 
-        encoded, inputDirectory1 = CharReplace(inputDirectory)
-        encoded, inputName1 = CharReplace(inputName)
+        try:
+            encoded, inputDirectory1 = CharReplace(inputDirectory)
+            encoded, inputName1 = CharReplace(inputName)
+        except:
+            pass
 
         controlValueDict = {"input_directory": unicode(inputDirectory1)}
         newValueDict = {"input_name": unicode(inputName1),
