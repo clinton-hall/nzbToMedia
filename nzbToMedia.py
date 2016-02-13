@@ -526,6 +526,10 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
         myDB = nzbToMediaDB.DBConnection()
 
+        encoded = False
+        inputDirectory1 = inputDirectory
+        inputName1 = inputName
+
         try:
             encoded, inputDirectory1 = CharReplace(inputDirectory)
             encoded, inputName1 = CharReplace(inputName)
