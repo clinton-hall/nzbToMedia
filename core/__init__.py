@@ -366,6 +366,7 @@ def initialize(section=None):
     if REMOTEPATHS:
         if isinstance(REMOTEPATHS, list): REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
         REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+        REMOTEPATHS = [ (local.strip(), remote.strip()) for local, remote in REMOTEPATHS ] # strip trailing and leading whitespaces
 
     PLEXSSL = int(CFG["Plex"]["plex_ssl"])
     PLEXHOST = CFG["Plex"]["plex_host"]
