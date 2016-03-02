@@ -852,6 +852,7 @@ def find_download(clientAgent, download_id):
 
 def get_nzoid(inputName):
     nzoid = None
+    slots = []
     logger.debug("Searching for nzoid from SAbnzbd ...")
     if "http" in core.SABNZBDHOST:
         baseURL = "%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
@@ -870,9 +871,25 @@ def get_nzoid(inputName):
     try:
         result = r.json()
         cleanName = os.path.splitext(os.path.split(inputName)[1])[0]
-        for slot in result['queue']['slots']:
-            if slot['filename'] in [inputName, cleanName]:
-                nzoid = slot['nzo_id']
+        slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
+    except:
+        logger.warning("Data from SABnzbd queue could not be parsed")
+    params['mode'] = "history"
+    try:
+        r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+    except requests.ConnectionError:
+        logger.error("Unable to open URL")
+        return nzoid  # failure
+    try:
+        result = r.json()
+        cleanName = os.path.splitext(os.path.split(inputName)[1])[0]
+        slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
+    except:
+        logger.warning("Data from SABnzbd history could not be parsed")
+    try:
+        for nzo_id, name in slots:
+            if name in [inputName, cleanName]:
+                nzoid = nzo_id
                 logger.debug("Found nzoid: %s" % nzoid)
                 break
     except:
