@@ -925,9 +925,12 @@ def is_archive_file(filename):
 def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     fileName, fileExt = os.path.splitext(mediafile)
 
-    # ignore MAC OS's retarded "resource fork" files
-    if fileName.startswith('._'):
-        return False
+    try:
+        # ignore MAC OS's "resource fork" files
+        if fileName.startswith('._'):
+            return False
+    except:
+        pass
 
     if (media and fileExt.lower() in core.MEDIACONTAINER)\
         or (audio and fileExt.lower() in core.AUDIOCONTAINER)\
