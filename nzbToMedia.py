@@ -725,6 +725,10 @@ def main(args, section=None):
         logger.info("Script triggered from SABnzbd 0.7.17+")
         result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
                         download_id='', failureLink=''.join(args[8:]))
+    # Generic program
+    elif args[5] == 'generic':
+        logger.info("Script triggered from generic program")
+        result = process(args[1], inputName=args[2], inputCategory=args[3], download_id=args[4])
     else:
         # Perform Manual Post-Processing
         logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
