@@ -733,7 +733,7 @@ def main(args, section=None):
         result = process(args[1], inputName=args[2], status=args[7], inputCategory=args[5], clientAgent=clientAgent,
                         download_id='', failureLink=''.join(args[8:]))
     # Generic program
-    elif args[5] == 'generic':
+    elif len(args) > 5 and args[5] == 'generic':
         logger.info("Script triggered from generic program")
         result = process(args[1], inputName=args[2], inputCategory=args[3], download_id=args[4])
     else:
