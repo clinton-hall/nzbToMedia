@@ -1,5 +1,20 @@
 Change_LOG / History
 
+V10.14 13/03/2016
+
+Add option move-sym to create symlink to renamed files.
+Transmission comment fix.
+Prevent int errors in chmod.
+Fix urllib warnings.
+Create unique directory in output incase of rename error in sick/couch.
+Add -strict -2 to dts codec.
+Added support to handle archives in SickRage.
+Report Downloader failures to SickRage.
+Continue on encoding detection failure.
+Strip trailing and leading whitespaces from `mount_points`.
+Also check sabnzbd history for nzoid.
+Add generic run mode (manually enter parameters for execution).
+
 V10.13 11/12/2015
 
 Always add -strict -2 to aac codec.
