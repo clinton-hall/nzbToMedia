@@ -143,7 +143,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     now = datetime.datetime.now()
 
-    inputFiles = core.listMediaFiles(inputDirectory)
+    if extract == 1:
+        inputFiles = core.listMediaFiles(inputDirectory, archives=False)
+    else:
+        inputFiles = core.listMediaFiles(inputDirectory)
     logger.debug("Found %s files in %s" % (str(len(inputFiles)), inputDirectory))
     for inputFile in inputFiles:
         filePath = os.path.dirname(inputFile)
@@ -192,7 +195,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     inputName, outputDestination = convert_to_ascii(inputName, outputDestination)
 
     if extract == 1:
-        logger.debug('Checking for archives to extract in directory: %s' % (outputDestination))
+        logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
         core.extractFiles(inputDirectory, outputDestination, keep_archive)
 
     if not inputCategory in core.NOFLATTEN:  #don't flatten hp in case multi cd albums, and we need to copy this back later.
