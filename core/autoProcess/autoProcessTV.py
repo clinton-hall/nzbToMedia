@@ -242,7 +242,7 @@ class autoProcessTV:
             core.FAILED = True
             if failureLink:
                 reportNzb(failureLink, clientAgent)
-            if fork in core.SICKBEARD_FAILED:
+            if 'failed' in fork_params:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             elif section == "NzbDrone":
                 logger.postprocess("FAILED: The download failed. Sending failed download to %s for CDH processing" % (fork), section)
