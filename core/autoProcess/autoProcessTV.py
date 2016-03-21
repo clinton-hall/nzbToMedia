@@ -135,7 +135,7 @@ class autoProcessTV:
             if e.errno != errno.EEXIST:
                 raise
 
-        if fork not in core.SICKBEARD_TORRENT or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+        if not 'process_method' in fork_params or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
                 process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
