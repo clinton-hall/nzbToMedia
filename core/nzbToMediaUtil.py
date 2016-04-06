@@ -977,7 +977,7 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
 
             files.append(fullCurFile)
 
-    return files
+    return sorted(files,key=len)
 
 def find_imdbid(dirName, inputName):
     imdbid = None
