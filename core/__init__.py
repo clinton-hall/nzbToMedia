@@ -59,7 +59,7 @@ FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
 FORKS[FORK_SICKRAGETV] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-FORKS[FORK_SICKRAGE] = {"dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 FORKS[FORK_SICKGEAR] = {"dir": None, "failed": None, "process_method": None, "force": None}
 ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 
