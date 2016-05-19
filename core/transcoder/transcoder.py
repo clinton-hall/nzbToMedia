@@ -419,7 +419,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     if subStreams[index]["index"] == sub["index"]:
                         subloc = index
                         break
-                video_cmd.extend(['-vf', 'subtitles=' + inputFile + ":si=" + subloc])
+                video_cmd.extend(['-vf', 'subtitles=' + inputFile + ':si=' + str(subloc)])
                 burnt = 1
             if not core.ALLOWSUBS:
                 break
