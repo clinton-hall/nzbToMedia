@@ -212,8 +212,9 @@ class autoProcessMovie:
                 if not release and not ".cp(tt" in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)
                     video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
-                    logger.debug('Renaming: %s to: %s' % (video, video2))
-                    os.rename(video, video2)        
+                    if not (clientAgent in [core.TORRENT_CLIENTAGENT, 'manual'] and core.USELINK == 'move-sym'):
+                        logger.debug('Renaming: %s to: %s' % (video, video2))
+                        os.rename(video, video2)
 
             params = {}
             if download_id:
