@@ -1,5 +1,15 @@
 Change_LOG / History
 
+V10.15 29/05/2016
+
+Don't copy archives when set to extract.
+Specifically check for failed download handing regardless of fork.
+sort Media file results by pathlength.
+Synchronize changed SickRage directory param.
+Don't remove release group information from base folder.
+Don't add imdb id to file name when move-sym in use.
+Fix string and integer concat error.
+
 V10.14 13/03/2016
 
 Add option move-sym to create symlink to renamed files.
