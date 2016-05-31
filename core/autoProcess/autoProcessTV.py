@@ -56,11 +56,7 @@ class autoProcessTV(object):
         port = core.CFG[section][inputCategory]["port"]
         ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
         web_root = core.CFG[section][inputCategory].get("web_root", "")
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
+        protocol = "https://" if ssl else "http://"
 
         if not server_responding("%s%s:%s%s" % (protocol, host, port, web_root)):
             logger.error("Server did not respond. Exiting", section)

@@ -21,11 +21,7 @@ class autoProcessGames(object):
         library = core.CFG[section][inputCategory].get("library")
         ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
         web_root = core.CFG[section][inputCategory].get("web_root", "")
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
+        protocol = "https://" if ssl else "http://"
 
         url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
         if not server_responding(url):
@@ -38,9 +34,7 @@ class autoProcessGames(object):
 
         gamezID = fields[0].replace("[", "").replace("]", "").replace(" ", "")
 
-        downloadStatus = 'Wanted'
-        if status == 0:
-            downloadStatus = 'Downloaded'
+        downloadStatus = 'Downloaded' if status == 0 else 'Wanted'
 
         params = {
             'api_key': apikey,

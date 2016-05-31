@@ -50,11 +50,7 @@ class autoProcessMusic(object):
         web_root = core.CFG[section][inputCategory].get("web_root", "")
         remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
         extract = int(section[inputCategory].get("extract", 0))
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
+        protocol = "https://" if ssl else "http://"
 
         url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
         if not server_responding(url):

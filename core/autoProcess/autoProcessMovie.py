@@ -115,11 +115,7 @@ class autoProcessMovie(object):
         web_root = core.CFG[section][inputCategory].get("web_root", "")
         remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
         extract = int(section[inputCategory].get("extract", 0))
-
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
+        protocol = "https://" if ssl else "http://"
 
         baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
         if not server_responding(baseURL):
@@ -213,9 +209,7 @@ class autoProcessMovie(object):
                 params['downloader'] = downloader or clientAgent
                 params['download_id'] = download_id
 
-            params['media_folder'] = dirName
-            if remote_path:
-                params['media_folder'] = remoteDir(dirName)
+            params['media_folder'] = remoteDir(dirName) if remote_path else dirName
 
             if method == "manage":
                 command = "/manage.update"
