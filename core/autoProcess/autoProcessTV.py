@@ -172,7 +172,7 @@ class autoProcessTV(object):
                 if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                     print('[NZB] MARK=BAD')
                 if failureLink:
-                    failureLink = failureLink + '&corrupt=true'
+                    failureLink += '&corrupt=true'
         elif clientAgent == "manual":
             logger.warning("No media files found in directory %s to manually process." % (dirName), section)
             return [0, ""]  # Success (as far as this script is concerned)
