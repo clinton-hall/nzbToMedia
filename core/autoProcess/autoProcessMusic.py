@@ -132,7 +132,7 @@ class autoProcessMusic:
 
         # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
-        while (time.time() < timeout):
+        while time.time() < timeout:
             current_status = self.get_status(url, apikey, dirName)
             if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [%s]" % (current_status),section)

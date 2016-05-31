@@ -1,13 +1,10 @@
 # coding=utf-8
 
 import os
-import time
 import core
 import requests
-import time
 
 from core.nzbToMediaUtil import convert_to_ascii, remoteDir, server_responding
-from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core import logger
 
 requests.packages.urllib3.disable_warnings()

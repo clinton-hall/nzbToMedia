@@ -18,7 +18,6 @@ requests.packages.urllib3.disable_warnings()
 
 class autoProcessTV:
     def command_complete(self, url, params, headers, section):
-        r = None
         try:
             r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
@@ -36,7 +35,6 @@ class autoProcessTV:
                 return None
 
     def CDH(self, url2, headers):
-        r = None
         try:
             r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
@@ -150,8 +148,8 @@ class autoProcessTV:
                     inputName, dirName = convert_to_ascii(inputName, dirName)
 
             if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName) 
-            
+                flatten(dirName)
+
         # Check video files for corruption
         status = int(failed)
         good_files = 0
@@ -161,7 +159,7 @@ class autoProcessTV:
             if transcoder.isVideoGood(video, status):
                 good_files += 1
                 import_subs(video)
-        if num_files > 0: 
+        if num_files > 0:
             if good_files == num_files and not status == 0:
                 logger.info('Found Valid Videos. Setting status Success')
                 status = 0
@@ -263,7 +261,7 @@ class autoProcessTV:
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
             url2 = "%s%s:%s%s/api/config/downloadClient" % (protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
-            params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
+            # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
                 logger.debug("remote_path: %s" % (remoteDir(dirName)),section)
                 data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id}
@@ -273,11 +271,10 @@ class autoProcessTV:
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)
-                
+
         try:
             if section == "SickBeard":
                 logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
-                r = None
                 s = requests.Session()
                 login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
                 login_params = {'username': username, 'password': password}
@@ -285,7 +282,6 @@ class autoProcessTV:
                 r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
             elif section == "NzbDrone":
                 logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
-                r = None
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
@@ -299,7 +295,7 @@ class autoProcessTV:
         Started = False
         if section == "SickBeard":
             for line in r.iter_lines():
-                if line: 
+                if line:
                     logger.postprocess("%s" % (line), section)
                     if "Moving file from" in line:
                         inputName = os.path.split(line)[1]
@@ -329,7 +325,7 @@ class autoProcessTV:
             while n < 6:  # set up wait_for minutes to see if command completes..
                 time.sleep(10 * wait_for)
                 command_status = self.command_complete(url, params, headers, section)
-                if command_status and command_status in ['completed', 'failed']:    
+                if command_status and command_status in ['completed', 'failed']:
                      break
                 n += 1
             if command_status:
@@ -345,7 +341,7 @@ class autoProcessTV:
                 #return [1, "%s: Failed to post-process %s" % (section, inputName) ]
             if self.CDH(url2, headers):
                 logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
-                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
+                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ]
             else:
                 logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
                 return [1, "%s: Failed to post-process %s" % (section, inputName) ]

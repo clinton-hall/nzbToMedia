@@ -6,7 +6,6 @@ import requests
 import shutil
 
 from core.nzbToMediaUtil import convert_to_ascii, server_responding
-from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core import logger
 
 requests.packages.urllib3.disable_warnings()

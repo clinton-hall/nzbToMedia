@@ -325,7 +325,7 @@ class autoProcessMovie:
 
         # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
-        while (time.time() < timeout):  # only wait 2 (default) minutes, then return.
+        while time.time() < timeout:  # only wait 2 (default) minutes, then return.
             logger.postprocess("Checking for status change, please stand by ...", section)
             release = self.get_release(baseURL, imdbid, download_id, release_id)
             if release:
