@@ -169,7 +169,7 @@ class autoProcessTV(object):
                 logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
-                if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+                if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                     print('[NZB] MARK=BAD')
                 if failureLink:
                     failureLink = failureLink + '&corrupt=true'
@@ -190,7 +190,7 @@ class autoProcessTV(object):
             logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
             status = 1
             failed = 1
-            if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+            if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
 
         if status == 0 and core.TRANSCODE == 1:  # only transcode successful downloads
