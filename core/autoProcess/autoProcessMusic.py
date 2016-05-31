@@ -16,9 +16,10 @@ class autoProcessMusic(object):
     def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))
 
-        params = {}
-        params['apikey'] = apikey
-        params['cmd'] = "getHistory"
+        params = {
+            'apikey': apikey,
+            'cmd': "getHistory"
+        }
 
         logger.debug("Opening URL: %s with PARAMS: %s" % (url, params))
 
@@ -95,13 +96,11 @@ class autoProcessMusic(object):
 
         if status == 0:
 
-            params = {}
-            params['apikey'] = apikey
-            params['cmd'] = "forceProcess"
-
-            params['dir'] = os.path.dirname(dirName)
-            if remote_path:
-                params['dir'] = remoteDir(os.path.dirname(dirName))
+            params = {
+                'apikey': apikey,
+                'cmd': "forceProcess",
+                'dir': remoteDir(os.path.dirname(dirName)) if remote_path else os.path.dirname(dirName)
+            }
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:

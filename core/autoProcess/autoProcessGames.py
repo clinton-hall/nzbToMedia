@@ -51,11 +51,12 @@ class autoProcessGames(object):
         if status == 0:
             downloadStatus = 'Downloaded'
 
-        params = {}
-        params['api_key'] = apikey
-        params['mode'] = 'UPDATEREQUESTEDSTATUS'
-        params['db_id'] = gamezID
-        params['status'] = downloadStatus
+        params = {
+            'api_key': apikey,
+            'mode': 'UPDATEREQUESTEDSTATUS',
+            'db_id': gamezID,
+            'status': downloadStatus
+        }
 
         logger.debug("Opening URL: %s" % (url), section)
 

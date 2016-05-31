@@ -48,11 +48,9 @@ class autoProcessComics(object):
         if len(ext) == 4:  # we assume this was a standard extension.
             inputName = clean_name
 
-        params = {}
-        params['nzb_folder'] = dirName
-
-        if remote_path:
-            params['nzb_folder'] = remoteDir(dirName)
+        params = {
+            'nzb_folder': remoteDir(dirName) if remote_path else dirName,
+        }
 
         if inputName is not None:
             params['nzb_name'] = inputName
