@@ -24,7 +24,7 @@ class autoProcessMusic(object):
 
         try:
             r = requests.get(url, params=params, verify=False, timeout=(30, 120))
-        except Exception, e:
+        except Exception as e:
             logger.error("Unable to open URL")
             return None
 

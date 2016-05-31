@@ -131,7 +131,7 @@ class autoProcessTV(object):
         # won't process the directory because it doesn't exist.
         try:
             os.makedirs(dirName)  # Attempt to create the directory
-        except OSError, e:
+        except OSError as e:
             # Re-raise the error if it wasn't about the directory not existing
             if e.errno != errno.EEXIST:
                 raise
