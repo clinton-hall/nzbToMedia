@@ -23,10 +23,10 @@ class autoProcessGames(object):
         web_root = core.CFG[section][inputCategory].get("web_root", "")
         protocol = "https://" if ssl else "http://"
 
-        url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
+        url = "{0}{1}:{2}{3}/api".format(protocol, host, port, web_root)
         if not server_responding(url):
             logger.error("Server did not respond. Exiting", section)
-            return [1, "%s: Failed to post-process - %s did not respond." % (section, section)]
+            return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
 
@@ -43,33 +43,33 @@ class autoProcessGames(object):
             'status': downloadStatus
         }
 
-        logger.debug("Opening URL: %s" % (url), section)
+        logger.debug("Opening URL: {0}".format(url), section)
 
         try:
             r = requests.get(url, params=params, verify=False, timeout=(30, 300))
         except requests.ConnectionError:
             logger.error("Unable to open URL")
-            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
+            return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
 
         result = r.json()
-        logger.postprocess("%s" % (result), section)
+        logger.postprocess("{0}".format(result), section)
         if library:
-            logger.postprocess("moving files to library: %s" % (library), section)
+            logger.postprocess("moving files to library: {0}".format(library), section)
             try:
                 shutil.move(dirName, os.path.join(library, inputName))
             except:
-                logger.error("Unable to move %s to %s" % (dirName, os.path.join(library, inputName)), section)
-                return [1, "%s: Failed to post-process - Unable to move files" % (section)]
+                logger.error("Unable to move {0} to {1}".format(dirName, os.path.join(library, inputName)), section)
+                return [1, "{0}: Failed to post-process - Unable to move files".format(section)]
         else:
             logger.error("No library specified to move files to. Please edit your configuration.", section)
-            return [1, "%s: Failed to post-process - No library defined in %s" % (section, section)]
+            return [1, "{0}: Failed to post-process - No library defined in {1}".format(section, section)]
 
         if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
         elif result['success']:
-            logger.postprocess("SUCCESS: Status for %s has been set to %s in Gamez" % (gamezID, downloadStatus), section)
-            return [0, "%s: Successfully post-processed %s" % (section, inputName)]
+            logger.postprocess("SUCCESS: Status for {0} has been set to {1} in Gamez".format(gamezID, downloadStatus), section)
+            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
         else:
-            logger.error("FAILED: Status for %s has NOT been updated in Gamez" % (gamezID), section)
-            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section)]
+            logger.error("FAILED: Status for {0} has NOT been updated in Gamez".format(gamezID), section)
+            return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
