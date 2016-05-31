@@ -16,7 +16,8 @@ from core.transcoder import transcoder
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessTV:
+
+class autoProcessTV(object):
     def command_complete(self, url, params, headers, section):
         try:
             r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))

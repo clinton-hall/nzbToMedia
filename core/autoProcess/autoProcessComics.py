@@ -9,7 +9,8 @@ from core import logger
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessComics:
+
+class autoProcessComics(object):
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         if int(status) != 0:
             logger.warning("FAILED DOWNLOAD DETECTED, nothing to process.",section)

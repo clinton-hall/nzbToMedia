@@ -11,7 +11,8 @@ from core import logger
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessMusic:
+
+class autoProcessMusic(object):
     def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:%s" % (os.path.basename(dirName)))
 
@@ -121,7 +122,7 @@ class autoProcessMusic:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
                 return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
             elif r.text == "OK":
-                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section) 
+                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section)
             else:
                 logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (inputName, dirName),section)
                 return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]

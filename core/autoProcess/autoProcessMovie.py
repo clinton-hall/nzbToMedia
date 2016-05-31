@@ -12,7 +12,8 @@ from core.transcoder import transcoder
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessMovie:
+
+class autoProcessMovie(object):
     def get_release(self, baseURL, imdbid=None, download_id=None, release_id=None):
         results = {}
         params = {}
@@ -46,7 +47,7 @@ class autoProcessMovie:
             if 'error' in result:
                 logger.error(str(result['error']))
             else:
-                logger.error("no media found for id %s" % (params['id'])) 
+                logger.error("no media found for id %s" % (params['id']))
             return results
 
         # Gather release info and return it back, no need to narrow results
@@ -210,7 +211,7 @@ class autoProcessMovie:
                 else:
                     logger.error("Transcoding failed for files in %s" % (dirName), section)
                     return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
-            for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False): 
+            for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
                 if not release and not ".cp(tt" in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)
                     video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)

@@ -10,7 +10,8 @@ from core import logger
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessGames:
+
+class autoProcessGames(object):
     def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         status = int(status)
 
