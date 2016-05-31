@@ -54,7 +54,7 @@ class autoProcessComics(object):
         if remote_path:
             params['nzb_folder'] = remoteDir(dirName)
 
-        if inputName != None:
+        if inputName is not None:
             params['nzb_name'] = inputName
 
         success = False
