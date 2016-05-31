@@ -22,7 +22,7 @@ class autoProcessTV(object):
         try:
             r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
-            logger.error("Unable to open URL: %s" % (url1), section)
+            logger.error("Unable to open URL: %s" % url, section)
             return None
         if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
@@ -35,7 +35,7 @@ class autoProcessTV(object):
                 logger.error("%s did not return expected json data." % section, section)
                 return None
 
-    def CDH(self, url2, headers):
+    def CDH(self, url2, headers, section="MAIN"):
         try:
             r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
@@ -305,8 +305,8 @@ class autoProcessTV(object):
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
                 # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            if self.CDH(url2, headers):
-                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
+            if self.CDH(url2, headers, section=section):
+                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % section, section)
                 return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section)]
             else:
                 logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
