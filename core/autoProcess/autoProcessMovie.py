@@ -17,7 +17,7 @@ class autoProcessMovie:
         results = {}
         params = {}
 
-        # determin cmd and params to send to CouchPotato to get our results
+        # determine cmd and params to send to CouchPotato to get our results
         section = 'movies'
         cmd = "/media.list"
         if release_id or imdbid:
@@ -319,7 +319,7 @@ class autoProcessMovie:
                 logger.postprocess("SUCCESS: Unable to find a new release to snatch now. CP will keep searching!", section)
                 return [0, "%s: No new release found now. %s will keep searching" % (section, section) ]
 
-        # Added a releease that was not in the wanted list so confirm rename successful by finding this movie media.list.
+        # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
         if not release:
             download_id = None  # we don't want to filter new releases based on this.
 
@@ -354,7 +354,7 @@ class autoProcessMovie:
             # pause and let CouchPotatoServer catch its breath
             time.sleep(10 * wait_for)
 
-        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resule seeding now.
+        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
         logger.warning(
             "%s does not appear to have changed status after %s minutes, Please check your logs." % (inputName, wait_for),
             section)

@@ -44,7 +44,7 @@ class autoProcessComics:
 
         inputName, dirName = convert_to_ascii(inputName, dirName)
         clean_name, ext = os.path.splitext(inputName)
-        if len(ext) == 4:  # we assume this was a standrard extension. 
+        if len(ext) == 4:  # we assume this was a standard extension.
             inputName = clean_name
 
         params = {}
