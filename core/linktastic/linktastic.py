@@ -33,14 +33,14 @@ if os.name == 'nt':
 
 # Prevent spaces from messing with us!
 def _escape_param(param):
-    return '"%s"' % param
+    return '"{0}"'.format(param)
 
 
 # Private function to create link on nt-based systems
 def _link_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /H %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /H {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
 
@@ -54,7 +54,7 @@ def _link_windows(src, dest):
 def _symlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
@@ -67,7 +67,7 @@ def _symlink_windows(src, dest):
 def _dirlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /J %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /J {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
@@ -80,7 +80,7 @@ def _dirlink_windows(src, dest):
 def _junctionlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /D %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /D {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))

@@ -118,16 +118,16 @@ class ConfigObj(configobj.ConfigObj, Section):
             if not os.path.isfile(core.CONFIG_FILE):
                 shutil.copyfile(core.CONFIG_SPEC_FILE, core.CONFIG_FILE)
             CFG_OLD = config(core.CONFIG_FILE)
-        except Exception as e:
-            logger.debug("Error %s when copying to .cfg" % (e))
+        except Exception as error:
+            logger.debug("Error {msg} when copying to .cfg".format(msg=error))
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
             if not os.path.isfile(core.CONFIG_SPEC_FILE):
                 shutil.copyfile(core.CONFIG_FILE, core.CONFIG_SPEC_FILE)
             CFG_NEW = config(core.CONFIG_SPEC_FILE)
-        except Exception as e:
-            logger.debug("Error %s when copying to .spec" % (e))
+        except Exception as error:
+            logger.debug("Error {msg} when copying to .spec".format(msg=error))
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
@@ -255,8 +255,9 @@ class ConfigObj(configobj.ConfigObj, Section):
         try:
             if 'NZBPO_NDCATEGORY' in os.environ and 'NZBPO_SBCATEGORY' in os.environ:
                 if os.environ['NZBPO_NDCATEGORY'] == os.environ['NZBPO_SBCATEGORY']:
-                    logger.warning("%s category is set for SickBeard and NzbDrone. "
-                                   "Please check your config in NZBGet" % (os.environ['NZBPO_NDCATEGORY']))
+                    logger.warning("{x} category is set for SickBeard and NzbDrone. "
+                                   "Please check your config in NZBGet".format
+                                   (x=os.environ['NZBPO_NDCATEGORY']))
 
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
@@ -462,15 +463,15 @@ class ConfigObj(configobj.ConfigObj, Section):
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
-        except Exception as e:
-            logger.debug("Error %s when applying NZBGet config" % (e))
+        except Exception as error:
+            logger.debug("Error {msg} when applying NZBGet config".format(msg=error))
 
         try:
             # write our new config to autoProcessMedia.cfg
             CFG_NEW.filename = core.CONFIG_FILE
             CFG_NEW.write()
-        except Exception as e:
-            logger.debug("Error %s when writing changes to .cfg" % (e))
+        except Exception as error:
+            logger.debug("Error {msg} when writing changes to .cfg".format(msg=error))
 
         return CFG_NEW
 

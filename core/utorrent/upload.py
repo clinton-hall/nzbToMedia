@@ -16,7 +16,7 @@ class MultiPartForm(object):
         return
 
     def get_content_type(self):
-        return 'multipart/form-data; boundary=%s' % self.boundary
+        return 'multipart/form-data; boundary={0}'.format(self.boundary)
 
     def add_field(self, name, value):
         """Add a simple field to the form data."""
@@ -43,7 +43,7 @@ class MultiPartForm(object):
         # Add the form fields
         parts.extend(
             [part_boundary,
-             'Content-Disposition: form-data; name="%s"' % name,
+             'Content-Disposition: form-data; name="{0}"'.format(name),
              '',
              value,
              ]
@@ -53,8 +53,8 @@ class MultiPartForm(object):
         # Add the files to upload
         parts.extend(
             [part_boundary,
-             'Content-Disposition: file; name="%s"; filename="%s"' % (field_name, filename),
-             'Content-Type: %s' % content_type,
+             'Content-Disposition: file; name="{0}"; filename="{1}"'.format(field_name, filename),
+             'Content-Type: {0}'.format(content_type),
              '',
              body,
              ]

@@ -19,7 +19,7 @@ def dbFilename(filename="nzbtomedia.db", suffix=None):
     @return: the correct location of the database file.
     """
     if suffix:
-        filename = "%s.%s" % (filename, suffix)
+        filename = "{0}.{1}".format(filename, suffix)
     return core.os.path.join(core.PROGRAM_DIR, filename)
 
 
@@ -181,7 +181,7 @@ class DBConnection(object):
 
     def tableInfo(self, tableName):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually
-        cursor = self.connection.execute("PRAGMA table_info(%s)" % tableName)
+        cursor = self.connection.execute("PRAGMA table_info({0})".format(tableName))
         columns = {}
         for column in cursor:
             columns[column['name']] = {'type': column['type']}
@@ -250,8 +250,8 @@ class SchemaUpgrade(object):
         return column in self.connection.tableInfo(tableName)
 
     def addColumn(self, table, column, type="NUMERIC", default=0):
-        self.connection.action("ALTER TABLE %s ADD %s %s" % (table, column, type))
-        self.connection.action("UPDATE %s SET %s = ?" % (table, column), (default,))
+        self.connection.action("ALTER TABLE {0} ADD {1} {2}".format(table, column, type))
+        self.connection.action("UPDATE {0} SET {1} = ?".format(table, column), (default,))
 
     def checkDBVersion(self):
         result = self.connection.select("SELECT db_version FROM db_version")

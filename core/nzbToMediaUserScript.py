@@ -48,7 +48,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             if transcoder.isVideoGood(video, 0):
                 import_subs(video)
             else:
-                logger.info("Corrupt video file found %s. Deleting." % (video), "USERSCRIPT")
+                logger.info("Corrupt video file found {0}. Deleting.".format(video), "USERSCRIPT")
                 os.unlink(video)
 
     for dirpath, dirnames, filenames in os.walk(outputDestination):
@@ -64,22 +64,22 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 command = [core.USER_SCRIPT]
                 for param in core.USER_SCRIPT_PARAM:
                     if param == "FN":
-                        command.append('%s' % file)
+                        command.append('{0}'.format(file))
                         continue
                     elif param == "FP":
-                        command.append('%s' % filePath)
+                        command.append('{0}'.format(filePath))
                         continue
                     elif param == "TN":
-                        command.append('%s' % torrentName)
+                        command.append('{0}'.format(torrentName))
                         continue
                     elif param == "TL":
-                        command.append('%s' % torrentLabel)
+                        command.append('{0}'.format(torrentLabel))
                         continue
                     elif param == "DN":
                         if core.USER_SCRIPT_RUNONCE == 1:
-                            command.append('%s' % outputDestination)
+                            command.append('{0}'.format(outputDestination))
                         else:
-                            command.append('%s' % dirpath)
+                            command.append('{0}'.format(dirpath))
                         continue
                     else:
                         command.append(param)
@@ -87,21 +87,21 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 cmd = ""
                 for item in command:
                     cmd = cmd + " " + item
-                logger.info("Running script %s on file %s." % (cmd, filePath), "USERSCRIPT")
+                logger.info("Running script {0} on file {1}.".format(cmd, filePath), "USERSCRIPT")
                 try:
                     p = Popen(command)
                     res = p.wait()
                     if str(res) in core.USER_SCRIPT_SUCCESSCODES:  # Linux returns 0 for successful.
-                        logger.info("UserScript %s was successfull" % (command[0]))
+                        logger.info("UserScript {0} was successfull".format(command[0]))
                         result = 0
                     else:
-                        logger.error("UserScript %s has failed with return code: %s" % (command[0], res), "USERSCRIPT")
+                        logger.error("UserScript {0} has failed with return code: {1}".format(command[0], res), "USERSCRIPT")
                         logger.info(
-                            "If the UserScript completed successfully you should add %s to the user_script_successCodes" % (
+                            "If the UserScript completed successfully you should add {0} to the user_script_successCodes".format(
                                 res), "USERSCRIPT")
                         result = int(1)
                 except:
-                    logger.error("UserScript %s has failed" % (command[0]), "USERSCRIPT")
+                    logger.error("UserScript {0} has failed".format(command[0]), "USERSCRIPT")
                     result = int(1)
                 final_result += result
 
@@ -114,9 +114,9 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 num_files_new += 1
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
-        logger.info("All files have been processed. Cleaning outputDirectory %s" % (outputDestination))
+        logger.info("All files have been processed. Cleaning outputDirectory {0}".format(outputDestination))
         rmDir(outputDestination)
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
-        logger.info("%s files were processed, but %s still remain. outputDirectory will not be cleaned." % (
+        logger.info("{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.".format(
             num_files, num_files_new))
     return [final_result, '']

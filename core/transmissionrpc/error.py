@@ -19,7 +19,7 @@ class TransmissionError(Exception):
     def __str__(self):
         if self.original:
             original_name = type(self.original).__name__
-            return '%s Original exception: %s, "%s"' % (self.message, original_name, str(self.original))
+            return '{0} Original exception: {1}, "{2}"'.format(self.message, original_name, str(self.original))
         else:
             return self.message
 
@@ -49,10 +49,10 @@ class HTTPHandlerError(Exception):
             self.data = httpdata
 
     def __repr__(self):
-        return '<HTTPHandlerError %d, %s>' % (self.code, self.message)
+        return '<HTTPHandlerError {0:d}, {1}>'.format(self.code, self.message)
 
     def __str__(self):
-        return 'HTTPHandlerError %d: %s' % (self.code, self.message)
+        return 'HTTPHandlerError {0:d}: {1}'.format(self.code, self.message)
 
     def __unicode__(self):
-        return 'HTTPHandlerError %d: %s' % (self.code, self.message)
+        return 'HTTPHandlerError {0:d}: {1}'.format(self.code, self.message)

@@ -276,7 +276,7 @@ def initialize(section=None):
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
+        logger.error("Unable to migrate config file {0}, exiting ...".format(CONFIG_FILE))
         if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
@@ -287,7 +287,7 @@ def initialize(section=None):
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
-        logger.info("Loading config from [%s]" % (CONFIG_FILE))
+        logger.info("Loading config from [{0}]".format(CONFIG_FILE))
         CFG = config()
 
     # Enable/Disable DEBUG Logging
@@ -298,7 +298,7 @@ def initialize(section=None):
 
     if LOG_ENV:
         for item in os.environ:
-            logger.info("%s: %s" % (item, os.environ[item]), "ENVIRONMENT")
+            logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
     nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
@@ -399,20 +399,20 @@ def initialize(section=None):
     devnull = open(os.devnull, 'w')
     try:
         subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
+        NICENESS.extend(['nice', '-n{0}'.format(int(CFG["Posix"]["niceness"]))])
     except:
         pass
     try:
         subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
         try:
-            NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
+            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG["Posix"]["ionice_class"]))])
         except:
             pass
         try:
             if 'ionice' in NICENESS:
-                NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+                NICENESS.extend(['-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
             else:
-                NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
         except:
             pass
     except:
@@ -422,7 +422,7 @@ def initialize(section=None):
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
                            re.compile('.part\d+.rar$', re.I),
                            re.compile('.rar$', re.I)]
-    COMPRESSEDCONTAINER += [re.compile('%s$' % ext, re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
+    COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
@@ -851,7 +851,7 @@ def restart():
 
 
 def rchmod(path, mod):
-    logger.log("Changing file mode of %s to %s" % (path, oct(mod)))
+    logger.log("Changing file mode of {0} to {1}".format(path, oct(mod)))
     os.chmod(path, mod)
     if not os.path.isdir(path):
         return  # Skip files

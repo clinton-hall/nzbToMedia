@@ -100,7 +100,7 @@ def parse_torrent_ids(args):
                     except ValueError:
                         pass
             if not addition:
-                raise ValueError('Invalid torrent id, \"%s\"' % item)
+                raise ValueError('Invalid torrent id, {item!r}'.format(item=item))
             ids.extend(addition)
     elif isinstance(args, (list, tuple)):
         for item in args:
@@ -251,20 +251,20 @@ class Client(object):
         start = time.time()
         http_data = self._http_query(query, timeout)
         elapsed = time.time() - start
-        LOGGER.info('http request took %.3f s' % (elapsed))
+        LOGGER.info('http request took {time:.3f} s'.format(time=elapsed))
 
         try:
             data = json.loads(http_data)
         except ValueError as error:
             LOGGER.error('Error: ' + str(error))
-            LOGGER.error('Request: \"%s\"' % (query))
-            LOGGER.error('HTTP data: \"%s\"' % (http_data))
+            LOGGER.error('Request: {request!r}'.format(request=query))
+            LOGGER.error('HTTP data: {data!r}'.format(data=http_data))
             raise
 
         LOGGER.debug(json.dumps(data, indent=2))
         if 'result' in data:
             if data['result'] != 'success':
-                raise TransmissionError('Query failed with result \"%s\".' % (data['result']))
+                raise TransmissionError('Query failed with result {result!r}.'.format(result=data['result']))
         else:
             raise TransmissionError('Query failed without result.')
 
@@ -348,8 +348,9 @@ class Client(object):
         Add a warning to the log if the Transmission RPC version is lower then the provided version.
         """
         if self.rpc_version < version:
-            LOGGER.warning('Using feature not supported by server. RPC version for server %d, feature introduced in %d.'
-                           % (self.rpc_version, version))
+            LOGGER.warning('Using feature not supported by server. '
+                           'RPC version for server {x}, feature introduced in {y}.'.format
+                           (x=self.rpc_version, y=version))
 
     def add_torrent(self, torrent, timeout=None, **kwargs):
         """

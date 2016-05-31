@@ -1,4 +1,5 @@
 # coding=utf-8
+
 import os
 import platform
 import shutil
@@ -53,7 +54,9 @@ def extract(filePath, outputDestination):
                     else:
                         for k, v in EXTRACT_COMMANDS.items():
                             if cmd in v[0]:
-                                core.logger.error("EXTRACTOR: %s not found, disabling support for %s" % (cmd, k))
+                                core.logger.error("EXTRACTOR: {cmd} not found, "
+                                                  "disabling support for {feature}".format
+                                                  (cmd=cmd, feature=k))
                                 del EXTRACT_COMMANDS[k]
             devnull.close()
         else:
@@ -76,10 +79,11 @@ def extract(filePath, outputDestination):
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]
         else:
-            core.logger.debug("EXTRACTOR: Unknown file type: %s" % ext[1])
+            core.logger.debug("EXTRACTOR: Unknown file type: {ext}".format
+                              (ext=ext[1]))
             return False
 
-            # Create outputDestination folder
+        # Create outputDestination folder
         core.makeDir(outputDestination)
 
     if core.PASSWORDSFILE != "" and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
@@ -87,8 +91,10 @@ def extract(filePath, outputDestination):
     else:
         passwords = []
 
-    core.logger.info("Extracting %s to %s" % (filePath, outputDestination))
-    core.logger.debug("Extracting %s %s %s" % (cmd, filePath, outputDestination))
+    core.logger.info("Extracting {file} to {destination}".format
+                     (file=filePath, destination=outputDestination))
+    core.logger.debug("Extracting {cmd} {file} {destination}".format
+                      (cmd=cmd, file=filePath, destination=outputDestination))
 
     origFiles = []
     origDirs = []
@@ -114,9 +120,9 @@ def extract(filePath, outputDestination):
         cmd2.append("-p-")  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
-        if (
-                res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
-            core.logger.info("EXTRACTOR: Extraction was successful for %s to %s" % (filePath, outputDestination))
+        if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+            core.logger.info("EXTRACTOR: Extraction was successful for {file} to {destination}".format
+                             (file=filePath, destination=outputDestination))
             success = 1
         elif len(passwords) > 0:
             core.logger.info("EXTRACTOR: Attempting to extract with passwords")
@@ -130,14 +136,17 @@ def extract(filePath, outputDestination):
                 p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
-                    core.logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s" % (
-                        filePath, outputDestination, password))
+                    core.logger.info("EXTRACTOR: Extraction was successful "
+                                     "for {file} to {destination} using password: {pwd}".format
+                                     (file=filePath, destination=outputDestination, pwd=password))
                     success = 1
                     break
                 else:
                     continue
     except:
-        core.logger.error("EXTRACTOR: Extraction failed for %s. Could not call command %s" % (filePath, cmd))
+        core.logger.error("EXTRACTOR: Extraction failed for {file}. "
+                          "Could not call command {cmd}".format
+                          (file=filePath, cmd=cmd))
         os.chdir(pwd)
         return False
 
@@ -162,5 +171,7 @@ def extract(filePath, outputDestination):
                         pass
         return True
     else:
-        core.logger.error("EXTRACTOR: Extraction failed for %s. Result was %s" % (filePath, res))
+        core.logger.error("EXTRACTOR: Extraction failed for {file}. "
+                          "Result was {result}".format
+                          (file=filePath, result=res))
         return False

@@ -37,24 +37,25 @@ def isVideoGood(videofile, status):
         else:
             return True
 
-    logger.info('Checking [%s] for corruption, please stand by ...' % (fileNameExt), 'TRANSCODER')
+    logger.info('Checking [{0}] for corruption, please stand by ...'.format(fileNameExt), 'TRANSCODER')
     video_details, result = getVideoDetails(videofile)
 
     if result != 0:
-        logger.error("FAILED: [%s] is corrupted!" % (fileNameExt), 'TRANSCODER')
+        logger.error("FAILED: [{0}] is corrupted!".format(fileNameExt), 'TRANSCODER')
         return False
     if video_details.get("error"):
-        logger.info("FAILED: [%s] returned error [%s]." % (fileNameExt, str(video_details.get("error"))), 'TRANSCODER')
+        logger.info("FAILED: [{0}] returned error [{1}].".format(fileNameExt, video_details.get("error")), 'TRANSCODER')
         return False
     if video_details.get("streams"):
         videoStreams = [item for item in video_details["streams"] if item["codec_type"] == "video"]
         audioStreams = [item for item in video_details["streams"] if item["codec_type"] == "audio"]
         if len(videoStreams) > 0 and len(audioStreams) > 0:
-            logger.info("SUCCESS: [%s] has no corruption." % (fileNameExt), 'TRANSCODER')
+            logger.info("SUCCESS: [{0}] has no corruption.".format(fileNameExt), 'TRANSCODER')
             return True
         else:
-            logger.info("FAILED: [%s] has %s video streams and %s audio streams. Assume corruption." % (
-                fileNameExt, str(len(videoStreams)), str(len(audioStreams))), 'TRANSCODER')
+            logger.info("FAILED: [{0}] has {1} video streams and {2} audio streams. "
+                        "Assume corruption.".format
+                        (fileNameExt, len(videoStreams), len(audioStreams)), 'TRANSCODER')
             return False
 
 
@@ -64,7 +65,7 @@ def zip_out(file, img, bitbucket):
     try:
         procin = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
     except:
-        logger.error("Extracting [%s] has failed" % (file), 'TRANSCODER')
+        logger.error("Extracting [{0}] has failed".format(file), 'TRANSCODER')
     return procin
 
 
@@ -108,7 +109,7 @@ def getVideoDetails(videofile, img=None, bitbucket=None):
             result = proc.returncode
             video_details = json.loads(out)
         except:
-            logger.error("Checking [%s] has failed" % (file), 'TRANSCODER')
+            logger.error("Checking [{0}] has failed".format(file), 'TRANSCODER')
     return video_details, result
 
 
@@ -124,7 +125,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if check and core.CONCAT:
             name = movieName
         elif check:
-            name = ('%s.cd%s' % (movieName, check.groups()[0]))
+            name = ('{0}.cd{1}'.format(movieName, check.groups()[0]))
         elif core.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
             name = re.sub("([\ \.\-\_\=\:]+[cC][dD][0-9])", "", name)
         if ext == core.VEXTENSION and newDir == dir:  # we need to change the name to prevent overwriting itself.
@@ -545,20 +546,20 @@ def extract_subs(file, newfilePath, bitbucket):
             lan = "unk"
 
         if num == 1:
-            outputFile = os.path.join(subdir, "%s.srt" % (name))
+            outputFile = os.path.join(subdir, "{0}.srt".format(name))
             if os.path.isfile(outputFile):
-                outputFile = os.path.join(subdir, "%s.%s.srt" % (name, n))
+                outputFile = os.path.join(subdir, "{0}.{1}.srt".format(name, n))
         else:
-            outputFile = os.path.join(subdir, "%s.%s.srt" % (name, lan))
+            outputFile = os.path.join(subdir, "{0}.{1}.srt".format(name, lan))
             if os.path.isfile(outputFile):
-                outputFile = os.path.join(subdir, "%s.%s.%s.srt" % (name, lan, n))
+                outputFile = os.path.join(subdir, "{0}.{1}.{2}.srt".format(name, lan, n))
 
         command = [core.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', '-codec:' + str(idx), 'srt',
                    outputFile]
         if platform.system() != 'Windows':
             command = core.NICENESS + command
 
-        logger.info("Extracting %s subtitle from: %s" % (lan, file))
+        logger.info("Extracting {0} subtitle from: {1}".format(lan, file))
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
@@ -573,7 +574,7 @@ def extract_subs(file, newfilePath, bitbucket):
                 shutil.copymode(file, outputFile)
             except:
                 pass
-            logger.info("Extracting %s subtitle from %s has succeeded" % (lan, file))
+            logger.info("Extracting {0} subtitle from {1} has succeeded".format(lan, file))
         else:
             logger.error("Extracting subtitles has failed")
 
@@ -587,11 +588,11 @@ def processList(List, newDir, bitbucket):
     for item in List:
         ext = os.path.splitext(item)[1].lower()
         if ext in ['.iso', '.bin', '.img'] and ext not in core.IGNOREEXTENSIONS:
-            logger.debug("Attempting to rip disk image: %s" % (item), "TRANSCODER")
+            logger.debug("Attempting to rip disk image: {0}".format(item), "TRANSCODER")
             newList.extend(ripISO(item, newDir, bitbucket))
             remList.append(item)
         elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and '.vob' not in core.IGNOREEXTENSIONS:
-            logger.debug("Found VIDEO_TS image file: %s" % (item), "TRANSCODER")
+            logger.debug("Found VIDEO_TS image file: {0}".format(item), "TRANSCODER")
             if not vtsPath:
                 try:
                     vtsPath = re.match("(.+VIDEO_TS)", item).groups()[0]
@@ -617,7 +618,7 @@ def processList(List, newDir, bitbucket):
         List.extend(newList)
         for item in remList:
             List.remove(item)
-        logger.debug("Successfully extracted .vob file %s from disk image" % (newList[0]), "TRANSCODER")
+        logger.debug("Successfully extracted .vob file {0} from disk image".format(newList[0]), "TRANSCODER")
     elif newList and not success:
         newList = []
         remList = []
@@ -630,12 +631,12 @@ def ripISO(item, newDir, bitbucket):
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
     if not core.SEVENZIP:
-        logger.error("No 7zip installed. Can't extract image file %s" % (item), "TRANSCODER")
+        logger.error("No 7zip installed. Can't extract image file {0}".format(item), "TRANSCODER")
         newFiles = [failure_dir]
         return newFiles
     cmd = [core.SEVENZIP, 'l', item]
     try:
-        logger.debug("Attempting to extract .vob from image file %s" % (item), "TRANSCODER")
+        logger.debug("Attempting to extract .vob from image file {0}".format(item), "TRANSCODER")
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
@@ -646,7 +647,7 @@ def ripISO(item, newDir, bitbucket):
             concat = []
             m = 1
             while True:
-                vtsName = 'VIDEO_TS%sVTS_%02d_%d.VOB' % (os.sep, n + 1, m)
+                vtsName = 'VIDEO_TS{0}VTS_{1:02d}_{2:d}.VOB'.format(os.sep, n + 1, m)
                 if vtsName in fileList:
                     concat.append(vtsName)
                     m += 1
@@ -657,16 +658,16 @@ def ripISO(item, newDir, bitbucket):
             if core.CONCAT:
                 combined.extend(concat)
                 continue
-            name = '%s.cd%s' % (os.path.splitext(os.path.split(item)[1])[0], str(n + 1))
+            name = '{0}.cd{1}'.format(os.path.splitext(os.path.split(item)[1])[0], str(n + 1))
             newFiles.append({item: {'name': name, 'files': concat}})
         if core.CONCAT:
             name = os.path.splitext(os.path.split(item)[1])[0]
             newFiles.append({item: {'name': name, 'files': combined}})
         if not newFiles:
-            logger.error("No VIDEO_TS folder found in image file %s" % (item), "TRANSCODER")
+            logger.error("No VIDEO_TS folder found in image file {0}".format(item), "TRANSCODER")
             newFiles = [failure_dir]
     except:
-        logger.error("Failed to extract from image file %s" % (item), "TRANSCODER")
+        logger.error("Failed to extract from image file {0}".format(item), "TRANSCODER")
         newFiles = [failure_dir]
     return newFiles
 
@@ -678,7 +679,7 @@ def combineVTS(vtsPath):
         concat = ''
         m = 1
         while True:
-            vtsName = 'VTS_%02d_%d.VOB' % (n + 1, m)
+            vtsName = 'VTS_{0:02d}_{1:d}.VOB'.format(n + 1, m)
             if os.path.isfile(os.path.join(vtsPath, vtsName)):
                 concat = concat + os.path.join(vtsPath, vtsName) + '|'
                 m += 1
@@ -689,9 +690,9 @@ def combineVTS(vtsPath):
         if core.CONCAT:
             combined = combined + concat + '|'
             continue
-        newFiles.append('concat:%s' % concat[:-1])
+        newFiles.append('concat:{0}'.format(concat[:-1]))
     if core.CONCAT:
-        newFiles.append('concat:%s' % combined[:-1])
+        newFiles.append('concat:{0}'.format(combined[:-1]))
     return newFiles
 
 
@@ -707,7 +708,7 @@ def combineCD(combine):
             else:
                 break
         if concat:
-            newFiles.append('concat:%s' % concat[:-1])
+            newFiles.append('concat:{0}'.format(concat[:-1]))
     return newFiles
 
 
@@ -715,7 +716,7 @@ def print_cmd(command):
     cmd = ""
     for item in command:
         cmd = cmd + " " + str(item)
-    logger.debug("calling command:%s" % (cmd))
+    logger.debug("calling command:{0}".format(cmd))
 
 
 def Transcode_directory(dirName):
@@ -756,11 +757,11 @@ def Transcode_directory(dirName):
             os.remove(newfilePath)
         except OSError as e:
             if e.errno != errno.ENOENT:  # Ignore the error if it's just telling us that the file doesn't exist
-                logger.debug("Error when removing transcoding target: %s" % (e))
+                logger.debug("Error when removing transcoding target: {0}".format(e))
         except Exception as e:
-            logger.debug("Error when removing transcoding target: %s" % (e))
+            logger.debug("Error when removing transcoding target: {0}".format(e))
 
-        logger.info("Transcoding video: %s" % (newfilePath))
+        logger.info("Transcoding video: {0}".format(newfilePath))
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
@@ -777,7 +778,7 @@ def Transcode_directory(dirName):
             proc.communicate()
             result = proc.returncode
         except:
-            logger.error("Transcoding of video %s has failed" % (newfilePath))
+            logger.error("Transcoding of video {0} has failed".format(newfilePath))
 
         if core.SUBSDIR and result == 0 and isinstance(file, str):
             for sub in get_subs(file):
@@ -793,14 +794,14 @@ def Transcode_directory(dirName):
                 shutil.copymode(file, newfilePath)
             except:
                 pass
-            logger.info("Transcoding of video to %s succeeded" % (newfilePath))
+            logger.info("Transcoding of video to {0} succeeded".format(newfilePath))
             if os.path.isfile(newfilePath) and (file in newList or not core.DUPLICATE):
                 try:
                     os.unlink(file)
                 except:
                     pass
         else:
-            logger.error("Transcoding of video to %s failed with result %s" % (newfilePath, str(result)))
+            logger.error("Transcoding of video to {0} failed with result {1}".format(newfilePath, result))
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
     if final_result == 0 and not core.DUPLICATE:

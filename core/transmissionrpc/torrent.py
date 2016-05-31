@@ -73,14 +73,14 @@ class Torrent(object):
         tid = self._fields['id'].value
         name = self._get_name_string()
         if isinstance(name, str):
-            return '<Torrent %d \"%s\">' % (tid, name)
+            return '<Torrent {0:d} \"{1}\">'.format(tid, name)
         else:
-            return '<Torrent %d>' % (tid)
+            return '<Torrent {0:d}>'.format(tid)
 
     def __str__(self):
         name = self._get_name_string()
         if isinstance(name, str):
-            return 'Torrent \"%s\"' % (name)
+            return 'Torrent \"{0}\"'.format(name)
         else:
             return 'Torrent'
 
@@ -91,7 +91,7 @@ class Torrent(object):
         try:
             return self._fields[name].value
         except KeyError:
-            raise AttributeError('No attribute %s' % name)
+            raise AttributeError('No attribute {0}'.format(name))
 
     def _rpc_version(self):
         """Get the Transmission RPC API version."""

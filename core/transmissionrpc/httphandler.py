@@ -75,7 +75,7 @@ class DefaultHTTPHandler(HTTPHandler):
             if hasattr(error.reason, 'args') and isinstance(error.reason.args, tuple) and len(error.reason.args) == 2:
                 raise HTTPHandlerError(httpcode=error.reason.args[0], httpmsg=error.reason.args[1])
             else:
-                raise HTTPHandlerError(httpmsg='urllib2.URLError: %s' % (error.reason))
+                raise HTTPHandlerError(httpmsg='urllib2.URLError: {error.reason}'.format(error=error))
         except BadStatusLine as error:
-            raise HTTPHandlerError(httpmsg='httplib.BadStatusLine: %s' % (error.line))
+            raise HTTPHandlerError(httpmsg='httplib.BadStatusLine: {error.line}'.format(error=error))
         return response.read().decode('utf-8')
