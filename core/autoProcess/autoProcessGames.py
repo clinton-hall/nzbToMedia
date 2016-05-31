@@ -1,5 +1,6 @@
 # coding=utf-8
 
+import os
 import core
 import requests
 import shutil
