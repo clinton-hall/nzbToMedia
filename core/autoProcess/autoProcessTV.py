@@ -24,7 +24,7 @@ class autoProcessTV(object):
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url1), section)
             return None
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
             return None
         else:
@@ -41,7 +41,7 @@ class autoProcessTV(object):
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url2), section)
             return False
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
             return False
         else:
@@ -136,7 +136,7 @@ class autoProcessTV(object):
             if e.errno != errno.EEXIST:
                 raise
 
-        if not 'process_method' in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzbExtractionBy != "Destination"):
+        if 'process_method' not in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
                 process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
@@ -288,7 +288,7 @@ class autoProcessTV(object):
             logger.error("Unable to open URL: %s" % (url), section)
             return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
             return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
 

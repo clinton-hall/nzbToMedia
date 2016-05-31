@@ -117,7 +117,7 @@ class autoProcessMusic(object):
 
             logger.debug("Result: %s" % (r.text), section)
 
-            if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
                 return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif r.text == "OK":

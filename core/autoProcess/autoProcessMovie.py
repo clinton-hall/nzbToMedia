@@ -213,7 +213,7 @@ class autoProcessMovie(object):
                     logger.error("Transcoding failed for files in %s" % (dirName), section)
                     return [1, "%s: Failed to post-process - Transcoding failed" % (section)]
             for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
-                if not release and not ".cp(tt" in video and imdbid:
+                if not release and ".cp(tt" not in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)
                     video2 = "%s.cp(%s)%s" % (videoName, imdbid, videoExt)
                     if not (clientAgent in [core.TORRENT_CLIENTAGENT, 'manual'] and core.USELINK == 'move-sym'):
@@ -248,7 +248,7 @@ class autoProcessMovie(object):
                 return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
             result = r.json()
-            if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
                 return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif result['success']:
@@ -290,7 +290,7 @@ class autoProcessMovie(object):
                     return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
                 result = r.json()
-                if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+                if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                     logger.error("Server returned status %s" % (str(r.status_code)), section)
                     return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
                 elif result['success']:
@@ -311,7 +311,7 @@ class autoProcessMovie(object):
                 return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
             result = r.json()
-            if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
                 return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif result['success']:
