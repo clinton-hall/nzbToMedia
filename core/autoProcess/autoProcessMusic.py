@@ -32,7 +32,7 @@ class autoProcessMusic(object):
             result = r.json()
             for album in result:
                 if os.path.basename(dirName) == album['FolderName']:
-                     return album["Status"].lower()
+                    return album["Status"].lower()
         except:
             return None
 
@@ -66,13 +66,12 @@ class autoProcessMusic(object):
         else:
             protocol = "http://"
 
-
-        url = "%s%s:%s%s/api" % (protocol,host,port,web_root)
+        url = "%s%s:%s%s/api" % (protocol, host, port, web_root)
         if not server_responding(url):
             logger.error("Server did not respond. Exiting", section)
-            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section)]
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
         SpecificPath = os.path.join(dirName, str(inputName))
@@ -106,43 +105,43 @@ class autoProcessMusic(object):
 
             release_status = self.get_status(url, apikey, dirName)
             if not release_status:
-                logger.error("Could not find a status for %s, is it in the wanted list ?" % (inputName),section)
+                logger.error("Could not find a status for %s, is it in the wanted list ?" % (inputName), section)
 
             logger.debug("Opening URL: %s with PARAMS: %s" % (url, params), section)
 
             try:
                 r = requests.get(url, params=params, verify=False, timeout=(30, 300))
             except requests.ConnectionError:
-                logger.error("Unable to open URL %s" % (url) ,section)
-                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+                logger.error("Unable to open URL %s" % (url), section)
+                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
-            logger.debug("Result: %s" % (r.text),section)
+            logger.debug("Result: %s" % (r.text), section)
 
             if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
-                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif r.text == "OK":
-                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName),section)
+                logger.postprocess("SUCCESS: Post-Processing started for %s in folder %s ..." % (inputName, dirName), section)
             else:
-                logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (inputName, dirName),section)
-                return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]
+                logger.error("FAILED: Post-Processing has NOT started for %s in folder %s. exiting!" % (inputName, dirName), section)
+                return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section)]
 
         else:
             logger.warning("FAILED DOWNLOAD DETECTED", section)
-            return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ]
+            return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section)]
 
         # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
         while time.time() < timeout:
             current_status = self.get_status(url, apikey, dirName)
             if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-                logger.postprocess("SUCCESS: This release is now marked as status [%s]" % (current_status),section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                logger.postprocess("SUCCESS: This release is now marked as status [%s]" % (current_status), section)
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
             if not os.path.isdir(dirName):
-                logger.postprocess("SUCCESS: The input directory %s has been removed Processing must have finished." % (dirName),section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                logger.postprocess("SUCCESS: The input directory %s has been removed Processing must have finished." % (dirName), section)
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
             time.sleep(10 * wait_for)
 
         # The status hasn't changed. uTorrent can resume seeding now.
-        logger.warning("The music album does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for),section)
-        return [1, "%s: Failed to post-process - No change in wanted status" % (section) ]
+        logger.warning("The music album does not appear to have changed status after %s minutes. Please check your Logs" % (wait_for), section)
+        return [1, "%s: Failed to post-process - No change in wanted status" % (section)]

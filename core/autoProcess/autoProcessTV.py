@@ -51,7 +51,7 @@ class autoProcessTV(object):
             except:
                 return False
 
-    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", download_id=None, inputCategory=None, failureLink=None):
+    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
         host = core.CFG[section][inputCategory]["host"]
         port = core.CFG[section][inputCategory]["port"]
         try:
@@ -66,9 +66,9 @@ class autoProcessTV(object):
             web_root = core.CFG[section][inputCategory]["web_root"]
         except:
             web_root = ""
-        if not server_responding("%s%s:%s%s" % (protocol,host,port,web_root)):
+        if not server_responding("%s%s:%s%s" % (protocol, host, port, web_root)):
             logger.error("Server did not respond. Exiting", section)
-            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section)]
 
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
@@ -116,7 +116,7 @@ class autoProcessTV(object):
         except:
             extract = 0
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
         SpecificPath = os.path.join(dirName, str(inputName))
@@ -136,7 +136,7 @@ class autoProcessTV(object):
             if e.errno != errno.EEXIST:
                 raise
 
-        if not 'process_method' in fork_params or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+        if not 'process_method' in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
                 process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
@@ -175,7 +175,7 @@ class autoProcessTV(object):
                     failureLink = failureLink + '&corrupt=true'
         elif clientAgent == "manual":
             logger.warning("No media files found in directory %s to manually process." % (dirName), section)
-            return [0, ""]   # Success (as far as this script is concerned)
+            return [0, ""]  # Success (as far as this script is concerned)
         elif nzbExtractionBy == "Destination":
             logger.info("Check for media files ignored because nzbExtractionBy is set to Destination.")
             if int(failed) == 0:
@@ -183,9 +183,9 @@ class autoProcessTV(object):
                 status = 0
                 failed = 0
             else:
-               logger.info("Downloader reported an error during download or verification. Processing this as a failed download.")
-               status = 1
-               failed = 1
+                logger.info("Downloader reported an error during download or verification. Processing this as a failed download.")
+                status = 1
+                failed = 1
         else:
             logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
             status = 1
@@ -193,14 +193,14 @@ class autoProcessTV(object):
             if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
 
-        if status == 0 and core.TRANSCODE == 1: # only transcode successful downloads
+        if status == 0 and core.TRANSCODE == 1:  # only transcode successful downloads
             result, newDirName = transcoder.Transcode_directory(dirName)
             if result == 0:
                 logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
                 dirName = newDirName
             else:
                 logger.error("FAILED: Transcoding failed for files in %s" % (dirName), section)
-                return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
+                return [1, "%s: Failed to post-process - Transcoding failed" % (section)]
 
         # configure SB params to pass
         fork_params['quiet'] = 1
@@ -235,7 +235,7 @@ class autoProcessTV(object):
                     del fork_params[param]
 
         # delete any unused params so we don't pass them to SB by mistake
-        [fork_params.pop(k) for k,v in fork_params.items() if v is None]
+        [fork_params.pop(k) for k, v in fork_params.items() if v is None]
 
         if status == 0:
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
@@ -247,27 +247,27 @@ class autoProcessTV(object):
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
             elif section == "NzbDrone":
                 logger.postprocess("FAILED: The download failed. Sending failed download to %s for CDH processing" % (fork), section)
-                return [1, "%s: Downlaod Failed. Sending back to %s" % (section, section) ] # Return as failed to flag this in the downloader.
+                return [1, "%s: Downlaod Failed. Sending back to %s" % (section, section)]  # Return as failed to flag this in the downloader.
             else:
                 logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                     logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
                     rmDir(dirName)
-                return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ] # Return as failed to flag this in the downloader.
+                return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section)]  # Return as failed to flag this in the downloader.
 
         url = None
         if section == "SickBeard":
-            url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
+            url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol, host, port, web_root)
         elif section == "NzbDrone":
             url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
             url2 = "%s%s:%s%s/api/config/downloadClient" % (protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                logger.debug("remote_path: %s" % (remoteDir(dirName)),section)
+                logger.debug("remote_path: %s" % (remoteDir(dirName)), section)
                 data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id}
             else:
-                logger.debug("path: %s" % (dirName),section)
+                logger.debug("path: %s" % (dirName), section)
                 data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id}
             if not download_id:
                 data.pop("downloadClientId")
@@ -277,7 +277,7 @@ class autoProcessTV(object):
             if section == "SickBeard":
                 logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
                 s = requests.Session()
-                login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
+                login = "%s%s:%s%s/login" % (protocol, host, port, web_root)
                 login_params = {'username': username, 'password': password}
                 s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
                 r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
@@ -286,11 +286,11 @@ class autoProcessTV(object):
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error("Unable to open URL: %s" % (url), section)
-            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
         if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
 
         Success = False
         Started = False
@@ -314,11 +314,11 @@ class autoProcessTV(object):
                 Started = False
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
-            logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
+            logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
             rmDir(dirName)
 
         if Success:
-            return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+            return [0, "%s: Successfully post-processed %s" % (section, inputName)]
         elif section == "NzbDrone" and Started:
             n = 0
             params = {}
@@ -327,24 +327,24 @@ class autoProcessTV(object):
                 time.sleep(10 * wait_for)
                 command_status = self.command_complete(url, params, headers, section)
                 if command_status and command_status in ['completed', 'failed']:
-                     break
+                    break
                 n += 1
             if command_status:
                 logger.debug("The Scan command return status: %s" % (command_status), section)
             if not os.path.exists(dirName):
                 logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
             elif command_status and command_status in ['completed']:
                 logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
-                #return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+                # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
             if self.CDH(url2, headers):
                 logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
-                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ]
+                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section)]
             else:
                 logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
-                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+                return [1, "%s: Failed to post-process %s" % (section, inputName)]
         else:
-            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]  # We did not receive Success confirmation.
+            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section)]  # We did not receive Success confirmation.

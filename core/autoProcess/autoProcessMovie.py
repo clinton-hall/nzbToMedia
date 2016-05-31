@@ -40,7 +40,7 @@ class autoProcessMovie(object):
         except:
             logger.error("CouchPotato returned the following non-json data")
             for line in r.iter_lines():
-                logger.error("%s" %(line))
+                logger.error("%s" % (line))
             return results
 
         if not result['success']:
@@ -56,7 +56,8 @@ class autoProcessMovie(object):
                 id = result[section]['_id']
                 results[id] = result[section]
                 return results
-            except:pass
+            except:
+                pass
 
         # Gather release info and proceed with trying to narrow results to one release choice
 
@@ -135,7 +136,7 @@ class autoProcessMovie(object):
         baseURL = "%s%s:%s%s/api/%s" % (protocol, host, port, web_root, apikey)
         if not server_responding(baseURL):
             logger.error("Server did not respond. Exiting", section)
-            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+            return [1, "%s: Failed to post-process - %s did not respond." % (section, section)]
 
         imdbid = find_imdbid(dirName, inputName)
         release = self.get_release(baseURL, imdbid, download_id)
@@ -155,7 +156,7 @@ class autoProcessMovie(object):
             except:
                 pass
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
         SpecificPath = os.path.join(dirName, str(inputName))
@@ -210,7 +211,7 @@ class autoProcessMovie(object):
                     dirName = newDirName
                 else:
                     logger.error("Transcoding failed for files in %s" % (dirName), section)
-                    return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
+                    return [1, "%s: Failed to post-process - Transcoding failed" % (section)]
             for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
                 if not release and not ".cp(tt" in video and imdbid:
                     videoName, videoExt = os.path.splitext(video)
@@ -244,20 +245,20 @@ class autoProcessMovie(object):
                 r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
-                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
             result = r.json()
             if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
-                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif result['success']:
                 logger.postprocess("SUCCESS: Finished %s scan for folder %s" % (method, dirName), section)
                 if method == "manage":
-                    return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                    return [0, "%s: Successfully post-processed %s" % (section, inputName)]
             else:
                 logger.error("FAILED: %s scan was unable to finish for folder %s. exiting!" % (method, dirName),
                              section)
-                return [1, "%s: Failed to post-process - Server did not return success" % (section) ]
+                return [1, "%s: Failed to post-process - Server did not return success" % (section)]
 
         else:
             core.FAILED = True
@@ -272,7 +273,7 @@ class autoProcessMovie(object):
             if not release_id and not media_id:
                 logger.error("Could not find a downloaded movie in the database matching %s, exiting!" % inputName,
                              section)
-                return [1, "%s: Failed to post-process - Failed download not found in %s" % (section, section) ]
+                return [1, "%s: Failed to post-process - Failed download not found in %s" % (section, section)]
 
             if release_id:
                 logger.postprocess("Setting failed release %s to ignored ..." % (inputName), section)
@@ -286,17 +287,17 @@ class autoProcessMovie(object):
                     r = requests.get(url, params=params, verify=False, timeout=(30, 120))
                 except requests.ConnectionError:
                     logger.error("Unable to open URL %s" % (url), section)
-                    return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+                    return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
                 result = r.json()
                 if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                     logger.error("Server returned status %s" % (str(r.status_code)), section)
-                    return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+                    return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
                 elif result['success']:
                     logger.postprocess("SUCCESS: %s has been set to ignored ..." % (inputName), section)
                 else:
                     logger.warning("FAILED: Unable to set %s to ignored!" % (inputName), section)
-                    return [1, "%s: Failed to post-process - Unable to set %s to ignored" % (section, inputName) ]
+                    return [1, "%s: Failed to post-process - Unable to set %s to ignored" % (section, inputName)]
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
@@ -307,18 +308,18 @@ class autoProcessMovie(object):
                 r = requests.get(url, params={'media_id': media_id}, verify=False, timeout=(30, 600))
             except requests.ConnectionError:
                 logger.error("Unable to open URL %s" % (url), section)
-                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+                return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section)]
 
             result = r.json()
             if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status %s" % (str(r.status_code)), section)
-                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+                return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code))]
             elif result['success']:
                 logger.postprocess("SUCCESS: Snatched the next highest release ...", section)
-                return [0, "%s: Successfully snatched next highest release" % (section) ]
+                return [0, "%s: Successfully snatched next highest release" % (section)]
             else:
                 logger.postprocess("SUCCESS: Unable to find a new release to snatch now. CP will keep searching!", section)
-                return [0, "%s: No new release found now. %s will keep searching" % (section, section) ]
+                return [0, "%s: No new release found now. %s will keep searching" % (section, section)]
 
         # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
         if not release:
@@ -333,24 +334,24 @@ class autoProcessMovie(object):
                 try:
                     if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.
                         logger.postprocess("SUCCESS: Movie %s has now been added to CouchPotato" % (imdbid), section)
-                        return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                        return [0, "%s: Successfully post-processed %s" % (section, inputName)]
 
                     release_status_new = release[release_id]['status']
                     if release_status_new != release_status_old:
                         logger.postprocess("SUCCESS: Release %s has now been marked with a status of [%s]" % (
                             inputName, str(release_status_new).upper()), section)
-                        return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                        return [0, "%s: Successfully post-processed %s" % (section, inputName)]
                 except:
                     pass
             if not os.path.isdir(dirName):
                 logger.postprocess("SUCCESS: Input Directory [%s] has been processed and removed" % (
                     dirName), section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
 
             elif not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=True):
                 logger.postprocess("SUCCESS: Input Directory [%s] has no remaining media files. This has been fully processed." % (
                     dirName), section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                return [0, "%s: Successfully post-processed %s" % (section, inputName)]
 
             # pause and let CouchPotatoServer catch its breath
             time.sleep(10 * wait_for)
@@ -359,4 +360,4 @@ class autoProcessMovie(object):
         logger.warning(
             "%s does not appear to have changed status after %s minutes, Please check your logs." % (inputName, wait_for),
             section)
-        return [1, "%s: Failed to post-process - No change in status" % (section) ]
+        return [1, "%s: Failed to post-process - No change in status" % (section)]
