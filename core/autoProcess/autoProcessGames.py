@@ -18,18 +18,9 @@ class autoProcessGames(object):
         host = core.CFG[section][inputCategory]["host"]
         port = core.CFG[section][inputCategory]["port"]
         apikey = core.CFG[section][inputCategory]["apikey"]
-        try:
-            library = core.CFG[section][inputCategory]["library"]
-        except:
-            library = None
-        try:
-            ssl = int(core.CFG[section][inputCategory]["ssl"])
-        except:
-            ssl = 0
-        try:
-            web_root = core.CFG[section][inputCategory]["web_root"]
-        except:
-            web_root = ""
+        library = core.CFG[section][inputCategory].get("library")
+        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
+        web_root = core.CFG[section][inputCategory].get("web_root", "")
 
         if ssl:
             protocol = "https://"

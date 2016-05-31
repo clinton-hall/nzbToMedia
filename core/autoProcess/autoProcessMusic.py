@@ -25,17 +25,19 @@ class autoProcessMusic(object):
 
         try:
             r = requests.get(url, params=params, verify=False, timeout=(30, 120))
-        except Exception as e:
+        except requests.RequestException:
             logger.error("Unable to open URL")
             return None
 
         try:
             result = r.json()
-            for album in result:
-                if os.path.basename(dirName) == album['FolderName']:
-                    return album["Status"].lower()
-        except:
+        except ValueError:
+            # ValueError catches simplejson's JSONDecodeError and json's ValueError
             return None
+
+        for album in result:
+            if os.path.basename(dirName) == album['FolderName']:
+                return album["Status"].lower()
 
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
         status = int(status)
@@ -44,23 +46,10 @@ class autoProcessMusic(object):
         port = core.CFG[section][inputCategory]["port"]
         apikey = core.CFG[section][inputCategory]["apikey"]
         wait_for = int(core.CFG[section][inputCategory]["wait_for"])
-
-        try:
-            ssl = int(core.CFG[section][inputCategory]["ssl"])
-        except:
-            ssl = 0
-        try:
-            web_root = core.CFG[section][inputCategory]["web_root"]
-        except:
-            web_root = ""
-        try:
-            remote_path = int(core.CFG[section][inputCategory]["remote_path"])
-        except:
-            remote_path = 0
-        try:
-            extract = int(section[inputCategory]["extract"])
-        except:
-            extract = 0
+        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
+        web_root = core.CFG[section][inputCategory].get("web_root", "")
+        remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
+        extract = int(section[inputCategory].get("extract", 0))
 
         if ssl:
             protocol = "https://"

@@ -29,9 +29,9 @@ class autoProcessTV(object):
             return None
         else:
             try:
-                res = json.loads(r.content)
-                return res['state']
-            except:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 logger.error("%s did not return expected json data." % section, section)
                 return None
 
@@ -46,26 +46,22 @@ class autoProcessTV(object):
             return False
         else:
             try:
-                res = json.loads(r.content)
-                return res["enableCompletedDownloadHandling"]
-            except:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
         host = core.CFG[section][inputCategory]["host"]
         port = core.CFG[section][inputCategory]["port"]
-        try:
-            ssl = int(core.CFG[section][inputCategory]["ssl"])
-        except:
-            ssl = 0
+        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
+        web_root = core.CFG[section][inputCategory].get("web_root", "")
+
         if ssl:
             protocol = "https://"
         else:
             protocol = "http://"
-        try:
-            web_root = core.CFG[section][inputCategory]["web_root"]
-        except:
-            web_root = ""
+
         if not server_responding("%s%s:%s%s" % (protocol, host, port, web_root)):
             logger.error("Server did not respond. Exiting", section)
             return [1, "%s: Failed to post-process - %s did not respond." % (section, section)]
@@ -73,48 +69,17 @@ class autoProcessTV(object):
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
 
-        try:
-            username = core.CFG[section][inputCategory]["username"]
-            password = core.CFG[section][inputCategory]["password"]
-        except:
-            username = ""
-            password = ""
-        try:
-            apikey = core.CFG[section][inputCategory]["apikey"]
-        except:
-            apikey = ""
-        try:
-            delete_failed = int(core.CFG[section][inputCategory]["delete_failed"])
-        except:
-            delete_failed = 0
-        try:
-            nzbExtractionBy = core.CFG[section][inputCategory]["nzbExtractionBy"]
-        except:
-            nzbExtractionBy = "Downloader"
-        try:
-            process_method = core.CFG[section][inputCategory]["process_method"]
-        except:
-            process_method = None
-        try:
-            remote_path = int(core.CFG[section][inputCategory]["remote_path"])
-        except:
-            remote_path = 0
-        try:
-            wait_for = int(core.CFG[section][inputCategory]["wait_for"])
-        except:
-            wait_for = 2
-        try:
-            force = int(core.CFG[section][inputCategory]["force"])
-        except:
-            force = 0
-        try:
-            delete_on = int(core.CFG[section][inputCategory]["delete_on"])
-        except:
-            delete_on = 0
-        try:
-            extract = int(section[inputCategory]["extract"])
-        except:
-            extract = 0
+        username = core.CFG[section][inputCategory].get("username", "")
+        password = core.CFG[section][inputCategory].get("password", "")
+        apikey = core.CFG[section][inputCategory].get("apikey", "")
+        delete_failed = int(core.CFG[section][inputCategory].get("delete_failed", 0))
+        nzbExtractionBy = core.CFG[section][inputCategory].get("nzbExtractionBy", "Downloader")
+        process_method = core.CFG[section][inputCategory].get("process_method")
+        remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
+        wait_for = int(core.CFG[section][inputCategory].get("wait_for", 2))
+        force = int(core.CFG[section][inputCategory].get("force", 0))
+        delete_on = int(core.CFG[section][inputCategory].get("delete_on", 0))
+        extract = int(section[inputCategory].get("extract", 0))
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
