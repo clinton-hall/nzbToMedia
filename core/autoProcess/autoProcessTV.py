@@ -1,3 +1,5 @@
+# coding=utf-8
+
 import copy
 import os
 import time
@@ -14,108 +16,68 @@ from core.transcoder import transcoder
 
 requests.packages.urllib3.disable_warnings()
 
-class autoProcessTV:
+
+class autoProcessTV(object):
     def command_complete(self, url, params, headers, section):
-        r = None
         try:
             r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
-            logger.error("Unable to open URL: %s" % (url1), section)
+            logger.error("Unable to open URL: {0}".format(url), section)
             return None
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status %s" % (str(r.status_code)), section)
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
             return None
         else:
             try:
-                res = json.loads(r.content)
-                return res['state']
-            except:
-                logger.error("%s did not return expected json data." % section, section)
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
                 return None
 
-    def CDH(self, url2, headers):
-        r = None
+    def CDH(self, url2, headers, section="MAIN"):
         try:
             r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
-            logger.error("Unable to open URL: %s" % (url2), section)
+            logger.error("Unable to open URL: {0}".format(url2), section)
             return False
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status %s" % (str(r.status_code)), section)
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
             return False
         else:
             try:
-                res = json.loads(r.content)
-                return res["enableCompletedDownloadHandling"]
-            except:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
-    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent = "manual", download_id=None, inputCategory=None, failureLink=None):
+    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
         host = core.CFG[section][inputCategory]["host"]
         port = core.CFG[section][inputCategory]["port"]
-        try:
-            ssl = int(core.CFG[section][inputCategory]["ssl"])
-        except:
-            ssl = 0
-        if ssl:
-            protocol = "https://"
-        else:
-            protocol = "http://"
-        try:
-            web_root = core.CFG[section][inputCategory]["web_root"]
-        except:
-            web_root = ""
-        if not server_responding("%s%s:%s%s" % (protocol,host,port,web_root)):
+        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
+        web_root = core.CFG[section][inputCategory].get("web_root", "")
+        protocol = "https://" if ssl else "http://"
+
+        if not server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
             logger.error("Server did not respond. Exiting", section)
-            return [1, "%s: Failed to post-process - %s did not respond." % (section, section) ]
+            return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
 
-        try:
-            username = core.CFG[section][inputCategory]["username"]
-            password = core.CFG[section][inputCategory]["password"]
-        except:
-            username = ""
-            password = ""
-        try:
-            apikey = core.CFG[section][inputCategory]["apikey"]
-        except:
-            apikey = ""
-        try:
-            delete_failed = int(core.CFG[section][inputCategory]["delete_failed"])
-        except:
-            delete_failed = 0
-        try:
-            nzbExtractionBy = core.CFG[section][inputCategory]["nzbExtractionBy"]
-        except:
-            nzbExtractionBy = "Downloader"
-        try:
-            process_method = core.CFG[section][inputCategory]["process_method"]
-        except:
-            process_method = None
-        try:
-            remote_path = int(core.CFG[section][inputCategory]["remote_path"])
-        except:
-            remote_path = 0
-        try:
-            wait_for = int(core.CFG[section][inputCategory]["wait_for"])
-        except:
-            wait_for = 2
-        try:
-            force = int(core.CFG[section][inputCategory]["force"])
-        except:
-            force = 0
-        try:
-            delete_on = int(core.CFG[section][inputCategory]["delete_on"])
-        except:
-            delete_on = 0
-        try:
-            extract = int(section[inputCategory]["extract"])
-        except:
-            extract = 0
+        username = core.CFG[section][inputCategory].get("username", "")
+        password = core.CFG[section][inputCategory].get("password", "")
+        apikey = core.CFG[section][inputCategory].get("apikey", "")
+        delete_failed = int(core.CFG[section][inputCategory].get("delete_failed", 0))
+        nzbExtractionBy = core.CFG[section][inputCategory].get("nzbExtractionBy", "Downloader")
+        process_method = core.CFG[section][inputCategory].get("process_method")
+        remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
+        wait_for = int(core.CFG[section][inputCategory].get("wait_for", 2))
+        force = int(core.CFG[section][inputCategory].get("force", 0))
+        delete_on = int(core.CFG[section][inputCategory].get("delete_on", 0))
+        extract = int(section[inputCategory].get("extract", 0))
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName): # If the input directory is a file, assume single file download and split dir/name.
+        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
 
         SpecificPath = os.path.join(dirName, str(inputName))
@@ -130,12 +92,12 @@ class autoProcessTV:
         # won't process the directory because it doesn't exist.
         try:
             os.makedirs(dirName)  # Attempt to create the directory
-        except OSError, e:
+        except OSError as e:
             # Re-raise the error if it wasn't about the directory not existing
             if e.errno != errno.EEXIST:
                 raise
 
-        if not 'process_method' in fork_params or (clientAgent in ['nzbget','sabnzbd'] and nzbExtractionBy != "Destination"):
+        if 'process_method' not in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzbExtractionBy != "Destination"):
             if inputName:
                 process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
@@ -143,13 +105,13 @@ class autoProcessTV:
             # Now check if tv files exist in destination. 
             if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
                 if listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
-                    logger.debug('Checking for archives to extract in directory: %s' % (dirName))
+                    logger.debug('Checking for archives to extract in directory: {0}'.format(dirName))
                     core.extractFiles(dirName)
                     inputName, dirName = convert_to_ascii(inputName, dirName)
 
             if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName) 
-            
+                flatten(dirName)
+
         # Check video files for corruption
         status = int(failed)
         good_files = 0
@@ -159,7 +121,7 @@ class autoProcessTV:
             if transcoder.isVideoGood(video, status):
                 good_files += 1
                 import_subs(video)
-        if num_files > 0: 
+        if num_files > 0:
             if good_files == num_files and not status == 0:
                 logger.info('Found Valid Videos. Setting status Success')
                 status = 0
@@ -168,13 +130,13 @@ class autoProcessTV:
                 logger.info('Found corrupt videos. Setting status Failed')
                 status = 1
                 failed = 1
-                if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+                if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                     print('[NZB] MARK=BAD')
                 if failureLink:
-                    failureLink = failureLink + '&corrupt=true'
+                    failureLink += '&corrupt=true'
         elif clientAgent == "manual":
-            logger.warning("No media files found in directory %s to manually process." % (dirName), section)
-            return [0, ""]   # Success (as far as this script is concerned)
+            logger.warning("No media files found in directory {0} to manually process.".format(dirName), section)
+            return [0, ""]  # Success (as far as this script is concerned)
         elif nzbExtractionBy == "Destination":
             logger.info("Check for media files ignored because nzbExtractionBy is set to Destination.")
             if int(failed) == 0:
@@ -182,24 +144,24 @@ class autoProcessTV:
                 status = 0
                 failed = 0
             else:
-               logger.info("Downloader reported an error during download or verification. Processing this as a failed download.")
-               status = 1
-               failed = 1
+                logger.info("Downloader reported an error during download or verification. Processing this as a failed download.")
+                status = 1
+                failed = 1
         else:
-            logger.warning("No media files found in directory %s. Processing this as a failed download" % (dirName), section)
+            logger.warning("No media files found in directory {0}. Processing this as a failed download".format(dirName), section)
             status = 1
             failed = 1
-            if os.environ.has_key('NZBOP_VERSION') and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
+            if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
 
-        if status == 0 and core.TRANSCODE == 1: # only transcode successful downloads
+        if status == 0 and core.TRANSCODE == 1:  # only transcode successful downloads
             result, newDirName = transcoder.Transcode_directory(dirName)
             if result == 0:
-                logger.debug("SUCCESS: Transcoding succeeded for files in %s" % (dirName), section)
+                logger.debug("SUCCESS: Transcoding succeeded for files in {0}".format(dirName), section)
                 dirName = newDirName
             else:
-                logger.error("FAILED: Transcoding failed for files in %s" % (dirName), section)
-                return [1, "%s: Failed to post-process - Transcoding failed" % (section) ]
+                logger.error("FAILED: Transcoding failed for files in {0}".format(dirName), section)
+                return [1, "{0}: Failed to post-process - Transcoding failed".format(section)]
 
         # configure SB params to pass
         fork_params['quiet'] = 1
@@ -234,7 +196,7 @@ class autoProcessTV:
                     del fork_params[param]
 
         # delete any unused params so we don't pass them to SB by mistake
-        [fork_params.pop(k) for k,v in fork_params.items() if v is None]
+        [fork_params.pop(k) for k, v in fork_params.items() if v is None]
 
         if status == 0:
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
@@ -243,62 +205,60 @@ class autoProcessTV:
             if failureLink:
                 reportNzb(failureLink, clientAgent)
             if 'failed' in fork_params:
-                logger.postprocess("FAILED: The download failed. Sending 'failed' process request to %s branch" % (fork), section)
+                logger.postprocess("FAILED: The download failed. Sending 'failed' process request to {0} branch".format(fork), section)
             elif section == "NzbDrone":
-                logger.postprocess("FAILED: The download failed. Sending failed download to %s for CDH processing" % (fork), section)
-                return [1, "%s: Downlaod Failed. Sending back to %s" % (section, section) ] # Return as failed to flag this in the downloader.
+                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(fork), section)
+                return [1, "{0}: Downlaod Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
             else:
-                logger.postprocess("FAILED: The download failed. %s branch does not handle failed downloads. Nothing to process" % (fork), section)
+                logger.postprocess("FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process".format(fork), section)
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
-                    logger.postprocess("Deleting failed files and folder %s" % (dirName), section)
+                    logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
                     rmDir(dirName)
-                return [1, "%s: Failed to post-process. %s does not support failed downloads" % (section, section) ] # Return as failed to flag this in the downloader.
+                return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
 
         url = None
         if section == "SickBeard":
-            url = "%s%s:%s%s/home/postprocess/processEpisode" % (protocol,host,port,web_root)
+            url = "{0}{1}:{2}{3}/home/postprocess/processEpisode".format(protocol, host, port, web_root)
         elif section == "NzbDrone":
-            url = "%s%s:%s%s/api/command" % (protocol, host, port, web_root)
-            url2 = "%s%s:%s%s/api/config/downloadClient" % (protocol, host, port, web_root)
+            url = "{0}{1}:{2}{3}/api/command".format(protocol, host, port, web_root)
+            url2 = "{0}{1}:{2}{3}/api/config/downloadClient".format(protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
-            params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
+            # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                logger.debug("remote_path: %s" % (remoteDir(dirName)),section)
+                logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
                 data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id}
             else:
-                logger.debug("path: %s" % (dirName),section)
+                logger.debug("path: {0}".format(dirName), section)
                 data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id}
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)
-                
+
         try:
             if section == "SickBeard":
-                logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
-                r = None
+                logger.debug("Opening URL: {0} with params: {1}".format(url, fork_params), section)
                 s = requests.Session()
-                login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
+                login = "{0}{1}:{2}{3}/login".format(protocol, host, port, web_root)
                 login_params = {'username': username, 'password': password}
                 s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
                 r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
             elif section == "NzbDrone":
-                logger.debug("Opening URL: %s with data: %s" % (url, str(data)), section)
-                r = None
+                logger.debug("Opening URL: {0} with data: {1}".format(url, data), section)
                 r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error("Unable to open URL: %s" % (url), section)
-            return [1, "%s: Failed to post-process - Unable to connect to %s" % (section, section) ]
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
 
-        if not r.status_code in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status %s" % (str(r.status_code)), section)
-            return [1, "%s: Failed to post-process - Server returned status %s" % (section, str(r.status_code)) ]
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
 
         Success = False
         Started = False
         if section == "SickBeard":
             for line in r.iter_lines():
-                if line: 
-                    logger.postprocess("%s" % (line), section)
+                if line:
+                    logger.postprocess("{0}".format(line), section)
                     if "Moving file from" in line:
                         inputName = os.path.split(line)[1]
                     if "Processing succeeded" in line or "Successfully processed" in line:
@@ -307,45 +267,45 @@ class autoProcessTV:
             try:
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
-                logger.debug("Scan started with id: %s" % (str(scan_id)), section)
+                logger.debug("Scan started with id: {0}".format(scan_id), section)
                 Started = True
             except Exception as e:
-                logger.warning("No scan id was returned due to: %s" % (e), section)
+                logger.warning("No scan id was returned due to: {0}".format(e), section)
                 scan_id = None
                 Started = False
 
         if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
-            logger.postprocess("Deleting failed files and folder %s" % (dirName),section)
+            logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
             rmDir(dirName)
 
         if Success:
-            return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
         elif section == "NzbDrone" and Started:
             n = 0
             params = {}
-            url = url + "/" + str(scan_id)
+            url = "{0}/{1}".format(url, scan_id)
             while n < 6:  # set up wait_for minutes to see if command completes..
                 time.sleep(10 * wait_for)
                 command_status = self.command_complete(url, params, headers, section)
-                if command_status and command_status in ['completed', 'failed']:    
-                     break
+                if command_status and command_status in ['completed', 'failed']:
+                    break
                 n += 1
             if command_status:
-                logger.debug("The Scan command return status: %s" % (command_status), section)
+                logger.debug("The Scan command return status: {0}".format(command_status), section)
             if not os.path.exists(dirName):
-                logger.debug("The directory %s has been removed. Renaming was successful." % (dirName), section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dirName), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
             elif command_status and command_status in ['completed']:
                 logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
-                return [0, "%s: Successfully post-processed %s" % (section, inputName) ]
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
-                #return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            if self.CDH(url2, headers):
-                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to %s." % (section), section)
-                return [status, "%s: Complete DownLoad Handling is enabled. Passing back to %s" % (section, section) ] 
+                # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+            if self.CDH(url2, headers, section=section):
+                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
+                return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
             else:
                 logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
-                return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+                return [1, "{0}: Failed to post-process {1}".format(section, inputName)]
         else:
-            return [1, "%s: Failed to post-process - Returned log from %s was not as expected." % (section, section) ]  # We did not receive Success confirmation.
+            return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]  # We did not receive Success confirmation.
