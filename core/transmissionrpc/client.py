@@ -111,7 +111,7 @@ def parse_torrent_ids(args):
             ids.extend(parse_torrent_ids(item))
     else:
         torrent_id = parse_torrent_id(args)
-        if torrent_id == None:
+        if torrent_id is None:
             raise ValueError('Invalid torrent id')
         else:
             ids = [torrent_id]

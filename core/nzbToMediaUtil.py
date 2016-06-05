@@ -1110,7 +1110,7 @@ def extractFiles(src, dst=None, keep_archive=None):
             fullFileName = os.path.basename(inputFile)
             archiveName = os.path.splitext(fullFileName)[0]
             archiveName = re.sub(r"part[0-9]+", "", archiveName)
-            if not archiveName in extracted_archive or keep_archive == True:
+            if not archiveName in extracted_archive or keep_archive is True:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:

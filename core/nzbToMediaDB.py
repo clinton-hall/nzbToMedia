@@ -46,7 +46,7 @@ class DBConnection:
             return 0
 
     def fetch(self, query, args=None):
-        if query == None:
+        if query is None:
             return
 
         sqlResult = None
@@ -54,7 +54,7 @@ class DBConnection:
 
         while attempt < 5:
             try:
-                if args == None:
+                if args is None:
                     logger.log(self.filename + ": " + query, logger.DB)
                     cursor = self.connection.cursor()
                     cursor.execute(query)
@@ -82,7 +82,7 @@ class DBConnection:
         return sqlResult
 
     def mass_action(self, querylist, logTransaction=False):
-        if querylist == None:
+        if querylist is None:
             return
 
         sqlResult = []
@@ -123,7 +123,7 @@ class DBConnection:
         return sqlResult
 
     def action(self, query, args=None):
-        if query == None:
+        if query is None:
             return
 
         sqlResult = None
@@ -131,7 +131,7 @@ class DBConnection:
 
         while attempt < 5:
             try:
-                if args == None:
+                if args is None:
                     logger.log(self.filename + ": " + query, logger.DB)
                     sqlResult = self.connection.execute(query)
                 else:
@@ -158,7 +158,7 @@ class DBConnection:
 
         sqlResults = self.action(query, args).fetchall()
 
-        if sqlResults == None:
+        if sqlResults is None:
             return []
 
         return sqlResults
