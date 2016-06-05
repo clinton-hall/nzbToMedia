@@ -724,7 +724,7 @@ def onerror(func, path, exc_info):
         os.chmod(path, stat.S_IWUSR)
         func(path)
     else:
-        raise
+        raise Exception
 
 
 def rmDir(dirName):
