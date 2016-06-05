@@ -1,4 +1,4 @@
-
+# coding=utf-8
 """
 rencode -- Web safe object pickling/unpickling.
 

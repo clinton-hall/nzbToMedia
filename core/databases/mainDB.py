@@ -1,9 +1,11 @@
+# coding=utf-8
 import core
 from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import backupVersionedFile
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from
 MAX_DB_VERSION = 2
+
 
 def backupDatabase(version):
     logger.info("Backing up database before upgrade")

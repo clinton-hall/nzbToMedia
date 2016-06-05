@@ -1,3 +1,4 @@
+# coding=utf-8
 """A synchronous implementation of the Deluge RPC protocol
    based on gevent-deluge by Christopher Rosell.
    

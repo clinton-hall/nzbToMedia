@@ -1,3 +1,4 @@
+# coding=utf-8
 #code copied from http://www.doughellmann.com/PyMOTW/urllib2/
 
 import itertools

@@ -1,3 +1,4 @@
+# coding=utf-8
 import zlib
 import struct
 import socket

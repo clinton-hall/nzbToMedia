@@ -1,3 +1,4 @@
+# coding=utf-8
 # Linktastic Module
 # - A python2/3 compatible module that can create hardlinks/symlinks on windows-based systems
 #
