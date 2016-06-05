@@ -2,6 +2,8 @@
 
 import requests
 
+from six import iteritems
+
 import core
 from core import logger
 
@@ -89,7 +91,7 @@ def autoFork(section, inputCategory):
                     rem_params.append(param)
             for param in rem_params:
                 params.pop(param)
-            for fork in sorted(core.FORKS.iteritems(), reverse=False):
+            for fork in sorted(iteritems(core.FORKS), reverse=False):
                 if params == fork[1]:
                     detected = True
                     break

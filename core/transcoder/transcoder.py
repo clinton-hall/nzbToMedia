@@ -1,4 +1,6 @@
 # coding=utf-8
+
+from six import iteritems
 import errno
 import os
 import platform
@@ -128,7 +130,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if ext == core.VEXTENSION and newDir == dir:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded' + core.VEXTENSION  # adds '-transcoded.ext'
     else:
-        img, data = file.iteritems().next()
+        img, data = iteritems(file).next()
         name = data['name']
         video_details, result = getVideoDetails(data['files'][0], img, bitbucket)
         inputFile = '-'
@@ -774,7 +776,7 @@ def Transcode_directory(dirName):
             if isinstance(file, str):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             else:
-                img, data = file.iteritems().next()
+                img, data = iteritems(file).next()
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket, stdin=subprocess.PIPE)
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)

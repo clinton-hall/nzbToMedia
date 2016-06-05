@@ -1,4 +1,6 @@
 # coding=utf-8
+
+from six import iteritems
 import os
 import shutil
 import copy
@@ -150,7 +152,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     continue
 
         def cleanup_values(values, section):
-            for option, value in values.iteritems():
+            for option, value in iteritems(values):
                 if section in ['CouchPotato']:
                     if option == ['outputDirectory']:
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
@@ -227,7 +229,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             subsection = None
             if section in list(chain.from_iterable(subsections.values())):
                 subsection = section
-                section = ''.join([k for k, v in subsections.iteritems() if subsection in v])
+                section = ''.join([k for k, v in iteritems(subsections) if subsection in v])
                 process_section(section, subsection)
             elif section in subsections.keys():
                 subsection = subsections[section]
