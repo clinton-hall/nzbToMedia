@@ -8,6 +8,7 @@ import core
 from subprocess import call, Popen
 import subprocess
 
+
 def extract(filePath, outputDestination):
     success = 0
     # Using Windows
@@ -22,9 +23,9 @@ def extract(filePath, outputDestination):
     # Using unix
     else:
         required_cmds = ["unrar", "unzip", "tar", "unxz", "unlzma", "7zr", "bunzip2"]
-        ## Possible future suport:
+        # ## Possible future suport:
         # gunzip: gz (cmd will delete original archive)
-        ## the following do not extract to dest dir
+        # ## the following do not extract to dest dir
         # ".xz": ["xz", "-d --keep"],
         # ".lzma": ["xz", "-d --format=lzma --keep"],
         # ".bz2": ["bzip2", "-d --keep"],
@@ -43,12 +44,13 @@ def extract(filePath, outputDestination):
         if not os.getenv('TR_TORRENT_DIR'):
             devnull = open(os.devnull, 'w')
             for cmd in required_cmds:
-                if call(['which', cmd], stdout=devnull, stderr=devnull):  #note, returns 0 if exists, or 1 if doesn't exist.
+                if call(['which', cmd], stdout=devnull,
+                        stderr=devnull):  # note, returns 0 if exists, or 1 if doesn't exist.
                     if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
                         EXTRACT_COMMANDS[".7z"] = ["7z", "x"]
                     elif cmd == "7zr" and not call(["which", "7za"]):  # we do have "7za" command
                         EXTRACT_COMMANDS[".7z"] = ["7za", "x"]
-                    else: 
+                    else:
                         for k, v in EXTRACT_COMMANDS.items():
                             if cmd in v[0]:
                                 core.logger.error("EXTRACTOR: %s not found, disabling support for %s" % (cmd, k))
@@ -77,7 +79,7 @@ def extract(filePath, outputDestination):
             core.logger.debug("EXTRACTOR: Unknown file type: %s" % ext[1])
             return False
 
-    # Create outputDestination folder
+            # Create outputDestination folder
         core.makeDir(outputDestination)
 
     if core.PASSWORDSFILE != "" and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
@@ -99,7 +101,7 @@ def extract(filePath, outputDestination):
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
     devnull = open(os.devnull, 'w')
-    
+
     try:  # now works same for nt and *nix
         info = None
         cmd.append(filePath)  # add filePath to final cmd arg.
@@ -112,7 +114,8 @@ def extract(filePath, outputDestination):
         cmd2.append("-p-")  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
-        if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+        if (
+                res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
             core.logger.info("EXTRACTOR: Extraction was successful for %s to %s" % (filePath, outputDestination))
             success = 1
         elif len(passwords) > 0:
@@ -121,14 +124,14 @@ def extract(filePath, outputDestination):
                 if password == "":  # if edited in windows or otherwise if blank lines.
                     continue
                 cmd2 = cmd
-                #append password here.
+                # append password here.
                 passcmd = "-p" + password
                 cmd2.append(passcmd)
                 p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     core.logger.info("EXTRACTOR: Extraction was successful for %s to %s using password: %s" % (
-                    filePath, outputDestination, password))
+                        filePath, outputDestination, password))
                     success = 1
                     break
                 else:
@@ -142,19 +145,21 @@ def extract(filePath, outputDestination):
     os.chdir(pwd)  # Go back to our Original Working Directory
     if success:
         # sleep to let files finish writing to disk
-        sleep (3)
+        sleep(3)
         perms = stat.S_IMODE(os.lstat(os.path.split(filePath)[0]).st_mode)
         for dir, subdirs, files in os.walk(outputDestination):
             for subdir in subdirs:
                 if not os.path.join(dir, subdir) in origFiles:
                     try:
                         os.chmod(os.path.join(dir, subdir), perms)
-                    except: pass
+                    except:
+                        pass
             for file in files:
                 if not os.path.join(dir, file) in origFiles:
                     try:
                         shutil.copymode(filePath, os.path.join(dir, file))
-                    except: pass
+                    except:
+                        pass
         return True
     else:
         core.logger.error("EXTRACTOR: Extraction failed for %s. Result was %s" % (filePath, res))

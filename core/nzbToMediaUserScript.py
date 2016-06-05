@@ -6,12 +6,14 @@ from core.transcoder import transcoder
 from core.nzbToMediaUtil import import_subs, listMediaFiles, rmDir
 from core import logger
 
+
 def external_script(outputDestination, torrentName, torrentLabel, settings):
     final_result = 0  # start at 0.
     num_files = 0
     try:
         core.USER_SCRIPT_MEDIAEXTENSIONS = settings["user_script_mediaExtensions"]
-        if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str): core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
+        if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
+            core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
     except:
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
     try:
@@ -22,12 +24,14 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
         return [0, ""]
     try:
         core.USER_SCRIPT_PARAM = settings["user_script_param"]
-        if isinstance(core.USER_SCRIPT_PARAM, str): core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
+        if isinstance(core.USER_SCRIPT_PARAM, str):
+            core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
     except:
         core.USER_SCRIPT_PARAM = []
     try:
         core.USER_SCRIPT_SUCCESSCODES = settings["user_script_successCodes"]
-        if isinstance(core.USER_SCRIPT_SUCCESSCODES, str): core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
+        if isinstance(core.USER_SCRIPT_SUCCESSCODES, str):
+            core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
     except:
         core.USER_SCRIPT_SUCCESSCODES = 0
     try:

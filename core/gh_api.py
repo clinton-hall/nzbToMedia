@@ -2,6 +2,7 @@
 import json
 import requests
 
+
 class GitHub(object):
     """
     Simple api wrapper for the Github API v3.

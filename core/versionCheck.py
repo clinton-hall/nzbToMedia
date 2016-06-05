@@ -16,6 +16,7 @@ import gh_api as github
 import core
 from core import logger
 
+
 class CheckVersion():
     """
     Version check class meant to run as a thread object with the SB scheduler.
@@ -80,6 +81,7 @@ class CheckVersion():
         if self.updater.need_update():
             return self.updater.update()
 
+
 class UpdateManager():
     def get_github_repo_user(self):
         return core.GIT_USER
@@ -89,6 +91,7 @@ class UpdateManager():
 
     def get_github_branch(self):
         return core.GIT_BRANCH
+
 
 class GitUpdateManager(UpdateManager):
     def __init__(self):
@@ -103,7 +106,8 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_ahead = 0
 
     def _git_error(self):
-        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug(
+            'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
     def _find_working_git(self):
         test_cmd = 'version'
@@ -148,7 +152,8 @@ class GitUpdateManager(UpdateManager):
                     logger.log(u"Not using: " + cur_git, logger.DEBUG)
 
         # Still haven't found a working git
-        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug(
+            'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
         return None
 
@@ -279,9 +284,10 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
                 return
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
-                   + u", num_commits_behind = " + str(self._num_commits_behind) + u", num_commits_ahead = " + str(
-            self._num_commits_ahead), logger.DEBUG)
+        logger.log(
+            u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash) +
+            u", num_commits_behind = " + str(self._num_commits_behind) + u", num_commits_ahead = " +
+            str(self._num_commits_ahead), logger.DEBUG)
 
     def set_newest_text(self):
         if self._num_commits_ahead:
@@ -411,8 +417,9 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
-                   + u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
+        logger.log(
+            u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash) +
+            u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
 
     def set_newest_text(self):
 
@@ -489,9 +496,9 @@ class SourceUpdateManager(UpdateManager):
                     old_path = os.path.join(content_dir, dirname, curfile)
                     new_path = os.path.join(core.PROGRAM_DIR, dirname, curfile)
 
-                    #Avoid DLL access problem on WIN32/64
-                    #These files needing to be updated manually
-                    #or find a way to kill the access from memory
+                    # Avoid DLL access problem on WIN32/64
+                    # These files needing to be updated manually
+                    # or find a way to kill the access from memory
                     if curfile in ('unrar.dll', 'unrar64.dll'):
                         try:
                             os.chmod(new_path, stat.S_IWRITE)

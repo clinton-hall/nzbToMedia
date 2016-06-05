@@ -4,6 +4,7 @@ import core
 import requests
 from core import logger
 
+
 def autoFork(section, inputCategory):
     # auto-detect correct section
     # config settings
@@ -49,13 +50,13 @@ def autoFork(section, inputCategory):
     detected = False
     if section == "NzbDrone":
         logger.info("Attempting to verify %s fork" % inputCategory)
-        url = "%s%s:%s%s/api/rootfolder" % (protocol,host,port,web_root)
-        headers={"X-Api-Key": apikey}
+        url = "%s%s:%s%s/api/rootfolder" % (protocol, host, port, web_root)
+        headers = {"X-Api-Key": apikey}
         try:
             r = requests.get(url, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
             logger.warning("Could not connect to %s:%s to verify fork!" % (section, inputCategory))
-            
+
         if not r.ok:
             logger.warning("Connection to %s:%s failed! Check your configuration" % (section, inputCategory))
 
@@ -67,12 +68,12 @@ def autoFork(section, inputCategory):
         logger.info("Attempting to auto-detect %s fork" % inputCategory)
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
-        url = "%s%s:%s%s/home/postprocess/" % (protocol,host,port,web_root)
+        url = "%s%s:%s%s/home/postprocess/" % (protocol, host, port, web_root)
         # attempting to auto-detect fork
         try:
             if username and password:
                 s = requests.Session()
-                login = "%s%s:%s%s/login" % (protocol,host,port,web_root)
+                login = "%s%s:%s%s/login" % (protocol, host, port, web_root)
                 login_params = {'username': username, 'password': password}
                 s.post(login, data=login_params, stream=True, verify=False)
                 r = s.get(url, auth=(username, password), verify=False)
@@ -83,10 +84,10 @@ def autoFork(section, inputCategory):
             r = []
         if r and r.ok:
             for param in params:
-                if not 'name="%s"' %(param) in r.text:
+                if not 'name="%s"' % (param) in r.text:
                     rem_params.append(param)
             for param in rem_params:
-                params.pop(param) 
+                params.pop(param)
             for fork in sorted(core.FORKS.iteritems(), reverse=False):
                 if params == fork[1]:
                     detected = True

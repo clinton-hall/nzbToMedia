@@ -6,6 +6,7 @@ from core.transmissionrpc.utils import Field
 
 from core.transmissionrpc.six import iteritems, integer_types
 
+
 class Session(object):
     """
     Session is a class holding the session data for a Transmission daemon.

@@ -8,6 +8,7 @@ import time
 import core
 from core import logger
 
+
 def dbFilename(filename="nzbtomedia.db", suffix=None):
     """
     @param filename: The sqlite database filename to use. If not specified,
@@ -153,7 +154,6 @@ class DBConnection:
 
         return sqlResult
 
-
     def select(self, query, args=None):
 
         sqlResults = self.action(query, args).fetchall()
@@ -244,7 +244,7 @@ class SchemaUpgrade(object):
         self.connection = connection
 
     def hasTable(self, tableName):
-        return len(self.connection.action("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName, )).fetchall()) > 0
+        return len(self.connection.action("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName,)).fetchall()) > 0
 
     def hasColumn(self, tableName, column):
         return column in self.connection.tableInfo(tableName)
@@ -264,4 +264,3 @@ class SchemaUpgrade(object):
         new_version = self.checkDBVersion() + 1
         self.connection.action("UPDATE db_version SET db_version = ?", [new_version])
         return new_version
-

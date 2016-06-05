@@ -27,6 +27,7 @@ reverseNames = {u'ERROR': ERROR,
                 u'POSTPROCESS': POSTPROCESS,
                 u'DB': DB}
 
+
 class NTMRotatingLogHandler(object):
     def __init__(self, log_file, num_files, num_bytes):
         self.num_files = num_files
@@ -68,7 +69,7 @@ class NTMRotatingLogHandler(object):
         if self.cur_handler:
             old_handler = self.cur_handler
         else:
-            #Add a new logging levels
+            # Add a new logging levels
             logging.addLevelName(21, 'POSTPROCESS')
             logging.addLevelName(5, 'DB')
 
@@ -85,7 +86,7 @@ class NTMRotatingLogHandler(object):
                     {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
-                    },
+                     },
                     logging.Formatter('%(message)s'), ))
 
                 # add the handler to the root logger
@@ -122,7 +123,7 @@ class NTMRotatingLogHandler(object):
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
-            },
+             },
             logging.Formatter('%(message)s'), ))
 
         return file_handler
@@ -234,6 +235,7 @@ class NTMRotatingLogHandler(object):
         else:
             sys.exit(1)
 
+
 class DispatchingFormatter:
     def __init__(self, formatters, default_formatter):
         self._formatters = formatters
@@ -243,31 +245,41 @@ class DispatchingFormatter:
         formatter = self._formatters.get(record.name, self._default_formatter)
         return formatter.format(record)
 
+
 ntm_log_instance = NTMRotatingLogHandler(core.LOG_FILE, NUM_LOGS, LOG_SIZE)
+
 
 def log(toLog, logLevel=MESSAGE, section='MAIN'):
     ntm_log_instance.log(toLog, logLevel, section)
 
+
 def info(toLog, section='MAIN'):
     log(toLog, MESSAGE, section)
+
 
 def error(toLog, section='MAIN'):
     log(toLog, ERROR, section)
 
+
 def warning(toLog, section='MAIN'):
     log(toLog, WARNING, section)
+
 
 def debug(toLog, section='MAIN'):
     log(toLog, DEBUG, section)
 
+
 def postprocess(toLog, section='POSTPROCESS'):
     log(toLog, POSTPROCESS, section)
+
 
 def db(toLog, section='DB'):
     log(toLog, DB, section)
 
+
 def log_error_and_exit(error_msg):
     ntm_log_instance.log_error_and_exit(error_msg)
+
 
 def close():
     ntm_log_instance.close_log()

@@ -18,10 +18,12 @@ else:
     from urllib2 import HTTPError, URLError
     from httplib import BadStatusLine
 
+
 class HTTPHandler(object):
     """
     Prototype for HTTP handling.
     """
+
     def set_authentication(self, uri, login, password):
         """
         Transmission use basic authentication in earlier versions and digest
@@ -44,10 +46,12 @@ class HTTPHandler(object):
         """
         raise NotImplementedError("Bad HTTPHandler, failed to implement request.")
 
+
 class DefaultHTTPHandler(HTTPHandler):
     """
     The default HTTP handler provided with transmissionrpc.
     """
+
     def __init__(self):
         HTTPHandler.__init__(self)
         self.http_opener = build_opener()

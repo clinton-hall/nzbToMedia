@@ -6,8 +6,8 @@ import ssl
 
 from core.synchronousdeluge import rencode
 
-
 __all__ = ["DelugeTransfer"]
+
 
 class DelugeTransfer(object):
     def __init__(self):
@@ -54,5 +54,3 @@ class DelugeTransfer(object):
                 buf = dobj.unused_data
 
             yield message
-
-

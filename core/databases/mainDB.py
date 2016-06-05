@@ -14,6 +14,7 @@ def backupDatabase(version):
     else:
         logger.info("Proceeding with upgrade")
 
+
 # ======================
 # = Main DB Migrations =
 # ======================
@@ -45,20 +46,20 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
                     cur_db_version) + ") is too old to migrate from what this version of nzbToMedia supports (" + \
                                           str(MIN_DB_VERSION) + ").\n" + \
                                           "Please remove nzbtomedia.db file to begin fresh."
-                )
+                                          )
 
             if cur_db_version > MAX_DB_VERSION:
                 logger.log_error_and_exit("Your database version (" + str(
                     cur_db_version) + ") has been incremented past what this version of nzbToMedia supports (" + \
                                           str(MAX_DB_VERSION) + ").\n" + \
                                           "If you have used other forks of nzbToMedia, your database may be unusable due to their modifications."
-                )
+                                          )
             if cur_db_version < MAX_DB_VERSION:  # We need to upgrade.
                 queries = [
                     "CREATE TABLE downloads2 (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));",
                     "INSERT INTO downloads2 SELECT * FROM downloads;",
                     "DROP TABLE IF EXISTS downloads;",
-                    "ALTER TABLE downloads2 RENAME TO downloads;", 
+                    "ALTER TABLE downloads2 RENAME TO downloads;",
                     "INSERT INTO db_version (db_version) VALUES (2);"
                 ]
                 for query in queries:

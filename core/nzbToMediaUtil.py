@@ -14,7 +14,7 @@ import beets
 import requests
 import core
 from babelfish import Language
-import subliminal 
+import subliminal
 
 from core.extractor import extractor
 from core.linktastic import linktastic
@@ -25,13 +25,14 @@ from core import logger, nzbToMediaDB
 
 requests.packages.urllib3.disable_warnings()
 
+
 def reportNzb(failure_link, clientAgent):
     # Contact indexer site
     logger.info("Sending failure notification to indexer site")
     if clientAgent == 'nzbget':
-        headers = {'User-Agent' : 'NZBGet / nzbToMedia.py'}
+        headers = {'User-Agent': 'NZBGet / nzbToMedia.py'}
     elif clientAgent == 'sabnzbd':
-        headers = {'User-Agent' : 'SABnzbd / nzbToMedia.py'}
+        headers = {'User-Agent': 'SABnzbd / nzbToMedia.py'}
     else:
         return
     try:
@@ -40,8 +41,9 @@ def reportNzb(failure_link, clientAgent):
         logger.error("Unable to open URL %s due to %s" % (failure_link, e))
     return
 
+
 def sanitizeName(name):
-    '''
+    """
     >>> sanitizeName('a/b/c')
     'a-b-c'
     >>> sanitizeName('abc')
@@ -50,7 +52,7 @@ def sanitizeName(name):
     'ab'
     >>> sanitizeName('.a.b..')
     'a.b'
-    '''
+    """
 
     # remove bad chars from the filename
     name = re.sub(r'[\\\/*]', '-', name)
@@ -60,10 +62,12 @@ def sanitizeName(name):
     name = name.strip(' .')
     try:
         name = name.encode(core.SYS_ENCODING)
-    except: pass
+    except:
+        pass
 
     return name
-     
+
+
 def makeDir(path):
     if not os.path.isdir(path):
         try:
@@ -72,12 +76,13 @@ def makeDir(path):
             return False
     return True
 
+
 def remoteDir(path):
     if not core.REMOTEPATHS:
         return path
-    for local,remote in core.REMOTEPATHS:
+    for local, remote in core.REMOTEPATHS:
         if local in path:
-            base_dirs = path.replace(local,"").split(os.sep)
+            base_dirs = path.replace(local, "").split(os.sep)
             if '/' in remote:
                 remote_sep = '/'
             else:
@@ -89,22 +94,25 @@ def remoteDir(path):
             return new_path
     return path
 
+
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
     tordir = False
 
     try:
         inputName = inputName.encode(core.SYS_ENCODING)
-    except: pass
+    except:
+        pass
     try:
         inputDirectory = inputDirectory.encode(core.SYS_ENCODING)
-    except: pass
+    except:
+        pass
 
     if inputDirectory is None:  # =Nothing to process here.
         return inputDirectory, inputName, inputCategory, root
 
     pathlist = os.path.normpath(inputDirectory).split(os.sep)
 
-    if inputCategory and inputCategory in pathlist: 
+    if inputCategory and inputCategory in pathlist:
         logger.debug("SEARCH: Found the Category: %s in directory structure" % (inputCategory))
     elif inputCategory:
         logger.debug("SEARCH: Could not find the category: %s in the directory structure" % (inputCategory))
@@ -116,7 +124,8 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             inputCategory = ""
             logger.debug("SEARCH: Could not find a category in the directory structure")
     if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file
-        if not inputName: inputName = os.path.split(os.path.normpath(inputDirectory))[1]
+        if not inputName:
+            inputName = os.path.split(os.path.normpath(inputDirectory))[1]
         return inputDirectory, inputName, inputCategory, root
 
     if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
@@ -158,7 +167,8 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
             if index + 1 < len(pathlist):
                 tordir = True
                 logger.info("SEARCH: Found a unique directory %s in the category directory" % (pathlist[index + 1]))
-                if not inputName: inputName = pathlist[index + 1]
+                if not inputName:
+                    inputName = pathlist[index + 1]
         except ValueError:
             pass
 
@@ -177,14 +187,16 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 
     return inputDirectory, inputName, inputCategory, root
 
+
 def getDirSize(inputPath):
-   from functools import partial
-   prepend = partial(os.path.join, inputPath)
-   return sum([(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(inputPath))])
+    from functools import partial
+    prepend = partial(os.path.join, inputPath)
+    return sum(
+        [(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(inputPath))])
+
 
 def is_minSize(inputName, minSize):
     fileName, fileExt = os.path.splitext(os.path.basename(inputName))
-
 
     # audio files we need to check directory size not file size
     inputSize = os.path.getsize(inputName)
@@ -199,10 +211,12 @@ def is_minSize(inputName, minSize):
     if inputSize > minSize * 1048576:
         return True
 
+
 def is_sample(inputName):
     # Ignore 'sample' in files
     if re.search('(^|[\W_])sample\d*[\W_]', inputName.lower()):
         return True
+
 
 def copy_link(src, targetLink, useLink):
     logger.info("MEDIAFILE: [%s]" % (os.path.basename(targetLink)), 'COPYLINK')
@@ -254,6 +268,7 @@ def copy_link(src, targetLink, useLink):
 
     return True
 
+
 def replace_links(link):
     n = 0
     target = link
@@ -277,6 +292,7 @@ def replace_links(link):
         os.unlink(link)
         linktastic.symlink(target, link)
 
+
 def flatten(outputDestination):
     logger.info("FLATTEN: Flattening directory: %s" % (outputDestination))
     for outputFile in listMediaFiles(outputDestination):
@@ -295,29 +311,31 @@ def flatten(outputDestination):
 
     removeEmptyFolders(outputDestination)  # Cleanup empty directories
 
+
 def removeEmptyFolders(path, removeRoot=True):
-  'Function to remove empty folders'
-  if not os.path.isdir(path):
-    return
+    """Function to remove empty folders"""
+    if not os.path.isdir(path):
+        return
 
-  # remove empty subfolders
-  logger.debug("Checking for empty folders in:%s" % (path))
-  files = os.listdir(path)
-  if len(files):
-    for f in files:
-      fullpath = os.path.join(path, f)
-      if os.path.isdir(fullpath):
-        removeEmptyFolders(fullpath)
+    # remove empty subfolders
+    logger.debug("Checking for empty folders in:%s" % (path))
+    files = os.listdir(path)
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(path, f)
+            if os.path.isdir(fullpath):
+                removeEmptyFolders(fullpath)
 
-  # if folder empty, delete it
-  files = os.listdir(path)
-  if len(files) == 0 and removeRoot:
-    logger.debug("Removing empty folder:%s" % (path))
-    os.rmdir(path)
+    # if folder empty, delete it
+    files = os.listdir(path)
+    if len(files) == 0 and removeRoot:
+        logger.debug("Removing empty folder:%s" % (path))
+        os.rmdir(path)
+
 
 def rmReadOnly(filename):
     if os.path.isfile(filename):
-        #check first the read-only attribute
+        # check first the read-only attribute
         file_attribute = os.stat(filename)[0]
         if (not file_attribute & stat.S_IWRITE):
             # File is read-only, so make it writeable
@@ -327,7 +345,8 @@ def rmReadOnly(filename):
             except:
                 logger.warning('Cannot change permissions of ' + filename, logger.WARNING)
 
-#Wake function
+
+# Wake function
 def WakeOnLan(ethernet_address):
     addr_byte = ethernet_address.split(':')
     hw_addr = struct.pack(b'BBBBBB', int(addr_byte[0], 16),
@@ -349,7 +368,7 @@ def WakeOnLan(ethernet_address):
     ss.close()
 
 
-#Test Connection function
+# Test Connection function
 def TestCon(host, port):
     try:
         socket.create_connection((host, port))
@@ -372,7 +391,7 @@ def WakeUp():
 
     if TestCon(host, port) == "Down":  # final check.
         logger.warning("System with mac: %s has not woken after 3 attempts. Continuing with the rest of the script." % (
-        mac))
+            mac))
     else:
         logger.info("System with mac: %s has been woken. Continuing with the rest of the script." % (mac))
 
@@ -392,7 +411,8 @@ def CharReplace(Name):
         # /!\ detection is done 2char by 2char for UTF-8 special character
         if (len(Name) != 1) & (Idx < (len(Name) - 1)):
             # Detect UTF-8
-            if ((Name[Idx] == '\xC2') | (Name[Idx] == '\xC3')) & ((Name[Idx+1] >= '\xA0') & (Name[Idx+1] <= '\xFF')):
+            if ((Name[Idx] == '\xC2') | (Name[Idx] == '\xC3')) & (
+                        (Name[Idx + 1] >= '\xA0') & (Name[Idx + 1] <= '\xFF')):
                 encoding = 'utf-8'
                 break
             # Detect CP850
@@ -433,7 +453,7 @@ def convert_to_ascii(inputName, dirName):
     if encoded:
         dirName = os.path.join(dir, base2)
         logger.info("Renaming directory to: %s." % (base2), 'ENCODER')
-        os.rename(os.path.join(dir,base), dirName)
+        os.rename(os.path.join(dir, base), dirName)
         if os.environ.has_key('NZBOP_SCRIPTDIR'):
             print "[NZB] DIRECTORY=%s" % (dirName)  # Return the new directory to NZBGet.
 
@@ -576,23 +596,23 @@ def parse_args(clientAgent, args):
         return None, None, None, None, None
 
 
-def getDirs(section, subsection, link = 'hard'):
+def getDirs(section, subsection, link='hard'):
     to_return = []
 
     def processDir(path):
         folders = []
 
         logger.info("Searching %s for mediafiles to post-process ..." % (path))
-        sync = [ o for o in os.listdir(path) if os.path.splitext(o)[1] in ['.!sync','.bts'] ]
+        sync = [o for o in os.listdir(path) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
         # search for single files and move them into their own folder for post-processing
-        for mediafile in [ os.path.join(path, o) for o in os.listdir(path) if
-                            os.path.isfile(os.path.join(path, o)) ]:
+        for mediafile in [os.path.join(path, o) for o in os.listdir(path) if
+                          os.path.isfile(os.path.join(path, o))]:
             if len(sync) > 0:
                 break
             if os.path.split(mediafile)[1] in ['Thumbs.db', 'thumbs.db']:
                 continue
             try:
-                logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path)) 
+                logger.debug("Found file %s in root directory %s." % (os.path.split(mediafile)[1], path))
                 newPath = None
                 fileExt = os.path.splitext(mediafile)[1]
                 try:
@@ -627,8 +647,9 @@ def getDirs(section, subsection, link = 'hard'):
                     newPath = os.path.join(path, sanitizeName(title))
 
                 try:
-                   newPath = newPath.encode(core.SYS_ENCODING)
-                except: pass
+                    newPath = newPath.encode(core.SYS_ENCODING)
+                except:
+                    pass
 
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
                 if os.path.isfile(newPath):
@@ -642,19 +663,20 @@ def getDirs(section, subsection, link = 'hard'):
                 newfile = os.path.join(newPath, sanitizeName(os.path.split(mediafile)[1]))
                 try:
                     newfile = newfile.encode(core.SYS_ENCODING)
-                except: pass
+                except:
+                    pass
 
                 # link file to its new path
                 copy_link(mediafile, newfile, link)
             except Exception as e:
                 logger.error("Failed to move %s to its own directory: %s" % (os.path.split(mediafile)[1], e))
 
-        #removeEmptyFolders(path, removeRoot=False)
+        # removeEmptyFolders(path, removeRoot=False)
 
         if os.listdir(path):
             for dir in [os.path.join(path, o) for o in os.listdir(path) if
-                            os.path.isdir(os.path.join(path, o))]:
-                sync = [ o for o in os.listdir(dir) if os.path.splitext(o)[1] in ['.!sync','.bts'] ]
+                        os.path.isdir(os.path.join(path, o))]:
+                sync = [o for o in os.listdir(dir) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
                 if len(sync) > 0 or len(os.listdir(dir)) == 0:
                     continue
                 folders.extend([dir])
@@ -667,7 +689,8 @@ def getDirs(section, subsection, link = 'hard'):
         elif os.path.exists(core.CFG[section][subsection]["watch_dir"]):
             to_return.extend(processDir(core.CFG[section][subsection]["watch_dir"]))
     except Exception as e:
-        logger.error("Failed to add directories from %s for post-processing: %s" % (core.CFG[section][subsection]["watch_dir"], e))
+        logger.error("Failed to add directories from %s for post-processing: %s" % (
+            core.CFG[section][subsection]["watch_dir"], e))
 
     if core.USELINK == 'move':
         try:
@@ -678,9 +701,10 @@ def getDirs(section, subsection, link = 'hard'):
             logger.error("Failed to add directories from %s for post-processing: %s" % (core.OUTPUTDIRECTORY, e))
 
     if not to_return:
-        logger.debug("No directories identified in %s:%s for post-processing" % (section,subsection))
+        logger.debug("No directories identified in %s:%s for post-processing" % (section, subsection))
 
     return list(set(to_return))
+
 
 def onerror(func, path, exc_info):
     """
@@ -700,12 +724,14 @@ def onerror(func, path, exc_info):
     else:
         raise
 
+
 def rmDir(dirName):
     logger.info("Deleting %s" % (dirName))
     try:
         shutil.rmtree(dirName, onerror=onerror)
     except:
         logger.error("Unable to delete folder %s" % (dirName))
+
 
 def cleanDir(path, section, subsection):
     if not os.path.exists(path):
@@ -717,10 +743,12 @@ def cleanDir(path, section, subsection):
         return
     try:
         minSize = int(core.CFG[section][subsection]['minSize'])
-    except:minSize = 0
+    except:
+        minSize = 0
     try:
         delete_ignored = int(core.CFG[section][subsection]['delete_ignored'])
-    except:delete_ignored = 0
+    except:
+        delete_ignored = 0
     try:
         num_files = len(listMediaFiles(path, minSize=minSize, delete_ignored=delete_ignored))
     except:
@@ -736,6 +764,7 @@ def cleanDir(path, section, subsection):
         shutil.rmtree(path, onerror=onerror)
     except:
         logger.error("Unable to delete directory %s" % (path))
+
 
 def create_torrent_class(clientAgent):
     # Hardlink solution for Torrents
@@ -753,8 +782,8 @@ def create_torrent_class(clientAgent):
             logger.debug("Connecting to %s: http://%s:%s" % (
                 clientAgent, core.TRANSMISSIONHOST, core.TRANSMISSIONPORT))
             tc = TransmissionClient(core.TRANSMISSIONHOST, core.TRANSMISSIONPORT,
-                                              core.TRANSMISSIONUSR,
-                                              core.TRANSMISSIONPWD)
+                                    core.TRANSMISSIONUSR,
+                                    core.TRANSMISSIONPWD)
         except:
             logger.error("Failed to connect to Transmission")
 
@@ -763,11 +792,12 @@ def create_torrent_class(clientAgent):
             logger.debug("Connecting to %s: http://%s:%s" % (clientAgent, core.DELUGEHOST, core.DELUGEPORT))
             tc = DelugeClient()
             tc.connect(host=core.DELUGEHOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
-                                 password=core.DELUGEPWD)
+                       password=core.DELUGEPWD)
         except:
             logger.error("Failed to connect to Deluge")
 
     return tc
+
 
 def pause_torrent(clientAgent, inputHash, inputID, inputName):
     logger.debug("Stopping torrent %s in %s while processing" % (inputName, clientAgent))
@@ -781,6 +811,7 @@ def pause_torrent(clientAgent, inputHash, inputID, inputName):
         time.sleep(5)
     except:
         logger.warning("Failed to stop torrent %s in %s" % (inputName, clientAgent))
+
 
 def resume_torrent(clientAgent, inputHash, inputID, inputName):
     if not core.TORRENT_RESUME == 1:
@@ -797,6 +828,7 @@ def resume_torrent(clientAgent, inputHash, inputID, inputName):
     except:
         logger.warning("Failed to start torrent %s in %s" % (inputName, clientAgent))
 
+
 def remove_torrent(clientAgent, inputHash, inputID, inputName):
     if core.DELETE_ORIGINAL == 1 or core.USELINK == 'move':
         logger.debug("Deleting torrent %s from %s" % (inputName, clientAgent))
@@ -811,8 +843,9 @@ def remove_torrent(clientAgent, inputHash, inputID, inputName):
             time.sleep(5)
         except:
             logger.warning("Failed to delete torrent %s in %s" % (inputName, clientAgent))
-    else:    
+    else:
         resume_torrent(clientAgent, inputHash, inputID, inputName)
+
 
 def find_download(clientAgent, download_id):
     logger.debug("Searching for Download on %s ..." % (clientAgent))
@@ -850,6 +883,7 @@ def find_download(clientAgent, download_id):
         if result['files']:
             return True
     return False
+
 
 def get_nzoid(inputName):
     nzoid = None
@@ -923,6 +957,7 @@ def is_archive_file(filename):
             return regext.split(filename)[0]
     return False
 
+
 def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     fileName, fileExt = os.path.splitext(mediafile)
 
@@ -933,17 +968,18 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
     except:
         pass
 
-    if (media and fileExt.lower() in core.MEDIACONTAINER)\
-        or (audio and fileExt.lower() in core.AUDIOCONTAINER)\
-        or (meta and fileExt.lower() in core.METACONTAINER)\
-        or (archives and is_archive_file(mediafile)):
+    if (media and fileExt.lower() in core.MEDIACONTAINER) \
+            or (audio and fileExt.lower() in core.AUDIOCONTAINER) \
+            or (meta and fileExt.lower() in core.METACONTAINER) \
+            or (archives and is_archive_file(mediafile)):
         return True
     else:
         return False
 
+
 def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True):
     files = []
-    if not os.path.isdir(path): 
+    if not os.path.isdir(path):
         if os.path.isfile(path):  # Single file downloads.
             curFile = os.path.split(path)[1]
             if isMediaFile(curFile, media, audio, meta, archives):
@@ -953,7 +989,8 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
                         try:
                             os.unlink(path)
                             logger.debug('Ignored file %s has been removed ...' % (curFile))
-                        except:pass
+                        except:
+                            pass
                 else:
                     files.append(path)
 
@@ -973,12 +1010,14 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
                     try:
                         os.unlink(fullCurFile)
                         logger.debug('Ignored file %s has been removed ...' % (curFile))
-                    except:pass
+                    except:
+                        pass
                 continue
 
             files.append(fullCurFile)
 
-    return sorted(files,key=len)
+    return sorted(files, key=len)
+
 
 def find_imdbid(dirName, inputName):
     imdbid = None
@@ -987,7 +1026,7 @@ def find_imdbid(dirName, inputName):
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search('(tt\d{7})', dirName+inputName)
+    m = re.search('(tt\d{7})', dirName + inputName)
     if m:
         imdbid = m.group(1)
         logger.info("Found imdbID [%s]" % imdbid)
@@ -1000,14 +1039,14 @@ def find_imdbid(dirName, inputName):
                 logger.info("Found imdbID [%s] via file name" % imdbid)
                 return imdbid
     if os.environ.has_key('NZBPR__DNZB_MOREINFO'):
-        dnzb_more_info=os.environ.get('NZBPR__DNZB_MOREINFO', '')
+        dnzb_more_info = os.environ.get('NZBPR__DNZB_MOREINFO', '')
         if dnzb_more_info != '':
             regex = re.compile(r'^http://www.imdb.com/title/(tt[0-9]+)/$', re.IGNORECASE)
             m = regex.match(dnzb_more_info)
             if m:
                 imdbid = m.group(1)
                 logger.info("Found imdbID [%s] from DNZB-MoreInfo" % imdbid)
-                return imdbid	
+                return imdbid
     logger.info('Searching IMDB for imdbID ...')
     guess = guessit.guess_movie_info(inputName)
     if guess:
@@ -1045,7 +1084,8 @@ def find_imdbid(dirName, inputName):
     logger.warning('Unable to find a imdbID for %s' % (inputName))
     return imdbid
 
-def extractFiles(src, dst=None, keep_archive = None):
+
+def extractFiles(src, dst=None, keep_archive=None):
     extracted_folder = []
     extracted_archive = []
 
@@ -1081,13 +1121,14 @@ def extractFiles(src, dst=None, keep_archive = None):
             except Exception as e:
                 logger.error("Unable to remove file %s due to: %s" % (inputFile, e))
 
+
 def import_subs(filename):
     if not core.GETSUBS:
         return
     try:
         subliminal.cache_region.configure('dogpile.cache.memory')
     except:
-        pass   
+        pass
 
     languages = set()
     for item in core.SLANGUAGES:
@@ -1098,13 +1139,14 @@ def import_subs(filename):
     if not languages:
         return
 
-    logger.debug("Attempting to download subtitles for %s" %(filename), 'SUBTITLES')
+    logger.debug("Attempting to download subtitles for %s" % (filename), 'SUBTITLES')
     try:
         video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
         subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
         subliminal.save_subtitles(subtitles)
     except Exception as e:
-        logger.error("Failed to download subtitles for %s due to: %s" %(filename, e), 'SUBTITLES') 
+        logger.error("Failed to download subtitles for %s due to: %s" % (filename, e), 'SUBTITLES')
+
 
 def server_responding(baseURL):
     try:
@@ -1112,6 +1154,7 @@ def server_responding(baseURL):
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
         return False
+
 
 def plex_update(category):
     if core.FAILED:
@@ -1124,7 +1167,7 @@ def plex_update(category):
     section = None
     if not core.PLEXSEC:
         return
-    logger.debug("Attempting to update Plex Library for category %s." %(category), 'PLEX')
+    logger.debug("Attempting to update Plex Library for category %s." % (category), 'PLEX')
     for item in core.PLEXSEC:
         if item[0] == category:
             section = item[1]
@@ -1135,6 +1178,7 @@ def plex_update(category):
         logger.debug("Plex Library has been refreshed.", 'PLEX')
     else:
         logger.debug("Could not identify section for plex update", 'PLEX')
+
 
 def backupVersionedFile(old_file, version):
     numTries = 0
@@ -1152,7 +1196,8 @@ def backupVersionedFile(old_file, version):
             logger.log(u"Backup done", logger.DEBUG)
             break
         except Exception, e:
-            logger.log(u"Error while trying to back up " + old_file + " to " + new_file + " : " + str(e), logger.WARNING)
+            logger.log(u"Error while trying to back up " + old_file + " to " + new_file + " : " + str(e),
+                       logger.WARNING)
             numTries += 1
             time.sleep(1)
             logger.log(u"Trying again.", logger.DEBUG)
@@ -1181,6 +1226,7 @@ def get_downloadInfo(inputName, status):
 
     return sqlResults
 
+
 class RunningProcess():
     """ Limits application to single instance """
 
@@ -1193,13 +1239,13 @@ class RunningProcess():
     def alreadyrunning(self):
         return self.process.alreadyrunning()
 
-    #def __del__(self):
-    #    self.process.__del__()
+        # def __del__(self):
+        #    self.process.__del__()
+
 
 class WindowsProcess():
-
     def __init__(self):
-        self.mutexname = "nzbtomedia_" + core.PID_FILE.replace('\\','/')  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
+        self.mutexname = "nzbtomedia_" + core.PID_FILE.replace('\\', '/')  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
         if platform.system() == 'Windows':
             from win32event import CreateMutex
             from win32api import CloseHandle, GetLastError
@@ -1208,7 +1254,7 @@ class WindowsProcess():
             self.CloseHandle = CloseHandle
             self.GetLastError = GetLastError
             self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
-   
+
     def alreadyrunning(self):
         self.mutex = self.CreateMutex(None, 0, self.mutexname)
         self.lasterror = self.GetLastError()
@@ -1217,14 +1263,13 @@ class WindowsProcess():
             return True
         else:
             return False
-            
 
     def __del__(self):
         if self.mutex:
             self.CloseHandle(self.mutex)
 
-class PosixProcess():
 
+class PosixProcess():
     def __init__(self):
         self.pidpath = core.PID_FILE
         self.lock_socket = None
@@ -1239,7 +1284,8 @@ class PosixProcess():
             if "Address already in use" in e:
                 self.lasterror = True
                 return self.lasterror
-        except AttributeError: pass
+        except AttributeError:
+            pass
         if os.path.exists(self.pidpath):
             # Make sure it is not a "stale" pidFile
             try:
@@ -1256,7 +1302,7 @@ class PosixProcess():
             else:
                 self.lasterror = False
         else:
-                self.lasterror = False
+            self.lasterror = False
 
         if not self.lasterror:
             # Write my pid into pidFile to keep multiple copies of program from running
@@ -1264,7 +1310,8 @@ class PosixProcess():
                 fp = open(self.pidpath, 'w')
                 fp.write(str(os.getpid()))
                 fp.close()
-            except: pass
+            except:
+                pass
 
         return self.lasterror
 

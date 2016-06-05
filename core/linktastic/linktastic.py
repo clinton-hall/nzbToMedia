@@ -30,6 +30,7 @@ if os.name == 'nt':
     info = subprocess.STARTUPINFO()
     info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+
 # Prevent spaces from messing with us!
 def _escape_param(param):
     return '"%s"' % param
@@ -45,9 +46,9 @@ def _link_windows(src, dest):
 
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
 
 
 def _symlink_windows(src, dest):
@@ -58,9 +59,10 @@ def _symlink_windows(src, dest):
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 def _dirlink_windows(src, dest):
     try:
@@ -70,9 +72,10 @@ def _dirlink_windows(src, dest):
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 def _junctionlink_windows(src, dest):
     try:
@@ -82,9 +85,10 @@ def _junctionlink_windows(src, dest):
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 # Create a hard link to src named as dest
 # This version of link, unlike os.link, supports nt systems as well
@@ -102,12 +106,14 @@ def symlink(src, dest):
     else:
         os.symlink(src, dest)
 
+
 # Create a symlink to src named as dest, but don't fail if you're on nt
 def dirlink(src, dest):
     if os.name == 'nt':
         _dirlink_windows(src, dest)
     else:
         os.symlink(src, dest)
+
 
 # Create a symlink to src named as dest, but don't fail if you're on nt
 def junctionlink(src, dest):
