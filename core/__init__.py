@@ -1,4 +1,6 @@
 # coding=utf-8
+
+from six.moves import reload_module
 import locale
 import os
 import re
@@ -252,7 +254,7 @@ def initialize(section=None):
         SYS_ENCODING = 'UTF-8'
 
     if not hasattr(sys, "setdefaultencoding"):
-        reload(sys)
+        reload_module(sys)
 
     try:
         # pylint: disable=E1101

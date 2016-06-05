@@ -1,12 +1,17 @@
 # coding=utf8
 
-import urllib
-import urllib2
-import urlparse
-import cookielib
 import json
 import re
-import StringIO
+
+from six import StringIO
+from six.moves.http_cookiejar import CookieJar
+from six.moves.urllib_error import HTTPError
+from six.moves.urllib_parse import urljoin, urlencode
+from six.moves.urllib_request import (
+    build_opener, install_opener,
+    HTTPBasicAuthHandler, HTTPCookieProcessor,
+    Request,
+)
 
 from core.utorrent.upload import MultiPartForm
 
@@ -23,23 +28,23 @@ class UTorrentClient(object):
     def _make_opener(self, realm, base_url, username, password):
         """uTorrent API need HTTP Basic Auth and cookie support for token verify."""
 
-        auth_handler = urllib2.HTTPBasicAuthHandler()
+        auth_handler = HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm,
                                   uri=base_url,
                                   user=username,
                                   passwd=password)
-        opener = urllib2.build_opener(auth_handler)
-        urllib2.install_opener(opener)
+        opener = build_opener(auth_handler)
+        install_opener(opener)
 
-        cookie_jar = cookielib.CookieJar()
-        cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
+        cookie_jar = CookieJar()
+        cookie_handler = HTTPCookieProcessor(cookie_jar)
 
         handlers = [auth_handler, cookie_handler]
-        opener = urllib2.build_opener(*handlers)
+        opener = build_opener(*handlers)
         return opener
 
     def _get_token(self):
-        url = urlparse.urljoin(self.base_url, 'token.html')
+        url = urljoin(self.base_url, 'token.html')
         response = self.opener.open(url)
         token_re = "<div id='token' style='display:none;'>([^<>]+)</div>"
         match = re.search(token_re, response.read())
@@ -122,8 +127,8 @@ class UTorrentClient(object):
 
     def _action(self, params, body=None, content_type=None):
         # about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
-        url = self.base_url + '?token=' + self.token + '&' + urllib.urlencode(params)
-        request = urllib2.Request(url)
+        url = self.base_url + '?token=' + self.token + '&' + urlencode(params)
+        request = Request(url)
 
         if body:
             request.add_data(body)
@@ -134,5 +139,5 @@ class UTorrentClient(object):
         try:
             response = self.opener.open(request)
             return response.code, json.loads(response.read())
-        except urllib2.HTTPError, e:
+        except HTTPError:
             raise

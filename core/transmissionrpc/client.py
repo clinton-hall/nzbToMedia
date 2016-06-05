@@ -18,12 +18,8 @@ from core.transmissionrpc.torrent import Torrent
 from core.transmissionrpc.session import Session
 from six import PY3, integer_types, string_types, iteritems
 
-if PY3:
-    from urllib.parse import urlparse
-    from urllib.request import urlopen
-else:
-    from urlparse import urlparse
-    from urllib2 import urlopen
+from six.moves.urllib_parse import urlparse
+from six.moves.urllib_request import urlopen
 
 
 def debug_httperror(error):

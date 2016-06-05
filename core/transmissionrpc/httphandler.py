@@ -4,19 +4,15 @@
 
 import sys
 
-from core.transmissionrpc.error import HTTPHandlerError
-from six import PY3
+from six.moves.urllib_request import (
+    build_opener, install_opener,
+    HTTPBasicAuthHandler, HTTPDigestAuthHandler, HTTPPasswordMgrWithDefaultRealm,
+    Request,
+)
+from six.moves.urllib_error import HTTPError, URLError
+from six.moves.http_client import BadStatusLine
 
-if PY3:
-    from urllib.request import Request, build_opener, \
-        HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, HTTPDigestAuthHandler
-    from urllib.error import HTTPError, URLError
-    from http.client import BadStatusLine
-else:
-    from urllib2 import Request, build_opener, \
-        HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, HTTPDigestAuthHandler
-    from urllib2 import HTTPError, URLError
-    from httplib import BadStatusLine
+from core.transmissionrpc.error import HTTPHandlerError
 
 
 class HTTPHandler(object):
