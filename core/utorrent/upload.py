@@ -1,8 +1,8 @@
 # coding=utf-8
 # code copied from http://www.doughellmann.com/PyMOTW/urllib2/
 
+from email.generator import _make_boundary as make_boundary
 import itertools
-import mimetools
 import mimetypes
 
 
@@ -12,7 +12,7 @@ class MultiPartForm(object):
     def __init__(self):
         self.form_fields = []
         self.files = []
-        self.boundary = mimetools.choose_boundary()
+        self.boundary = make_boundary()
         return
 
     def get_content_type(self):

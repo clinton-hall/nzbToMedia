@@ -1,5 +1,5 @@
 # coding=utf-8
-import core
+
 from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import backupVersionedFile
 

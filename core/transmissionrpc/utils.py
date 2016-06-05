@@ -2,10 +2,13 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import socket, datetime, logging, constants
+import constants
+import datetime
+import logging
+import socket
 from collections import namedtuple
-from constants import LOGGER
 
+from constants import LOGGER
 from six import string_types, iteritems
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB']

@@ -3,8 +3,6 @@ import errno
 import os
 import platform
 import subprocess
-import urllib2
-import traceback
 import core
 import json
 import shutil

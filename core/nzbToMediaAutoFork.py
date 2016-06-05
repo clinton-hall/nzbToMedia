@@ -1,7 +1,8 @@
 # coding=utf-8
-import urllib
-import core
+
 import requests
+
+import core
 from core import logger
 
 

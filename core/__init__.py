@@ -33,10 +33,12 @@ from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
 from core import logger, versionCheck, nzbToMediaDB
 from core.nzbToMediaConfig import config
-from core.nzbToMediaUtil import category_search, sanitizeName, copy_link, parse_args, flatten, getDirs, \
-    rmReadOnly, rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, \
-    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir, \
-    create_torrent_class, listMediaFiles, RunningProcess
+from core.nzbToMediaUtil import (
+    category_search, sanitizeName, copy_link, parse_args, flatten, getDirs,
+    rmReadOnly, rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles,
+    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir,
+    create_torrent_class, listMediaFiles, RunningProcess,
+ )
 from core.transcoder import transcoder
 from core.databases import mainDB
 

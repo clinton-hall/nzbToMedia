@@ -19,6 +19,10 @@ rencode module versions, so you should check that you are using the
 same rencode version throughout your project.
 """
 
+import struct
+from threading import Lock
+
+
 __version__ = '1.0.1'
 __all__ = ['dumps', 'loads']
 
@@ -61,9 +65,6 @@ __all__ = ['dumps', 'loads']
 #
 # (The rencode module is licensed under the above license as well).
 #
-
-import struct
-from threading import Lock
 
 # Default number of bits for serialized floats, either 32 or 64 (also a parameter for dumps()).
 DEFAULT_FLOAT_BITS = 32

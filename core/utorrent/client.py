@@ -4,13 +4,9 @@ import urllib
 import urllib2
 import urlparse
 import cookielib
+import json
 import re
 import StringIO
-
-try:
-    import json
-except ImportError:
-    import simplejson as json
 
 from core.utorrent.upload import MultiPartForm
 
