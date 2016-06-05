@@ -38,7 +38,7 @@ def reportNzb(failure_link, clientAgent):
     else:
         return
     try:
-        r = requests.post(failure_link, headers=headers, timeout=(30, 300))
+        requests.post(failure_link, headers=headers, timeout=(30, 300))
     except Exception as e:
         logger.error("Unable to open URL %s due to %s" % (failure_link, e))
     return
@@ -202,7 +202,7 @@ def is_minSize(inputName, minSize):
 
     # audio files we need to check directory size not file size
     inputSize = os.path.getsize(inputName)
-    if fileExt in (core.AUDIOCONTAINER):
+    if fileExt in core.AUDIOCONTAINER:
         try:
             inputSize = getDirSize(os.path.dirname(inputName))
         except:
@@ -339,7 +339,7 @@ def rmReadOnly(filename):
     if os.path.isfile(filename):
         # check first the read-only attribute
         file_attribute = os.stat(filename)[0]
-        if (not file_attribute & stat.S_IWRITE):
+        if not file_attribute & stat.S_IWRITE:
             # File is read-only, so make it writeable
             logger.debug('Read only mode on file ' + filename + ' Will try to make it writeable')
             try:
@@ -631,11 +631,7 @@ def getDirs(section, subsection, link='hard'):
                         f = guessit.guess_video_info(mediafile)
 
                         # get title
-                        title = None
-                        try:
-                            title = f['series']
-                        except:
-                            title = f['title']
+                        title = f.get('series') or f.get('title')
 
                         if not title:
                             title = os.path.splitext(os.path.basename(mediafile))[0]
@@ -1262,7 +1258,7 @@ class WindowsProcess(object):
     def alreadyrunning(self):
         self.mutex = self.CreateMutex(None, 0, self.mutexname)
         self.lasterror = self.GetLastError()
-        if (self.lasterror == self.ERROR_ALREADY_EXISTS):
+        if self.lasterror == self.ERROR_ALREADY_EXISTS:
             self.CloseHandle(self.mutex)
             return True
         else:

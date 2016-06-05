@@ -10,7 +10,7 @@ class DelugeRPCRequest(object):
         self.kwargs = kwargs
 
     def format(self):
-        return (self.request_id, self.method, self.args, self.kwargs)
+        return self.request_id, self.method, self.args, self.kwargs
 
 
 class DelugeRPCResponse(object):

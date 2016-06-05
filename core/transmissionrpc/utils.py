@@ -23,7 +23,7 @@ def format_size(size):
     while size >= 1024.0 and i < len(UNITS):
         i += 1
         size /= 1024.0
-    return (size, UNITS[i])
+    return size, UNITS[i]
 
 
 def format_speed(size):
@@ -31,7 +31,7 @@ def format_speed(size):
     Format bytes per second speed into IEC prefixes, B/s, KiB/s, MiB/s ...
     """
     (size, unit) = format_size(size)
-    return (size, unit + '/s')
+    return size, unit + '/s'
 
 
 def format_timedelta(delta):
@@ -91,7 +91,7 @@ def inet_address(address, default_port, default_address='localhost'):
         socket.getaddrinfo(addr, port, socket.AF_INET, socket.SOCK_STREAM)
     except socket.gaierror:
         raise INetAddressError('Cannot look up address "%s".' % address)
-    return (addr, port)
+    return addr, port
 
 
 def rpc_bool(arg):
@@ -163,7 +163,7 @@ def argument_value_convert(method, argument, value, rpc_version):
                     raise ValueError(
                         'Method "%s" Argument "%s" does not exist in version %d.'
                         % (method, argument, rpc_version))
-        return (argument, TR_TYPE_MAP[info[0]](value))
+        return argument, TR_TYPE_MAP[info[0]](value)
     else:
         raise ValueError('Argument "%s" does not exists for method "%s".',
                          (argument, method))

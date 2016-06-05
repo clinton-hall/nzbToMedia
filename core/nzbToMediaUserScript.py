@@ -58,7 +58,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in core.USER_SCRIPT_MEDIAEXTENSIONS:
-                num_files = num_files + 1
+                num_files += 1
                 if core.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
                 command = [core.USER_SCRIPT]
@@ -103,16 +103,15 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 except:
                     logger.error("UserScript %s has failed" % (command[0]), "USERSCRIPT")
                     result = int(1)
-                final_result = final_result + result
+                final_result += result
 
     num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
-            filePath = core.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
             if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or core.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
-                num_files_new = num_files_new + 1
+                num_files_new += 1
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
         logger.info("All files have been processed. Cleaning outputDirectory %s" % (outputDestination))

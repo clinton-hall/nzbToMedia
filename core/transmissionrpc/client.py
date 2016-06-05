@@ -409,11 +409,8 @@ class Client(object):
                     pass
                 if might_be_base64:
                     torrent_data = torrent
-        args = {}
-        if torrent_data:
-            args = {'metainfo': torrent_data}
-        else:
-            args = {'filename': torrent}
+
+        args = {'metainfo': torrent_data} if torrent_data else {'filename': torrent}
         for key, value in iteritems(kwargs):
             argument = make_rpc_name(key)
             (arg, val) = argument_value_convert('torrent-add', argument, value, self.rpc_version)
@@ -804,7 +801,7 @@ class Client(object):
             raise ValueError("Target name cannot contain a path delimiter")
         args = {'path': location, 'name': name}
         result = self._request('torrent-rename-path', args, torrent_id, True, timeout=timeout)
-        return (result['path'], result['name'])
+        return result['path'], result['name']
 
     def queue_top(self, ids, timeout=None):
         """Move transfer to the top of the queue."""

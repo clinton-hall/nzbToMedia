@@ -142,7 +142,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
     video_cmd = []
     audio_cmd = []
     audio_cmd2 = []
-    audio_cmd3 = []
     sub_cmd = []
     meta_cmd = []
     other_cmd = []
@@ -221,10 +220,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
         except:
             height = 0
         scale = core.VRESOLUTION
-        try:
-            framerate = float(fr.split('/')[0]) / float(fr.split('/')[1])
-        except:
-            framerate = 0
         if codec in core.VCODEC_ALLOW or not core.VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
         else:
@@ -431,7 +426,6 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(audio_cmd3)
 
     s_mapped = []
-    subs1 = []
     burnt = 0
     n = 0
     for lan in core.SLANGUAGES:
@@ -587,12 +581,10 @@ def extract_subs(file, newfilePath, bitbucket):
 def processList(List, newDir, bitbucket):
     remList = []
     newList = []
-    delList = []
     combine = []
     vtsPath = None
     success = True
     for item in List:
-        newfile = None
         ext = os.path.splitext(item)[1].lower()
         if ext in ['.iso', '.bin', '.img'] and ext not in core.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip disk image: %s" % (item), "TRANSCODER")
@@ -647,7 +639,6 @@ def ripISO(item, newDir, bitbucket):
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
-        result = proc.returncode
         fileList = [re.match(".+(VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in
                     out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line)]
         combined = []

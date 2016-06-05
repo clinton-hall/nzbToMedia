@@ -126,39 +126,39 @@ def decode_int(x, f):
             raise ValueError
     elif x[f] == '0' and newf != f + 1:
         raise ValueError
-    return (n, newf + 1)
+    return n, newf + 1
 
 
 def decode_intb(x, f):
     f += 1
-    return (struct.unpack('!b', x[f:f + 1])[0], f + 1)
+    return struct.unpack('!b', x[f:f + 1])[0], f + 1
 
 
 def decode_inth(x, f):
     f += 1
-    return (struct.unpack('!h', x[f:f + 2])[0], f + 2)
+    return struct.unpack('!h', x[f:f + 2])[0], f + 2
 
 
 def decode_intl(x, f):
     f += 1
-    return (struct.unpack('!l', x[f:f + 4])[0], f + 4)
+    return struct.unpack('!l', x[f:f + 4])[0], f + 4
 
 
 def decode_intq(x, f):
     f += 1
-    return (struct.unpack('!q', x[f:f + 8])[0], f + 8)
+    return struct.unpack('!q', x[f:f + 8])[0], f + 8
 
 
 def decode_float32(x, f):
     f += 1
     n = struct.unpack('!f', x[f:f + 4])[0]
-    return (n, f + 4)
+    return n, f + 4
 
 
 def decode_float64(x, f):
     f += 1
     n = struct.unpack('!d', x[f:f + 8])[0]
-    return (n, f + 8)
+    return n, f + 8
 
 
 def decode_string(x, f):
@@ -177,7 +177,7 @@ def decode_string(x, f):
             s = t
     except UnicodeDecodeError:
         pass
-    return (s, colon + n)
+    return s, colon + n
 
 
 def decode_list(x, f):
@@ -185,7 +185,7 @@ def decode_list(x, f):
     while x[f] != CHR_TERM:
         v, f = decode_func[x[f]](x, f)
         r.append(v)
-    return (tuple(r), f + 1)
+    return tuple(r), f + 1
 
 
 def decode_dict(x, f):
@@ -193,19 +193,19 @@ def decode_dict(x, f):
     while x[f] != CHR_TERM:
         k, f = decode_func[x[f]](x, f)
         r[k], f = decode_func[x[f]](x, f)
-    return (r, f + 1)
+    return r, f + 1
 
 
 def decode_true(x, f):
-    return (True, f + 1)
+    return True, f + 1
 
 
 def decode_false(x, f):
-    return (False, f + 1)
+    return False, f + 1
 
 
 def decode_none(x, f):
-    return (None, f + 1)
+    return None, f + 1
 
 
 decode_func = {
@@ -244,7 +244,7 @@ def make_fixed_length_string_decoders():
                     s = t
             except UnicodeDecodeError:
                 pass
-            return (s, f + 1 + slen)
+            return s, f + 1 + slen
 
         return f
 
@@ -262,7 +262,7 @@ def make_fixed_length_list_decoders():
             for i in range(slen):
                 v, f = decode_func[x[f]](x, f)
                 r.append(v)
-            return (tuple(r), f)
+            return tuple(r), f
 
         return f
 
@@ -276,7 +276,7 @@ make_fixed_length_list_decoders()
 def make_fixed_length_int_decoders():
     def make_decoder(j):
         def f(x, f):
-            return (j, f + 1)
+            return j, f + 1
 
         return f
 
@@ -296,7 +296,7 @@ def make_fixed_length_dict_decoders():
             for j in range(slen):
                 k, f = decode_func[x[f]](x, f)
                 r[k], f = decode_func[x[f]](x, f)
-            return (r, f)
+            return r, f
 
         return f
 

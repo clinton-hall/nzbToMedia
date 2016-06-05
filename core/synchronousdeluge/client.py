@@ -23,7 +23,6 @@ class DelugeClient(object):
         self._request_counter = 0
 
     def _get_local_auth(self):
-        auth_file = ""
         username = password = ""
         if platform.system() in ('Windows', 'Microsoft'):
             appDataPath = os.environ.get("APPDATA")
@@ -62,9 +61,9 @@ class DelugeClient(object):
                     continue
 
                 if username == "localclient":
-                    return (username, password)
+                    return username, password
 
-        return ("", "")
+        return "", ""
 
     def _create_module_method(self, module, method):
         fullname = "{0}.{1}".format(module, method)

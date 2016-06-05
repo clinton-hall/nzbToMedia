@@ -115,7 +115,6 @@ class DBConnection(object):
                     logger.log(u"DB error: " + str(e), logger.ERROR)
                     raise
             except sqlite3.DatabaseError as e:
-                sqlResult = []
                 if self.connection:
                     self.connection.rollback()
                 logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
