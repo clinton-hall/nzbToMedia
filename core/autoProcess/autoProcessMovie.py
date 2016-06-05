@@ -114,7 +114,7 @@ class autoProcessMovie(object):
         ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
         web_root = core.CFG[section][inputCategory].get("web_root", "")
         remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
-        extract = int(section[inputCategory].get("extract", 0))
+        extract = int(core.CFG[section][inputCategory].get("extract", 0))
         protocol = "https://" if ssl else "http://"
 
         baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)

@@ -75,7 +75,7 @@ class autoProcessTV(object):
         wait_for = int(core.CFG[section][inputCategory].get("wait_for", 2))
         force = int(core.CFG[section][inputCategory].get("force", 0))
         delete_on = int(core.CFG[section][inputCategory].get("delete_on", 0))
-        extract = int(section[inputCategory].get("extract", 0))
+        extract = int(core.CFG[section][inputCategory].get("extract", 0))
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
