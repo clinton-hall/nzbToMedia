@@ -870,11 +870,12 @@ def find_download(clientAgent, download_id):
         else:
             baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
         url = baseURL
-        params = {}
-        params['apikey'] = core.SABNZBDAPIKEY
-        params['mode'] = "get_files"
-        params['output'] = 'json'
-        params['value'] = download_id
+        params = {
+            'apikey': core.SABNZBDAPIKEY,
+            'mode': "get_files",
+            'output': 'json',
+            'value': download_id,
+        }
         try:
             r = requests.get(url, params=params, verify=False, timeout=(30, 120))
         except requests.ConnectionError:
@@ -896,10 +897,11 @@ def get_nzoid(inputName):
     else:
         baseURL = "http://%s:%s/api" % (core.SABNZBDHOST, core.SABNZBDPORT)
     url = baseURL
-    params = {}
-    params['apikey'] = core.SABNZBDAPIKEY
-    params['mode'] = "queue"
-    params['output'] = 'json'
+    params = {
+        'apikey': core.SABNZBDAPIKEY,
+        'mode': "queue",
+        'output': 'json',
+    }
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
