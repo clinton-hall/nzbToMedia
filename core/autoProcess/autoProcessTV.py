@@ -52,10 +52,13 @@ class autoProcessTV(object):
                 return False
 
     def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
-        host = core.CFG[section][inputCategory]["host"]
-        port = core.CFG[section][inputCategory]["port"]
-        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
-        web_root = core.CFG[section][inputCategory].get("web_root", "")
+
+        cfg = dict(core.CFG[section][inputCategory])
+
+        host = cfg["host"]
+        port = cfg["port"]
+        ssl = int(cfg.get("ssl", 0))
+        web_root = cfg.get("web_root", "")
         protocol = "https://" if ssl else "http://"
 
         if not server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
@@ -65,17 +68,17 @@ class autoProcessTV(object):
         # auto-detect correct fork
         fork, fork_params = autoFork(section, inputCategory)
 
-        username = core.CFG[section][inputCategory].get("username", "")
-        password = core.CFG[section][inputCategory].get("password", "")
-        apikey = core.CFG[section][inputCategory].get("apikey", "")
-        delete_failed = int(core.CFG[section][inputCategory].get("delete_failed", 0))
-        nzbExtractionBy = core.CFG[section][inputCategory].get("nzbExtractionBy", "Downloader")
-        process_method = core.CFG[section][inputCategory].get("process_method")
-        remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
-        wait_for = int(core.CFG[section][inputCategory].get("wait_for", 2))
-        force = int(core.CFG[section][inputCategory].get("force", 0))
-        delete_on = int(core.CFG[section][inputCategory].get("delete_on", 0))
-        extract = int(core.CFG[section][inputCategory].get("extract", 0))
+        username = cfg.get("username", "")
+        password = cfg.get("password", "")
+        apikey = cfg.get("apikey", "")
+        delete_failed = int(cfg.get("delete_failed", 0))
+        nzbExtractionBy = cfg.get("nzbExtractionBy", "Downloader")
+        process_method = cfg.get("process_method")
+        remote_path = int(cfg.get("remote_path", 0))
+        wait_for = int(cfg.get("wait_for", 2))
+        force = int(cfg.get("force", 0))
+        delete_on = int(cfg.get("delete_on", 0))
+        extract = int(cfg.get("extract", 0))
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
