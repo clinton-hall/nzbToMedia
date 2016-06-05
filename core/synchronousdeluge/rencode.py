@@ -21,7 +21,10 @@ same rencode version throughout your project.
 
 import struct
 from threading import Lock
+from six import PY3
 
+if PY3:
+    long = int
 
 __version__ = '1.0.1'
 __all__ = ['dumps', 'loads']
