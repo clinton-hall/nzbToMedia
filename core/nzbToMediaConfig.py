@@ -118,7 +118,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             if not os.path.isfile(core.CONFIG_FILE):
                 shutil.copyfile(core.CONFIG_SPEC_FILE, core.CONFIG_FILE)
             CFG_OLD = config(core.CONFIG_FILE)
-        except Exception, e:
+        except Exception as e:
             logger.debug("Error %s when copying to .cfg" % (e))
 
         try:
@@ -126,7 +126,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             if not os.path.isfile(core.CONFIG_SPEC_FILE):
                 shutil.copyfile(core.CONFIG_FILE, core.CONFIG_SPEC_FILE)
             CFG_NEW = config(core.CONFIG_SPEC_FILE)
-        except Exception, e:
+        except Exception as e:
             logger.debug("Error %s when copying to .spec" % (e))
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
@@ -462,14 +462,14 @@ class ConfigObj(configobj.ConfigObj, Section):
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
 
-        except Exception, e:
+        except Exception as e:
             logger.debug("Error %s when applying NZBGet config" % (e))
 
         try:
             # write our new config to autoProcessMedia.cfg
             CFG_NEW.filename = core.CONFIG_FILE
             CFG_NEW.write()
-        except Exception, e:
+        except Exception as e:
             logger.debug("Error %s when writing changes to .cfg" % (e))
 
         return CFG_NEW

@@ -312,7 +312,7 @@ class GitUpdateManager(UpdateManager):
         else:
             try:
                 self._check_github_for_update()
-            except Exception, e:
+            except Exception as e:
                 logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
                 return False
 
@@ -356,7 +356,7 @@ class SourceUpdateManager(UpdateManager):
         try:
             with open(version_file, 'r') as fp:
                 self._cur_commit_hash = fp.read().strip(' \n\r')
-        except EnvironmentError, e:
+        except EnvironmentError as e:
             logger.log(u"Unable to open 'version.txt': " + str(e), logger.DEBUG)
 
         if not self._cur_commit_hash:
@@ -370,7 +370,7 @@ class SourceUpdateManager(UpdateManager):
 
         try:
             self._check_github_for_update()
-        except Exception, e:
+        except Exception as e:
             logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
             return False
 
@@ -504,7 +504,7 @@ class SourceUpdateManager(UpdateManager):
                             os.chmod(new_path, stat.S_IWRITE)
                             os.remove(new_path)
                             os.renames(old_path, new_path)
-                        except Exception, e:
+                        except Exception as e:
                             logger.log(u"Unable to update " + new_path + ': ' + str(e), logger.DEBUG)
                             os.remove(old_path)  # Trash the updated file without moving in new path
                         continue
@@ -517,11 +517,11 @@ class SourceUpdateManager(UpdateManager):
             try:
                 with open(version_path, 'w') as ver_file:
                     ver_file.write(self._newest_commit_hash)
-            except EnvironmentError, e:
+            except EnvironmentError as e:
                 logger.log(u"Unable to write version file, update not complete: " + str(e), logger.ERROR)
                 return False
 
-        except Exception, e:
+        except Exception as e:
             logger.log(u"Error while trying to update: " + str(e), logger.ERROR)
             logger.log(u"Traceback: " + traceback.format_exc(), logger.DEBUG)
             return False

@@ -40,7 +40,7 @@ class DelugeClient(object):
             from xdg.BaseDirectory import save_config_path
             try:
                 auth_file = os.path.join(save_config_path("deluge"), "auth")
-            except OSError, e:
+            except OSError:
                 return username, password
 
         if os.path.exists(auth_file):
@@ -51,7 +51,7 @@ class DelugeClient(object):
                 line = line.strip()
                 try:
                     lsplit = line.split(":")
-                except Exception, e:
+                except Exception:
                     continue
 
                 if len(lsplit) == 2:

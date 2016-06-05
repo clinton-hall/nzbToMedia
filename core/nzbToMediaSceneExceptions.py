@@ -64,7 +64,7 @@ def rename_file(filename, newfilePath):
     logger.debug("Replacing file name %s with download name %s" % (filename, newfilePath), "EXCEPTION")
     try:
         os.rename(filename, newfilePath)
-    except Exception, e:
+    except Exception as e:
         logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 
@@ -132,7 +132,7 @@ def rename_script(dirname):
                 logger.debug("Renaming file %s to %s" % (orig, dest), "EXCEPTION")
                 try:
                     os.rename(orig, dest)
-                except Exception, e:
+                except Exception as e:
                     logger.error("Unable to rename file due to: %s" % (str(e)), "EXCEPTION")
 
 # dict for custom groups

@@ -74,7 +74,7 @@ def makeDir(path):
     if not os.path.isdir(path):
         try:
             os.makedirs(path)
-        except Exception, e:
+        except Exception:
             return False
     return True
 
@@ -262,7 +262,7 @@ def copy_link(src, targetLink, useLink):
             logger.info("Moving SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
             shutil.move(src, targetLink)
             return True
-    except Exception, e:
+    except Exception as e:
         logger.warning("Error: %s, copying instead ... " % (e), 'COPYLINK')
 
     logger.info("Copying SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
@@ -1104,7 +1104,7 @@ def extractFiles(src, dst=None, keep_archive=None):
             if extractor.extract(inputFile, dst or dirPath):
                 extracted_folder.append(dst or dirPath)
                 extracted_archive.append(archiveName)
-        except Exception, e:
+        except Exception:
             logger.error("Extraction failed for: %s" % (fullFileName))
 
     for folder in extracted_folder:
@@ -1197,7 +1197,7 @@ def backupVersionedFile(old_file, version):
             shutil.copy(old_file, new_file)
             logger.log(u"Backup done", logger.DEBUG)
             break
-        except Exception, e:
+        except Exception as e:
             logger.log(u"Error while trying to back up " + old_file + " to " + new_file + " : " + str(e),
                        logger.WARNING)
             numTries += 1

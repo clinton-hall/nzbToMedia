@@ -37,7 +37,7 @@ class DBConnection:
         result = None
         try:
             result = self.select("SELECT db_version FROM db_version")
-        except sqlite3.OperationalError, e:
+        except sqlite3.OperationalError as e:
             if "no such table: db_version" in e.args[0]:
                 return 0
 
@@ -68,7 +68,7 @@ class DBConnection:
 
                 # get out of the connection attempt loop since we were successful
                 break
-            except sqlite3.OperationalError, e:
+            except sqlite3.OperationalError as e:
                 if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
                     logger.log(u"DB error: " + str(e), logger.WARNING)
                     attempt += 1
@@ -76,7 +76,7 @@ class DBConnection:
                 else:
                     logger.log(u"DB error: " + str(e), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError, e:
+            except sqlite3.DatabaseError as e:
                 logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
                 raise
 
@@ -103,7 +103,7 @@ class DBConnection:
                 self.connection.commit()
                 logger.log(u"Transaction with " + str(len(querylist)) + u" query's executed", logger.DEBUG)
                 return sqlResult
-            except sqlite3.OperationalError, e:
+            except sqlite3.OperationalError as e:
                 sqlResult = []
                 if self.connection:
                     self.connection.rollback()
@@ -114,7 +114,7 @@ class DBConnection:
                 else:
                     logger.log(u"DB error: " + str(e), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError, e:
+            except sqlite3.DatabaseError as e:
                 sqlResult = []
                 if self.connection:
                     self.connection.rollback()
@@ -141,7 +141,7 @@ class DBConnection:
                 self.connection.commit()
                 # get out of the connection attempt loop since we were successful
                 break
-            except sqlite3.OperationalError, e:
+            except sqlite3.OperationalError as e:
                 if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
                     logger.log(u"DB error: " + str(e), logger.WARNING)
                     attempt += 1
@@ -149,7 +149,7 @@ class DBConnection:
                 else:
                     logger.log(u"DB error: " + str(e), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError, e:
+            except sqlite3.DatabaseError as e:
                 logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
                 raise
 
@@ -228,7 +228,7 @@ def _processUpgrade(connection, upgradeClass):
         logger.log(u"Database upgrade required: " + prettyName(upgradeClass.__name__), logger.MESSAGE)
         try:
             instance.execute()
-        except sqlite3.DatabaseError, e:
+        except sqlite3.DatabaseError as e:
             print("Error in " + str(upgradeClass.__name__) + ": " + str(e))
             raise
         logger.log(upgradeClass.__name__ + " upgrade completed", logger.DEBUG)

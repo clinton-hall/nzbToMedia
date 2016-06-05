@@ -763,10 +763,10 @@ def Transcode_directory(dirName):
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfilePath)
-        except OSError, e:
+        except OSError as e:
             if e.errno != errno.ENOENT:  # Ignore the error if it's just telling us that the file doesn't exist
                 logger.debug("Error when removing transcoding target: %s" % (e))
-        except Exception, e:
+        except Exception as e:
             logger.debug("Error when removing transcoding target: %s" % (e))
 
         logger.info("Transcoding video: %s" % (newfilePath))
