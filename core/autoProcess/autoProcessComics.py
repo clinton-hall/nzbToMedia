@@ -16,13 +16,15 @@ class autoProcessComics(object):
             logger.warning("FAILED DOWNLOAD DETECTED, nothing to process.", section)
             return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]
 
-        host = core.CFG[section][inputCategory]["host"]
-        port = core.CFG[section][inputCategory]["port"]
-        username = core.CFG[section][inputCategory]["username"]
-        password = core.CFG[section][inputCategory]["password"]
-        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
-        web_root = core.CFG[section][inputCategory].get("web_root", "")
-        remote_path = int(core.CFG[section][inputCategory].get("remote_path"), 0)
+        cfg = dict(core.CFG[section][inputCategory])
+
+        host = cfg["host"]
+        port = cfg["port"]
+        username = cfg["username"]
+        password = cfg["password"]
+        ssl = int(cfg.get("ssl", 0))
+        web_root = cfg.get("web_root", "")
+        remote_path = int(cfg.get("remote_path"), 0)
         protocol = "https://" if ssl else "http://"
 
         url = "{0}{1}:{2}{3}/post_process".format(protocol, host, port, web_root)
