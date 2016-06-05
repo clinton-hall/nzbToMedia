@@ -1,5 +1,6 @@
 # coding=utf-8
-from __future__ import with_statement
+
+from __future__ import print_function, with_statement
 
 import re
 import sqlite3
@@ -228,7 +229,7 @@ def _processUpgrade(connection, upgradeClass):
         try:
             instance.execute()
         except sqlite3.DatabaseError, e:
-            print "Error in " + str(upgradeClass.__name__) + ": " + str(e)
+            print("Error in " + str(upgradeClass.__name__) + ": " + str(e))
             raise
         logger.log(upgradeClass.__name__ + " upgrade completed", logger.DEBUG)
     else:

@@ -1,5 +1,7 @@
 # coding=utf-8
-from __future__ import unicode_literals
+
+from __future__ import print_function, unicode_literals
+
 import os
 import re
 import socket
@@ -455,7 +457,7 @@ def convert_to_ascii(inputName, dirName):
         logger.info("Renaming directory to: %s." % (base2), 'ENCODER')
         os.rename(os.path.join(dir, base), dirName)
         if 'NZBOP_SCRIPTDIR' in os.environ:
-            print "[NZB] DIRECTORY=%s" % (dirName)  # Return the new directory to NZBGet.
+            print("[NZB] DIRECTORY=%s" % (dirName))
 
     for dirname, dirnames, filenames in os.walk(dirName, topdown=False):
         for subdirname in dirnames:

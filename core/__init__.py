@@ -1,6 +1,7 @@
 # coding=utf-8
 
-from six.moves import reload_module
+from __future__ import print_function
+
 import locale
 import os
 import re
@@ -8,6 +9,8 @@ import subprocess
 import sys
 import platform
 import time
+
+from six.moves import reload_module
 
 # init libs
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
@@ -261,8 +264,8 @@ def initialize(section=None):
         # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
         sys.setdefaultencoding(SYS_ENCODING)
     except:
-        print 'Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
-        print 'or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.'
+        print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable')
+        print('or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.')
         if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(NZBGET_POSTPROCESS_ERROR)
         else:
