@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from __future__ import print_function, unicode_literals
-
+from six import text_type
 import os
 import re
 import socket
@@ -1216,7 +1216,7 @@ def update_downloadInfoStatus(inputName, status):
 
     myDB = nzbToMediaDB.DBConnection()
     myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
-                [status, datetime.date.today().toordinal(), unicode(inputName)])
+                [status, datetime.date.today().toordinal(), text_type(inputName)])
 
 
 def get_downloadInfo(inputName, status):
@@ -1224,7 +1224,7 @@ def get_downloadInfo(inputName, status):
 
     myDB = nzbToMediaDB.DBConnection()
     sqlResults = myDB.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
-                             [unicode(inputName), status])
+                             [text_type(inputName), status])
 
     return sqlResults
 
