@@ -11,44 +11,18 @@ from core import logger
 def autoFork(section, inputCategory):
     # auto-detect correct section
     # config settings
-    try:
-        host = core.CFG[section][inputCategory]["host"]
-        port = core.CFG[section][inputCategory]["port"]
-    except:
-        host = None
-        port = None
 
-    try:
-        username = core.CFG[section][inputCategory]["username"]
-        password = core.CFG[section][inputCategory]["password"]
-    except:
-        username = None
-        password = None
+    cfg = core.CFG[section][inputCategory]
 
-    try:
-        apikey = core.CFG[section][inputCategory]["apikey"]
-    except:
-        apikey = None
-
-    try:
-        ssl = int(core.CFG[section][inputCategory]["ssl"])
-    except:
-        ssl = 0
-
-    try:
-        web_root = core.CFG[section][inputCategory]["web_root"]
-    except:
-        web_root = ""
-
-    try:
-        fork = core.FORKS.items()[core.FORKS.keys().index(core.CFG[section][inputCategory]["fork"])]
-    except:
-        fork = "auto"
-
-    if ssl:
-        protocol = "https://"
-    else:
-        protocol = "http://"
+    host = cfg.get("host")
+    port = cfg.get("port")
+    username = cfg.get("username")
+    password = cfg.get("password")
+    apikey = cfg.get("apikey")
+    ssl = int(cfg.get("ssl", 0))
+    web_root = cfg.get("web_root", "")
+    fork = core.FORKS.items()[core.FORKS.keys().index(cfg.get("fork", "auto"))]
+    protocol = "https://" if ssl else "http://"
 
     detected = False
     if section == "NzbDrone":

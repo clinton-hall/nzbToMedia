@@ -208,18 +208,9 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
     for video in videoStreams:
         codec = video["codec_name"]
-        try:
-            fr = video["avg_frame_rate"]
-        except:
-            fr = 0
-        try:
-            width = video["width"]
-        except:
-            width = 0
-        try:
-            height = video["height"]
-        except:
-            height = 0
+        fr = video.get("avg_frame_rate", 0)
+        width = video.get("width", 0)
+        height = video.get("height", 0)
         scale = core.VRESOLUTION
         if codec in core.VCODEC_ALLOW or not core.VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
@@ -270,26 +261,14 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if audio2:  # right language and codec...
             map_cmd.extend(['-map', '0:' + str(audio2[0]["index"])])
             a_mapped.extend([audio2[0]["index"]])
-            try:
-                bitrate = int(audio2[0]["bit_rate"]) / 1000
-            except:
-                bitrate = 0
-            try:
-                channels = int(audio2[0]["channels"])
-            except:
-                channels = 0
+            bitrate = int(audio2[0].get("bit_rate", 0)) / 1000
+            channels = int(audio2[0].get("channels", 0))
             audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
         elif audio1:  # right language wrong codec.
             map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
-            try:
-                bitrate = int(audio1[0]["bit_rate"]) / 1000
-            except:
-                bitrate = 0
-            try:
-                channels = int(audio1[0]["channels"])
-            except:
-                channels = 0
+            bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
+            channels = int(audio1[0].get("channels", 0))
             if core.ACODEC:
                 audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
             else:
@@ -297,14 +276,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
         elif audio3:  # just pick the default audio track
             map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
-            try:
-                bitrate = int(audio3[0]["bit_rate"]) / 1000
-            except:
-                bitrate = 0
-            try:
-                channels = int(audio3[0]["channels"])
-            except:
-                channels = 0
+            bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
+            channels = int(audio3[0].get("channels", 0))
             if core.ACODEC:
                 audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
             else:
@@ -331,26 +304,14 @@ def buildCommands(file, newDir, movieName, bitbucket):
             if audio4:  # right language and codec.
                 map_cmd.extend(['-map', '0:' + str(audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
-                try:
-                    bitrate = int(audio4[0]["bit_rate"]) / 1000
-                except:
-                    bitrate = 0
-                try:
-                    channels = int(audio4[0]["channels"])
-                except:
-                    channels = 0
+                bitrate = int(audio4[0].get("bit_rate", 0)) / 1000
+                channels = int(audio4[0].get("channels", 0))
                 audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
-                try:
-                    bitrate = int(audio1[0]["bit_rate"]) / 1000
-                except:
-                    bitrate = 0
-                try:
-                    channels = int(audio1[0]["channels"])
-                except:
-                    channels = 0
+                bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
+                channels = int(audio1[0].get("channels", 0))
                 if core.ACODEC2:
                     audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
                 else:
@@ -358,14 +319,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
-                try:
-                    bitrate = int(audio3[0]["bit_rate"]) / 1000
-                except:
-                    bitrate = 0
-                try:
-                    channels = int(audio3[0]["channels"])
-                except:
-                    channels = 0
+                bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
+                channels = int(audio3[0].get("channels", 0))
                 if core.ACODEC2:
                     audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
                 else:
@@ -394,14 +349,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 used_audio += 1
                 map_cmd.extend(['-map', '0:' + str(audio["index"])])
                 audio_cmd3 = []
-                try:
-                    bitrate = int(audio["bit_rate"]) / 1000
-                except:
-                    bitrate = 0
-                try:
-                    channels = int(audio["channels"])
-                except:
-                    channels = 0
+                bitrate = int(audio.get("bit_rate", 0)) / 1000
+                channels = int(audio.get("channels", 0))
                 if audio["codec_name"] in core.ACODEC3_ALLOW:
                     audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
                 else:
@@ -540,10 +489,7 @@ def extract_subs(file, newfilePath, bitbucket):
     for n in range(num):
         sub = subStreams[n]
         idx = sub["index"]
-        try:
-            lan = sub["tags"]["language"]
-        except:
-            lan = "unk"
+        lan = sub.geet("tags", {}).get("language", "unk")
 
         if num == 1:
             outputFile = os.path.join(subdir, "{0}.srt".format(name))

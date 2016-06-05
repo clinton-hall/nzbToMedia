@@ -16,11 +16,10 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
     except:
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
-    try:
-        core.USER_SCRIPT = settings["user_script_path"]
-    except:
-        core.USER_SCRIPT = None
-    if core.USER_SCRIPT is None or core.USER_SCRIPT == "None":  # do nothing and return success.
+
+    core.USER_SCRIPT = settings.get("user_script_path")
+
+    if not core.USER_SCRIPT or core.USER_SCRIPT == "None":  # do nothing and return success.
         return [0, ""]
     try:
         core.USER_SCRIPT_PARAM = settings["user_script_param"]
@@ -34,14 +33,9 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
     except:
         core.USER_SCRIPT_SUCCESSCODES = 0
-    try:
-        core.USER_SCRIPT_CLEAN = int(settings["user_script_clean"])
-    except:
-        core.USER_SCRIPT_CLEAN = 1
-    try:
-        core.USER_SCRIPT_RUNONCE = int(settings["user_script_runOnce"])
-    except:
-        core.USER_SCRIPT_RUNONCE = 1
+
+    core.USER_SCRIPT_CLEAN = int(settings.get("user_script_clean", 1))
+    core.USER_SCRIPT_RUNONCE = int(settings.get("user_script_runOnce", 1))
 
     if core.CHECK_MEDIA:
         for video in listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False):
