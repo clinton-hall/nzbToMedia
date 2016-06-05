@@ -1144,7 +1144,7 @@ def import_subs(filename):
     logger.debug("Attempting to download subtitles for %s" % (filename), 'SUBTITLES')
     try:
         video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
-        subtitles = subliminal.download_best_subtitles([video], languages, hearing_impaired=False)
+        subtitles = subliminal.download_best_subtitles({video}, languages, hearing_impaired=False)
         subliminal.save_subtitles(subtitles)
     except Exception as e:
         logger.error("Failed to download subtitles for %s due to: %s" % (filename, e), 'SUBTITLES')
