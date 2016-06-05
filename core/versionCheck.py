@@ -17,7 +17,7 @@ import core
 from core import logger
 
 
-class CheckVersion():
+class CheckVersion(object):
     """
     Version check class meant to run as a thread object with the SB scheduler.
     """
@@ -82,7 +82,7 @@ class CheckVersion():
             return self.updater.update()
 
 
-class UpdateManager():
+class UpdateManager(object):
     def get_github_repo_user(self):
         return core.GIT_USER
 

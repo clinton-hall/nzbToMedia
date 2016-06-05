@@ -11,7 +11,7 @@ from core import logger
 from itertools import chain
 
 
-class Section(configobj.Section):
+class Section(configobj.Section, object):
     def isenabled(section):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         if not section.sections:

@@ -23,7 +23,7 @@ def dbFilename(filename="nzbtomedia.db", suffix=None):
     return core.os.path.join(core.PROGRAM_DIR, filename)
 
 
-class DBConnection:
+class DBConnection(object):
     def __init__(self, filename="nzbtomedia.db", suffix=None, row_type=None):
 
         self.filename = filename

@@ -1229,7 +1229,7 @@ def get_downloadInfo(inputName, status):
     return sqlResults
 
 
-class RunningProcess():
+class RunningProcess(object):
     """ Limits application to single instance """
 
     def __init__(self):
@@ -1245,7 +1245,7 @@ class RunningProcess():
         #    self.process.__del__()
 
 
-class WindowsProcess():
+class WindowsProcess(object):
     def __init__(self):
         self.mutexname = "nzbtomedia_" + core.PID_FILE.replace('\\', '/')  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
         if platform.system() == 'Windows':
@@ -1271,7 +1271,7 @@ class WindowsProcess():
             self.CloseHandle(self.mutex)
 
 
-class PosixProcess():
+class PosixProcess(object):
     def __init__(self):
         self.pidpath = core.PID_FILE
         self.lock_socket = None

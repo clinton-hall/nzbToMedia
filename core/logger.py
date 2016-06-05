@@ -236,7 +236,7 @@ class NTMRotatingLogHandler(object):
             sys.exit(1)
 
 
-class DispatchingFormatter:
+class DispatchingFormatter(object):
     def __init__(self, formatters, default_formatter):
         self._formatters = formatters
         self._default_formatter = default_formatter
