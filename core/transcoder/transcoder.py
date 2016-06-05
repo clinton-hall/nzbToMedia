@@ -594,11 +594,11 @@ def processList(List, newDir, bitbucket):
     for item in List:
         newfile = None
         ext = os.path.splitext(item)[1].lower()
-        if ext in ['.iso', '.bin', '.img'] and not ext in core.IGNOREEXTENSIONS:
+        if ext in ['.iso', '.bin', '.img'] and ext not in core.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip disk image: %s" % (item), "TRANSCODER")
             newList.extend(ripISO(item, newDir, bitbucket))
             remList.append(item)
-        elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and not '.vob' in core.IGNOREEXTENSIONS:
+        elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and '.vob' not in core.IGNOREEXTENSIONS:
             logger.debug("Found VIDEO_TS image file: %s" % (item), "TRANSCODER")
             if not vtsPath:
                 try:
@@ -618,7 +618,7 @@ def processList(List, newDir, bitbucket):
     if combine:
         newList.extend(combineCD(combine))
     for file in newList:
-        if isinstance(file, str) and not 'concat:' in file and not os.path.isfile(file):
+        if isinstance(file, str) and 'concat:' not in file and not os.path.isfile(file):
             success = False
             break
     if success and newList:

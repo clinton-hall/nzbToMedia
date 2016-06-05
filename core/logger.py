@@ -228,7 +228,7 @@ class NTMRotatingLogHandler(object):
     def log_error_and_exit(self, error_msg):
         log(error_msg, ERROR)
 
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(core.NZBGET_POSTPROCESS_ERROR)
         elif not self.console_logging:
             sys.exit(error_msg.encode(core.SYS_ENCODING, 'xmlcharrefreplace'))

@@ -157,7 +157,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         tordir = True
 
     imdbid = [item for item in pathlist if '.cp(tt' in item]  # This looks for the .cp(tt imdb id in the path.
-    if imdbid and not '.cp(tt' in inputName:
+    if imdbid and '.cp(tt' not in inputName:
         inputName = imdbid[0]  # This ensures the imdb id is preserved and passed to CP
         tordir = True
 
@@ -454,7 +454,7 @@ def convert_to_ascii(inputName, dirName):
         dirName = os.path.join(dir, base2)
         logger.info("Renaming directory to: %s." % (base2), 'ENCODER')
         os.rename(os.path.join(dir, base), dirName)
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             print "[NZB] DIRECTORY=%s" % (dirName)  # Return the new directory to NZBGet.
 
     for dirname, dirnames, filenames in os.walk(dirName, topdown=False):
@@ -1038,7 +1038,7 @@ def find_imdbid(dirName, inputName):
                 imdbid = m.group(1)
                 logger.info("Found imdbID [%s] via file name" % imdbid)
                 return imdbid
-    if os.environ.has_key('NZBPR__DNZB_MOREINFO'):
+    if 'NZBPR__DNZB_MOREINFO' in os.environ:
         dnzb_more_info = os.environ.get('NZBPR__DNZB_MOREINFO', '')
         if dnzb_more_info != '':
             regex = re.compile(r'^http://www.imdb.com/title/(tt[0-9]+)/$', re.IGNORECASE)
@@ -1110,7 +1110,7 @@ def extractFiles(src, dst=None, keep_archive=None):
             fullFileName = os.path.basename(inputFile)
             archiveName = os.path.splitext(fullFileName)[0]
             archiveName = re.sub(r"part[0-9]+", "", archiveName)
-            if not archiveName in extracted_archive or keep_archive is True:
+            if archiveName not in extracted_archive or keep_archive is True:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
             logger.info("Removing extracted archive %s from folder %s ..." % (fullFileName, folder))
             try:

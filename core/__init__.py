@@ -227,7 +227,7 @@ def initialize(section=None):
     if __INITIALIZED__:
         return False
 
-    if os.environ.has_key('NTM_LOGFILE'):
+    if 'NTM_LOGFILE' in os.environ:
         LOG_FILE = os.environ['NTM_LOGFILE']
         LOG_DIR = os.path.split(LOG_FILE)[0]
 
@@ -259,7 +259,7 @@ def initialize(section=None):
     except:
         print 'Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
         print 'or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.'
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(NZBGET_POSTPROCESS_ERROR)
         else:
             sys.exit(1)
@@ -270,13 +270,13 @@ def initialize(section=None):
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
         logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
             sys.exit(-1)
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
-    if os.environ.has_key('NZBOP_SCRIPTDIR'):
+    if 'NZBOP_SCRIPTDIR' in os.environ:
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
@@ -441,9 +441,9 @@ def initialize(section=None):
         GENERALOPTS = GENERALOPTS.split(',')
     if GENERALOPTS == ['']:
         GENERALOPTS = []
-    if not '-fflags' in GENERALOPTS:
+    if '-fflags' not in GENERALOPTS:
         GENERALOPTS.append('-fflags')
-    if not '+genpts' in GENERALOPTS:
+    if '+genpts' not in GENERALOPTS:
         GENERALOPTS.append('+genpts')
     try:
         OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
