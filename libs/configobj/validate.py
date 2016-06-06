@@ -538,7 +538,7 @@ class Validator(object):
     ConfigObj, an alternative to ConfigParser which supports lists and
     can validate a config file using a config schema.
     For more details on using Validator with ConfigObj see:
-    http://www.voidspace.org.uk/python/configobj.html
+    https://configobj.readthedocs.org/en/latest/configobj.html
     """
 
     # this regex does the initial parsing of the checks
