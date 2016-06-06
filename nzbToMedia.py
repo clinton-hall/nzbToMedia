@@ -499,6 +499,8 @@
 # ### NZBGET POST-PROCESSING SCRIPT                                          ###
 # ##############################################################################
 
+from __future__ import print_function
+
 import os
 import sys
 import datetime
@@ -513,7 +515,6 @@ from core.autoProcess.autoProcessTV import autoProcessTV
 from core.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii, get_nzoid, plex_update
 from core.nzbToMediaUserScript import external_script
 from core import logger, nzbToMediaDB
-from six import text_type
 
 
 # post-processing
@@ -792,14 +793,14 @@ def main(args, section=None):
     if result[0] == 0:
         logger.info("The {0} script completed successfully.".format(args[0]))
         if result[1]:
-            print result[1] + "!"  # For SABnzbd Status display.
+            print(result[1] + "!")
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_SUCCESS
     else:
         logger.error("A problem was reported in the {0} script.".format(args[0]))
         if result[1]:
-            print result[1] + "!"  # For SABnzbd Status display.
+            print(result[1] + "!")
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_ERROR
