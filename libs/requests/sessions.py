@@ -62,10 +62,11 @@ def merge_setting(request_setting, session_setting, dict_class=OrderedDict):
     merged_setting = dict_class(to_key_val_list(session_setting))
     merged_setting.update(to_key_val_list(request_setting))
 
-    # Remove keys that are set to None.
-    for (k, v) in merged_setting.items():
-        if v is None:
-            del merged_setting[k]
+    # Remove keys that are set to None. Extract keys first to avoid altering
+    # the dictionary during iteration.
+    none_keys = [k for (k, v) in merged_setting.items() if v is None]
+    for key in none_keys:
+        del merged_setting[key]
 
     return merged_setting
 
@@ -109,13 +110,12 @@ class SessionRedirectMixin(object):
                 resp.raw.read(decode_content=False)
 
             if i >= self.max_redirects:
-                raise TooManyRedirects('Exceeded %s redirects.' % self.max_redirects)
+                raise TooManyRedirects('Exceeded %s redirects.' % self.max_redirects, response=resp)
 
             # Release the connection back into the pool.
             resp.close()
 
             url = resp.headers['location']
-            method = req.method
 
             # Handle redirection without scheme (see: RFC 1808 Section 4)
             if url.startswith('//'):
@@ -139,22 +139,7 @@ class SessionRedirectMixin(object):
             if resp.is_permanent_redirect and req.url != prepared_request.url:
                 self.redirect_cache[req.url] = prepared_request.url
 
-            # http://tools.ietf.org/html/rfc7231#section-6.4.4
-            if (resp.status_code == codes.see_other and
-                    method != 'HEAD'):
-                method = 'GET'
-
-            # Do what the browsers do, despite standards...
-            # First, turn 302s into GETs.
-            if resp.status_code == codes.found and method != 'HEAD':
-                method = 'GET'
-
-            # Second, if a POST is responded to with a 301, turn it into a GET.
-            # This bizarre behaviour is explained in Issue 1704.
-            if resp.status_code == codes.moved and method == 'POST':
-                method = 'GET'
-
-            prepared_request.method = method
+            self.rebuild_method(prepared_request, resp)
 
             # https://github.com/kennethreitz/requests/issues/1084
             if resp.status_code not in (codes.temporary_redirect, codes.permanent_redirect):
@@ -261,6 +246,28 @@ class SessionRedirectMixin(object):
 
         return new_proxies
 
+    def rebuild_method(self, prepared_request, response):
+        """When being redirected we may want to change the method of the request
+        based on certain specs or browser behavior.
+        """
+        method = prepared_request.method
+
+        # http://tools.ietf.org/html/rfc7231#section-6.4.4
+        if response.status_code == codes.see_other and method != 'HEAD':
+            method = 'GET'
+
+        # Do what the browsers do, despite standards...
+        # First, turn 302s into GETs.
+        if response.status_code == codes.found and method != 'HEAD':
+            method = 'GET'
+
+        # Second, if a POST is responded to with a 301, turn it into a GET.
+        # This bizarre behaviour is explained in Issue 1704.
+        if response.status_code == codes.moved and method == 'POST':
+            method = 'GET'
+
+        prepared_request.method = method
+
 
 class Session(SessionRedirectMixin):
     """A Requests session.
@@ -272,13 +279,13 @@ class Session(SessionRedirectMixin):
       >>> import requests
       >>> s = requests.Session()
       >>> s.get('http://httpbin.org/get')
-      200
+      <Response [200]>
 
     Or as a context manager::
 
       >>> with requests.Session() as s:
       >>>     s.get('http://httpbin.org/get')
-      200
+      <Response [200]>
     """
 
     __attrs__ = [
@@ -298,9 +305,9 @@ class Session(SessionRedirectMixin):
         #: :class:`Request <Request>`.
         self.auth = None
 
-        #: Dictionary mapping protocol to the URL of the proxy (e.g.
-        #: {'http': 'foo.bar:3128'}) to be used on each
-        #: :class:`Request <Request>`.
+        #: Dictionary mapping protocol or protocol and host to the URL of the proxy
+        #: (e.g. {'http': 'foo.bar:3128', 'http://host.name': 'foo.bar:4012'}) to
+        #: be used on each :class:`Request <Request>`.
         self.proxies = {}
 
         #: Event-handling hooks.
@@ -324,7 +331,8 @@ class Session(SessionRedirectMixin):
         #: limit, a :class:`TooManyRedirects` exception is raised.
         self.max_redirects = DEFAULT_REDIRECT_LIMIT
 
-        #: Should we trust the environment?
+        #: Trust environment settings for proxy configuration, default
+        #: authentication and similar.
         self.trust_env = True
 
         #: A CookieJar containing all currently outstanding cookies set on this
@@ -409,8 +417,8 @@ class Session(SessionRedirectMixin):
         :param url: URL for the new :class:`Request` object.
         :param params: (optional) Dictionary or bytes to be sent in the query
             string for the :class:`Request`.
-        :param data: (optional) Dictionary or bytes to send in the body of the
-            :class:`Request`.
+        :param data: (optional) Dictionary, bytes, or file-like object to send
+            in the body of the :class:`Request`.
         :param json: (optional) json to send in the body of the
             :class:`Request`.
         :param headers: (optional) Dictionary of HTTP Headers to send with the
@@ -427,18 +435,16 @@ class Session(SessionRedirectMixin):
         :type timeout: float or tuple
         :param allow_redirects: (optional) Set to True by default.
         :type allow_redirects: bool
-        :param proxies: (optional) Dictionary mapping protocol to the URL of
-            the proxy.
+        :param proxies: (optional) Dictionary mapping protocol or protocol and
+            hostname to the URL of the proxy.
         :param stream: (optional) whether to immediately download the response
             content. Defaults to ``False``.
-        :param verify: (optional) if ``True``, the SSL cert will be verified.
-            A CA_BUNDLE path can also be provided.
+        :param verify: (optional) whether the SSL cert will be verified.
+            A CA_BUNDLE path can also be provided. Defaults to ``True``.
         :param cert: (optional) if String, path to ssl client cert file (.pem).
             If Tuple, ('cert', 'key') pair.
-        """
-
-        method = to_native_string(method)
-
+        :rtype: requests.Response
+	"""
         # Create the Request.
         req = Request(
             method = method.upper(),
@@ -551,21 +557,23 @@ class Session(SessionRedirectMixin):
 
         # It's possible that users might accidentally send a Request object.
         # Guard against that specific failure case.
-        if not isinstance(request, PreparedRequest):
+        if isinstance(request, Request):
             raise ValueError('You can only send PreparedRequests.')
-
-        checked_urls = set()
-        while request.url in self.redirect_cache:
-            checked_urls.add(request.url)
-            new_url = self.redirect_cache.get(request.url)
-            if new_url in checked_urls:
-                break
-            request.url = new_url
 
         # Set up variables needed for resolve_redirects and dispatching of hooks
         allow_redirects = kwargs.pop('allow_redirects', True)
         stream = kwargs.get('stream')
         hooks = request.hooks
+
+        # Resolve URL in redirect cache, if available.
+        if allow_redirects:
+            checked_urls = set()
+            while request.url in self.redirect_cache:
+                checked_urls.add(request.url)
+                new_url = self.redirect_cache.get(request.url)
+                if new_url in checked_urls:
+                    break
+                request.url = new_url
 
         # Get the appropriate adapter to use
         adapter = self.get_adapter(url=request.url)
@@ -635,7 +643,7 @@ class Session(SessionRedirectMixin):
                 'cert': cert}
 
     def get_adapter(self, url):
-        """Returns the appropriate connnection adapter for the given URL."""
+        """Returns the appropriate connection adapter for the given URL."""
         for (prefix, adapter) in self.adapters.items():
 
             if url.lower().startswith(prefix):

@@ -21,8 +21,7 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 
 from guessit.test.guessittest import *
-from guessit.fileutils import split_path, file_in_same_dir
-from guessit.textutils import strip_brackets, str_replace, str_fill
+from guessit.fileutils import file_in_same_dir
 from guessit import PY2
 from guessit import __main__
 
@@ -62,8 +61,3 @@ class TestMain(TestGuessit):
         __main__.main(["-t", "episode", "A.Serie.S02E06.avi"], False)
         __main__.main(["-i", "hash_mpc", file_in_same_dir(__file__, "1MB")], False)
         __main__.main(["-i", "hash_md5", file_in_same_dir(__file__, "1MB")], False)
-
-suite = allTests(TestMain)
-
-if __name__ == '__main__':
-    TextTestRunner(verbosity=2).run(suite)

@@ -5,6 +5,7 @@ import pkg_resources
 
 import logging
 
+from .exception import NoMatches
 
 LOG = logging.getLogger(__name__)
 
@@ -166,15 +167,23 @@ class ExtensionManager(object):
             except (KeyboardInterrupt, AssertionError):
                 raise
             except Exception as err:
-                LOG.error('Could not load %r: %s', ep.name, err)
-                LOG.exception(err)
                 if self._on_load_failure_callback is not None:
                     self._on_load_failure_callback(self, ep, err)
+                else:
+                    LOG.error('Could not load %r: %s', ep.name, err)
+                    LOG.exception(err)
         return extensions
 
     def _load_one_plugin(self, ep, invoke_on_load, invoke_args, invoke_kwds,
                          verify_requirements):
-        plugin = ep.load(require=verify_requirements)
+        # NOTE(dhellmann): Using require=False is deprecated in
+        # setuptools 11.3.
+        if hasattr(ep, 'resolve') and hasattr(ep, 'require'):
+            if verify_requirements:
+                ep.require()
+            plugin = ep.resolve()
+        else:
+            plugin = ep.load(require=verify_requirements)
         if invoke_on_load:
             obj = plugin(*invoke_args, **invoke_kwds)
         else:
@@ -210,7 +219,7 @@ class ExtensionManager(object):
         """
         if not self.extensions:
             # FIXME: Use a more specific exception class here.
-            raise RuntimeError('No %s extensions found' % self.namespace)
+            raise NoMatches('No %s extensions found' % self.namespace)
         response = []
         for e in self.extensions:
             self._invoke_one_plugin(response.append, func, e, args, kwds)
@@ -273,3 +282,8 @@ class ExtensionManager(object):
                 d[e.name] = e
             self._extensions_by_name = d
         return self._extensions_by_name[name]
+
+    def __contains__(self, name):
+        """Return true if name is in list of enabled extensions.
+        """
+        return any(extension.name == name for extension in self.extensions)

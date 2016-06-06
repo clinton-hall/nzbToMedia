@@ -2,7 +2,8 @@
 Mako Integration
 ----------------
 
-dogpile.cache includes a `Mako <http://www.makotemplates.org>`_ plugin that replaces `Beaker <http://beaker.groovie.org>`_
+dogpile.cache includes a `Mako <http://www.makotemplates.org>`_ plugin
+that replaces `Beaker <http://beaker.groovie.org>`_
 as the cache backend.
 Setup a Mako template lookup using the "dogpile.cache" cache implementation
 and a region dictionary::
@@ -31,9 +32,9 @@ and a region dictionary::
         }
     )
 
-To use the above configuration in a template, use the ``cached=True`` argument on any
-Mako tag which accepts it, in conjunction with the name of the desired region
-as the ``cache_region`` argument::
+To use the above configuration in a template, use the ``cached=True``
+argument  on any Mako tag which accepts it, in conjunction with the
+name of the desired region as the ``cache_region`` argument::
 
     <%def name="mysection()" cached="True" cache_region="memcached">
         some content that's cached
@@ -42,6 +43,7 @@ as the ``cache_region`` argument::
 
 """
 from mako.cache import CacheImpl
+
 
 class MakoPlugin(CacheImpl):
     """A Mako ``CacheImpl`` which talks to dogpile.cache."""
@@ -70,8 +72,9 @@ class MakoPlugin(CacheImpl):
 
     def get_and_replace(self, key, creation_function, **kw):
         expiration_time = kw.pop("timeout", None)
-        return self._get_region(**kw).get_or_create(key, creation_function,
-                                            expiration_time=expiration_time)
+        return self._get_region(**kw).get_or_create(
+            key, creation_function,
+            expiration_time=expiration_time)
 
     def get_or_create(self, key, creation_function, **kw):
         return self.get_and_replace(key, creation_function, **kw)

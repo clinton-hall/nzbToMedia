@@ -1,3 +1,4 @@
+from .exception import NoMatches, MultipleMatches
 from .named import NamedExtensionManager
 
 
@@ -33,6 +34,8 @@ class DriverManager(NamedExtensionManager):
                  invoke_on_load=False, invoke_args=(), invoke_kwds={},
                  on_load_failure_callback=None,
                  verify_requirements=False):
+        on_load_failure_callback = on_load_failure_callback \
+            or self._default_on_load_failure
         super(DriverManager, self).__init__(
             namespace=namespace,
             names=[name],
@@ -42,6 +45,10 @@ class DriverManager(NamedExtensionManager):
             on_load_failure_callback=on_load_failure_callback,
             verify_requirements=verify_requirements,
         )
+
+    @staticmethod
+    def _default_on_load_failure(drivermanager, ep, err):
+        raise
 
     @classmethod
     def make_test_instance(cls, extension, namespace='TESTING',
@@ -87,14 +94,14 @@ class DriverManager(NamedExtensionManager):
 
         if not self.extensions:
             name = self._names[0]
-            raise RuntimeError('No %r driver found, looking for %r' %
-                               (self.namespace, name))
+            raise NoMatches('No %r driver found, looking for %r' %
+                            (self.namespace, name))
         if len(self.extensions) > 1:
             discovered_drivers = ','.join(e.entry_point_target
                                           for e in self.extensions)
 
-            raise RuntimeError('Multiple %r drivers found: %s' %
-                               (self.namespace, discovered_drivers))
+            raise MultipleMatches('Multiple %r drivers found: %s' %
+                                  (self.namespace, discovered_drivers))
 
     def __call__(self, func, *args, **kwds):
         """Invokes func() for the single loaded extension.

@@ -20,13 +20,16 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from guessit import UnicodeMixin, base_text_type, u
-from guessit.textutils import find_words
-from babelfish import Language, Country
-import babelfish
 import re
 import logging
+
+from guessit import u
+from guessit.textutils import find_words
+
+from babelfish import Language, Country
+import babelfish
 from guessit.guess import Guess
+
 
 __all__ = ['Language', 'UNDETERMINED',
            'search_language', 'guess_language']
@@ -71,7 +74,8 @@ class GuessitConverter(babelfish.LanguageReverseConverter):
                 babelfish.country_converters['name'].codes |
                 frozenset(self.guessit_exceptions.keys()))
 
-    def convert(self, alpha3, country=None, script=None):
+    @staticmethod
+    def convert(alpha3, country=None, script=None):
         return str(babelfish.Language(alpha3, country, script))
 
     def reverse(self, name):
@@ -82,7 +86,7 @@ class GuessitConverter(babelfish.LanguageReverseConverter):
         if with_country:
             lang = Language.fromguessit(with_country.group(1).strip())
             lang.country = babelfish.Country.fromguessit(with_country.group(2).strip())
-            return (lang.alpha3, lang.country.alpha2 if lang.country else None, lang.script or None)
+            return lang.alpha3, lang.country.alpha2 if lang.country else None, lang.script or None
 
         # exceptions come first, as they need to override a potential match
         # with any of the other guessers
@@ -130,7 +134,8 @@ class GuessitCountryConverter(babelfish.CountryReverseConverter):
                 frozenset(babelfish.COUNTRIES.values()) |
                 frozenset(self.guessit_exceptions.keys()))
 
-    def convert(self, alpha2):
+    @staticmethod
+    def convert(alpha2):
         if alpha2 == 'GB':
             return 'UK'
         return str(Country(alpha2))
@@ -168,8 +173,9 @@ LNG_COMMON_WORDS = frozenset([
     'is', 'it', 'am', 'mad', 'men', 'man', 'run', 'sin', 'st', 'to',
     'no', 'non', 'war', 'min', 'new', 'car', 'day', 'bad', 'bat', 'fan',
     'fry', 'cop', 'zen', 'gay', 'fat', 'one', 'cherokee', 'got', 'an', 'as',
-    'cat', 'her', 'be', 'hat', 'sun', 'may', 'my', 'mr', 'rum', 'pi', 'bb', 'bt',
-    'tv', 'aw', 'by', 'md', 'mp', 'cd', 'lt', 'gt', 'in', 'ad', 'ice', 'ay',
+    'cat', 'her', 'be', 'hat', 'sun', 'may', 'my', 'mr', 'rum', 'pi', 'bb',
+    'bt', 'tv', 'aw', 'by', 'md', 'mp', 'cd', 'lt', 'gt', 'in', 'ad', 'ice',
+    'ay', 'at', 'star', 'so',
     # french words
     'bas', 'de', 'le', 'son', 'ne', 'ca', 'ce', 'et', 'que',
     'mal', 'est', 'vol', 'or', 'mon', 'se', 'je', 'tu', 'me',
@@ -177,10 +183,10 @@ LNG_COMMON_WORDS = frozenset([
     # japanese words,
     'wa', 'ga', 'ao',
     # spanish words
-    'la', 'el', 'del', 'por', 'mar',
+    'la', 'el', 'del', 'por', 'mar', 'al',
     # other
     'ind', 'arw', 'ts', 'ii', 'bin', 'chan', 'ss', 'san', 'oss', 'iii',
-    'vi', 'ben', 'da', 'lt', 'ch',
+    'vi', 'ben', 'da', 'lt', 'ch', 'sr', 'ps', 'cx',
     # new from babelfish
     'mkv', 'avi', 'dmd', 'the', 'dis', 'cut', 'stv', 'des', 'dia', 'and',
     'cab', 'sub', 'mia', 'rim', 'las', 'une', 'par', 'srt', 'ano', 'toy',
@@ -192,7 +198,7 @@ LNG_COMMON_WORDS = frozenset([
     'bs',  # Bosnian
     'kz',
     # countries
-    'gt', 'lt',
+    'gt', 'lt', 'im',
     # part/pt
     'pt'
     ])
@@ -201,8 +207,10 @@ LNG_COMMON_WORDS_STRICT = frozenset(['brazil'])
 
 
 subtitle_prefixes = ['sub', 'subs', 'st', 'vost', 'subforced', 'fansub', 'hardsub']
-subtitle_suffixes = ['subforced', 'fansub', 'hardsub']
+subtitle_suffixes = ['subforced', 'fansub', 'hardsub', 'sub', 'subs']
 lang_prefixes = ['true']
+
+all_lang_prefixes_suffixes = subtitle_prefixes + subtitle_suffixes + lang_prefixes
 
 
 def find_possible_languages(string, allowed_languages=None):
@@ -229,12 +237,12 @@ def find_possible_languages(string, allowed_languages=None):
                 key = 'subtitleLanguage'
         for suffix in subtitle_suffixes:
             if lang_word.endswith(suffix):
-                lang_word = lang_word[:len(suffix)]
+                lang_word = lang_word[:len(suffix)-1]
                 key = 'subtitleLanguage'
         for prefix in lang_prefixes:
             if lang_word.startswith(prefix):
                 lang_word = lang_word[len(prefix):]
-        if lang_word not in common_words:
+        if lang_word not in common_words and word.lower() not in common_words:
             try:
                 lang = Language.fromguessit(lang_word)
                 if allowed_languages:

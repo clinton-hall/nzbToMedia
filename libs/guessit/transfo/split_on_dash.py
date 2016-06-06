@@ -20,9 +20,10 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import re
+
 from guessit.plugins.transformers import Transformer
 from guessit.patterns import sep
-import re
 
 
 class SplitOnDash(Transformer):
@@ -44,4 +45,4 @@ class SplitOnDash(Transformer):
                 match = pattern.search(node.value, span[1])
 
             if indices:
-                node.partition(indices)
+                node.partition(indices, category='dash')
