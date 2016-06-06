@@ -15,12 +15,14 @@ class autoProcessGames(object):
     def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         status = int(status)
 
-        host = core.CFG[section][inputCategory]["host"]
-        port = core.CFG[section][inputCategory]["port"]
-        apikey = core.CFG[section][inputCategory]["apikey"]
-        library = core.CFG[section][inputCategory].get("library")
-        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
-        web_root = core.CFG[section][inputCategory].get("web_root", "")
+        cfg = dict(core.CFG[section][inputCategory])
+
+        host = cfg["host"]
+        port = cfg["port"]
+        apikey = cfg["apikey"]
+        library = cfg.get("library")
+        ssl = int(cfg.get("ssl", 0))
+        web_root = cfg.get("web_root", "")
         protocol = "https://" if ssl else "http://"
 
         url = "{0}{1}:{2}{3}/api".format(protocol, host, port, web_root)

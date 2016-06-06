@@ -105,16 +105,18 @@ class autoProcessMovie(object):
 
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None, failureLink=None):
 
-        host = core.CFG[section][inputCategory]["host"]
-        port = core.CFG[section][inputCategory]["port"]
-        apikey = core.CFG[section][inputCategory]["apikey"]
-        method = core.CFG[section][inputCategory]["method"]
-        delete_failed = int(core.CFG[section][inputCategory]["delete_failed"])
-        wait_for = int(core.CFG[section][inputCategory]["wait_for"])
-        ssl = int(core.CFG[section][inputCategory].get("ssl", 0))
-        web_root = core.CFG[section][inputCategory].get("web_root", "")
-        remote_path = int(core.CFG[section][inputCategory].get("remote_path", 0))
-        extract = int(section[inputCategory].get("extract", 0))
+        cfg = dict(core.CFG[section][inputCategory])
+
+        host = cfg["host"]
+        port = cfg["port"]
+        apikey = cfg["apikey"]
+        method = cfg["method"]
+        delete_failed = int(cfg["delete_failed"])
+        wait_for = int(cfg["wait_for"])
+        ssl = int(cfg.get("ssl", 0))
+        web_root = cfg.get("web_root", "")
+        remote_path = int(cfg.get("remote_path", 0))
+        extract = int(cfg.get("extract", 0))
         protocol = "https://" if ssl else "http://"
 
         baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)
