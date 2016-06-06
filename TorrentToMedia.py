@@ -7,7 +7,7 @@ import core
 
 from libs.six import text_type
 from core import logger, nzbToMediaDB
-from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
+from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update, replace_links
 from core.nzbToMediaUserScript import external_script
 
 
@@ -270,7 +270,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                 for dirpath, dirs, files in os.walk(inputDirectory):
                     for file in files:
                         logger.debug('Checking symlink: {0}'.format(os.path.join(dirpath, file)))
-                        core.replace_links(os.path.join(dirpath, file))
+                        replace_links(os.path.join(dirpath, file))
             core.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
         if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
