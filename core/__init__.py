@@ -10,7 +10,6 @@ import sys
 import platform
 import time
 
-from six.moves import reload_module
 
 # init libs
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
@@ -30,6 +29,8 @@ CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
 CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 TEST_FILE = os.path.join(os.path.join(PROGRAM_DIR, 'tests'), 'test.mp4')
 MYAPP = None
+
+from six.moves import reload_module
 
 from core.autoProcess.autoProcessComics import autoProcessComics
 from core.autoProcess.autoProcessGames import autoProcessGames
