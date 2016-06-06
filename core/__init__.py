@@ -1,3 +1,7 @@
+# coding=utf-8
+
+from __future__ import print_function
+
 import locale
 import os
 import re
@@ -5,6 +9,8 @@ import subprocess
 import sys
 import platform
 import time
+
+from six.moves import reload_module
 
 # init libs
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
@@ -32,15 +38,17 @@ from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
 from core import logger, versionCheck, nzbToMediaDB
 from core.nzbToMediaConfig import config
-from core.nzbToMediaUtil import category_search, sanitizeName, copy_link, parse_args, flatten, getDirs, \
-    rmReadOnly,rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles, \
-    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir, \
-    create_torrent_class, listMediaFiles, RunningProcess
+from core.nzbToMediaUtil import (
+    category_search, sanitizeName, copy_link, parse_args, flatten, getDirs,
+    rmReadOnly, rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles,
+    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir,
+    create_torrent_class, listMediaFiles, RunningProcess,
+ )
 from core.transcoder import transcoder
 from core.databases import mainDB
 
 # Client Agents
-NZB_CLIENTS = ['sabnzbd','nzbget']
+NZB_CLIENTS = ['sabnzbd', 'nzbget']
 TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'other']
 
 # sabnzbd constants
@@ -61,7 +69,8 @@ FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": Non
 FORKS[FORK_SICKRAGETV] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 FORKS[FORK_SICKGEAR] = {"dir": None, "failed": None, "process_method": None, "force": None}
-ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None,
+             "delete_on": None}
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PARCHECK = 92
@@ -201,6 +210,7 @@ USER_SCRIPT_RUNONCE = None
 
 __INITIALIZED__ = False
 
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, \
@@ -223,8 +233,8 @@ def initialize(section=None):
 
     if __INITIALIZED__:
         return False
-        
-    if os.environ.has_key('NTM_LOGFILE'):
+
+    if 'NTM_LOGFILE' in os.environ:
         LOG_FILE = os.environ['NTM_LOGFILE']
         LOG_DIR = os.path.split(LOG_FILE)[0]
 
@@ -247,16 +257,16 @@ def initialize(section=None):
         SYS_ENCODING = 'UTF-8'
 
     if not hasattr(sys, "setdefaultencoding"):
-        reload(sys)
+        reload_module(sys)
 
     try:
         # pylint: disable=E1101
         # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
         sys.setdefaultencoding(SYS_ENCODING)
     except:
-        print 'Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
-        print 'or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.'
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable')
+        print('or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.')
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(NZBGET_POSTPROCESS_ERROR)
         else:
             sys.exit(1)
@@ -266,18 +276,18 @@ def initialize(section=None):
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error("Unable to migrate config file %s, exiting ..." % (CONFIG_FILE))
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        logger.error("Unable to migrate config file {0}, exiting ...".format(CONFIG_FILE))
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
             sys.exit(-1)
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
-    if os.environ.has_key('NZBOP_SCRIPTDIR'):
+    if 'NZBOP_SCRIPTDIR' in os.environ:
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
-        logger.info("Loading config from [%s]" % (CONFIG_FILE))
+        logger.info("Loading config from [{0}]".format(CONFIG_FILE))
         CFG = config()
 
     # Enable/Disable DEBUG Logging
@@ -288,7 +298,7 @@ def initialize(section=None):
 
     if LOG_ENV:
         for item in os.environ:
-            logger.info("%s: %s" % (item, os.environ[item]), "ENVIRONMENT")
+            logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
     nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
@@ -315,7 +325,8 @@ def initialize(section=None):
                 # restart nzbToMedia
                 try:
                     del MYAPP
-                except: pass
+                except:
+                    pass
                 restart()
             else:
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
@@ -333,8 +344,10 @@ def initialize(section=None):
     SABNZBDAPIKEY = CFG["Nzb"]["sabnzbd_apikey"]
     NZB_DEFAULTDIR = CFG["Nzb"]["default_downloadDirectory"]
     GROUPS = CFG["Custom"]["remove_group"]
-    if isinstance(GROUPS, str): GROUPS = GROUPS.split(',')
-    if GROUPS == ['']: GROUPS = None
+    if isinstance(GROUPS, str):
+        GROUPS = GROUPS.split(',')
+    if GROUPS == ['']:
+        GROUPS = None
 
     TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | vuze |other
     USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
@@ -342,8 +355,10 @@ def initialize(section=None):
     TORRENT_DEFAULTDIR = CFG["Torrent"]["default_downloadDirectory"]
     CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
     NOFLATTEN = (CFG["Torrent"]["noFlatten"])
-    if isinstance(NOFLATTEN, str): NOFLATTEN = NOFLATTEN.split(',')
-    if isinstance(CATEGORIES, str): CATEGORIES = CATEGORIES.split(',')
+    if isinstance(NOFLATTEN, str):
+        NOFLATTEN = NOFLATTEN.split(',')
+    if isinstance(CATEGORIES, str):
+        CATEGORIES = CATEGORIES.split(',')
     DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
     TORRENT_CHMOD_DIRECTORY = int(str(CFG["Torrent"]["chmodDirectory"]), 8)
     TORRENT_RESUME_ON_FAILURE = int(CFG["Torrent"]["resumeOnFailure"])
@@ -364,9 +379,12 @@ def initialize(section=None):
 
     REMOTEPATHS = CFG["Network"]["mount_points"] or []
     if REMOTEPATHS:
-        if isinstance(REMOTEPATHS, list): REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
-        REMOTEPATHS = [ tuple(item.split(',')) for item in REMOTEPATHS.split('|') ]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
-        REMOTEPATHS = [ (local.strip(), remote.strip()) for local, remote in REMOTEPATHS ] # strip trailing and leading whitespaces
+        if isinstance(REMOTEPATHS, list):
+            REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
+        REMOTEPATHS = [tuple(item.split(',')) for item in
+                       REMOTEPATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+        REMOTEPATHS = [(local.strip(), remote.strip()) for local, remote in
+                       REMOTEPATHS]  # strip trailing and leading whitespaces
 
     PLEXSSL = int(CFG["Plex"]["plex_ssl"])
     PLEXHOST = CFG["Plex"]["plex_host"]
@@ -374,62 +392,79 @@ def initialize(section=None):
     PLEXTOKEN = CFG["Plex"]["plex_token"]
     PLEXSEC = CFG["Plex"]["plex_sections"] or []
     if PLEXSEC:
-        if isinstance(PLEXSEC, list): PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
-        PLEXSEC = [ tuple(item.split(',')) for item in PLEXSEC.split('|') ]
+        if isinstance(PLEXSEC, list):
+            PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
+        PLEXSEC = [tuple(item.split(',')) for item in PLEXSEC.split('|')]
 
     devnull = open(os.devnull, 'w')
     try:
         subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n%s' % (int(CFG["Posix"]["niceness"]))])
-    except: pass
+        NICENESS.extend(['nice', '-n{0}'.format(int(CFG["Posix"]["niceness"]))])
+    except:
+        pass
     try:
         subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
         try:
-            NICENESS.extend(['ionice', '-c%s' % (int(CFG["Posix"]["ionice_class"]))])
-        except: pass
+            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG["Posix"]["ionice_class"]))])
+        except:
+            pass
         try:
             if 'ionice' in NICENESS:
-                NICENESS.extend(['-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
+                NICENESS.extend(['-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
             else:
-                NICENESS.extend(['ionice', '-n%s' % (int(CFG["Posix"]["ionice_classdata"]))])
-        except: pass
-    except: pass
+                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
+        except:
+            pass
+    except:
+        pass
     devnull.close()
 
     COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
-                  re.compile('.part\d+.rar$', re.I),
-                  re.compile('.rar$', re.I)]
-    COMPRESSEDCONTAINER += [re.compile('%s$' % ext, re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
+                           re.compile('.part\d+.rar$', re.I),
+                           re.compile('.rar$', re.I)]
+    COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
     AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
     METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
-    if isinstance(COMPRESSEDCONTAINER, str): COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
-    if isinstance(MEDIACONTAINER, str): MEDIACONTAINER = MEDIACONTAINER.split(',')
-    if isinstance(AUDIOCONTAINER, str): AUDIOCONTAINER = AUDIOCONTAINER.split(',')
-    if isinstance(METACONTAINER, str): METACONTAINER = METACONTAINER.split(',')
+    if isinstance(COMPRESSEDCONTAINER, str):
+        COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
+    if isinstance(MEDIACONTAINER, str):
+        MEDIACONTAINER = MEDIACONTAINER.split(',')
+    if isinstance(AUDIOCONTAINER, str):
+        AUDIOCONTAINER = AUDIOCONTAINER.split(',')
+    if isinstance(METACONTAINER, str):
+        METACONTAINER = METACONTAINER.split(',')
 
     GETSUBS = int(CFG["Transcoder"]["getSubs"])
     TRANSCODE = int(CFG["Transcoder"]["transcode"])
     DUPLICATE = int(CFG["Transcoder"]["duplicate"])
     CONCAT = int(CFG["Transcoder"]["concat"])
     IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
-    if isinstance(IGNOREEXTENSIONS, str): IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
+    if isinstance(IGNOREEXTENSIONS, str):
+        IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
     OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
     GENERALOPTS = (CFG["Transcoder"]["generalOptions"])
-    if isinstance(GENERALOPTS, str): GENERALOPTS = GENERALOPTS.split(',')
-    if GENERALOPTS == ['']: GENERALOPTS = []
-    if not '-fflags' in GENERALOPTS: GENERALOPTS.append('-fflags')
-    if not '+genpts' in GENERALOPTS: GENERALOPTS.append('+genpts')
+    if isinstance(GENERALOPTS, str):
+        GENERALOPTS = GENERALOPTS.split(',')
+    if GENERALOPTS == ['']:
+        GENERALOPTS = []
+    if '-fflags' not in GENERALOPTS:
+        GENERALOPTS.append('-fflags')
+    if '+genpts' not in GENERALOPTS:
+        GENERALOPTS.append('+genpts')
     try:
         OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
-    except: pass
+    except:
+        pass
     OUTPUTVIDEOPATH = CFG["Transcoder"]["outputVideoPath"]
     PROCESSOUTPUT = int(CFG["Transcoder"]["processOutput"])
     ALANGUAGE = CFG["Transcoder"]["audioLanguage"]
     AINCLUDE = int(CFG["Transcoder"]["allAudioLanguages"])
     SLANGUAGES = CFG["Transcoder"]["subLanguages"]
-    if isinstance(SLANGUAGES, str): SLANGUAGES = SLANGUAGES.split(',')
-    if SLANGUAGES == ['']: SLANGUAGES = []
+    if isinstance(SLANGUAGES, str):
+        SLANGUAGES = SLANGUAGES.split(',')
+    if SLANGUAGES == ['']:
+        SLANGUAGES = []
     SINCLUDE = int(CFG["Transcoder"]["allSubLanguages"])
     SEXTRACT = int(CFG["Transcoder"]["extractSubs"])
     SEMBED = int(CFG["Transcoder"]["embedSubs"])
@@ -437,169 +472,215 @@ def initialize(section=None):
     VEXTENSION = CFG["Transcoder"]["outputVideoExtension"].strip()
     VCODEC = CFG["Transcoder"]["outputVideoCodec"].strip()
     VCODEC_ALLOW = CFG["Transcoder"]["VideoCodecAllow"].strip()
-    if isinstance(VCODEC_ALLOW, str): VCODEC_ALLOW = VCODEC_ALLOW.split(',')
-    if VCODEC_ALLOW == ['']: VCODEC_ALLOW = []
+    if isinstance(VCODEC_ALLOW, str):
+        VCODEC_ALLOW = VCODEC_ALLOW.split(',')
+    if VCODEC_ALLOW == ['']:
+        VCODEC_ALLOW = []
     VPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
     try:
         VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
-    except: pass
+    except:
+        pass
     try:
         VCRF = int(CFG["Transcoder"]["outputVideoCRF"].strip())
-    except: pass
+    except:
+        pass
     try:
         VLEVEL = CFG["Transcoder"]["outputVideoLevel"].strip()
-    except: pass
+    except:
+        pass
     try:
-        VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k','000'))
-    except: pass
+        VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k', '000'))
+    except:
+        pass
     VRESOLUTION = CFG["Transcoder"]["outputVideoResolution"]
     ACODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
     ACODEC_ALLOW = CFG["Transcoder"]["AudioCodecAllow"].strip()
-    if isinstance(ACODEC_ALLOW, str): ACODEC_ALLOW = ACODEC_ALLOW.split(',')
-    if ACODEC_ALLOW == ['']: ACODEC_ALLOW = []
+    if isinstance(ACODEC_ALLOW, str):
+        ACODEC_ALLOW = ACODEC_ALLOW.split(',')
+    if ACODEC_ALLOW == ['']:
+        ACODEC_ALLOW = []
     try:
         ACHANNELS = int(CFG["Transcoder"]["outputAudioChannels"].strip())
-    except: pass
+    except:
+        pass
     try:
-        ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k','000'))
-    except: pass
+        ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k', '000'))
+    except:
+        pass
     ACODEC2 = CFG["Transcoder"]["outputAudioTrack2Codec"].strip()
     ACODEC2_ALLOW = CFG["Transcoder"]["AudioCodec2Allow"].strip()
-    if isinstance(ACODEC2_ALLOW, str): ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
-    if ACODEC2_ALLOW == ['']: ACODEC2_ALLOW = []
+    if isinstance(ACODEC2_ALLOW, str):
+        ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
+    if ACODEC2_ALLOW == ['']:
+        ACODEC2_ALLOW = []
     try:
         ACHANNELS2 = int(CFG["Transcoder"]["outputAudioTrack2Channels"].strip())
-    except: pass
+    except:
+        pass
     try:
-        ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k','000'))
-    except: pass
+        ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k', '000'))
+    except:
+        pass
     ACODEC3 = CFG["Transcoder"]["outputAudioOtherCodec"].strip()
     ACODEC3_ALLOW = CFG["Transcoder"]["AudioOtherCodecAllow"].strip()
-    if isinstance(ACODEC3_ALLOW, str): ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
-    if ACODEC3_ALLOW == ['']: ACODEC3_ALLOW = []
+    if isinstance(ACODEC3_ALLOW, str):
+        ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
+    if ACODEC3_ALLOW == ['']:
+        ACODEC3_ALLOW = []
     try:
         ACHANNELS3 = int(CFG["Transcoder"]["outputAudioOtherChannels"].strip())
-    except: pass
+    except:
+        pass
     try:
-        ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k','000'))
-    except: pass
+        ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k', '000'))
+    except:
+        pass
     SCODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
     BURN = int(CFG["Transcoder"]["burnInSubtitle"].strip())
     DEFAULTS = CFG["Transcoder"]["outputDefault"].strip()
     HWACCEL = int(CFG["Transcoder"]["hwAccel"])
 
-    allow_subs = ['.mkv','.mp4', '.m4v', 'asf', 'wma', 'wmv']
+    allow_subs = ['.mkv', '.mp4', '.m4v', 'asf', 'wma', 'wmv']
     codec_alias = {
-        'libx264':['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
-        'libmp3lame':['libmp3lame', 'mp3'],
-        'libfaac':['libfaac', 'aac', 'faac']
-        }
+        'libx264': ['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
+        'libmp3lame': ['libmp3lame', 'mp3'],
+        'libfaac': ['libfaac', 'aac', 'faac']
+    }
     transcode_defaults = {
-        'iPad':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'iPad-1080p':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':'1920:1080','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'iPad-720p':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':None, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'Apple-TV':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'ac3','ACODEC_ALLOW':['ac3'],'ABITRATE':None, 'ACHANNELS':6,
-            'ACODEC2':'aac','ACODEC2_ALLOW':['libfaac'],'ABITRATE2':None, 'ACHANNELS2':2,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'iPod':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':'1280:720','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000, 'ACHANNELS':2,
-            'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None, 'ACHANNELS2':None,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'iPhone':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':'460:320','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000, 'ACHANNELS':2,
-            'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None, 'ACHANNELS2':None,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'PS3':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'ac3','ACODEC_ALLOW':['ac3'],'ABITRATE':None, 'ACHANNELS':6,
-            'ACODEC2':'aac','ACODEC2_ALLOW':['libfaac'],'ABITRATE2':None, 'ACHANNELS2':2,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'xbox':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'ac3','ACODEC_ALLOW':['ac3'],'ABITRATE':None, 'ACHANNELS':6,
-            'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None, 'ACHANNELS2':None,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'Roku-480p':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'Roku-720p':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'Roku-1080p':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
-            'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':160000, 'ACHANNELS':2,
-            'ACODEC2':'ac3','ACODEC2_ALLOW':['ac3'],'ABITRATE2':None, 'ACHANNELS2':6,
-            'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
-            'SCODEC':'mov_text'
-            },
-        'mkv':{
-            'VEXTENSION':'.mkv','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
-            'ACODEC':'dts','ACODEC_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE':None, 'ACHANNELS':8,
-            'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None, 'ACHANNELS2':None,
-            'ACODEC3':'ac3','ACODEC3_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE3':None, 'ACHANNELS3':8,
-            'SCODEC':'mov_text'
-            },
-        'mp4-scene-release':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':19,'VLEVEL':'3.1',
-            'VRESOLUTION':None,'VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
-            'ACODEC':'dts','ACODEC_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE':None, 'ACHANNELS':8,
-            'ACODEC2':None,'ACODEC2_ALLOW':[],'ABITRATE2':None, 'ACHANNELS2':None,
-            'ACODEC3':'ac3','ACODEC3_ALLOW':['libfaac', 'dts', 'ac3', 'mp2', 'mp3'],'ABITRATE3':None, 'ACHANNELS3':8,
-            'SCODEC':'mov_text'
-            }
+        'iPad': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'iPad-1080p': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': '1920:1080',
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'iPad-720p': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': '1280:720',
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'Apple-TV': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': '1280:720',
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
+            'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'iPod': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': '1280:720',
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'iPhone': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': '460:320',
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'PS3': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
+            'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'xbox': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'Roku-480p': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'Roku-720p': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'Roku-1080p': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
+            'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 160000, 'ACHANNELS': 2,
+            'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
+            'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
+            'SCODEC': 'mov_text'
+        },
+        'mkv': {
+            'VEXTENSION': '.mkv', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
+            'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None,
+            'ACHANNELS3': 8,
+            'SCODEC': 'mov_text'
+        },
+        'mp4-scene-release': {
+            'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None,
+            'VCRF': 19, 'VLEVEL': '3.1',
+            'VRESOLUTION': None,
+            'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
+            'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None,
+            'ACHANNELS3': 8,
+            'SCODEC': 'mov_text'
         }
+    }
     if DEFAULTS and DEFAULTS in transcode_defaults:
         VEXTENSION = transcode_defaults[DEFAULTS]['VEXTENSION']
         VCODEC = transcode_defaults[DEFAULTS]['VCODEC']
@@ -629,25 +710,29 @@ def initialize(section=None):
 
     if VEXTENSION in allow_subs:
         ALLOWSUBS = 1
-    if not VCODEC_ALLOW and VCODEC: VCODEC_ALLOW.extend([VCODEC])
+    if not VCODEC_ALLOW and VCODEC:
+        VCODEC_ALLOW.extend([VCODEC])
     for codec in VCODEC_ALLOW:
         if codec in codec_alias:
-            extra = [ item for item in codec_alias[codec] if item not in VCODEC_ALLOW ]
+            extra = [item for item in codec_alias[codec] if item not in VCODEC_ALLOW]
             VCODEC_ALLOW.extend(extra)
-    if not ACODEC_ALLOW and ACODEC: ACODEC_ALLOW.extend([ACODEC])
+    if not ACODEC_ALLOW and ACODEC:
+        ACODEC_ALLOW.extend([ACODEC])
     for codec in ACODEC_ALLOW:
         if codec in codec_alias:
-            extra = [ item for item in codec_alias[codec] if item not in ACODEC_ALLOW ]
+            extra = [item for item in codec_alias[codec] if item not in ACODEC_ALLOW]
             ACODEC_ALLOW.extend(extra)
-    if not ACODEC2_ALLOW and ACODEC2: ACODEC2_ALLOW.extend([ACODEC2])
+    if not ACODEC2_ALLOW and ACODEC2:
+        ACODEC2_ALLOW.extend([ACODEC2])
     for codec in ACODEC2_ALLOW:
         if codec in codec_alias:
-            extra = [ item for item in codec_alias[codec] if item not in ACODEC2_ALLOW ]
+            extra = [item for item in codec_alias[codec] if item not in ACODEC2_ALLOW]
             ACODEC2_ALLOW.extend(extra)
-    if not ACODEC3_ALLOW and ACODEC3: ACODEC3_ALLOW.extend([ACODEC3])
+    if not ACODEC3_ALLOW and ACODEC3:
+        ACODEC3_ALLOW.extend([ACODEC3])
     for codec in ACODEC3_ALLOW:
         if codec in codec_alias:
-            extra = [ item for item in codec_alias[codec] if item not in ACODEC3_ALLOW ]
+            extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
             ACODEC3_ALLOW.extend(extra)
     codec_alias = {}  # clear memory
 
@@ -673,47 +758,59 @@ def initialize(section=None):
     else:
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
-        except: pass
-        if not SEVENZIP: 
+        except:
+            pass
+        if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except: pass
-        if not SEVENZIP: 
+            except:
+                pass
+        if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except: pass
+            except:
+                pass
         if not SEVENZIP:
             SEVENZIP = None
-            logger.warning("Failed to locate 7zip. Transcosing of disk images and extraction of .7z files will not be possible!")
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'), os.X_OK):
+            logger.warning(
+                "Failed to locate 7zip. Transcosing of disk images and extraction of .7z files will not be possible!")
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'),
+                                                                            os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'), os.X_OK):
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'),
+                                                                              os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
         else:
             try:
                 FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except: pass
-            if not FFMPEG: 
+            except:
+                pass
+            if not FFMPEG:
                 try:
                     FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
-                except: pass
+                except:
+                    pass
         if not FFMPEG:
             FFMPEG = None
             logger.warning("Failed to locate ffmpeg. Transcoding disabled!")
             logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
 
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'), os.X_OK):
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'),
+                                                                             os.X_OK):
             FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(os.path.join(FFMPEG_PATH, 'avprobe'), os.X_OK):
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(os.path.join(FFMPEG_PATH, 'avprobe'),
+                                                                               os.X_OK):
             FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
         else:
             try:
                 FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except: pass
-            if not FFPROBE: 
+            except:
+                pass
+            if not FFPROBE:
                 try:
                     FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-                except: pass
+                except:
+                    pass
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
@@ -722,7 +819,7 @@ def initialize(section=None):
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
-    for section,subsections in SECTIONS.items():
+    for section, subsections in SECTIONS.items():
         CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
     CATEGORIES = list(set(CATEGORIES))
 
@@ -731,6 +828,7 @@ def initialize(section=None):
 
     # finished initalizing
     return True
+
 
 def restart():
     install_type = versionCheck.CheckVersion().install_type
@@ -751,11 +849,12 @@ def restart():
 
     os._exit(status)
 
+
 def rchmod(path, mod):
-    logger.log("Changing file mode of %s to %s" % (path, oct(mod)))
+    logger.log("Changing file mode of {0} to {1}".format(path, oct(mod)))
     os.chmod(path, mod)
     if not os.path.isdir(path):
-        return # Skip files
+        return  # Skip files
 
     for root, dirs, files in os.walk(path):
         for d in dirs:

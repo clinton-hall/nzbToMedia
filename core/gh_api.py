@@ -1,5 +1,7 @@
-import json
+# coding=utf-8
+
 import requests
+
 
 class GitHub(object):
     """

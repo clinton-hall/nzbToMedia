@@ -18,13 +18,9 @@ from core.transmissionrpc.torrent import Torrent
 from core.transmissionrpc.session import Session
 from six import PY3, integer_types, string_types, iteritems
 
+from six.moves.urllib_parse import urlparse
+from six.moves.urllib_request import urlopen
 
-if PY3:
-    from urllib.parse import urlparse
-    from urllib.request import urlopen
-else:
-    from urlparse import urlparse
-    from urllib2 import urlopen
 
 def debug_httperror(error):
     """
@@ -49,6 +45,7 @@ def debug_httperror(error):
         )
     )
 
+
 def parse_torrent_id(arg):
     """Parse an torrent id or torrent hashString."""
     torrent_id = None
@@ -62,7 +59,7 @@ def parse_torrent_id(arg):
     elif isinstance(arg, string_types):
         try:
             torrent_id = int(arg)
-            if torrent_id >= 2**31:
+            if torrent_id >= 2 ** 31:
                 torrent_id = None
         except (ValueError, TypeError):
             pass
@@ -74,6 +71,7 @@ def parse_torrent_id(arg):
             except (ValueError, TypeError):
                 pass
     return torrent_id
+
 
 def parse_torrent_ids(args):
     """
@@ -102,18 +100,19 @@ def parse_torrent_ids(args):
                     except ValueError:
                         pass
             if not addition:
-                raise ValueError('Invalid torrent id, \"%s\"' % item)
+                raise ValueError('Invalid torrent id, {item!r}'.format(item=item))
             ids.extend(addition)
     elif isinstance(args, (list, tuple)):
         for item in args:
             ids.extend(parse_torrent_ids(item))
     else:
         torrent_id = parse_torrent_id(args)
-        if torrent_id == None:
+        if torrent_id is None:
             raise ValueError('Invalid torrent id')
         else:
             ids = [torrent_id]
     return ids
+
 
 """
 Torrent ids
@@ -129,12 +128,14 @@ possible to provide a argument called ``timeout``. Timeout is only effective
 when using Python 2.6 or later and the default timeout is 30 seconds.
 """
 
+
 class Client(object):
     """
     Client is the class handling the Transmission JSON-RPC client protocol.
     """
 
-    def __init__(self, address='localhost', port=DEFAULT_PORT, user=None, password=None, http_handler=None, timeout=None):
+    def __init__(self, address='localhost', port=DEFAULT_PORT, user=None, password=None, http_handler=None,
+                 timeout=None):
         if isinstance(timeout, (integer_types, float)):
             self._query_timeout = float(timeout)
         else:
@@ -204,7 +205,8 @@ class Client(object):
         if timeout is None:
             timeout = self._query_timeout
         while True:
-            LOGGER.debug(json.dumps({'url': self.url, 'headers': headers, 'query': query, 'timeout': timeout}, indent=2))
+            LOGGER.debug(
+                json.dumps({'url': self.url, 'headers': headers, 'query': query, 'timeout': timeout}, indent=2))
             try:
                 result = self.http_handler.request(self.url, query, headers, timeout)
                 break
@@ -244,26 +246,25 @@ class Client(object):
         elif require_ids:
             raise ValueError('request require ids')
 
-        query = json.dumps({'tag': self._sequence, 'method': method
-                            , 'arguments': arguments})
+        query = json.dumps({'tag': self._sequence, 'method': method, 'arguments': arguments})
         self._sequence += 1
         start = time.time()
         http_data = self._http_query(query, timeout)
         elapsed = time.time() - start
-        LOGGER.info('http request took %.3f s' % (elapsed))
+        LOGGER.info('http request took {time:.3f} s'.format(time=elapsed))
 
         try:
             data = json.loads(http_data)
         except ValueError as error:
             LOGGER.error('Error: ' + str(error))
-            LOGGER.error('Request: \"%s\"' % (query))
-            LOGGER.error('HTTP data: \"%s\"' % (http_data))
+            LOGGER.error('Request: {request!r}'.format(request=query))
+            LOGGER.error('HTTP data: {data!r}'.format(data=http_data))
             raise
 
         LOGGER.debug(json.dumps(data, indent=2))
         if 'result' in data:
             if data['result'] != 'success':
-                raise TransmissionError('Query failed with result \"%s\".' % (data['result']))
+                raise TransmissionError('Query failed with result {result!r}.'.format(result=data['result']))
         else:
             raise TransmissionError('Query failed without result.')
 
@@ -347,8 +348,9 @@ class Client(object):
         Add a warning to the log if the Transmission RPC version is lower then the provided version.
         """
         if self.rpc_version < version:
-            LOGGER.warning('Using feature not supported by server. RPC version for server %d, feature introduced in %d.'
-                % (self.rpc_version, version))
+            LOGGER.warning('Using feature not supported by server. '
+                           'RPC version for server {x}, feature introduced in {y}.'.format
+                           (x=self.rpc_version, y=version))
 
     def add_torrent(self, torrent, timeout=None, **kwargs):
         """
@@ -408,11 +410,8 @@ class Client(object):
                     pass
                 if might_be_base64:
                     torrent_data = torrent
-        args = {}
-        if torrent_data:
-            args = {'metainfo': torrent_data}
-        else:
-            args = {'filename': torrent}
+
+        args = {'metainfo': torrent_data} if torrent_data else {'filename': torrent}
         for key, value in iteritems(kwargs):
             argument = make_rpc_name(key)
             (arg, val) = argument_value_convert('torrent-add', argument, value, self.rpc_version)
@@ -476,7 +475,7 @@ class Client(object):
         """
         self._rpc_version_warning(3)
         self._request('torrent-remove',
-                    {'delete-local-data':rpc_bool(delete_data)}, ids, True, timeout=timeout)
+                      {'delete-local-data': rpc_bool(delete_data)}, ids, True, timeout=timeout)
 
     def remove(self, ids, delete_data=False, timeout=None):
         """
@@ -606,34 +605,34 @@ class Client(object):
             the new methods. list returns a dictionary indexed by torrent id.
         """
         warnings.warn('list has been deprecated, please use get_torrent or get_torrents instead.', DeprecationWarning)
-        fields = ['id', 'hashString', 'name', 'sizeWhenDone', 'leftUntilDone'
-            , 'eta', 'status', 'rateUpload', 'rateDownload', 'uploadedEver'
-            , 'downloadedEver', 'uploadRatio', 'queuePosition']
+        fields = ['id', 'hashString', 'name', 'sizeWhenDone', 'leftUntilDone',
+                  'eta', 'status', 'rateUpload', 'rateDownload', 'uploadedEver',
+                  'downloadedEver', 'uploadRatio', 'queuePosition']
         return self._request('torrent-get', {'fields': fields}, timeout=timeout)
 
     def get_files(self, ids=None, timeout=None):
         """
-    	Get list of files for provided torrent id(s). If ids is empty,
-    	information for all torrents are fetched. This function returns a dictionary
-    	for each requested torrent id holding the information about the files.
+        Get list of files for provided torrent id(s). If ids is empty,
+        information for all torrents are fetched. This function returns a dictionary
+        for each requested torrent id holding the information about the files.
 
-    	::
+        ::
 
-    		{
-    			<torrent id>: {
-    				<file id>: {
-    					'name': <file name>,
-    					'size': <file size in bytes>,
-    					'completed': <bytes completed>,
-    					'priority': <priority ('high'|'normal'|'low')>,
-    					'selected': <selected for download (True|False)>
-    				}
+            {
+                <torrent id>: {
+                    <file id>: {
+                        'name': <file name>,
+                        'size': <file size in bytes>,
+                        'completed': <bytes completed>,
+                        'priority': <priority ('high'|'normal'|'low')>,
+                        'selected': <selected for download (True|False)>
+                    }
 
-    				...
-    			}
+                    ...
+                }
 
-    			...
-    		}
+                ...
+            }
         """
         fields = ['id', 'name', 'hashString', 'files', 'priorities', 'wanted']
         request_result = self._request('torrent-get', {'fields': fields}, ids, timeout=timeout)
@@ -645,22 +644,22 @@ class Client(object):
     def set_files(self, items, timeout=None):
         """
         Set file properties. Takes a dictionary with similar contents as the result
-    	of `get_files`.
+        of `get_files`.
 
-    	::
+        ::
 
-    		{
-    			<torrent id>: {
-    				<file id>: {
-    					'priority': <priority ('high'|'normal'|'low')>,
-    					'selected': <selected for download (True|False)>
-    				}
+            {
+                <torrent id>: {
+                    <file id>: {
+                        'priority': <priority ('high'|'normal'|'low')>,
+                        'selected': <selected for download (True|False)>
+                    }
 
-    				...
-    			}
+                    ...
+                }
 
-    			...
-    		}
+                ...
+            }
         """
         if not isinstance(items, dict):
             raise ValueError('Invalid file description')
@@ -703,8 +702,8 @@ class Client(object):
 
     def change_torrent(self, ids, timeout=None, **kwargs):
         """
-    	Change torrent parameters for the torrent(s) with the supplied id's. The
-    	parameters are:
+        Change torrent parameters for the torrent(s) with the supplied id's. The
+        parameters are:
 
         ============================ ===== =============== =======================================================================================
         Argument                     RPC   Replaced by     Description
@@ -736,13 +735,13 @@ class Client(object):
         ``uploadLimited``            5 -                   Enable upload speed limiter.
         ============================ ===== =============== =======================================================================================
 
-    	.. NOTE::
-    	   transmissionrpc will try to automatically fix argument errors.
+        .. NOTE::
+           transmissionrpc will try to automatically fix argument errors.
         """
         args = {}
         for key, value in iteritems(kwargs):
             argument = make_rpc_name(key)
-            (arg, val) = argument_value_convert('torrent-set' , argument, value, self.rpc_version)
+            (arg, val) = argument_value_convert('torrent-set', argument, value, self.rpc_version)
             args[arg] = val
 
         if len(args) > 0:
@@ -803,7 +802,7 @@ class Client(object):
             raise ValueError("Target name cannot contain a path delimiter")
         args = {'path': location, 'name': name}
         result = self._request('torrent-rename-path', args, torrent_id, True, timeout=timeout)
-        return (result['path'], result['name'])
+        return result['path'], result['name']
 
     def queue_top(self, ids, timeout=None):
         """Move transfer to the top of the queue."""
@@ -814,7 +813,7 @@ class Client(object):
         """Move transfer to the bottom of the queue."""
         self._rpc_version_warning(14)
         self._request('queue-move-bottom', ids=ids, require_ids=True, timeout=timeout)
-        
+
     def queue_up(self, ids, timeout=None):
         """Move transfer up in the queue."""
         self._rpc_version_warning(14)
@@ -888,14 +887,14 @@ class Client(object):
         ================================ ===== ================= ==========================================================================================================================
 
         .. NOTE::
-    	   transmissionrpc will try to automatically fix argument errors.
+           transmissionrpc will try to automatically fix argument errors.
         """
         args = {}
         for key, value in iteritems(kwargs):
             if key == 'encryption' and value not in ['required', 'preferred', 'tolerated']:
                 raise ValueError('Invalid encryption value')
             argument = make_rpc_name(key)
-            (arg, val) = argument_value_convert('session-set' , argument, value, self.rpc_version)
+            (arg, val) = argument_value_convert('session-set', argument, value, self.rpc_version)
             args[arg] = val
         if len(args) > 0:
             self._request('session-set', args, timeout=timeout)

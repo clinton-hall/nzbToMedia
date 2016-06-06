@@ -514,7 +514,7 @@ from core import logger, nzbToMediaDB
 def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None, failureLink=None):
     if core.SAFE_MODE and inputDirectory == core.NZB_DEFAULTDIR:
         logger.error(
-            'The input directory:[%s] is the Default Download Directory. Please configure category directories to prevent processing of other media.' % (
+            'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
             inputDirectory))
         return [-1, ""]
 
@@ -522,7 +522,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         download_id = get_nzoid(inputName) 
 
     if clientAgent != 'manual' and not core.DOWNLOADINFO:
-        logger.debug('Adding NZB download info for directory %s to database' % (inputDirectory))
+        logger.debug('Adding NZB download info for directory {0} to database'.format(inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
 
@@ -555,7 +555,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         section = core.CFG.findsection("ALL").isenabled()
         if section is None:
             logger.error(
-                'Category:[%s] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.' % (
+                'Category:[{0}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.'.format(
                 inputCategory))
             return [-1, ""]
         else:
@@ -563,15 +563,15 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     if len(section) > 1:
         logger.error(
-            'Category:[%s] is not unique, %s are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.' % (
+            'Category:[{0}] is not unique, {1} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.'.format(
             inputCategory, section.keys()))
         return [-1, ""]
 
     if section:
         sectionName = section.keys()[0]
-        logger.info('Auto-detected SECTION:%s' % (sectionName))
+        logger.info('Auto-detected SECTION:{0}'.format(sectionName))
     else:
-        logger.error("Unable to locate a section with subsection:%s enabled in your autoProcessMedia.cfg, exiting!" % (
+        logger.error("Unable to locate a section with subsection:{0} enabled in your autoProcessMedia.cfg, exiting!".format(
             inputCategory))
         return [-1, ""]
 
@@ -582,20 +582,20 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     try:
         if int(section[usercat]['remote_path']) and not core.REMOTEPATHS:
-            logger.error('Remote Path is enabled for %s:%s but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!' % (
+            logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 sectionName, inputCategory))
             return [-1, ""]
     except:
-        logger.error('Remote Path %s is not valid for %s:%s Please set this to either 0 to disable or 1 to enable!' % (
+        logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
             section[usercat]['remote_path'], sectionName, inputCategory))
 
     inputName, inputDirectory = convert_to_ascii(inputName, inputDirectory)
 
     if extract == 1:
-        logger.debug('Checking for archives to extract in directory: %s' % (inputDirectory))
+        logger.debug('Checking for archives to extract in directory: {0}'.format(inputDirectory))
         extractFiles(inputDirectory)
 
-    logger.info("Calling %s:%s to post-process:%s" % (sectionName, inputCategory, inputName))
+    logger.info("Calling {0}:{1} to post-process:{2}".format(sectionName, inputCategory, inputName))
 
     if sectionName == "CouchPotato":
         result = autoProcessMovie().process(sectionName, inputDirectory, inputName, status, clientAgent, download_id,
@@ -636,11 +636,11 @@ def main(args, section=None):
     clientAgent = core.NZB_CLIENTAGENT
 
     logger.info("#########################################################")
-    logger.info("## ..::[%s]::.. ##" % os.path.basename(__file__))
+    logger.info("## ..::[{0}]::.. ##".format(os.path.basename(__file__)))
     logger.info("#########################################################")
 
     # debug command line options
-    logger.debug("Options passed into nzbToMedia: %s" % args)
+    logger.debug("Options passed into nzbToMedia: {0}".format(args))
 
     # Post-Processing Result
     result = [0, ""]
@@ -650,15 +650,15 @@ def main(args, section=None):
     if os.environ.has_key('NZBOP_SCRIPTDIR'):
         # Check if the script is called from nzbget 11.0 or later
         if os.environ['NZBOP_VERSION'][0:5] < '11.0':
-            logger.error("NZBGet Version %s is not supported. Please update NZBGet." %(str(os.environ['NZBOP_VERSION'])))
+            logger.error("NZBGet Version {0} is not supported. Please update NZBGet.".format(os.environ['NZBOP_VERSION']))
             sys.exit(core.NZBGET_POSTPROCESS_ERROR)
 
-        logger.info("Script triggered from NZBGet Version %s." %(str(os.environ['NZBOP_VERSION'])))
+        logger.info("Script triggered from NZBGet Version {0}.".format(os.environ['NZBOP_VERSION']))
 
         # Check if the script is called from nzbget 13.0 or later
         if os.environ.has_key('NZBPP_TOTALSTATUS'):
             if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
-                logger.info("Download failed with status %s." %(os.environ['NZBPP_STATUS']))
+                logger.info("Download failed with status {0}.".format(os.environ['NZBPP_STATUS']))
                 status = 1
 
         else:
@@ -745,16 +745,16 @@ def main(args, section=None):
                 if not core.CFG[section][subsection].isenabled():
                     continue
                 for dirName in getDirs(section, subsection, link = 'move'):
-                    logger.info("Starting manual run for %s:%s - Folder:%s" % (section, subsection, dirName))
+                    logger.info("Starting manual run for {0}:{1} - Folder:{2}".format(section, subsection, dirName))
 
-                    logger.info("Checking database for download info for %s ..." % (os.path.basename(dirName)))
+                    logger.info("Checking database for download info for {0} ...".format(os.path.basename(dirName)))
                     core.DOWNLOADINFO = get_downloadInfo(os.path.basename(dirName), 0)
                     if core.DOWNLOADINFO:
                         logger.info(
-                            "Found download info for %s, setting variables now ..." % (os.path.basename(dirName)))
+                            "Found download info for {0}, setting variables now ...".format(os.path.basename(dirName)))
                     else:
                         logger.info(
-                            'Unable to locate download info for %s, continuing to try and process this release ...' % (
+                            'Unable to locate download info for {0}, continuing to try and process this release ...'.format(
                                 os.path.basename(dirName))
                         )
 
@@ -781,19 +781,19 @@ def main(args, section=None):
                     results = process(dirName, inputName, 0, clientAgent=clientAgent,
                                       download_id=download_id, inputCategory=subsection)
                     if results[0] != 0:
-                        logger.error("A problem was reported when trying to perform a manual run for %s:%s." % (
+                        logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format(
                         section, subsection))
                         result = results
 
     if result[0] == 0:
-        logger.info("The %s script completed successfully." % args[0])
+        logger.info("The {0} script completed successfully.".format(args[0]))
         if result[1]:
             print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del core.MYAPP
             return (core.NZBGET_POSTPROCESS_SUCCESS)
     else:
-        logger.error("A problem was reported in the %s script." % args[0])
+        logger.error("A problem was reported in the {0} script.".format(args[0]))
         if result[1]:
             print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11

@@ -4,24 +4,22 @@
 
 import sys
 
-from core.transmissionrpc.error import HTTPHandlerError
-from six import PY3
+from six.moves.urllib_request import (
+    build_opener, install_opener,
+    HTTPBasicAuthHandler, HTTPDigestAuthHandler, HTTPPasswordMgrWithDefaultRealm,
+    Request,
+)
+from six.moves.urllib_error import HTTPError, URLError
+from six.moves.http_client import BadStatusLine
 
-if PY3:
-    from urllib.request import Request, build_opener, \
-        HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, HTTPDigestAuthHandler
-    from urllib.error import HTTPError, URLError
-    from http.client import BadStatusLine
-else:
-    from urllib2 import Request, build_opener, \
-        HTTPPasswordMgrWithDefaultRealm, HTTPBasicAuthHandler, HTTPDigestAuthHandler
-    from urllib2 import HTTPError, URLError
-    from httplib import BadStatusLine
+from core.transmissionrpc.error import HTTPHandlerError
+
 
 class HTTPHandler(object):
     """
     Prototype for HTTP handling.
     """
+
     def set_authentication(self, uri, login, password):
         """
         Transmission use basic authentication in earlier versions and digest
@@ -44,10 +42,12 @@ class HTTPHandler(object):
         """
         raise NotImplementedError("Bad HTTPHandler, failed to implement request.")
 
+
 class DefaultHTTPHandler(HTTPHandler):
     """
     The default HTTP handler provided with transmissionrpc.
     """
+
     def __init__(self):
         HTTPHandler.__init__(self)
         self.http_opener = build_opener()
@@ -75,7 +75,7 @@ class DefaultHTTPHandler(HTTPHandler):
             if hasattr(error.reason, 'args') and isinstance(error.reason.args, tuple) and len(error.reason.args) == 2:
                 raise HTTPHandlerError(httpcode=error.reason.args[0], httpmsg=error.reason.args[1])
             else:
-                raise HTTPHandlerError(httpmsg='urllib2.URLError: %s' % (error.reason))
+                raise HTTPHandlerError(httpmsg='urllib2.URLError: {error.reason}'.format(error=error))
         except BadStatusLine as error:
-            raise HTTPHandlerError(httpmsg='httplib.BadStatusLine: %s' % (error.line))
+            raise HTTPHandlerError(httpmsg='httplib.BadStatusLine: {error.line}'.format(error=error))
         return response.read().decode('utf-8')

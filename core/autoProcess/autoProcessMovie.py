@@ -169,11 +169,11 @@ class autoProcessMovie(object):
             if transcoder.isVideoGood(video, status):
                 import_subs(video)
                 good_files += 1
-        if num_files > 0 and good_files == num_files:
+        if num_files and good_files == num_files:
             if status:
                 logger.info("Status shown as failed from Downloader, but {0} valid video files found. Setting as success.".format(good_files), section)
                 status = 0
-        elif num_files > 0 and good_files < num_files:
+        elif num_files and good_files < num_files:
             logger.info("Status shown as success from Downloader, but corrupt video files found. Setting as failed.", section)
             if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')

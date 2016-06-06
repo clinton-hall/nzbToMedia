@@ -1,3 +1,4 @@
+# coding=utf-8
 """A synchronous implementation of the Deluge RPC protocol
    based on gevent-deluge by Christopher Rosell.
    
@@ -14,10 +15,9 @@ Example usage:
     download_location = client.core.get_config_value("download_location").get()
 """
 
+from core.synchronousdeluge.exceptions import DelugeRPCError
+
 
 __title__ = "synchronous-deluge"
 __version__ = "0.1"
 __author__ = "Christian Dale"
-
-from core.synchronousdeluge.exceptions import DelugeRPCError
-
