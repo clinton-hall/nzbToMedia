@@ -1,8 +1,8 @@
 #!/usr/bin/env python2
 # coding=utf-8
-#
-##############################################################################
-### NZBGET POST-PROCESSING SCRIPT                                          ###
+
+# ##############################################################################
+# ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
 # Post-Process to NzbDrone.
 #
@@ -10,226 +10,227 @@
 #
 # NOTE: This script requires Python to be installed on your system.
 
-##############################################################################
-### OPTIONS                                                                ###
+# ##############################################################################
+# ### OPTIONS                                                                ###
 
-## General
+# ## General
 
 # Auto Update nzbToMedia (0, 1).
 #
 # Set to 1 if you want nzbToMedia to automatically check for and update to the latest version
-#auto_update=0
+# auto_update=0
 
 # Check Media for corruption (0, 1).
 #
 # Enable/Disable media file checking using ffprobe.
-#check_media=1
+# check_media=1
 
 # Safe Mode protection of DestDir (0, 1).
 #
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
-#safe_mode=1
+# safe_mode=1
 
-## NzbDrone
+# ## NzbDrone
 
 # NzbDrone script category.
 #
 # category that gets called for post-processing with NzbDrone.
-#ndCategory=tv2
+# ndCategory=tv2
 
 # NzbDrone host.
 #
 # The ipaddress for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
-#ndhost=localhost
+# ndhost=localhost
 
 # NzbDrone port.
-#ndport=8989
+# ndport=8989
 
 # NzbDrone API key.
-#ndapikey=
+# ndapikey=
 
 # NzbDrone uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#ndssl=0
+# ndssl=0
 
 # NzbDrone web_root
 #
 # set this if using a reverse proxy.
-#ndweb_root=
+# ndweb_root=
 
 # NzbDrone wait_for
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
-#ndwait_for=2
+# ndwait_for=2
 
 # NzbDrone Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
-#nddelete_failed=0
+# nddelete_failed=0
 
 # NzbDrone and NZBGet are a different system (0, 1).
 #
 # Enable to replace local path with the path as per the mountPoints below.
-#ndremote_path=0
+# ndremote_path=0
 
-## Network
+# ## Network
 
 # Network Mount Points (Needed for remote path above)
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+# mountPoints=
 
-## Extensions
+# ## Extensions
 
 # Media Extensions
 #
 # This is a list of media extensions that are used to verify that the download does contain valid media.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.ts
+# mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.ts
 
-## Posix
+# ## Posix
 
 # Niceness for external tasks Extractor and Transcoder.
 #
 # Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-#niceness=10
+# niceness=10
 
 # ionice scheduling class (0, 1, 2, 3).
 #
 # Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
-#ionice_class=2
+# ionice_class=2
 
 # ionice scheduling class data.
 #
 # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
-#ionice_classdata=4
+# ionice_classdata=4
 
-## Transcoder
+# ## Transcoder
 
 # getSubs (0, 1).
 #
 # set to 1 to download subtitles.
-#getSubs = 0
+# getSubs = 0
 
 # subLanguages.
 #
 # subLanguages. create a list of languages in the order you want them in your subtitles. 
-#subLanguages = eng,spa,fra
+# subLanguages = eng,spa,fra
 
 # Transcode (0, 1).
 #
 # set to 1 to transcode, otherwise set to 0.
-#transcode=0
+# transcode=0
 
 # create a duplicate, or replace the original (0, 1).
 #
 # set to 1 to cretae a new file or 0 to replace the original
-#duplicate=1
+# duplicate=1
 
 # ignore extensions.
 #
 # list of extensions that won't be transcoded.
-#ignoreExtensions=.avi,.mkv
+# ignoreExtensions=.avi,.mkv
 
 # outputFastStart (0,1).
 #
 # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
-#outputFastStart = 0
+# outputFastStart = 0
 
 # outputVideoPath.
 #
 # outputVideoPath. Set path you want transcoded videos moved to. Leave blank to disable.
-#outputVideoPath = 
+# outputVideoPath =
 
 # processOutput (0,1).
 #
 # processOutput. 1 will send the outputVideoPath to SickBeard/CouchPotato. 0 will send original files.
-#processOutput = 0
+# processOutput = 0
 
 # audioLanguage.
 #
 # audioLanguage. set the 3 letter language code you want as your primary audio track.
-#audioLanguage = eng
+# audioLanguage = eng
 
 # allAudioLanguages (0,1).
 #
 # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
-#allAudioLanguages = 0
+# allAudioLanguages = 0
 
 # allSubLanguages (0,1).
 #
 # allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
-#allSubLanguages = 0
+# allSubLanguages = 0
 
 # embedSubs (0,1).
 #
 # embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
-#embedSubs = 1
+# embedSubs = 1
 
 # burnInSubtitle (0,1).
 #
 # burnInSubtitle. burns the default sub language into your video (needed for players that don't support subs)
-#burnInSubtitle = 0
+# burnInSubtitle = 0
 
 # extractSubs (0,1).
 #
 # extractSubs. 1 will extract subs from the video file and save these as external srt files.
-#extractSubs = 0
+# extractSubs = 0
 
 # externalSubDir.
 #
 # externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
-#externalSubDir =
+# externalSubDir =
 
 # outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release).
 #
 # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
 # If you want to use your own profile, set None and set the remaining options below.
-#outputDefault = None
+# outputDefault = None
 
 # hwAccel (0,1).
 #
 # hwAccel. 1 will set ffmpeg to enable hardware acceleration (this requires a recent ffmpeg).
-#hwAccel=0
+# hwAccel=0
 
 # ffmpeg output settings.
-#outputVideoExtension=.mp4
-#outputVideoCodec=libx264
-#VideoCodecAllow = 
-#outputVideoPreset=medium
-#outputVideoFramerate=24
-#outputVideoBitrate=800k
-#outputAudioCodec=libmp3lame
-#AudioCodecAllow = 
-#outputAudioBitrate=128k
-#outputQualityPercent = 0
-#outputAudioTrack2Codec = libfaac
-#AudioCodec2Allow = 
-#outputAudioTrack2Bitrate = 128k
-#outputAudioOtherCodec = libmp3lame
-#AudioOtherCodecAllow = 
-#outputAudioOtherBitrate = 128k
-#outputSubtitleCodec =
+# outputVideoExtension=.mp4
+# outputVideoCodec=libx264
+# VideoCodecAllow =
+# outputVideoPreset=medium
+# outputVideoFramerate=24
+# outputVideoBitrate=800k
+# outputAudioCodec=libmp3lame
+# AudioCodecAllow =
+# outputAudioBitrate=128k
+# outputQualityPercent = 0
+# outputAudioTrack2Codec = libfaac
+# AudioCodec2Allow =
+# outputAudioTrack2Bitrate = 128k
+# outputAudioOtherCodec = libmp3lame
+# AudioOtherCodecAllow =
+# outputAudioOtherBitrate = 128k
+# outputSubtitleCodec =
 
-## WakeOnLan
+# ## WakeOnLan
 
 # use WOL (0, 1).
 #
 # set to 1 to send WOL broadcast to the mac and test the server (e.g. xbmc) on the host and port specified.
-#wolwake=0
+# wolwake=0
 
 # WOL MAC
 #
 # enter the mac address of the system to be woken.
-#wolmac=00:01:2e:2D:64:e1
+# wolmac=00:01:2e:2D:64:e1
 
 # Set the Host and Port of a server to verify system has woken.
-#wolhost=192.168.1.37
-#wolport=80
+# wolhost=192.168.1.37
+# wolport=80
 
-### NZBGET POST-PROCESSING SCRIPT                                          ###
-##############################################################################
+# ### NZBGET POST-PROCESSING SCRIPT                                          ###
+# ##############################################################################
+
 import sys
 import nzbToMedia
 
