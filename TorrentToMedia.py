@@ -15,14 +15,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     status = 1  # 1 = failed | 0 = success
     root = 0
     foundFile = 0
-    uniquePath = 1
 
     if clientAgent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory {0} to database'.format(inputDirectory))
 
         myDB = nzbToMediaDB.DBConnection()
 
-        encoded = False
         inputDirectory1 = inputDirectory
         inputName1 = inputName
 
@@ -53,11 +51,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     usercat = inputCategory
     try:
         inputName = inputName.encode(core.SYS_ENCODING)
-    except:
+    except UnicodeError:
         pass
     try:
         inputDirectory = inputDirectory.encode(core.SYS_ENCODING)
-    except:
+    except UnicodeError:
         pass
 
     logger.debug("Determined Directory: {0} | Name: {1} | Category: {2}".format(inputDirectory, inputName, inputCategory))
@@ -88,25 +86,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             inputCategory))
         return [-1, ""]
 
-    try:
-        Torrent_NoLink = int(section[usercat]["Torrent_NoLink"])
-    except:
-        Torrent_NoLink = 0
-
-    try:
-        keep_archive = int(section[usercat]["keep_archive"])
-    except:
-        keep_archive = 0
-
-    try:
-        extract = int(section[usercat]['extract'])
-    except:
-        extract = 0
-
-    try:
-        uniquePath = int(section[usercat]["unique_path"])
-    except:
-        uniquePath = 1
+    Torrent_NoLink = int(section[usercat].get("Torrent_NoLink", 0))
+    keep_archive = int(section[usercat].get("keep_archive", 0))
+    extract = int(section[usercat].get('extract', 0))
+    uniquePath = int(section[usercat].get("unique_path", 1))
 
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
@@ -126,7 +109,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             core.os.path.join(core.OUTPUTDIRECTORY, inputCategory))
     try:
         outputDestination = outputDestination.encode(core.SYS_ENCODING)
-    except:
+    except UnicodeError:
         pass
 
     if outputDestination in inputDirectory:
@@ -167,7 +150,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                     "Setting outputDestination to {0} to preserve folder structure".format(os.path.dirname(targetFile)))
         try:
             targetFile = targetFile.encode(core.SYS_ENCODING)
-        except:
+        except UnicodeError:
             pass
         if root == 1:
             if not foundFile:
@@ -327,34 +310,25 @@ def main(args):
                                 os.path.basename(dirName))
                         )
 
-                    try:
-                        clientAgent = str(core.DOWNLOADINFO[0]['client_agent'])
-                    except:
-                        clientAgent = 'manual'
-                    try:
-                        inputHash = str(core.DOWNLOADINFO[0]['input_hash'])
-                    except:
-                        inputHash = None
-                    try:
-                        inputID = str(core.DOWNLOADINFO[0]['input_id'])
-                    except:
-                        inputID = None
+                    clientAgent = str(core.DOWNLOADINFO[0].get('client_agent', ''))
+                    inputHash = str(core.DOWNLOADINFO[0].get('input_hash', ''))
+                    inputID = str(core.DOWNLOADINFO[0].get('input_id', ''))
 
-                    if clientAgent.lower() not in core.TORRENT_CLIENTS and clientAgent != 'manual':
+                    if clientAgent and clientAgent.lower() not in core.TORRENT_CLIENTS:
                         continue
 
                     try:
                         dirName = dirName.encode(core.SYS_ENCODING)
-                    except:
+                    except UnicodeError:
                         pass
                     inputName = os.path.basename(dirName)
                     try:
                         inputName = inputName.encode(core.SYS_ENCODING)
-                    except:
+                    except UnicodeError:
                         pass
 
-                    results = processTorrent(dirName, inputName, subsection, inputHash, inputID,
-                                             clientAgent)
+                    results = processTorrent(dirName, inputName, subsection, inputHash or None, inputID or None,
+                                             clientAgent or 'manual')
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format(
                             section, subsection))

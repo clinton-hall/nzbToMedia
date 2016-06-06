@@ -581,10 +581,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
             inputCategory))
         return [-1, ""]
 
-    try:
-        extract = int(section[usercat]['extract'])
-    except:
-        extract = 0
+    extract = int(section[usercat].get('extract', 0))
 
     try:
         if int(section[usercat]['remote_path']) and not core.REMOTEPATHS:
@@ -761,30 +758,24 @@ def main(args, section=None):
                                 os.path.basename(dirName))
                         )
 
-                    try:
-                        clientAgent = str(core.DOWNLOADINFO[0]['client_agent'])
-                    except:
-                        clientAgent = 'manual'
-                    try:
-                        download_id = str(core.DOWNLOADINFO[0]['input_id'])
-                    except:
-                        download_id = None
+                    clientAgent = str(core.DOWNLOADINFO[0].get('client_agent', ''))
+                    download_id = str(core.DOWNLOADINFO[0].get('input_id', ''))
 
-                    if clientAgent.lower() not in core.NZB_CLIENTS and clientAgent != 'manual':
+                    if clientAgent and clientAgent.lower() not in core.NZB_CLIENTS:
                         continue
 
                     try:
                         dirName = dirName.encode(core.SYS_ENCODING)
-                    except:
+                    except UnicodeError:
                         pass
                     inputName = os.path.basename(dirName)
                     try:
                         inputName = inputName.encode(core.SYS_ENCODING)
-                    except:
+                    except UnicodeError:
                         pass
 
-                    results = process(dirName, inputName, 0, clientAgent=clientAgent,
-                                      download_id=download_id, inputCategory=subsection)
+                    results = process(dirName, inputName, 0, clientAgent=clientAgent or 'manual',
+                                      download_id=download_id or None, inputCategory=subsection)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
                                      (section, subsection))
