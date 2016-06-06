@@ -5,6 +5,7 @@ import os
 import sys
 import core
 
+from libs.six import text_type
 from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
 from core.nzbToMediaUserScript import external_script
@@ -31,11 +32,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         except:
             pass
 
-        controlValueDict = {"input_directory": unicode(inputDirectory1)}
-        newValueDict = {"input_name": unicode(inputName1),
-                        "input_hash": unicode(inputHash),
-                        "input_id": unicode(inputID),
-                        "client_agent": unicode(clientAgent),
+        controlValueDict = {"input_directory": text_type(inputDirectory1)}
+        newValueDict = {"input_name": text_type(inputName1),
+                        "input_hash": text_type(inputHash),
+                        "input_id": text_type(inputID),
+                        "client_agent": text_type(clientAgent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
                         }

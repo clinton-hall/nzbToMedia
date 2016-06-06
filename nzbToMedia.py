@@ -502,6 +502,8 @@
 import os
 import sys
 import datetime
+from libs.six import text_type
+
 import core
 from core.autoProcess.autoProcessComics import autoProcessComics
 from core.autoProcess.autoProcessGames import autoProcessGames
@@ -539,11 +541,11 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         except:
             pass
 
-        controlValueDict = {"input_directory": unicode(inputDirectory1)}
-        newValueDict = {"input_name": unicode(inputName1),
-                        "input_hash": unicode(download_id),
-                        "input_id": unicode(download_id),
-                        "client_agent": unicode(clientAgent),
+        controlValueDict = {"input_directory": text_type(inputDirectory1)}
+        newValueDict = {"input_name": text_type(inputName1),
+                        "input_hash": text_type(download_id),
+                        "input_id": text_type(download_id),
+                        "client_agent": text_type(clientAgent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
                         }
