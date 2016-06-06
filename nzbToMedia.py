@@ -527,7 +527,6 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
         myDB = nzbToMediaDB.DBConnection()
 
-        encoded = False
         inputDirectory1 = inputDirectory
         inputName1 = inputName
 
@@ -632,9 +631,6 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 def main(args, section=None):
     # Initialize the config
     core.initialize(section)
-
-    # clientAgent for NZBs
-    clientAgent = core.NZB_CLIENTAGENT
 
     logger.info("#########################################################")
     logger.info("## ..::[{0}]::.. ##".format(os.path.basename(__file__)))
@@ -792,16 +788,16 @@ def main(args, section=None):
             print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del core.MYAPP
-            return (core.NZBGET_POSTPROCESS_SUCCESS)
+            return core.NZBGET_POSTPROCESS_SUCCESS
     else:
         logger.error("A problem was reported in the {0} script.".format(args[0]))
         if result[1]:
             print result[1] + "!"  # For SABnzbd Status display.
         if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
             del core.MYAPP
-            return (core.NZBGET_POSTPROCESS_ERROR)
+            return core.NZBGET_POSTPROCESS_ERROR
     del core.MYAPP
-    return (result[0])
+    return result[0]
 
 
 if __name__ == '__main__':

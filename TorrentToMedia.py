@@ -2,12 +2,9 @@
 # coding=utf-8
 import datetime
 import os
-import time
-import shutil
 import sys
 import core
 
-from subprocess import Popen
 from core import logger, nzbToMediaDB
 from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update
 from core.nzbToMediaUserScript import external_script
