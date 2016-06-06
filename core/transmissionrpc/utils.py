@@ -31,7 +31,7 @@ def format_speed(size):
     Format bytes per second speed into IEC prefixes, B/s, KiB/s, MiB/s ...
     """
     (size, unit) = format_size(size)
-    return size, unit + '/s'
+    return size, '{unit}/s'.format(unit=unit)
 
 
 def format_timedelta(delta):

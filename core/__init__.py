@@ -265,8 +265,9 @@ def initialize(section=None):
         # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
         sys.setdefaultencoding(SYS_ENCODING)
     except:
-        print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable')
-        print('or find another way to force Python to use ' + SYS_ENCODING + ' for string encoding.')
+        print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
+              '\nor find another way to force Python to use {codec} for string encoding.'.format
+              (codec=SYS_ENCODING))
         if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(NZBGET_POSTPROCESS_ERROR)
         else:
@@ -333,8 +334,9 @@ def initialize(section=None):
                 logger.error("Update wasn't successful, not restarting. Check your log for more information.")
 
     # Set Current Version
-    logger.info(
-        'nzbToMedia Version:' + NZBTOMEDIA_VERSION + ' Branch:' + GIT_BRANCH + ' (' + platform.system() + ' ' + platform.release() + ')')
+    logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
+                (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
+                 system=platform.system(), release=platform.release()))
 
     if int(CFG["WakeOnLan"]["wake"]) == 1:
         WakeUp()
@@ -842,7 +844,7 @@ def restart():
 
     if popen_list:
         popen_list += SYS_ARGV
-        logger.log(u"Restarting nzbToMedia with " + str(popen_list))
+        logger.log(u"Restarting nzbToMedia with {args}".format(args=popen_list))
         logger.close()
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()

@@ -342,11 +342,12 @@ def rmReadOnly(filename):
         file_attribute = os.stat(filename)[0]
         if not file_attribute & stat.S_IWRITE:
             # File is read-only, so make it writeable
-            logger.debug('Read only mode on file ' + filename + ' Will try to make it writeable')
+            logger.debug('Read only mode on file {name}. Attempting to make it writeable'.format
+                         (name=filename))
             try:
                 os.chmod(filename, stat.S_IWRITE)
             except:
-                logger.warning('Cannot change permissions of ' + filename, logger.WARNING)
+                logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
 
 
 # Wake function
@@ -1156,11 +1157,11 @@ def server_responding(baseURL):
 def plex_update(category):
     if core.FAILED:
         return
-    if core.PLEXSSL:
-        url = "https://"
-    else:
-        url = "http://"
-    url = url + core.PLEXHOST + ':' + core.PLEXPORT + '/library/sections/'
+    url = '{scheme}://{host}:{port}/library/sections/'.format(
+        scheme='https' if core.PLEXSSL else 'http',
+        host=core.PLEXHOST,
+        port=core.PLEXPORT,
+    )
     section = None
     if not core.PLEXSEC:
         return
@@ -1170,7 +1171,7 @@ def plex_update(category):
             section = item[1]
 
     if section:
-        url = url + section + '/refresh?X-Plex-Token=' + core.PLEXTOKEN
+        url = '{url}{section}/refresh?X-Plex-Token={token}'.format(url=url, section=section, token=core.PLEXTOKEN)
         requests.get(url, timeout=(60, 120), verify=False)
         logger.debug("Plex Library has been refreshed.", 'PLEX')
     else:
@@ -1180,27 +1181,27 @@ def plex_update(category):
 def backupVersionedFile(old_file, version):
     numTries = 0
 
-    new_file = old_file + '.' + 'v' + str(version)
+    new_file = '{old}.v{version}'.format(old=old_file, version=version)
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.log(u"Not creating backup, " + old_file + " doesn't exist", logger.DEBUG)
+            logger.log(u"Not creating backup, {file} doesn't exist".format(file=old_file), logger.DEBUG)
             break
 
         try:
-            logger.log(u"Trying to back up " + old_file + " to " + new_file, logger.DEBUG)
+            logger.log(u"Trying to back up {old} to {new]".format(old=old_file, new=new_file), logger.DEBUG)
             shutil.copy(old_file, new_file)
             logger.log(u"Backup done", logger.DEBUG)
             break
-        except Exception as e:
-            logger.log(u"Error while trying to back up " + old_file + " to " + new_file + " : " + str(e),
-                       logger.WARNING)
+        except Exception as error:
+            logger.log(u"Error while trying to back up {old} to {new} : {msg}".format
+                       (old=old_file, new=new_file, msg=error), logger.WARNING)
             numTries += 1
             time.sleep(1)
             logger.log(u"Trying again.", logger.DEBUG)
 
         if numTries >= 10:
-            logger.log(u"Unable to back up " + old_file + " to " + new_file + " please do it manually.", logger.ERROR)
+            logger.log(u"Unable to back up {old} to {new} please do it manually.".format(old=old_file, new=new_file), logger.ERROR)
             return False
 
     return True
@@ -1242,7 +1243,7 @@ class RunningProcess(object):
 
 class WindowsProcess(object):
     def __init__(self):
-        self.mutexname = "nzbtomedia_" + core.PID_FILE.replace('\\', '/')  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
+        self.mutexname = "nzbtomedia_{pid}".format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
         if platform.system() == 'Windows':
             from win32event import CreateMutex
             from win32api import CloseHandle, GetLastError
@@ -1274,7 +1275,7 @@ class PosixProcess(object):
     def alreadyrunning(self):
         try:
             self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            self.lock_socket.bind('\0' + self.pidpath)
+            self.lock_socket.bind('\0{path}'.format(path=self.pidpath))
             self.lasterror = False
             return self.lasterror
         except socket.error as e:

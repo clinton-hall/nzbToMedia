@@ -758,8 +758,8 @@ def main(args, section=None):
                                 os.path.basename(dirName))
                         )
 
-                    clientAgent = str(core.DOWNLOADINFO[0].get('client_agent', ''))
-                    download_id = str(core.DOWNLOADINFO[0].get('input_id', ''))
+                    clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
+                    download_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
 
                     if clientAgent and clientAgent.lower() not in core.NZB_CLIENTS:
                         continue

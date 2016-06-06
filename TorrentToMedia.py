@@ -310,9 +310,9 @@ def main(args):
                                 os.path.basename(dirName))
                         )
 
-                    clientAgent = str(core.DOWNLOADINFO[0].get('client_agent', ''))
-                    inputHash = str(core.DOWNLOADINFO[0].get('input_hash', ''))
-                    inputID = str(core.DOWNLOADINFO[0].get('input_id', ''))
+                    clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
+                    inputHash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
+                    inputID = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
 
                     if clientAgent and clientAgent.lower() not in core.TORRENT_CLIENTS:
                         continue

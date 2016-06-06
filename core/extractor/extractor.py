@@ -70,7 +70,7 @@ def extract(filePath, outputDestination):
     if ext[1] in (".gz", ".bz2", ".lzma"):
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":
-            cmd = EXTRACT_COMMANDS[".tar" + ext[1]]
+            cmd = EXTRACT_COMMANDS[".tar{ext}".format(ext=ext[1])]
     elif ext[1] in (".1", ".01", ".001") and os.path.splitext(ext[0])[1] in (".rar", ".zip", ".7z"):
         cmd = EXTRACT_COMMANDS[os.path.splitext(ext[0])[1]]
     elif ext[1] in (".cb7", ".cba", ".cbr", ".cbt", ".cbz"):  # don't extract these comic book archives.
@@ -131,7 +131,7 @@ def extract(filePath, outputDestination):
                     continue
                 cmd2 = cmd
                 # append password here.
-                passcmd = "-p" + password
+                passcmd = "-p{pwd}".format(pwd=password)
                 cmd2.append(passcmd)
                 p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()

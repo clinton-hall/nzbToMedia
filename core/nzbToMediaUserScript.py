@@ -80,8 +80,8 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                         continue
                 cmd = ""
                 for item in command:
-                    cmd = cmd + " " + item
-                logger.info("Running script {0} on file {1}.".format(cmd, filePath), "USERSCRIPT")
+                    cmd = "{cmd} {item}".format(cmd=cmd, item=item)
+                logger.info("Running script {cmd} on file {path}.".format(cmd=cmd, path=filePath), "USERSCRIPT")
                 try:
                     p = Popen(command)
                     res = p.wait()

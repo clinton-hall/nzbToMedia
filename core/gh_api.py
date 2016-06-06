@@ -1,6 +1,7 @@
 # coding=utf-8
 
 import requests
+from six import iteritems
 
 
 class GitHub(object):
@@ -19,10 +20,11 @@ class GitHub(object):
         Access the API at the path given and with the optional params given.
         """
 
-        url = 'https://api.github.com/' + '/'.join(path)
+        url = 'https://api.github.com/{path}'.format(path='/'.join(path))
 
         if params and type(params) is dict:
-            url += '?' + '&'.join([str(x) + '=' + str(params[x]) for x in params.keys()])
+            url += '?{params}'.format(params='&'.join(['{key}={value}'.format(key=k, value=v)
+                                                       for k, v in iteritems(params)]))
 
         data = requests.get(url, verify=False)
 
@@ -59,6 +61,6 @@ class GitHub(object):
         Returns a deserialized json object containing the compare info. See http://developer.github.com/v3/repos/commits/
         """
         access_API = self._access_API(
-            ['repos', self.github_repo_user, self.github_repo, 'compare', base + '...' + head],
+            ['repos', self.github_repo_user, self.github_repo, 'compare', '{base}...{head}'.format(base=base, head=head)],
             params={'per_page': per_page})
         return access_API

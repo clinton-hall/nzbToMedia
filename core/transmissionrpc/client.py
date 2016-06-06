@@ -141,15 +141,14 @@ class Client(object):
         else:
             self._query_timeout = DEFAULT_TIMEOUT
         urlo = urlparse(address)
-        if urlo.scheme == '':
-            base_url = 'http://' + address + ':' + str(port)
-            self.url = base_url + '/transmission/rpc/'
+        if not urlo.scheme:
+            self.url = 'http://{host}:{port}/transmission/rpc/'.format(host=address, port=port)
         else:
             if urlo.port:
-                self.url = urlo.scheme + '://' + urlo.hostname + ':' + str(urlo.port) + urlo.path
+                self.url = '{url.scheme}://{url.hostname}:{url.port}{url.path}'.format(url=urlo)
             else:
-                self.url = urlo.scheme + '://' + urlo.hostname + urlo.path
-            LOGGER.info('Using custom URL "' + self.url + '".')
+                self.url = '{url.scheme}://{url.hostname}{url.path}'.format(url=urlo)
+            LOGGER.info('Using custom URL {url!r}.'.format(url=self.url))
             if urlo.username and urlo.password:
                 user = urlo.username
                 password = urlo.password
@@ -256,7 +255,7 @@ class Client(object):
         try:
             data = json.loads(http_data)
         except ValueError as error:
-            LOGGER.error('Error: ' + str(error))
+            LOGGER.error('Error: {msg}'.format(msg=error))
             LOGGER.error('Request: {request!r}'.format(request=query))
             LOGGER.error('HTTP data: {data!r}'.format(data=http_data))
             raise

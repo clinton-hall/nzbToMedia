@@ -127,7 +127,7 @@ class UTorrentClient(object):
 
     def _action(self, params, body=None, content_type=None):
         # about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
-        url = self.base_url + '?token=' + self.token + '&' + urlencode(params)
+        url = '{url}?token={token}&{params}'.format(url=self.url, token=self.token, params=urlencode(params))
         request = Request(url)
 
         if body:
