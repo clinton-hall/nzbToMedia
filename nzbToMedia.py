@@ -624,7 +624,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         if clientAgent != 'manual':
             # update download status in our DB
             update_downloadInfoStatus(inputName, 1)
-        if not sectionName in ['UserScript', 'NzbDrone']:
+        if sectionName not in ['UserScript', 'NzbDrone']:
             # cleanup our processing folders of any misc unwanted files and empty directories
             cleanDir(inputDirectory, sectionName, inputCategory)
 
@@ -647,7 +647,7 @@ def main(args, section=None):
     status = 0
 
     # NZBGet
-    if os.environ.has_key('NZBOP_SCRIPTDIR'):
+    if 'NZBOP_SCRIPTDIR' in os.environ:
         # Check if the script is called from nzbget 11.0 or later
         if os.environ['NZBOP_VERSION'][0:5] < '11.0':
             logger.error("NZBGet Version {0} is not supported. Please update NZBGet.".format(os.environ['NZBOP_VERSION']))
@@ -656,7 +656,7 @@ def main(args, section=None):
         logger.info("Script triggered from NZBGet Version {0}.".format(os.environ['NZBOP_VERSION']))
 
         # Check if the script is called from nzbget 13.0 or later
-        if os.environ.has_key('NZBPP_TOTALSTATUS'):
+        if 'NZBPP_TOTALSTATUS' in os.environ:
             if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
                 logger.info("Download failed with status {0}.".format(os.environ['NZBPP_STATUS']))
                 status = 1
@@ -689,13 +689,13 @@ def main(args, section=None):
         # Check for download_id to pass to CouchPotato
         download_id = ""
         failureLink = None
-        if os.environ.has_key('NZBPR_COUCHPOTATO'):
+        if 'NZBPR_COUCHPOTATO' in os.environ:
             download_id = os.environ['NZBPR_COUCHPOTATO']
-        elif os.environ.has_key('NZBPR_DRONE'):
+        elif 'NZBPR_DRONE' in os.environ:
             download_id = os.environ['NZBPR_DRONE']
-        elif os.environ.has_key('NZBPR_SONARR'):
+        elif 'NZBPR_SONARR' in os.environ:
             download_id = os.environ['NZBPR_SONARR']
-        if os.environ.has_key('NZBPR__DNZB_FAILURE'):
+        if 'NZBPR__DNZB_FAILURE' in os.environ:
             failureLink = os.environ['NZBPR__DNZB_FAILURE']
 
         # All checks done, now launching the script.
@@ -791,14 +791,14 @@ def main(args, section=None):
         logger.info("The {0} script completed successfully.".format(args[0]))
         if result[1]:
             print result[1] + "!"  # For SABnzbd Status display.
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+        if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_SUCCESS
     else:
         logger.error("A problem was reported in the {0} script.".format(args[0]))
         if result[1]:
             print result[1] + "!"  # For SABnzbd Status display.
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):  # return code for nzbget v11
+        if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_ERROR
     del core.MYAPP

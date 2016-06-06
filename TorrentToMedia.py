@@ -203,7 +203,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.debug('Checking for archives to extract in directory: {0}'.format(inputDirectory))
         core.extractFiles(inputDirectory, outputDestination, keep_archive)
 
-    if not inputCategory in core.NOFLATTEN:  # don't flatten hp in case multi cd albums, and we need to copy this back later.
+    if inputCategory not in core.NOFLATTEN:  # don't flatten hp in case multi cd albums, and we need to copy this back later.
         core.flatten(outputDestination)
 
     # Now check if video files exist in destination:
@@ -220,7 +220,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             logger.warning("Found no media files in {0}".format(outputDestination))
 
     # Only these sections can handling failed downloads so make sure everything else gets through without the check for failed
-    if not sectionName in ['CouchPotato', 'SickBeard', 'NzbDrone']:
+    if sectionName not in ['CouchPotato', 'SickBeard', 'NzbDrone']:
         status = 0
 
     logger.info("Calling {0}:{1} to post-process:{2}".format(sectionName, usercat, inputName))
