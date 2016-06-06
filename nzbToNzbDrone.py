@@ -39,7 +39,7 @@
 
 # NzbDrone host.
 #
-# The ipaddress for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
+# The ip address for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
 # ndhost=localhost
 
 # NzbDrone port.
@@ -124,7 +124,7 @@
 
 # create a duplicate, or replace the original (0, 1).
 #
-# set to 1 to cretae a new file or 0 to replace the original
+# set to 1 to create a new file or 0 to replace the original
 # duplicate=1
 
 # ignore extensions.
@@ -159,12 +159,12 @@
 
 # allSubLanguages (0,1).
 #
-# allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
+# allSubLanguages. 1 will keep all existing sub languages. 0 will discard those not in your list above.
 # allSubLanguages = 0
 
 # embedSubs (0,1).
 #
-# embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
+# embedSubs. 1 will embed external sub/srt subs into your video if this is supported.
 # embedSubs = 1
 
 # burnInSubtitle (0,1).

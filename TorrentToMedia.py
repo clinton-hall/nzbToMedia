@@ -94,7 +94,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
 
-    # Incase input is not directory, make sure to create one.
+    # In case input is not directory, make sure to create one.
     # This way Processing is isolated.
     if not os.path.isdir(os.path.join(inputDirectory, inputName)):
         basename = os.path.basename(inputDirectory)
@@ -170,7 +170,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                 logger.debug("Looking for files with modified/created dates less than 5 minutes old.")
             if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
                 foundFile = True
-                logger.debug("Found file {0} with date modifed/created less than 5 minutes ago.".format(fullFileName))
+                logger.debug("Found file {0} with date modified/created less than 5 minutes ago.".format(fullFileName))
             else:
                 continue  # This file has not been recently moved or created, skip it
 

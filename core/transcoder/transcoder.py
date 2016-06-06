@@ -228,7 +228,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 )
                 if w_scale > 1:
                     video_cmd.extend(['-vf', 'scale={width}'.format(width=scale)])
-            else:  # lower or mathcing ratio, scale by height only.
+            else:  # lower or matching ratio, scale by height only.
                 scale = "{width}:{height}".format(
                     width=int((width / h_scale) / 2) * 2,
                     height=scale.split(':')[1],
