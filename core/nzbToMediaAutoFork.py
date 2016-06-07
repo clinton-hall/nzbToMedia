@@ -12,7 +12,7 @@ def autoFork(section, inputCategory):
     # auto-detect correct section
     # config settings
 
-    cfg = core.CFG[section][inputCategory]
+    cfg = dict(core.CFG[section][inputCategory])
 
     host = cfg.get("host")
     port = cfg.get("port")
