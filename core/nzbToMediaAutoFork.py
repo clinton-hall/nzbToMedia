@@ -21,7 +21,10 @@ def autoFork(section, inputCategory):
     apikey = cfg.get("apikey")
     ssl = int(cfg.get("ssl", 0))
     web_root = cfg.get("web_root", "")
-    fork = core.FORKS.items()[core.FORKS.keys().index(cfg.get("fork", "auto"))]
+    try:
+        fork = core.FORKS.items()[core.FORKS.keys().index(cfg.get("fork", "auto"))]
+    except:
+        fork = "auto"
     protocol = "https://" if ssl else "http://"
 
     detected = False
@@ -68,7 +71,7 @@ def autoFork(section, inputCategory):
             r = []
         if r and r.ok:
             for param in params:
-                if not 'name={param!r}'.format(param=param) in r.text:
+                if not 'name="{param}"'.format(param=param) in r.text:
                     rem_params.append(param)
             for param in rem_params:
                 params.pop(param)
