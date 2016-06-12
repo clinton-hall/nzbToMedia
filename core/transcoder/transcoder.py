@@ -129,7 +129,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         elif core.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
             name = re.sub("([\ \.\-\_\=\:]+[cC][dD][0-9])", "", name)
         if ext == core.VEXTENSION and newDir == dir:  # we need to change the name to prevent overwriting itself.
-            core.VEXTENSION = '-transcoded' + core.VEXTENSION  # adds '-transcoded.ext'
+            core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
     else:
         img, data = iteritems(file).next()
         name = data['name']
@@ -165,7 +165,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if core.VBITRATE:
             video_cmd.extend(['-b:v', str(core.VBITRATE)])
         if core.VRESOLUTION:
-            video_cmd.extend(['-vf', 'scale=' + core.VRESOLUTION])
+            video_cmd.extend(['-vf', 'scale={vres}'.format(vres=core.VRESOLUTION)])
         if core.VPRESET:
             video_cmd.extend(['-preset', core.VPRESET])
         if core.VCRF:
@@ -222,13 +222,19 @@ def buildCommands(file, newDir, movieName, bitbucket):
             w_scale = width / float(scale.split(':')[0])
             h_scale = height / float(scale.split(':')[1])
             if w_scale > h_scale:  # widescreen, Scale by width only.
-                scale = scale.split(':')[0] + ":" + str(int((height / w_scale) / 2) * 2)
+                scale = "{width}:{height}".format(
+                    width=scale.split(':')[0],
+                    height=int((height / w_scale) / 2) * 2,
+                )
                 if w_scale > 1:
-                    video_cmd.extend(['-vf', 'scale=' + scale])
-            else:  # lower or mathcing ratio, scale by height only.
-                scale = str(int((width / h_scale) / 2) * 2) + ":" + scale.split(':')[1]
+                    video_cmd.extend(['-vf', 'scale={width}'.format(width=scale)])
+            else:  # lower or matching ratio, scale by height only.
+                scale = "{width}:{height}".format(
+                    width=int((width / h_scale) / 2) * 2,
+                    height=scale.split(':')[1],
+                )
                 if h_scale > 1:
-                    video_cmd.extend(['-vf', 'scale=' + scale])
+                    video_cmd.extend(['-vf', 'scale={height}'.format(height=scale)])
         if core.VBITRATE:
             video_cmd.extend(['-b:v', str(core.VBITRATE)])
         if core.VPRESET:
@@ -242,7 +248,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
             video_cmd[1] = core.VCODEC
         if core.VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
             video_cmd = ['-c:v', 'copy']
-        map_cmd.extend(['-map', '0:' + str(video["index"])])
+        map_cmd.extend(['-map', '0:{index}'.format(index=video["index"])])
         break  # Only one video needed
 
     used_audio = 0
@@ -259,40 +265,34 @@ def buildCommands(file, newDir, movieName, bitbucket):
             audio3 = []
 
         if audio2:  # right language and codec...
-            map_cmd.extend(['-map', '0:' + str(audio2[0]["index"])])
+            map_cmd.extend(['-map', '0:{index}'.format(index=audio2[0]["index"])])
             a_mapped.extend([audio2[0]["index"]])
             bitrate = int(audio2[0].get("bit_rate", 0)) / 1000
             channels = int(audio2[0].get("channels", 0))
-            audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+            audio_cmd.extend(['-c:a:{0}'.format(used_audio), 'copy'])
         elif audio1:  # right language wrong codec.
-            map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
+            map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
             bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
             channels = int(audio1[0].get("channels", 0))
-            if core.ACODEC:
-                audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
-            else:
-                audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+            audio_cmd.extend(['-c:a:{0}'.format(used_audio), core.ACODEC if core.ACODEC else 'copy'])
         elif audio3:  # just pick the default audio track
-            map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
+            map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
             bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
             channels = int(audio3[0].get("channels", 0))
-            if core.ACODEC:
-                audio_cmd.extend(['-c:a:' + str(used_audio), core.ACODEC])
-            else:
-                audio_cmd.extend(['-c:a:' + str(used_audio), 'copy'])
+            audio_cmd.extend(['-c:a:{0}'.format(used_audio), core.ACODEC if core.ACODEC else 'copy'])
 
         if core.ACHANNELS and channels and channels > core.ACHANNELS:
-            audio_cmd.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS)])
+            audio_cmd.extend(['-ac:a:{0}'.format(used_audio), str(core.ACHANNELS)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = core.ACODEC
         if core.ABITRATE and not (core.ABITRATE * 0.9 < bitrate < core.ABITRATE * 1.1):
-            audio_cmd.extend(['-b:a:' + str(used_audio), str(core.ABITRATE)])
+            audio_cmd.extend(['-b:a:{0}'.format(used_audio), str(core.ABITRATE)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = core.ACODEC
         if core.OUTPUTQUALITYPERCENT:
-            audio_cmd.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
+            audio_cmd.extend(['-q:a:{0}'.format(used_audio), str(core.OUTPUTQUALITYPERCENT)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = core.ACODEC
         if audio_cmd[1] in ['aac', 'dts']:
@@ -302,40 +302,40 @@ def buildCommands(file, newDir, movieName, bitbucket):
             used_audio += 1
             audio4 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
             if audio4:  # right language and codec.
-                map_cmd.extend(['-map', '0:' + str(audio4[0]["index"])])
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
                 bitrate = int(audio4[0].get("bit_rate", 0)) / 1000
                 channels = int(audio4[0].get("channels", 0))
-                audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
+                audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
-                map_cmd.extend(['-map', '0:' + str(audio1[0]["index"])])
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
                 bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
                 channels = int(audio1[0].get("channels", 0))
                 if core.ACODEC2:
-                    audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
+                    audio_cmd2.extend(['-c:a:{0}'.format(used_audio), core.ACODEC2])
                 else:
-                    audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
             elif audio3:  # just pick the default audio track
-                map_cmd.extend(['-map', '0:' + str(audio3[0]["index"])])
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
                 bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
                 channels = int(audio3[0].get("channels", 0))
                 if core.ACODEC2:
-                    audio_cmd2.extend(['-c:a:' + str(used_audio), core.ACODEC2])
+                    audio_cmd2.extend(['-c:a:{0}'.format(used_audio), core.ACODEC2])
                 else:
-                    audio_cmd2.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
 
             if core.ACHANNELS2 and channels and channels > core.ACHANNELS2:
-                audio_cmd2.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS2)])
+                audio_cmd2.extend(['-ac:a:{0}'.format(used_audio), str(core.ACHANNELS2)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = core.ACODEC2
             if core.ABITRATE2 and not (core.ABITRATE2 * 0.9 < bitrate < core.ABITRATE2 * 1.1):
-                audio_cmd2.extend(['-b:a:' + str(used_audio), str(core.ABITRATE2)])
+                audio_cmd2.extend(['-b:a:{0}'.format(used_audio), str(core.ABITRATE2)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = core.ACODEC2
             if core.OUTPUTQUALITYPERCENT:
-                audio_cmd2.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
+                audio_cmd2.extend(['-q:a:{0}'.format(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = core.ACODEC2
             if audio_cmd2[1] in ['aac', 'dts']:
@@ -347,28 +347,28 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 if audio["index"] in a_mapped:
                     continue
                 used_audio += 1
-                map_cmd.extend(['-map', '0:' + str(audio["index"])])
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio["index"])])
                 audio_cmd3 = []
                 bitrate = int(audio.get("bit_rate", 0)) / 1000
                 channels = int(audio.get("channels", 0))
                 if audio["codec_name"] in core.ACODEC3_ALLOW:
-                    audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
+                    audio_cmd3.extend(['-c:a:{0}'.format(used_audio), 'copy'])
                 else:
                     if core.ACODEC3:
-                        audio_cmd3.extend(['-c:a:' + str(used_audio), core.ACODEC3])
+                        audio_cmd3.extend(['-c:a:{0}'.format(used_audio), core.ACODEC3])
                     else:
-                        audio_cmd3.extend(['-c:a:' + str(used_audio), 'copy'])
+                        audio_cmd3.extend(['-c:a:{0}'.format(used_audio), 'copy'])
 
                 if core.ACHANNELS3 and channels and channels > core.ACHANNELS3:
-                    audio_cmd3.extend(['-ac:a:' + str(used_audio), str(core.ACHANNELS3)])
+                    audio_cmd3.extend(['-ac:a:{0}'.format(used_audio), str(core.ACHANNELS3)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = core.ACODEC3
                 if core.ABITRATE3 and not (core.ABITRATE3 * 0.9 < bitrate < core.ABITRATE3 * 1.1):
-                    audio_cmd3.extend(['-b:a:' + str(used_audio), str(core.ABITRATE3)])
+                    audio_cmd3.extend(['-b:a:{0}'.format(used_audio), str(core.ABITRATE3)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = core.ACODEC3
                 if core.OUTPUTQUALITYPERCENT > 0:
-                    audio_cmd3.extend(['-q:a:' + str(used_audio), str(core.OUTPUTQUALITYPERCENT)])
+                    audio_cmd3.extend(['-q:a:{0}'.format(used_audio), str(core.OUTPUTQUALITYPERCENT)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = core.ACODEC3
                 if audio_cmd3[1] in ['aac', 'dts']:
@@ -386,7 +386,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if core.BURN and not subs1 and not burnt and os.path.isfile(file):
             for subfile in get_subs(file):
                 if lan in os.path.split(subfile)[1]:
-                    video_cmd.extend(['-vf', 'subtitles=' + subfile])
+                    video_cmd.extend(['-vf', 'subtitles={subs}'.format(subs=subfile)])
                     burnt = 1
         for sub in subs1:
             if core.BURN and not burnt and os.path.isfile(inputFile):
@@ -395,11 +395,11 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     if subStreams[index]["index"] == sub["index"]:
                         subloc = index
                         break
-                video_cmd.extend(['-vf', 'subtitles=' + inputFile + ':si=' + str(subloc)])
+                video_cmd.extend(['-vf', 'subtitles={sub}:si={loc}'.format(sub=inputFile, loc=subloc)])
                 burnt = 1
             if not core.ALLOWSUBS:
                 break
-            map_cmd.extend(['-map', '0:' + str(sub["index"])])
+            map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
 
     if core.SINCLUDE:
@@ -408,7 +408,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 break
             if sub["index"] in s_mapped:
                 continue
-            map_cmd.extend(['-map', '0:' + str(sub["index"])])
+            map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
 
     if core.OUTPUTFASTSTART:
@@ -430,9 +430,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 continue
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
             command.extend(['-i', subfile])
-            meta_cmd.extend(['-metadata:s:s:' + str(len(s_mapped) + n), 'language=' + lan[1:]])
+            meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
+                             'language={lang}'.format(lang=lan[1:])])
             n += 1
-            map_cmd.extend(['-map', str(n) + ':0'])
+            map_cmd.extend(['-map', '{x}:0'.format(x=n)])
 
     if not core.ALLOWSUBS or (not s_mapped and not n):
         sub_cmd.extend(['-sn'])
@@ -500,8 +501,8 @@ def extract_subs(file, newfilePath, bitbucket):
             if os.path.isfile(outputFile):
                 outputFile = os.path.join(subdir, "{0}.{1}.{2}.srt".format(name, lan, n))
 
-        command = [core.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', '-codec:' + str(idx), 'srt',
-                   outputFile]
+        command = [core.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an',
+                   '-codec:{index}'.format(index=idx), 'srt', outputFile]
         if platform.system() != 'Windows':
             command = core.NICENESS + command
 
@@ -604,7 +605,9 @@ def ripISO(item, newDir, bitbucket):
             if core.CONCAT:
                 combined.extend(concat)
                 continue
-            name = '{0}.cd{1}'.format(os.path.splitext(os.path.split(item)[1])[0], str(n + 1))
+            name = '{name}.cd{x}'.format(
+                name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
+            )
             newFiles.append({item: {'name': name, 'files': concat}})
         if core.CONCAT:
             name = os.path.splitext(os.path.split(item)[1])[0]
@@ -627,14 +630,14 @@ def combineVTS(vtsPath):
         while True:
             vtsName = 'VTS_{0:02d}_{1:d}.VOB'.format(n + 1, m)
             if os.path.isfile(os.path.join(vtsPath, vtsName)):
-                concat = concat + os.path.join(vtsPath, vtsName) + '|'
+                concat += '{file}|'.format(file=os.path.join(vtsPath, vtsName))
                 m += 1
             else:
                 break
         if not concat:
             break
         if core.CONCAT:
-            combined = combined + concat + '|'
+            combined += '{files}|'.format(files=concat)
             continue
         newFiles.append('concat:{0}'.format(concat[:-1]))
     if core.CONCAT:
@@ -650,7 +653,7 @@ def combineCD(combine):
             files = [file for file in combine if
                      n + 1 == int(re.match(".+[cC][dD]([0-9]+).", file).groups()[0]) and item in file]
             if files:
-                concat = concat + files[0] + '|'
+                concat += '{file}|'.format(file=files[0])
             else:
                 break
         if concat:
@@ -661,7 +664,7 @@ def combineCD(combine):
 def print_cmd(command):
     cmd = ""
     for item in command:
-        cmd = cmd + " " + str(item)
+        cmd = "{cmd} {item}".format(cmd=cmd, item=item)
     logger.debug("calling command:{0}".format(cmd))
 
 

@@ -38,7 +38,7 @@ class MultiPartForm(object):
         # Once the list is built, return a string where each
         # line is separated by '\r\n'.  
         parts = []
-        part_boundary = '--' + self.boundary
+        part_boundary = '--{boundary}'.format(boundary=self.boundary)
 
         # Add the form fields
         parts.extend(
@@ -64,6 +64,6 @@ class MultiPartForm(object):
         # Flatten the list and add closing boundary marker,
         # then return CR+LF separated data
         flattened = list(itertools.chain(*parts))
-        flattened.append('--' + self.boundary + '--')
+        flattened.append('--{boundary}--'.format(boundary=self.boundary))
         flattened.append('')
         return '\r\n'.join(flattened)

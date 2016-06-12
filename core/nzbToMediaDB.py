@@ -56,28 +56,29 @@ class DBConnection(object):
         while attempt < 5:
             try:
                 if args is None:
-                    logger.log(self.filename + ": " + query, logger.DB)
+                    logger.log("{name}: {query}".format(name=self.filename, query=query), logger.DB)
                     cursor = self.connection.cursor()
                     cursor.execute(query)
                     sqlResult = cursor.fetchone()[0]
                 else:
-                    logger.log(self.filename + ": " + query + " with args " + str(args), logger.DB)
+                    logger.log("{name}: {query} with args {args}".format
+                               (name=self.filename, query=query, args=args), logger.DB)
                     cursor = self.connection.cursor()
                     cursor.execute(query, args)
                     sqlResult = cursor.fetchone()[0]
 
                 # get out of the connection attempt loop since we were successful
                 break
-            except sqlite3.OperationalError as e:
-                if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
-                    logger.log(u"DB error: " + str(e), logger.WARNING)
+            except sqlite3.OperationalError as error:
+                if "unable to open database file" in error.args[0] or "database is locked" in error.args[0]:
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.WARNING)
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(u"DB error: " + str(e), logger.ERROR)
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError as e:
-                logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
+            except sqlite3.DatabaseError as error:
+                logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
         return sqlResult
@@ -98,26 +99,26 @@ class DBConnection(object):
                         sqlResult.append(self.connection.execute(qu[0]))
                     elif len(qu) > 1:
                         if logTransaction:
-                            logger.log(qu[0] + " with args " + str(qu[1]), logger.DEBUG)
+                            logger.log(u"{query} with args {args}".format(query=qu[0], args=qu[1]), logger.DEBUG)
                         sqlResult.append(self.connection.execute(qu[0], qu[1]))
                 self.connection.commit()
-                logger.log(u"Transaction with " + str(len(querylist)) + u" query's executed", logger.DEBUG)
+                logger.log(u"Transaction with {x} query's executed".format(x=len(querylist)), logger.DEBUG)
                 return sqlResult
-            except sqlite3.OperationalError as e:
+            except sqlite3.OperationalError as error:
                 sqlResult = []
                 if self.connection:
                     self.connection.rollback()
-                if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
-                    logger.log(u"DB error: " + str(e), logger.WARNING)
+                if "unable to open database file" in error.args[0] or "database is locked" in error.args[0]:
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.WARNING)
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(u"DB error: " + str(e), logger.ERROR)
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError as e:
+            except sqlite3.DatabaseError as error:
                 if self.connection:
                     self.connection.rollback()
-                logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
+                logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
         return sqlResult
@@ -132,24 +133,25 @@ class DBConnection(object):
         while attempt < 5:
             try:
                 if args is None:
-                    logger.log(self.filename + ": " + query, logger.DB)
+                    logger.log(u"{name}: {query}".format(name=self.filename, query=query), logger.DB)
                     sqlResult = self.connection.execute(query)
                 else:
-                    logger.log(self.filename + ": " + query + " with args " + str(args), logger.DB)
+                    logger.log(u"{name}: {query} with args {args}".format
+                               (name=self.filename, query=query, args=args), logger.DB)
                     sqlResult = self.connection.execute(query, args)
                 self.connection.commit()
                 # get out of the connection attempt loop since we were successful
                 break
-            except sqlite3.OperationalError as e:
-                if "unable to open database file" in e.args[0] or "database is locked" in e.args[0]:
-                    logger.log(u"DB error: " + str(e), logger.WARNING)
+            except sqlite3.OperationalError as error:
+                if "unable to open database file" in error.args[0] or "database is locked" in error.args[0]:
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.WARNING)
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(u"DB error: " + str(e), logger.ERROR)
+                    logger.log(u"DB error: {msg}".format(msg=error), logger.ERROR)
                     raise
-            except sqlite3.DatabaseError as e:
-                logger.log(u"Fatal error executing query: " + str(e), logger.ERROR)
+            except sqlite3.DatabaseError as error:
+                logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
         return sqlResult
@@ -167,17 +169,28 @@ class DBConnection(object):
 
         changesBefore = self.connection.total_changes
 
-        genParams = lambda myDict: [x + " = ?" for x in myDict.keys()]
+        genParams = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
 
-        query = "UPDATE " + tableName + " SET " + ", ".join(genParams(valueDict)) + " WHERE " + " AND ".join(
-            genParams(keyDict))
-
-        self.action(query, valueDict.values() + keyDict.values())
+        self.action(
+            "UPDATE {table} "
+            "SET {params} "
+            "WHERE {conditions}".format(
+                table=tableName,
+                params=", ".join(genParams(valueDict)),
+                conditions=" AND ".join(genParams(keyDict))),
+            valueDict.values() + keyDict.values()
+        )
 
         if self.connection.total_changes == changesBefore:
-            query = "INSERT OR IGNORE INTO " + tableName + " (" + ", ".join(valueDict.keys() + keyDict.keys()) + ")" + \
-                    " VALUES (" + ", ".join(["?"] * len(valueDict.keys() + keyDict.keys())) + ")"
-            self.action(query, valueDict.values() + keyDict.values())
+            self.action(
+                "INSERT OR IGNORE INTO {table} ({columns}) "
+                "VALUES ({values})".format(
+                    table=tableName,
+                    columns=", ".join(valueDict.keys() + keyDict.keys()),
+                    values=", ".join(["?"] * len(valueDict.keys() + keyDict.keys()))
+                )
+                , valueDict.values() + keyDict.values()
+            )
 
     def tableInfo(self, tableName):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually
@@ -222,17 +235,22 @@ def prettyName(class_name):
 
 def _processUpgrade(connection, upgradeClass):
     instance = upgradeClass(connection)
-    logger.log(u"Checking " + prettyName(upgradeClass.__name__) + " database upgrade", logger.DEBUG)
+    logger.log(u"Checking {name} database upgrade".format
+               (name=prettyName(upgradeClass.__name__)), logger.DEBUG)
     if not instance.test():
-        logger.log(u"Database upgrade required: " + prettyName(upgradeClass.__name__), logger.MESSAGE)
+        logger.log(u"Database upgrade required: {name}".format
+                   (name=prettyName(upgradeClass.__name__)), logger.MESSAGE)
         try:
             instance.execute()
-        except sqlite3.DatabaseError as e:
-            print("Error in " + str(upgradeClass.__name__) + ": " + str(e))
+        except sqlite3.DatabaseError as error:
+            print(u"Error in {name}: {msg}".format
+                  (name=upgradeClass.__name__, msg=error))
             raise
-        logger.log(upgradeClass.__name__ + " upgrade completed", logger.DEBUG)
+        logger.log(u"{name} upgrade completed".format
+                   (name=upgradeClass.__name__), logger.DEBUG)
     else:
-        logger.log(upgradeClass.__name__ + " upgrade not required", logger.DEBUG)
+        logger.log(u"{name} upgrade not required".format
+                   (name=upgradeClass.__name__), logger.DEBUG)
 
     for upgradeSubClass in upgradeClass.__subclasses__():
         _processUpgrade(connection, upgradeSubClass)

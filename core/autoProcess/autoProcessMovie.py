@@ -46,7 +46,7 @@ class autoProcessMovie(object):
 
         if not result['success']:
             if 'error' in result:
-                logger.error(str(result['error']))
+                logger.error('{0}'.format(result['error']))
             else:
                 logger.error("no media found for id {0}".format(params['id']))
             return results
@@ -262,7 +262,7 @@ class autoProcessMovie(object):
             if release_id:
                 logger.postprocess("Setting failed release {0} to ignored ...".format(inputName), section)
 
-                url = baseURL + "/release.ignore"
+                url = "{url}/release.ignore".format(url=baseURL)
                 params = {'id': release_id}
 
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
