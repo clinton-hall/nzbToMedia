@@ -89,7 +89,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     Torrent_NoLink = int(section[usercat].get("Torrent_NoLink", 0))
     keep_archive = int(section[usercat].get("keep_archive", 0))
     extract = int(section[usercat].get('extract', 0))
-    uniquePath = int(section[usercat].get("unique_path", 1))
+    try:
+        uniquePath = int(section[usercat].get("unique_path", 1))
+    except:
+        uniquePath = 1
 
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
