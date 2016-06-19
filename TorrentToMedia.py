@@ -42,9 +42,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.debug("Received Directory: {0} | Name: {1} | Category: {2}".format(inputDirectory, inputName, inputCategory))
 
-    inputDirectory, inputName, inputCategory, root = core.category_search(inputDirectory, inputName,
-                                                                          inputCategory, root,
-                                                                          core.CATEGORIES)  # Confirm the category by parsing directory structure
+    # Confirm the category by parsing directory structure
+    inputDirectory, inputName, inputCategory, root = core.category_search(inputDirectory, inputName, inputCategory,
+                                                                          root, core.CATEGORIES)
     if inputCategory == "":
         inputCategory = "UNCAT"
 
@@ -58,32 +58,36 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     except UnicodeError:
         pass
 
-    logger.debug("Determined Directory: {0} | Name: {1} | Category: {2}".format(inputDirectory, inputName, inputCategory))
+    logger.debug("Determined Directory: {0} | Name: {1} | Category: {2}".format
+                 (inputDirectory, inputName, inputCategory))
 
     # auto-detect section
     section = core.CFG.findsection(inputCategory).isenabled()
     if section is None:
         section = core.CFG.findsection("ALL").isenabled()
         if section is None:
-            logger.error(
-                'Category:[{0}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.'.format(
-                    inputCategory))
+            logger.error('Category:[{0}] is not defined or is not enabled. '
+                         'Please rename it or ensure it is enabled for the appropriate section '
+                         'in your autoProcessMedia.cfg and try again.'.format
+                         (inputCategory))
             return [-1, ""]
         else:
             usercat = "ALL"
 
     if len(section) > 1:
-        logger.error(
-            'Category:[{0}] is not unique, {1} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.'.format(
-                usercat, section.keys()))
+        logger.error('Category:[{0}] is not unique, {1} are using it. '
+                     'Please rename it or disable all other sections using the same category name '
+                     'in your autoProcessMedia.cfg and try again.'.format
+                     (usercat, section.keys()))
         return [-1, ""]
 
     if section:
         sectionName = section.keys()[0]
         logger.info('Auto-detected SECTION:{0}'.format(sectionName))
     else:
-        logger.error("Unable to locate a section with subsection:{0} enabled in your autoProcessMedia.cfg, exiting!".format(
-            inputCategory))
+        logger.error("Unable to locate a section with subsection:{0} "
+                     "enabled in your autoProcessMedia.cfg, exiting!".format
+                     (inputCategory))
         return [-1, ""]
 
     Torrent_NoLink = int(section[usercat].get("Torrent_NoLink", 0))
@@ -91,7 +95,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     extract = int(section[usercat].get('extract', 0))
     try:
         uniquePath = int(section[usercat].get("unique_path", 1))
-    except:
+    except TypeError:
         uniquePath = 1
 
     if clientAgent != 'manual':
@@ -121,9 +125,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     logger.info("Output directory set to: {0}".format(outputDestination))
 
     if core.SAFE_MODE and outputDestination == core.TORRENT_DEFAULTDIR:
-        logger.error(
-            'The output directory:[{0}] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting'.format(
-                inputDirectory))
+        logger.error('The output directory:[{0}] is the Download Directory. '
+                     'Edit outputDirectory in autoProcessMedia.cfg. Exiting'.format
+                     (inputDirectory))
         return [-1, ""]
 
     logger.debug("Scanning files in directory: {0}".format(inputDirectory))
@@ -149,8 +153,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             if not os.path.basename(filePath) in outputDestination:
                 targetFile = core.os.path.join(
                     core.os.path.join(outputDestination, os.path.basename(filePath)), fullFileName)
-                logger.debug(
-                    "Setting outputDestination to {0} to preserve folder structure".format(os.path.dirname(targetFile)))
+                logger.debug("Setting outputDestination to {0} to preserve folder structure".format
+                             (os.path.dirname(targetFile)))
         try:
             targetFile = targetFile.encode(core.SYS_ENCODING)
         except UnicodeError:
@@ -161,7 +165,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             if any([core.sanitizeName(inputName) in core.sanitizeName(inputFile),
                     core.sanitizeName(fileName) in core.sanitizeName(inputName)]):
                 foundFile = True
-                logger.debug("Found file {0} that matches Torrent Name {1}".format(fullFileName, inputName))
+                logger.debug("Found file {0} that matches Torrent Name {1}".format
+                             (fullFileName, inputName))
             else:
                 continue
 
@@ -173,7 +178,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                 logger.debug("Looking for files with modified/created dates less than 5 minutes old.")
             if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
                 foundFile = True
-                logger.debug("Found file {0} with date modified/created less than 5 minutes ago.".format(fullFileName))
+                logger.debug("Found file {0} with date modified/created less than 5 minutes ago.".format
+                             (fullFileName))
             else:
                 continue  # This file has not been recently moved or created, skip it
 
@@ -190,7 +196,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         logger.debug('Checking for archives to extract in directory: {0}'.format(inputDirectory))
         core.extractFiles(inputDirectory, outputDestination, keep_archive)
 
-    if inputCategory not in core.NOFLATTEN:  # don't flatten hp in case multi cd albums, and we need to copy this back later.
+    if inputCategory not in core.NOFLATTEN:
+        # don't flatten hp in case multi cd albums, and we need to copy this back later.
         core.flatten(outputDestination)
 
     # Now check if video files exist in destination:
@@ -206,7 +213,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         else:
             logger.warning("Found no media files in {0}".format(outputDestination))
 
-    # Only these sections can handling failed downloads so make sure everything else gets through without the check for failed
+    # Only these sections can handling failed downloads
+    # so make sure everything else gets through without the check for failed
     if sectionName not in ['CouchPotato', 'SickBeard', 'NzbDrone']:
         status = 0
 
@@ -220,29 +228,32 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         result = external_script(outputDestination, inputName, inputCategory, section[usercat])
 
     elif sectionName == 'CouchPotato':
-        result = core.autoProcessMovie().process(sectionName, outputDestination, inputName, status, clientAgent, inputHash,
-                                                 inputCategory)
+        result = core.autoProcessMovie().process(sectionName, outputDestination, inputName,
+                                                 status, clientAgent, inputHash, inputCategory)
     elif sectionName in ['SickBeard', 'NzbDrone']:
         if inputHash:
             inputHash = inputHash.upper()
-        result = core.autoProcessTV().processEpisode(sectionName, outputDestination, inputName, status, clientAgent,
-                                                     inputHash, inputCategory)
+        result = core.autoProcessTV().processEpisode(sectionName, outputDestination, inputName,
+                                                     status, clientAgent, inputHash, inputCategory)
     elif sectionName == 'HeadPhones':
-        result = core.autoProcessMusic().process(sectionName, outputDestination, inputName, status, clientAgent, inputCategory)
+        result = core.autoProcessMusic().process(sectionName, outputDestination, inputName,
+                                                 status, clientAgent, inputCategory)
     elif sectionName == 'Mylar':
-        result = core.autoProcessComics().processEpisode(sectionName, outputDestination, inputName, status, clientAgent,
-                                                         inputCategory)
+        result = core.autoProcessComics().processEpisode(sectionName, outputDestination, inputName,
+                                                         status, clientAgent, inputCategory)
     elif sectionName == 'Gamez':
-        result = core.autoProcessGames().process(sectionName, outputDestination, inputName, status, clientAgent, inputCategory)
+        result = core.autoProcessGames().process(sectionName, outputDestination, inputName,
+                                                 status, clientAgent, inputCategory)
 
     plex_update(inputCategory)
 
     if result[0] != 0:
         if not core.TORRENT_RESUME_ON_FAILURE:
-            logger.error("A problem was reported in the autoProcess* script. torrent won't resume seeding (settings)")
+            logger.error("A problem was reported in the autoProcess* script. "
+                         "Torrent won't resume seeding (settings)")
         elif clientAgent != 'manual':
-            logger.error(
-                "A problem was reported in the autoProcess* script. If torrent was paused we will resume seeding")
+            logger.error("A problem was reported in the autoProcess* script. "
+                         "If torrent was paused we will resume seeding")
             core.resume_torrent(clientAgent, inputHash, inputID, inputName)
 
     else:
@@ -259,7 +270,8 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                         replace_links(os.path.join(dirpath, file))
             core.remove_torrent(clientAgent, inputHash, inputID, inputName)
 
-        if not sectionName == 'UserScript':  # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
+        if not sectionName == 'UserScript':
+            # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories
             core.cleanDir(outputDestination, sectionName, inputCategory)
 
@@ -300,18 +312,19 @@ def main(args):
                 if not core.CFG[section][subsection].isenabled():
                     continue
                 for dirName in core.getDirs(section, subsection, link='hard'):
-                    logger.info("Starting manual run for {0}:{1} - Folder:{2}".format(section, subsection, dirName))
+                    logger.info("Starting manual run for {0}:{1} - Folder:{2}".format
+                                (section, subsection, dirName))
 
-                    logger.info("Checking database for download info for {0} ...".format(os.path.basename(dirName)))
+                    logger.info("Checking database for download info for {0} ...".format
+                                (os.path.basename(dirName)))
                     core.DOWNLOADINFO = core.get_downloadInfo(os.path.basename(dirName), 0)
                     if core.DOWNLOADINFO:
-                        logger.info(
-                            "Found download info for {0}, setting variables now ...".format(os.path.basename(dirName)))
+                        logger.info("Found download info for {0}, "
+                                    "setting variables now ...".format(os.path.basename(dirName)))
                     else:
-                        logger.info(
-                            'Unable to locate download info for {0}, continuing to try and process this release ...'.format(
-                                os.path.basename(dirName))
-                        )
+                        logger.info('Unable to locate download info for {0}, '
+                                    'continuing to try and process this release ...'.format
+                                    (os.path.basename(dirName)))
 
                     clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
                     inputHash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
@@ -333,8 +346,8 @@ def main(args):
                     results = processTorrent(dirName, inputName, subsection, inputHash or None, inputID or None,
                                              clientAgent or 'manual')
                     if results[0] != 0:
-                        logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format(
-                            section, subsection))
+                        logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
+                                     (section, subsection))
                         result = results
 
     if result[0] == 0:
