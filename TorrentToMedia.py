@@ -90,13 +90,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                      (inputCategory))
         return [-1, ""]
 
+    section = dict(section)  # Type cast to dict() to allow effective usage of .get()
+
     Torrent_NoLink = int(section[usercat].get("Torrent_NoLink", 0))
     keep_archive = int(section[usercat].get("keep_archive", 0))
     extract = int(section[usercat].get('extract', 0))
-    try:
-        uniquePath = int(section[usercat].get("unique_path", 1))
-    except TypeError:
-        uniquePath = 1
+    uniquePath = int(section[usercat].get("unique_path", 1))
 
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
