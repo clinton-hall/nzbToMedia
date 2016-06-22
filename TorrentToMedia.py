@@ -318,18 +318,20 @@ def main(args):
                                 (os.path.basename(dirName)))
                     core.DOWNLOADINFO = core.get_downloadInfo(os.path.basename(dirName), 0)
                     if core.DOWNLOADINFO:
+                        clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
+                        inputHash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
+                        inputID = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
                         logger.info("Found download info for {0}, "
                                     "setting variables now ...".format(os.path.basename(dirName)))
                     else:
                         logger.info('Unable to locate download info for {0}, '
                                     'continuing to try and process this release ...'.format
                                     (os.path.basename(dirName)))
+                        clientAgent = 'manual'
+                        inputHash = ''
+                        inputID = ''
 
-                    clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
-                    inputHash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
-                    inputID = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
-
-                    if clientAgent and clientAgent.lower() not in core.TORRENT_CLIENTS:
+                    if clientAgent.lower() not in core.TORRENT_CLIENTS:
                         continue
 
                     try:
@@ -343,7 +345,7 @@ def main(args):
                         pass
 
                     results = processTorrent(dirName, inputName, subsection, inputHash or None, inputID or None,
-                                             clientAgent or 'manual')
+                                             clientAgent)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
                                      (section, subsection))

@@ -753,13 +753,13 @@ def main(args, section=None):
                         logger.info("Found download info for {0}, "
                                     "setting variables now ...".format
                                     (os.path.basename(dirName)))
-                        clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
+                        clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
                         download_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
                     else:
                         logger.info('Unable to locate download info for {0}, '
                                     'continuing to try and process this release ...'.format
                                     (os.path.basename(dirName)))
-                        clientAgent = ''
+                        clientAgent = 'manual'
                         download_id = ''
 
                     if clientAgent and clientAgent.lower() not in core.NZB_CLIENTS:
@@ -775,7 +775,7 @@ def main(args, section=None):
                     except UnicodeError:
                         pass
 
-                    results = process(dirName, inputName, 0, clientAgent=clientAgent or 'manual',
+                    results = process(dirName, inputName, 0, clientAgent=clientAgent,
                                       download_id=download_id or None, inputCategory=subsection)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
