@@ -90,12 +90,12 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
                      (inputCategory))
         return [-1, ""]
 
-    section = dict(section)  # Type cast to dict() to allow effective usage of .get()
+    section = dict(section[sectionName][usercat])  # Type cast to dict() to allow effective usage of .get()
 
-    Torrent_NoLink = int(section[usercat].get("Torrent_NoLink", 0))
-    keep_archive = int(section[usercat].get("keep_archive", 0))
-    extract = int(section[usercat].get('extract', 0))
-    uniquePath = int(section[usercat].get("unique_path", 1))
+    Torrent_NoLink = int(section.get("Torrent_NoLink", 0))
+    keep_archive = int(section.get("keep_archive", 0))
+    extract = int(section.get('extract', 0))
+    uniquePath = int(section.get("unique_path", 1))
 
     if clientAgent != 'manual':
         core.pause_torrent(clientAgent, inputHash, inputID, inputName)
@@ -224,7 +224,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     result = [0, ""]
     if sectionName == 'UserScript':
-        result = external_script(outputDestination, inputName, inputCategory, section[usercat])
+        result = external_script(outputDestination, inputName, inputCategory, section)
 
     elif sectionName == 'CouchPotato':
         result = core.autoProcessMovie().process(sectionName, outputDestination, inputName,
