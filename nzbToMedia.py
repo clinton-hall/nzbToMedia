@@ -745,21 +745,22 @@ def main(args, section=None):
                 if not core.CFG[section][subsection].isenabled():
                     continue
                 for dirName in getDirs(section, subsection, link='move'):
-                    logger.info("Starting manual run for {0}:{1} - Folder:{2}".format(section, subsection, dirName))
-
+                    logger.info("Starting manual run for {0}:{1} - Folder: {2}".format(section, subsection, dirName))
                     logger.info("Checking database for download info for {0} ...".format(os.path.basename(dirName)))
+
                     core.DOWNLOADINFO = get_downloadInfo(os.path.basename(dirName), 0)
                     if core.DOWNLOADINFO:
-                        logger.info(
-                            "Found download info for {0}, setting variables now ...".format(os.path.basename(dirName)))
+                        logger.info("Found download info for {0}, "
+                                    "setting variables now ...".format
+                                    (os.path.basename(dirName)))
+                        clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
+                        download_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
                     else:
-                        logger.info(
-                            'Unable to locate download info for {0}, continuing to try and process this release ...'.format(
-                                os.path.basename(dirName))
-                        )
-
-                    clientAgent = text_type(core.DOWNLOADINFO[0].get('client_agent', ''))
-                    download_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
+                        logger.info('Unable to locate download info for {0}, '
+                                    'continuing to try and process this release ...'.format
+                                    (os.path.basename(dirName)))
+                        clientAgent = ''
+                        download_id = ''
 
                     if clientAgent and clientAgent.lower() not in core.NZB_CLIENTS:
                         continue
