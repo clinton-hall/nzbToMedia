@@ -581,16 +581,18 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
             inputCategory))
         return [-1, ""]
 
-    extract = int(section[usercat].get('extract', 0))
+    cfg = dict(core.CFG[sectionName][usercat])
+
+    extract = int(cfg.get("extract", 0))
 
     try:
-        if int(section[usercat]['remote_path']) and not core.REMOTEPATHS:
+        if int(cfg.get("remote_path")) and not core.REMOTEPATHS:
             logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 sectionName, inputCategory))
             return [-1, ""]
     except:
         logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
-            section[usercat]['remote_path'], sectionName, inputCategory))
+            core.get("remote_path"), sectionName, inputCategory))
 
     inputName, inputDirectory = convert_to_ascii(inputName, inputDirectory)
 
