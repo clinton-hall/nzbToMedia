@@ -16,7 +16,8 @@ class EnabledExtensionManager(ExtensionManager):
     :param namespace: The namespace for the entry points.
     :type namespace: str
     :param check_func: Function to determine which extensions to load.
-    :type check_func: callable
+    :type check_func: callable, taking an :class:`Extension`
+        instance as argument
     :param invoke_on_load: Boolean controlling whether to invoke the
         object returned by the entry point after the driver is loaded.
     :type invoke_on_load: bool

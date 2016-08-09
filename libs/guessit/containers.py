@@ -21,10 +21,11 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import types
+
 from .patterns import compile_pattern, sep
 from . import base_text_type
 from .guess import Guess
-import types
 
 
 def _get_span(prop, match):
@@ -41,8 +42,6 @@ def _get_span(prop, match):
         return start, end
     else:
         return match.span()
-        start = span[0]
-        end = span[1]
 
 
 def _trim_span(span, value, blanks = sep):
@@ -83,14 +82,16 @@ def _get_groups(compiled_re):
 
 
 class NoValidator(object):
-    def validate(self, prop, string, node, match, entry_start, entry_end):
+    @staticmethod
+    def validate(prop, string, node, match, entry_start, entry_end):
         return True
 
 
 class LeftValidator(object):
     """Make sure our match is starting by separator, or by another entry"""
 
-    def validate(self, prop, string, node, match, entry_start, entry_end):
+    @staticmethod
+    def validate(prop, string, node, match, entry_start, entry_end):
         span = _get_span(prop, match)
         span = _trim_span(span, string[span[0]:span[1]])
         start, end = span
@@ -105,7 +106,8 @@ class LeftValidator(object):
 class RightValidator(object):
     """Make sure our match is ended by separator, or by another entry"""
 
-    def validate(self, prop, string, node, match, entry_start, entry_end):
+    @staticmethod
+    def validate(prop, string, node, match, entry_start, entry_end):
         span = _get_span(prop, match)
         span = _trim_span(span, string[span[0]:span[1]])
         start, end = span
@@ -133,8 +135,14 @@ class SameKeyValidator(object):
         self.validator_function = validator_function
 
     def validate(self, prop, string, node, match, entry_start, entry_end):
+        path_nodes = [path_node for path_node in node.ancestors if path_node.category == 'path']
+        if path_nodes:
+            path_node = path_nodes[0]
+        else:
+            path_node = node.root
+
         for key in prop.keys:
-            for same_value_leaf in node.root.leaves_containing(key):
+            for same_value_leaf in path_node.leaves_containing(key):
                 ret = self.validator_function(same_value_leaf, key, prop, string, node, match, entry_start, entry_end)
                 if ret is not None:
                     return ret
@@ -142,6 +150,9 @@ class SameKeyValidator(object):
 
 
 class OnlyOneValidator(SameKeyValidator):
+    """
+    Check that there's only one occurence of key for current directory
+    """
     def __init__(self):
         super(OnlyOneValidator, self).__init__(lambda same_value_leaf, key, prop, string, node, match, entry_start, entry_end: False)
 
@@ -151,12 +162,16 @@ class DefaultValidator(object):
     def validate(self, prop, string, node, match, entry_start, entry_end):
         span = _get_span(prop, match)
         span = _trim_span(span, string[span[0]:span[1]])
+        return DefaultValidator.validate_string(string, span, entry_start, entry_end)
+
+    @staticmethod
+    def validate_string(string, span, entry_start=None, entry_end=None):
         start, end = span
 
         sep_start = start <= 0 or string[start - 1] in sep
         sep_end = end >= len(string) or string[end] in sep
-        start_by_other = start in entry_end
-        end_by_other = end in entry_start
+        start_by_other = start in entry_end if entry_end else False
+        end_by_other = end in entry_start if entry_start else False
         if (sep_start or start_by_other) and (sep_end or end_by_other):
             return True
         return False
@@ -233,6 +248,13 @@ class NeighborValidator(DefaultValidator):
 
         return False
 
+class FullMatchValidator(DefaultValidator):
+    """Make sure the node match fully"""
+    def validate(self, prop, string, node, match, entry_start, entry_end):
+        at_start, at_end = _get_positions(prop, string, node, match, entry_start, entry_end)
+
+        return at_start and at_end
+
 
 class LeavesValidator(DefaultValidator):
     def __init__(self, lambdas=None, previous_lambdas=None, next_lambdas=None, both_side=False, default_=True):
@@ -281,13 +303,14 @@ class LeavesValidator(DefaultValidator):
                         return ret
             return False
 
-    def _check_rule(self, lambda_, previous_leaf):
+    @staticmethod
+    def _check_rule(lambda_, previous_leaf):
         return lambda_(previous_leaf)
 
 
 class _Property:
     """Represents a property configuration."""
-    def __init__(self, keys=None, pattern=None, canonical_form=None, canonical_from_pattern=True, confidence=1.0, enhance=True, global_span=False, validator=DefaultValidator(), formatter=None, disabler=None, confidence_lambda=None):
+    def __init__(self, keys=None, pattern=None, canonical_form=None, canonical_from_pattern=True, confidence=1.0, enhance=True, global_span=False, validator=DefaultValidator(), formatter=None, disabler=None, confidence_lambda=None, remove_duplicates=False):
         """
         :param keys: Keys of the property (format, screenSize, ...)
         :type keys: string
@@ -306,6 +329,8 @@ class _Property:
         :type validator: :class:`DefaultValidator`
         :param formatter: Formater to use
         :type formatter: function
+        :param remove_duplicates: Keep only the last match if multiple values are found
+        :type remove_duplicates: bool
         """
         if isinstance(keys, list):
             self.keys = keys
@@ -332,6 +357,7 @@ class _Property:
         self.validator = validator
         self.formatter = formatter
         self.disabler = disabler
+        self.remove_duplicates = remove_duplicates
 
     def disabled(self, options):
         if self.disabler:
@@ -476,7 +502,8 @@ class PropertiesContainer(object):
                         entries.append((prop, match))
                 else:
                     matches = list(prop.compiled.finditer(string))
-                    duplicate_matches[prop] = matches
+                    if prop.remove_duplicates:
+                        duplicate_matches[prop] = matches
                     for match in matches:
                         entries.append((prop, match))
 
@@ -486,6 +513,9 @@ class PropertiesContainer(object):
                 computed_confidence = prop.confidence_lambda(match)
                 if computed_confidence is not None:
                     prop.confidence = computed_confidence
+
+        entries.sort(key=lambda entry: -entry[0].confidence)
+        # sort entries, from most confident to less confident
 
         if validate:
             # compute entries start and ends
@@ -528,7 +558,7 @@ class PropertiesContainer(object):
                         del entry_end[end]
 
         for prop, prop_duplicate_matches in duplicate_matches.items():
-            # Keeping the last valid match.
+            # Keeping the last valid match only.
             # Needed for the.100.109.hdtv-lol.mp4
             for duplicate_match in prop_duplicate_matches[:-1]:
                 entries.remove((prop, duplicate_match))
@@ -558,8 +588,8 @@ class PropertiesContainer(object):
                         for prop, match in key_entries:
                             start, end = _get_span(prop, match)
                             if not best_prop or \
-                            best_prop.confidence < best_prop.confidence or \
-                            best_prop.confidence == best_prop.confidence and \
+                            best_prop.confidence < prop.confidence or \
+                            best_prop.confidence == prop.confidence and \
                             best_match.span()[1] - best_match.span()[0] < match.span()[1] - match.span()[0]:
                                 best_prop, best_match = prop, match
 
@@ -622,7 +652,8 @@ class PropertiesContainer(object):
                     return guess
         return guesses
 
-    def _effective_prop_value(self, prop, group_name, input=None, span=None, sep_replacement=None):
+    @staticmethod
+    def _effective_prop_value(prop, group_name, input=None, span=None, sep_replacement=None):
         if prop.canonical_form:
             return prop.canonical_form
         if input is None:

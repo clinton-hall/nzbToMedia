@@ -30,7 +30,7 @@ class RedisBackend(CacheBackend):
                 'port': 6379,
                 'db': 0,
                 'redis_expiration_time': 60*60*2,   # 2 hours
-                'distributed_lock':True
+                'distributed_lock': True
                 }
         )
 
@@ -110,7 +110,7 @@ class RedisBackend(CacheBackend):
     def _imports(self):
         # defer imports until backend is used
         global redis
-        import redis
+        import redis  # noqa
 
     def _create_client(self):
         if self.connection_pool is not None:
@@ -133,7 +133,6 @@ class RedisBackend(CacheBackend):
             )
             return redis.StrictRedis(**args)
 
-
     def get_mutex(self, key):
         if self.distributed_lock:
             return self.client.lock(u('_lock{0}').format(key),
@@ -148,9 +147,12 @@ class RedisBackend(CacheBackend):
         return pickle.loads(value)
 
     def get_multi(self, keys):
+        if not keys:
+            return []
         values = self.client.mget(keys)
-        return [pickle.loads(v) if v is not None else NO_VALUE
-                  for v in values]
+        return [
+            pickle.loads(v) if v is not None else NO_VALUE
+            for v in values]
 
     def set(self, key, value):
         if self.redis_expiration_time:
@@ -178,4 +180,3 @@ class RedisBackend(CacheBackend):
 
     def delete_multi(self, keys):
         self.client.delete(*keys)
-

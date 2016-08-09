@@ -25,6 +25,7 @@ def coerce_string_conf(d):
             result[k] = v
     return result
 
+
 class PluginLoader(object):
     def __init__(self, group):
         self.group = group
@@ -36,20 +37,17 @@ class PluginLoader(object):
         else:  # pragma NO COVERAGE
             import pkg_resources
             for impl in pkg_resources.iter_entry_points(
-                                self.group,
-                                name):
+                    self.group, name):
                 self.impls[name] = impl.load
                 return impl.load()
             else:
                 raise Exception(
-                        "Can't load plugin %s %s" %
-                        (self.group, name))
+                    "Can't load plugin %s %s" %
+                    (self.group, name))
 
     def register(self, name, modulepath, objname):
         def load():
-            mod = __import__(modulepath)
-            for token in modulepath.split(".")[1:]:
-                mod = getattr(mod, token)
+            mod = __import__(modulepath, fromlist=[objname])
             return getattr(mod, objname)
         self.impls[name] = load
 
@@ -74,16 +72,18 @@ def function_key_generator(namespace, fn, to_str=compat.string_type):
 
     args = inspect.getargspec(fn)
     has_self = args[0] and args[0][0] in ('self', 'cls')
+
     def generate_key(*args, **kw):
         if kw:
             raise ValueError(
-                    "dogpile.cache's default key creation "
-                    "function does not accept keyword arguments.")
+                "dogpile.cache's default key creation "
+                "function does not accept keyword arguments.")
         if has_self:
             args = args[1:]
 
         return namespace + "|" + " ".join(map(to_str, args))
     return generate_key
+
 
 def function_multi_key_generator(namespace, fn, to_str=compat.string_type):
 
@@ -94,20 +94,23 @@ def function_multi_key_generator(namespace, fn, to_str=compat.string_type):
 
     args = inspect.getargspec(fn)
     has_self = args[0] and args[0][0] in ('self', 'cls')
+
     def generate_keys(*args, **kw):
         if kw:
             raise ValueError(
-                    "dogpile.cache's default key creation "
-                    "function does not accept keyword arguments.")
+                "dogpile.cache's default key creation "
+                "function does not accept keyword arguments.")
         if has_self:
             args = args[1:]
         return [namespace + "|" + key for key in map(to_str, args)]
     return generate_keys
 
+
 def sha1_mangle_key(key):
     """a SHA1 key mangler."""
 
     return sha1(key).hexdigest()
+
 
 def length_conditional_mangler(length, mangler):
     """a key mangler that mangles if the length of the key is
@@ -121,6 +124,7 @@ def length_conditional_mangler(length, mangler):
             return key
     return mangle
 
+
 class memoized_property(object):
     """A read-only @property that is only evaluated once."""
     def __init__(self, fget, doc=None):
@@ -133,6 +137,7 @@ class memoized_property(object):
             return self
         obj.__dict__[self.__name__] = result = self.fget(obj)
         return result
+
 
 def to_list(x, default=None):
     """Coerce to a list."""
@@ -157,6 +162,7 @@ class KeyReentrantMutex(object):
         # thread idents as the key; a set of
         # keynames held as the value.
         keystore = collections.defaultdict(set)
+
         def fac(key):
             return KeyReentrantMutex(key, mutex, keystore)
         return fac
@@ -165,7 +171,7 @@ class KeyReentrantMutex(object):
         current_thread = compat.threading.current_thread().ident
         keys = self.keys.get(current_thread)
         if keys is not None and \
-            self.key not in keys:
+                self.key not in keys:
             # current lockholder, new key. add it in
             keys.add(self.key)
             return True

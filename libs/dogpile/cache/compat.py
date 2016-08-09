@@ -1,6 +1,5 @@
 import sys
 
-
 py2k = sys.version_info < (3, 0)
 py3k = sys.version_info >= (3, 0)
 py32 = sys.version_info >= (3, 2)
@@ -11,10 +10,10 @@ win32 = sys.platform.startswith('win')
 try:
     import threading
 except ImportError:
-    import dummy_threading as threading
+    import dummy_threading as threading  # noqa
 
 
-if py3k: # pragma: no cover
+if py3k:  # pragma: no cover
     string_types = str,
     text_type = str
     string_type = str
@@ -45,24 +44,22 @@ else:
     def ue(s):
         return unicode(s, "unicode_escape")
 
-    import ConfigParser as configparser
-    import StringIO as io
+    import ConfigParser as configparser  # noqa
+    import StringIO as io   # noqa
 
-
-    callable = callable
-    import thread
+    callable = callable  # noqa
+    import thread  # noqa
 
 
 if py3k or jython:
     import pickle
 else:
-    import cPickle as pickle
+    import cPickle as pickle  # noqa
 
 
 def timedelta_total_seconds(td):
     if py27:
         return td.total_seconds()
     else:
-        return (td.microseconds + (td.seconds + td.days * 24 * 3600) * 1e6) / 1e6
-
-
+        return (td.microseconds + (
+            td.seconds + td.days * 24 * 3600) * 1e6) / 1e6

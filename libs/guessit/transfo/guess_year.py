@@ -32,7 +32,8 @@ class GuessYear(Transformer):
     def supported_properties(self):
         return ['year']
 
-    def guess_year(self, string, node=None, options=None):
+    @staticmethod
+    def guess_year(string, node=None, options=None):
         year, span = search_year(string)
         if year:
             return {'year': year}, span
@@ -41,8 +42,13 @@ class GuessYear(Transformer):
 
     def second_pass_options(self, mtree, options=None):
         year_nodes = list(mtree.leaves_containing('year'))
-        if len(year_nodes) > 1:
-            return {'skip_nodes': year_nodes[:len(year_nodes) - 1]}
+        # if we found a year, let's try by ignoring all instances of that year
+        # as a candidate, let's take the one that appears last in the filename
+        if year_nodes:
+            year_candidate = year_nodes[-1].guess['year']
+            year_nodes = [year for year in year_nodes if year.guess['year'] != year_candidate]
+            if year_nodes:
+                return {'skip_nodes': year_nodes}
         return None
 
     def process(self, mtree, options=None):

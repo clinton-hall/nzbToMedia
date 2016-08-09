@@ -20,11 +20,14 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-from guessit import UnicodeMixin, s, u, base_text_type
-from babelfish import Language, Country
 import json
 import datetime
 import logging
+
+from guessit import UnicodeMixin, s, u, base_text_type
+from babelfish import Language, Country
+from guessit.textutils import common_words
+
 
 log = logging.getLogger(__name__)
 
@@ -196,11 +199,11 @@ class Guess(UnicodeMixin, dict):
         FIXME: doc with param"""
         if advanced:
             data = self.to_dict(advanced)
-            return json.dumps(data, indent=4)
+            return json.dumps(data, indent=4, ensure_ascii=False)
         else:
             data = self.to_dict()
 
-            parts = json.dumps(data, indent=4).split('\n')
+            parts = json.dumps(data, indent=4, ensure_ascii=False).split('\n')
             for i, p in enumerate(parts):
                 if p[:5] != '    "':
                     continue
@@ -281,21 +284,21 @@ def choose_int(g1, g2):
     properties when they are integers."""
     v1, c1 = g1  # value, confidence
     v2, c2 = g2
-    if (v1 == v2):
-        return (v1, 1 - (1 - c1) * (1 - c2))
+    if v1 == v2:
+        return v1, 1 - (1 - c1) * (1 - c2)
     else:
-        if c1 > c2:
-            return (v1, c1 - c2)
+        if c1 >= c2:
+            return v1, c1 - c2 / 2
         else:
-            return (v2, c2 - c1)
+            return v2, c2 - c1 / 2
 
 
 def choose_string(g1, g2):
     """Function used by merge_similar_guesses to choose between 2 possible
     properties when they are strings.
 
-    If the 2 strings are similar, or one is contained in the other, the latter is returned
-    with an increased confidence.
+    If the 2 strings are similar or have common words longer than 3 letters,
+    the one with highest confidence is returned with an increased confidence.
 
     If the 2 strings are dissimilar, the one with the higher confidence is returned, with
     a weaker confidence.
@@ -305,7 +308,7 @@ def choose_string(g1, g2):
     prepended to it.
 
     >>> s(choose_string(('Hello', 0.75), ('World', 0.5)))
-    ('Hello', 0.25)
+    ('Hello', 0.5)
 
     >>> s(choose_string(('Hello', 0.5), ('hello', 0.5)))
     ('Hello', 0.75)
@@ -339,18 +342,22 @@ def choose_string(g1, g2):
     elif v2l == 'the ' + v1l:
         return v2, combined_prob
 
-    # if one string is contained in the other, return the shortest one
-    elif v2l in v1l:
-        return v2, combined_prob
-    elif v1l in v2l:
-        return v1, combined_prob
+    # If the 2 strings have common words longer than 3 letters,
+    # return the one with highest confidence.
+    commons = common_words(v1l, v2l)
+    for common_word in commons:
+        if len(common_word) > 3:
+            if c1 >= c2:
+                return v1, combined_prob
+            else:
+                return v2, combined_prob
 
     # in case of conflict, return the one with highest confidence
     else:
-        if c1 > c2:
-            return v1, c1 - c2
+        if c1 >= c2:
+            return v1, c1 - c2 / 2
         else:
-            return v2, c2 - c1
+            return v2, c2 - c1 / 2
 
 
 def _merge_similar_guesses_nocheck(guesses, prop, choose):
@@ -467,8 +474,8 @@ def merge_all(guesses, append=None):
 
     # delete very unlikely values
     for p in list(result.keys()):
-        if result.confidence(p) < 0.05:
-            del result[p]
+       if result.confidence(p) < 0.05:
+           del result[p]
 
     # make sure our appendable properties contain unique values
     for prop in append:
@@ -502,7 +509,7 @@ def smart_merge(guesses):
     for string_part in ('title', 'series', 'container', 'format',
                         'releaseGroup', 'website', 'audioCodec',
                         'videoCodec', 'screenSize', 'episodeFormat',
-                        'audioChannels', 'idNumber'):
+                        'audioChannels', 'idNumber', 'container'):
         merge_similar_guesses(guesses, string_part, choose_string)
 
     # 2- merge the rest, potentially discarding information not properly
