@@ -85,8 +85,10 @@
         process_method =
         # force processing of already processed content when running a manual scan.
         force = 0
-        # tell SickRage to delete all source files after processing.
+        # tell SickRage/Medusa to delete all source files after processing.
         delete_on = 0
+        # tell Medusa to ignore check for associated subtitle check when postponing release
+        ignore_subs = 0
         extract = 1
         nzbExtractionBy = Downloader
         # Set this to minimum required size to consider a media file valid (in MB)

@@ -63,15 +63,17 @@ FORK_FAILED = "failed"
 FORK_FAILED_TORRENT = "failed-torrent"
 FORK_SICKRAGETV = "sickragetv"
 FORK_SICKRAGE = "sickrage"
+FORK_MEDUSA = "medusa"
 FORK_SICKGEAR = "sickgear"
 FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
 FORKS[FORK_SICKRAGETV] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
 FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+FORKS[FORK_MEDUSA] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs":None}
 FORKS[FORK_SICKGEAR] = {"dir": None, "failed": None, "process_method": None, "force": None}
 ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None,
-             "delete_on": None}
+             "delete_on": None, "ignore_subs": None}
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PARCHECK = 92
