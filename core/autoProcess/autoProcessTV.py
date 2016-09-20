@@ -211,7 +211,7 @@ class autoProcessTV(object):
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to {0} branch".format(fork), section)
             elif section == "NzbDrone":
                 logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(fork), section)
-                return [1, "{0}: Downlaod Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
+                return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
             else:
                 logger.postprocess("FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process".format(fork), section)
                 if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
