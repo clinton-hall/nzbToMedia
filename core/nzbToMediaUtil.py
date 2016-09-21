@@ -630,7 +630,7 @@ def getDirs(section, subsection, link='hard'):
                         # create new path
                         newPath = os.path.join(path, "{0} - {1}".format(sanitizeName(artist), sanitizeName(album)))
                     elif fileExt in core.MEDIACONTAINER:
-                        f = guessit.guessit(os.path.basename(mediafile))
+                        f = guessit.guessit(mediafile)
 
                         # get title
                         title = f.get('series') or f.get('title')

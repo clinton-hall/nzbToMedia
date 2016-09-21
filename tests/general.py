@@ -44,9 +44,9 @@ from babelfish import Language
 lan = 'pt'
 lan = Language.fromalpha2(lan)
 print lan.alpha3
+vidName = "/volume1/Public/Movies/A Few Good Men/A Few Good Men(1992).mkv"
 inputName = "in.the.name.of.ben.hur.2016.bdrip.x264-rusted.nzb"
 guess = guessit.guessit(inputName)
-print guess
 if guess:
     # Movie Title
     title = None
@@ -56,7 +56,6 @@ if guess:
     year = None
     if 'year' in guess:
         year = guess['year']
-
     url = "http://www.omdbapi.com"
     r = requests.get(url, params={'y': year, 't': title}, verify=False, timeout=(60, 300))
     results = r.json()
@@ -66,7 +65,6 @@ import subliminal
 subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
 languages = set()
 languages.add(lan)
-vidName = "/volume1/Public/Movies/A Few Good Men/A Few Good Men(1992).mkv"
 video = subliminal.scan_video(vidName)
 subtitles = subliminal.download_best_subtitles({video}, languages)
 subliminal.save_subtitles(video, subtitles[video])
