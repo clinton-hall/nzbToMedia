@@ -630,7 +630,7 @@ def getDirs(section, subsection, link='hard'):
                         # create new path
                         newPath = os.path.join(path, "{0} - {1}".format(sanitizeName(artist), sanitizeName(album)))
                     elif fileExt in core.MEDIACONTAINER:
-                        f = guessit.guess_video_info(mediafile)
+                        f = guessit.guessit(os.path.basename(mediafile))
 
                         # get title
                         title = f.get('series') or f.get('title')
@@ -1046,7 +1046,7 @@ def find_imdbid(dirName, inputName):
                 logger.info("Found imdbID [{0}] from DNZB-MoreInfo".format(imdbid))
                 return imdbid
     logger.info('Searching IMDB for imdbID ...')
-    guess = guessit.guess_movie_info(inputName)
+    guess = guessit.guessit(inputName)
     if guess:
         # Movie Title
         title = None
