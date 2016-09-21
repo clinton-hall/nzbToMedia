@@ -1124,7 +1124,7 @@ def import_subs(filename):
     if not core.GETSUBS:
         return
     try:
-        subliminal.cache_region.configure('dogpile.cache.memory')
+        subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
     except:
         pass
 
@@ -1139,9 +1139,9 @@ def import_subs(filename):
 
     logger.debug("Attempting to download subtitles for {0}".format(filename), 'SUBTITLES')
     try:
-        video = subliminal.scan_video(filename, subtitles=True, embedded_subtitles=True)
-        subtitles = subliminal.download_best_subtitles({video}, languages, hearing_impaired=False)
-        subliminal.save_subtitles(subtitles)
+        video = subliminal.scan_video(filename)
+        subtitles = subliminal.download_best_subtitles({video}, languages)
+        subliminal.save_subtitles(video, subtitles[video])
     except Exception as e:
         logger.error("Failed to download subtitles for {0} due to: {1}".format(filename, e), 'SUBTITLES')
 
