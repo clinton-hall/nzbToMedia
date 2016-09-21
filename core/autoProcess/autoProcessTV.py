@@ -78,6 +78,7 @@ class autoProcessTV(object):
         wait_for = int(cfg.get("wait_for", 2))
         force = int(cfg.get("force", 0))
         delete_on = int(cfg.get("delete_on", 0))
+        ignore_subs = int(cfg.get("ignore_subs", 0))
         extract = int(cfg.get("extract", 0))
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
@@ -195,6 +196,12 @@ class autoProcessTV(object):
             if param == "delete_on":
                 if delete_on:
                     fork_params[param] = delete_on
+                else:
+                    del fork_params[param]
+
+            if param == "ignore_subs":
+                if ignore_subs:
+                    fork_params[param] = ignore_subs
                 else:
                     del fork_params[param]
 

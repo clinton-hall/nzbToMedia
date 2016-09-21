@@ -124,6 +124,11 @@
 # set to 1 to delete failed, or 0 to leave files in place.
 #sbdelete_failed=0
 
+# SickBeard Ignore associated subtitle check (0, 1).
+#
+# set to 1 to ignore subtitles check, or 0 to don't check.
+#sbignore_subs=0
+
 # SickBeard process method.
 #
 # set this to move, copy, hardlink, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
