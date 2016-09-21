@@ -430,8 +430,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 continue
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
             command.extend(['-i', subfile])
-            meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
-                             'language={lang}'.format(lang=lan[1:])])
+            lansplit = lan.split('-')
+            if len(lansplit[0]) == 3 and ( len(lansplit) == 1 or ( len(lansplit) == 2 and len(lansplit[1]) == 2 ) ):
+                meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
+                                 'language={lang}'.format(lang=lan[1:])])
             n += 1
             map_cmd.extend(['-map', '{x}:0'.format(x=n)])
 
