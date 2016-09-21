@@ -1,12 +1,16 @@
-# Copyright 2009 Joe Wreschnig
+# -*- coding: utf-8 -*-
+
+# Copyright (C) 2009  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of version 2 of the GNU General Public License as
 # published by the Free Software Foundation.
 
-from mutagen import Metadata
-from mutagen._util import DictMixin, dict_match, utf8
+from mutagen import Tags
+from mutagen._util import DictMixin, dict_match
 from mutagen.mp4 import MP4, MP4Tags, error, delete
+from ._compat import PY2, text_type, PY3
+
 
 __all__ = ["EasyMP4Tags", "EasyMP4", "delete", "error"]
 
@@ -15,14 +19,14 @@ class EasyMP4KeyError(error, KeyError, ValueError):
     pass
 
 
-class EasyMP4Tags(DictMixin, Metadata):
+class EasyMP4Tags(DictMixin, Tags):
     """A file with MPEG-4 iTunes metadata.
 
     Like Vorbis comments, EasyMP4Tags keys are case-insensitive ASCII
     strings, and values are a list of Unicode strings (and these lists
     are always of length 0 or 1).
 
-    If you need access to the full MP4 metadata feature set, you should use 
+    If you need access to the full MP4 metadata feature set, you should use
     MP4, not EasyMP4.
     """
 
@@ -36,6 +40,7 @@ class EasyMP4Tags(DictMixin, Metadata):
         self.load = self.__mp4.load
         self.save = self.__mp4.save
         self.delete = self.__mp4.delete
+        self._padding = self.__mp4._padding
 
     filename = property(lambda s: s.__mp4.filename,
                         lambda s, fn: setattr(s.__mp4, 'filename', fn))
@@ -91,16 +96,16 @@ class EasyMP4Tags(DictMixin, Metadata):
         cls.RegisterKey(key, getter, setter, deleter)
 
     @classmethod
-    def RegisterIntKey(cls, key, atomid, min_value=0, max_value=2**16-1):
+    def RegisterIntKey(cls, key, atomid, min_value=0, max_value=(2 ** 16) - 1):
         """Register a scalar integer key.
         """
 
         def getter(tags, key):
-            return map(unicode, tags[atomid])
+            return list(map(text_type, tags[atomid]))
 
         def setter(tags, key, value):
             clamp = lambda x: int(min(max(min_value, x), max_value))
-            tags[atomid] = map(clamp, map(int, value))
+            tags[atomid] = [clamp(v) for v in map(int, value)]
 
         def deleter(tags, key):
             del(tags[atomid])
@@ -108,14 +113,15 @@ class EasyMP4Tags(DictMixin, Metadata):
         cls.RegisterKey(key, getter, setter, deleter)
 
     @classmethod
-    def RegisterIntPairKey(cls, key, atomid, min_value=0, max_value=2**16-1):
+    def RegisterIntPairKey(cls, key, atomid, min_value=0,
+                           max_value=(2 ** 16) - 1):
         def getter(tags, key):
             ret = []
             for (track, total) in tags[atomid]:
                 if total:
                     ret.append(u"%d/%d" % (track, total))
                 else:
-                    ret.append(unicode(track))
+                    ret.append(text_type(track))
             return ret
 
         def setter(tags, key, value):
@@ -148,13 +154,20 @@ class EasyMP4Tags(DictMixin, Metadata):
             EasyMP4Tags.RegisterFreeformKey(
                 "musicbrainz_artistid", "MusicBrainz Artist Id")
         """
-        atomid = "----:%s:%s" % (mean, name)
+        atomid = "----:" + mean + ":" + name
 
         def getter(tags, key):
             return [s.decode("utf-8", "replace") for s in tags[atomid]]
 
         def setter(tags, key, value):
-            tags[atomid] = map(utf8, value)
+            encoded = []
+            for v in value:
+                if not isinstance(v, text_type):
+                    if PY3:
+                        raise TypeError("%r not str" % v)
+                    v = v.decode("utf-8")
+                encoded.append(v.encode("utf-8"))
+            tags[atomid] = encoded
 
         def deleter(tags, key):
             del(tags[atomid])
@@ -171,8 +184,14 @@ class EasyMP4Tags(DictMixin, Metadata):
 
     def __setitem__(self, key, value):
         key = key.lower()
-        if isinstance(value, basestring):
-            value = [value]
+
+        if PY2:
+            if isinstance(value, basestring):
+                value = [value]
+        else:
+            if isinstance(value, text_type):
+                value = [value]
+
         func = dict_match(self.Set, key)
         if func is not None:
             return func(self.__mp4, key, value)
