@@ -39,7 +39,9 @@ if server_responding("http://127.0.0.1:8090"):
     print "Mylar Running"
 
 from babelfish import Language
-print Language('eng')
+lan = 'pt'
+lan = Language.fromalpha2(lan)
+print lan.alpha3
 
 import subliminal
 

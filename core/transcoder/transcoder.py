@@ -11,6 +11,7 @@ import shutil
 import re
 from core import logger
 from core.nzbToMediaUtil import makeDir
+from babelfish import Language
 
 
 def isVideoGood(videofile, status):
@@ -428,12 +429,18 @@ def buildCommands(file, newDir, movieName, bitbucket):
             sub_details, result = getVideoDetails(subfile)
             if not sub_details or not sub_details.get("streams"):
                 continue
-            lan = os.path.splitext(os.path.splitext(subfile)[0])[1]
             command.extend(['-i', subfile])
-            lansplit = lan.split('-')
-            if len(lansplit[0]) == 3 and ( len(lansplit) == 1 or ( len(lansplit) == 2 and len(lansplit[1]) == 2 ) ):
+            lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
+            metlan = None
+            try:
+                if len(lan) == 3:
+                    metlan = Language(lan)
+                if len(lan) == 2:
+                    metlan = Language.fromalpha2(lan)
+            except: pass
+            if metlan:
                 meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
-                                 'language={lang}'.format(lang=lan[1:])])
+                                 'language={lang}'.format(lang=metlan.alpha3)])
             n += 1
             map_cmd.extend(['-map', '{x}:0'.format(x=n)])
 
@@ -492,7 +499,7 @@ def extract_subs(file, newfilePath, bitbucket):
     for n in range(num):
         sub = subStreams[n]
         idx = sub["index"]
-        lan = sub.geet("tags", {}).get("language", "unk")
+        lan = sub.get("tags", {}).get("language", "unk")
 
         if num == 1:
             outputFile = os.path.join(subdir, "{0}.srt".format(name))
