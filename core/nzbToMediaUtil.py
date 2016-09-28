@@ -734,6 +734,7 @@ def rmDir(dirName):
 
 
 def cleanDir(path, section, subsection):
+    cfg = dict(core.CFG[section][subsection])
     if not os.path.exists(path):
         logger.info('Directory {0} has been processed and removed ...'.format(path), 'CLEANDIR')
         return
@@ -741,8 +742,8 @@ def cleanDir(path, section, subsection):
         logger.info('Doing Forceful Clean of {0}'.format(path), 'CLEANDIR')
         rmDir(path)
         return
-    minSize = int(core.CFG[section][subsection].get('minSize', 0))
-    delete_ignored = int(core.CFG[section][subsection].get('delete_ignored', 0))
+    minSize = int(cfg.get('minSize', 0))
+    delete_ignored = int(cfg.get('delete_ignored', 0))
     try:
         num_files = len(listMediaFiles(path, minSize=minSize, delete_ignored=delete_ignored))
     except:
