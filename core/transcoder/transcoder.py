@@ -268,20 +268,20 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if audio2:  # right language and codec...
             map_cmd.extend(['-map', '0:{index}'.format(index=audio2[0]["index"])])
             a_mapped.extend([audio2[0]["index"]])
-            bitrate = int(audio2[0].get("bit_rate", 0)) / 1000
-            channels = int(audio2[0].get("channels", 0))
+            bitrate = int(float(audio2[0].get("bit_rate", 0))) / 1000
+            channels = int(float(audio2[0].get("channels", 0)))
             audio_cmd.extend(['-c:a:{0}'.format(used_audio), 'copy'])
         elif audio1:  # right language wrong codec.
             map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
-            bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
-            channels = int(audio1[0].get("channels", 0))
+            bitrate = int(float(audio1[0].get("bit_rate", 0))) / 1000
+            channels = int(float(audio1[0].get("channels", 0)))
             audio_cmd.extend(['-c:a:{0}'.format(used_audio), core.ACODEC if core.ACODEC else 'copy'])
         elif audio3:  # just pick the default audio track
             map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
-            bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
-            channels = int(audio3[0].get("channels", 0))
+            bitrate = int(float(audio3[0].get("bit_rate", 0))) / 1000
+            channels = int(float(audio3[0].get("channels", 0)))
             audio_cmd.extend(['-c:a:{0}'.format(used_audio), core.ACODEC if core.ACODEC else 'copy'])
 
         if core.ACHANNELS and channels and channels > core.ACHANNELS:
@@ -305,14 +305,14 @@ def buildCommands(file, newDir, movieName, bitbucket):
             if audio4:  # right language and codec.
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
-                bitrate = int(audio4[0].get("bit_rate", 0)) / 1000
-                channels = int(audio4[0].get("channels", 0))
+                bitrate = int(float(audio4[0].get("bit_rate", 0))) / 1000
+                channels = int(float(audio4[0].get("channels", 0)))
                 audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
                 a_mapped.extend([audio1[0]["index"]])
-                bitrate = int(audio1[0].get("bit_rate", 0)) / 1000
-                channels = int(audio1[0].get("channels", 0))
+                bitrate = int(float(audio1[0].get("bit_rate", 0))) / 1000
+                channels = int(float(audio1[0].get("channels", 0)))
                 if core.ACODEC2:
                     audio_cmd2.extend(['-c:a:{0}'.format(used_audio), core.ACODEC2])
                 else:
@@ -320,8 +320,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
             elif audio3:  # just pick the default audio track
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
-                bitrate = int(audio3[0].get("bit_rate", 0)) / 1000
-                channels = int(audio3[0].get("channels", 0))
+                bitrate = int(float(audio3[0].get("bit_rate", 0))) / 1000
+                channels = int(float(audio3[0].get("channels", 0)))
                 if core.ACODEC2:
                     audio_cmd2.extend(['-c:a:{0}'.format(used_audio), core.ACODEC2])
                 else:
@@ -350,8 +350,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 used_audio += 1
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio["index"])])
                 audio_cmd3 = []
-                bitrate = int(audio.get("bit_rate", 0)) / 1000
-                channels = int(audio.get("channels", 0))
+                bitrate = int(float(audio.get("bit_rate", 0))) / 1000
+                channels = int(float(audio.get("channels", 0)))
                 if audio["codec_name"] in core.ACODEC3_ALLOW:
                     audio_cmd3.extend(['-c:a:{0}'.format(used_audio), 'copy'])
                 else:
