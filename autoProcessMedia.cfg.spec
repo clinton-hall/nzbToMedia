@@ -64,6 +64,8 @@
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+        ##### Set the recursive directory permissions to the following (0 to disable)
+        chmodDirectory = 0
 
 [SickBeard]
     #### autoProcessing for TV Series
@@ -99,6 +101,8 @@
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+        ##### Set the recursive directory permissions to the following (0 to disable)
+        chmodDirectory = 0
 
 [NzbDrone]
     #### autoProcessing for TV Series
