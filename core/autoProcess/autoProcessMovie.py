@@ -195,6 +195,12 @@ class autoProcessMovie(object):
                 if result == 0:
                     logger.debug("Transcoding succeeded for files in {0}".format(dirName), section)
                     dirName = newDirName
+
+                    chmod_directory = int(cfg.get("chmodDirectory", 0), 8)
+                    logger.debug("Config setting 'chmodDirectory' currently set to {0}".format(oct(chmod_directory)), section)
+                    if chmod_directory:
+                        logger.info("Attempting to set the octal permission of '{0}' on directory '{1}'".format(oct(chmod_directory), dirName), section)
+                        core.rchmod(dirName, chmod_directory)
                 else:
                     logger.error("Transcoding failed for files in {0}".format(dirName), section)
                     return [1, "{0}: Failed to post-process - Transcoding failed".format(section)]
