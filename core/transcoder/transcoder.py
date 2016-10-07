@@ -259,7 +259,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
             audio1 = [item for item in audioStreams if item["tags"]["language"] == core.ALANGUAGE]
         except:  # no language tags. Assume only 1 language.
             audio1 = audioStreams
-        audio2 = [item for item in audio1 if item["codec_name"] in core.ACODEC_ALLOW]
+        try:
+            audio2 = [item for item in audio1 if item["codec_name"] in core.ACODEC_ALLOW]
+        except:
+            audio2 = []
         try:
             audio3 = [item for item in audioStreams if item["tags"]["language"] != core.ALANGUAGE]
         except:
@@ -301,7 +304,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
         if core.ACODEC2_ALLOW:
             used_audio += 1
-            audio4 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
+            try:
+                audio4 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
+            except:
+                audio4 = []
             if audio4:  # right language and codec.
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]["index"])])
                 a_mapped.extend([audio4[0]["index"]])
