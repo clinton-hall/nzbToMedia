@@ -49,8 +49,8 @@ from core.transcoder import transcoder
 from core.databases import mainDB
 
 # Client Agents
-NZB_CLIENTS = ['sabnzbd', 'nzbget']
-TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'other']
+NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
+TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'other', 'manual']
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
