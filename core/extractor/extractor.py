@@ -47,13 +47,15 @@ def extract(filePath, outputDestination):
             for cmd in required_cmds:
                 if call(['which', cmd], stdout=devnull,
                         stderr=devnull):  # note, returns 0 if exists, or 1 if doesn't exist.
-                    if cmd == "7zr" and not call(["which", "7z"]):  # we do have "7z" command
-                        EXTRACT_COMMANDS[".7z"] = ["7z", "x"]
-                    elif cmd == "7zr" and not call(["which", "7za"]):  # we do have "7za" command
-                        EXTRACT_COMMANDS[".7z"] = ["7za", "x"]
-                    else:
-                        for k, v in EXTRACT_COMMANDS.items():
-                            if cmd in v[0]:
+                    for k, v in EXTRACT_COMMANDS.items():
+                        if cmd in v[0]:
+                            if not call(["which", "7zr"], stdout=devnull, stderr=devnull):  # we do have "7zr"
+                                EXTRACT_COMMANDS[k] = ["7zr", "x", "-y"]
+                            elif not call(["which", "7z"], stdout=devnull, stderr=devnull):  # we do have "7z"
+                                EXTRACT_COMMANDS[k] = ["7z", "x", "-y"]
+                            elif not call(["which", "7za"], stdout=devnull, stderr=devnull):  # we do have "7za"
+                                EXTRACT_COMMANDS[k] = ["7za", "x", "-y"]
+                            else:
                                 core.logger.error("EXTRACTOR: {cmd} not found, "
                                                   "disabling support for {feature}".format
                                                   (cmd=cmd, feature=k))
