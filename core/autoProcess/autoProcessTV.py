@@ -164,7 +164,7 @@ class autoProcessTV(object):
                 logger.debug("SUCCESS: Transcoding succeeded for files in {0}".format(dirName), section)
                 dirName = newDirName
 
-                chmod_directory = int(cfg.get("chmodDirectory", 0))
+                chmod_directory = int(str(cfg.get("chmodDirectory", "0")), 8)
                 logger.debug("Config setting 'chmodDirectory' currently set to {0}".format(oct(chmod_directory)), section)
                 if chmod_directory:
                     logger.info("Attempting to set the octal permission of '{0}' on directory '{1}'".format(oct(chmod_directory), dirName), section)
