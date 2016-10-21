@@ -1148,10 +1148,13 @@ def import_subs(filename):
 
 
 def server_responding(baseURL):
+    logger.debug("Attempting to connect to server at {0}".format(baseURL), 'SERVER')
     try:
         requests.get(baseURL, timeout=(60, 120), verify=False)
+        logger.debug("Server responded at {0}".format(baseURL), 'SERVER')
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
+        logger.error("Server failed to responded at {0}".format(baseURL), 'SERVER')
         return False
 
 
