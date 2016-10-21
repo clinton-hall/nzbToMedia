@@ -1154,7 +1154,7 @@ def server_responding(baseURL):
         logger.debug("Server responded at {0}".format(baseURL), 'SERVER')
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
-        logger.error("Server failed to responded at {0}".format(baseURL), 'SERVER')
+        logger.error("Server failed to respond at {0}".format(baseURL), 'SERVER')
         return False
 
 
