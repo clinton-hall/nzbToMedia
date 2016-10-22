@@ -658,7 +658,6 @@ def initialize(section=None):
             'SCODEC':'mov_text'
             },
         'MKV-SD':{
-            'VEXTENSION':'.mp4','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
             'VEXTENSION':'.mkv','VCODEC':'libx264','VPRESET':None,'VFRAMERATE':None,'VBITRATE':None,'VCRF':None,'VLEVEL':None,
             'VRESOLUTION':'720:-1','VCODEC_ALLOW':['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'],
             'ACODEC':'aac','ACODEC_ALLOW':['libfaac'],'ABITRATE':128000, 'ACHANNELS':2,
