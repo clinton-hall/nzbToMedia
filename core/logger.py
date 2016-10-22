@@ -1,3 +1,4 @@
+# coding=utf-8
 from __future__ import with_statement
 
 import os
@@ -25,6 +26,7 @@ reverseNames = {u'ERROR': ERROR,
                 u'DEBUG': DEBUG,
                 u'POSTPROCESS': POSTPROCESS,
                 u'DB': DB}
+
 
 class NTMRotatingLogHandler(object):
     def __init__(self, log_file, num_files, num_bytes):
@@ -67,7 +69,7 @@ class NTMRotatingLogHandler(object):
         if self.cur_handler:
             old_handler = self.cur_handler
         else:
-            #Add a new logging levels
+            # Add a new logging levels
             logging.addLevelName(21, 'POSTPROCESS')
             logging.addLevelName(5, 'DB')
 
@@ -84,7 +86,7 @@ class NTMRotatingLogHandler(object):
                     {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
-                    },
+                     },
                     logging.Formatter('%(message)s'), ))
 
                 # add the handler to the root logger
@@ -121,7 +123,7 @@ class NTMRotatingLogHandler(object):
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
-            },
+             },
             logging.Formatter('%(message)s'), ))
 
         return file_handler
@@ -134,7 +136,7 @@ class NTMRotatingLogHandler(object):
         i: Log number to ues
         """
 
-        return self.log_file_path + ('.' + str(i) if i else '')
+        return self.log_file_path + ('.{0}'.format(i) if i else '')
 
     def _num_logs(self):
         """
@@ -191,9 +193,9 @@ class NTMRotatingLogHandler(object):
                 self.writes_since_check += 1
 
             try:
-                message = u"%s: %s" % (str(section).upper(), toLog)
-            except:
-                message = u"%s: Message contains non-utf-8 string" % (str(section).upper())
+                message = u"{0}: {1}".format(section.upper(), toLog)
+            except UnicodeError:
+                message = u"{0}: Message contains non-utf-8 string".format(section.upper())
 
             out_line = message
 
@@ -226,14 +228,15 @@ class NTMRotatingLogHandler(object):
     def log_error_and_exit(self, error_msg):
         log(error_msg, ERROR)
 
-        if os.environ.has_key('NZBOP_SCRIPTDIR'):
+        if 'NZBOP_SCRIPTDIR' in os.environ:
             sys.exit(core.NZBGET_POSTPROCESS_ERROR)
         elif not self.console_logging:
             sys.exit(error_msg.encode(core.SYS_ENCODING, 'xmlcharrefreplace'))
         else:
             sys.exit(1)
 
-class DispatchingFormatter:
+
+class DispatchingFormatter(object):
     def __init__(self, formatters, default_formatter):
         self._formatters = formatters
         self._default_formatter = default_formatter
@@ -242,31 +245,41 @@ class DispatchingFormatter:
         formatter = self._formatters.get(record.name, self._default_formatter)
         return formatter.format(record)
 
+
 ntm_log_instance = NTMRotatingLogHandler(core.LOG_FILE, NUM_LOGS, LOG_SIZE)
+
 
 def log(toLog, logLevel=MESSAGE, section='MAIN'):
     ntm_log_instance.log(toLog, logLevel, section)
 
+
 def info(toLog, section='MAIN'):
     log(toLog, MESSAGE, section)
+
 
 def error(toLog, section='MAIN'):
     log(toLog, ERROR, section)
 
+
 def warning(toLog, section='MAIN'):
     log(toLog, WARNING, section)
+
 
 def debug(toLog, section='MAIN'):
     log(toLog, DEBUG, section)
 
+
 def postprocess(toLog, section='POSTPROCESS'):
     log(toLog, POSTPROCESS, section)
+
 
 def db(toLog, section='DB'):
     log(toLog, DB, section)
 
+
 def log_error_and_exit(error_msg):
     ntm_log_instance.log_error_and_exit(error_msg)
+
 
 def close():
     ntm_log_instance.close_log()

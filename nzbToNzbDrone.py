@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# coding=utf-8
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -229,6 +230,7 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
 import sys
 import nzbToMedia
 

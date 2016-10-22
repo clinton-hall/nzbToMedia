@@ -6,6 +6,7 @@ from core.transmissionrpc.utils import Field
 
 from core.transmissionrpc.six import iteritems, integer_types
 
+
 class Session(object):
     """
     Session is a class holding the session data for a Transmission daemon.
@@ -26,12 +27,12 @@ class Session(object):
         try:
             return self._fields[name].value
         except KeyError:
-            raise AttributeError('No attribute %s' % name)
+            raise AttributeError('No attribute {0}'.format(name))
 
     def __str__(self):
         text = ''
         for key in sorted(self._fields.keys()):
-            text += "% 32s: %s\n" % (key[-32:], self._fields[key].value)
+            text += "{0:32}: {1}\n".format(key[-32:], self._fields[key].value)
         return text
 
     def _update_fields(self, other):

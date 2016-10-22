@@ -1,3 +1,4 @@
+# coding=utf-8
 # Linktastic Module
 # - A python2/3 compatible module that can create hardlinks/symlinks on windows-based systems
 #
@@ -29,61 +30,65 @@ if os.name == 'nt':
     info = subprocess.STARTUPINFO()
     info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
 
+
 # Prevent spaces from messing with us!
 def _escape_param(param):
-    return '"%s"' % param
+    return '"{0}"'.format(param)
 
 
 # Private function to create link on nt-based systems
 def _link_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /H %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /H {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
 
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
 
 
 def _symlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 def _dirlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /J %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /J {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 def _junctionlink_windows(src, dest):
     try:
         subprocess.check_output(
-            'cmd /C mklink /D %s %s' % (_escape_param(dest), _escape_param(src)),
+            'cmd /C mklink /D {0} {1}'.format(_escape_param(dest), _escape_param(src)),
             stderr=subprocess.STDOUT, startupinfo=info)
     except CalledProcessError as err:
         raise IOError(err.output.decode('utf-8'))
 
-    # TODO, find out what kind of messages Windows sends us from mklink
-    # print(stdout)
-    # assume if they ret-coded 0 we're good
+        # TODO, find out what kind of messages Windows sends us from mklink
+        # print(stdout)
+        # assume if they ret-coded 0 we're good
+
 
 # Create a hard link to src named as dest
 # This version of link, unlike os.link, supports nt systems as well
@@ -101,12 +106,14 @@ def symlink(src, dest):
     else:
         os.symlink(src, dest)
 
+
 # Create a symlink to src named as dest, but don't fail if you're on nt
 def dirlink(src, dest):
     if os.name == 'nt':
         _dirlink_windows(src, dest)
     else:
         os.symlink(src, dest)
+
 
 # Create a symlink to src named as dest, but don't fail if you're on nt
 def junctionlink(src, dest):

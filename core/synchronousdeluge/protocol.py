@@ -1,4 +1,6 @@
+# coding=utf-8
 __all__ = ["DelugeRPCRequest", "DelugeRPCResponse"]
+
 
 class DelugeRPCRequest(object):
     def __init__(self, request_id, method, *args, **kwargs):
@@ -8,7 +10,8 @@ class DelugeRPCRequest(object):
         self.kwargs = kwargs
 
     def format(self):
-        return (self.request_id, self.method, self.args, self.kwargs)
+        return self.request_id, self.method, self.args, self.kwargs
+
 
 class DelugeRPCResponse(object):
     def __init__(self):
@@ -35,4 +38,3 @@ class DelugeRPCResponse(object):
             return self.value
         else:
             raise self._exception
-

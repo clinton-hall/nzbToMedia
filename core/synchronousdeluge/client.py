@@ -1,15 +1,14 @@
+# coding=utf-8
 import os
 import platform
 
 from collections import defaultdict
 from itertools import imap
-from exceptions import DelugeRPCError
-from protocol import DelugeRPCRequest, DelugeRPCResponse
-from transfer import DelugeTransfer
-
+from .exceptions import DelugeRPCError
+from .protocol import DelugeRPCRequest, DelugeRPCResponse
+from .transfer import DelugeTransfer
 
 __all__ = ["DelugeClient"]
-
 
 RPC_RESPONSE = 1
 RPC_ERROR = 2
@@ -24,13 +23,13 @@ class DelugeClient(object):
         self._request_counter = 0
 
     def _get_local_auth(self):
-        auth_file = ""
         username = password = ""
         if platform.system() in ('Windows', 'Microsoft'):
             appDataPath = os.environ.get("APPDATA")
             if not appDataPath:
                 import _winreg
-                hkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER, "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders")
+                hkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
+                                       "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders")
                 appDataReg = _winreg.QueryValueEx(hkey, "AppData")
                 appDataPath = appDataReg[0]
                 _winreg.CloseKey(hkey)
@@ -40,9 +39,8 @@ class DelugeClient(object):
             from xdg.BaseDirectory import save_config_path
             try:
                 auth_file = os.path.join(save_config_path("deluge"), "auth")
-            except OSError, e:
+            except OSError:
                 return username, password
-
 
         if os.path.exists(auth_file):
             for line in open(auth_file):
@@ -52,7 +50,7 @@ class DelugeClient(object):
                 line = line.strip()
                 try:
                     lsplit = line.split(":")
-                except Exception, e:
+                except Exception:
                     continue
 
                 if len(lsplit) == 2:
@@ -63,9 +61,9 @@ class DelugeClient(object):
                     continue
 
                 if username == "localclient":
-                    return (username, password)
+                    return username, password
 
-        return ("", "")
+        return "", ""
 
     def _create_module_method(self, module, method):
         fullname = "{0}.{1}".format(module, method)
@@ -107,20 +105,20 @@ class DelugeClient(object):
 
         message_type = message[0]
 
-#        if message_type == RPC_EVENT:
-#            event = message[1]
-#            values = message[2]
-#
-#            if event in self._event_handlers:
-#                for handler in self._event_handlers[event]:
-#                    gevent.spawn(handler, *values)
-#
-#        elif message_type in (RPC_RESPONSE, RPC_ERROR):
+        #        if message_type == RPC_EVENT:
+        #            event = message[1]
+        #            values = message[2]
+        #
+        #            if event in self._event_handlers:
+        #                for handler in self._event_handlers[event]:
+        #                    gevent.spawn(handler, *values)
+        #
+        #        elif message_type in (RPC_RESPONSE, RPC_ERROR):
         if message_type in (RPC_RESPONSE, RPC_ERROR):
             request_id = message[1]
             value = message[2]
 
-            if request_id == self._request_counter :
+            if request_id == self._request_counter:
                 if message_type == RPC_RESPONSE:
                     response.set(value)
                 elif message_type == RPC_ERROR:
@@ -159,4 +157,3 @@ class DelugeClient(object):
     def disconnect(self):
         """Disconnects from the daemon."""
         self.transfer.disconnect()
-

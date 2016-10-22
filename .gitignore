@@ -5,6 +5,7 @@
 *.log
 *.pid
 *.db
+*.dbm
 /userscripts/
 /logs/
 /.idea/

@@ -1,3 +1,4 @@
+# coding=utf-8
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Modified by: echel0n
 
@@ -15,7 +16,8 @@ import gh_api as github
 import core
 from core import logger
 
-class CheckVersion():
+
+class CheckVersion(object):
     """
     Version check class meant to run as a thread object with the SB scheduler.
     """
@@ -66,7 +68,7 @@ class CheckVersion():
             logger.log(u"Version checking is disabled, not checking for the newest version")
             return False
 
-        logger.log(u"Checking if " + self.install_type + " needs an update")
+        logger.log(u"Checking if {install} needs an update".format(install=self.install_type))
         if not self.updater.need_update():
             core.NEWEST_VERSION_STRING = None
             logger.log(u"No update needed")
@@ -79,7 +81,8 @@ class CheckVersion():
         if self.updater.need_update():
             return self.updater.update()
 
-class UpdateManager():
+
+class UpdateManager(object):
     def get_github_repo_user(self):
         return core.GIT_USER
 
@@ -88,6 +91,7 @@ class UpdateManager():
 
     def get_github_branch(self):
         return core.GIT_BRANCH
+
 
 class GitUpdateManager(UpdateManager):
     def __init__(self):
@@ -102,24 +106,26 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_ahead = 0
 
     def _git_error(self):
-        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug(
+            'Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
     def _find_working_git(self):
         test_cmd = 'version'
 
         if core.GIT_PATH:
-            main_git = '"' + core.GIT_PATH + '"'
+            main_git = '"{git}"'.format(git=core.GIT_PATH)
         else:
             main_git = 'git'
 
-        logger.log(u"Checking if we can use git commands: " + main_git + ' ' + test_cmd, logger.DEBUG)
+        logger.log(u"Checking if we can use git commands: {git} {cmd}".format
+                   (git=main_git, cmd=test_cmd), logger.DEBUG)
         output, err, exit_status = self._run_git(main_git, test_cmd)
 
         if exit_status == 0:
-            logger.log(u"Using: " + main_git, logger.DEBUG)
+            logger.log(u"Using: {git}".format(git=main_git), logger.DEBUG)
             return main_git
         else:
-            logger.log(u"Not using: " + main_git, logger.DEBUG)
+            logger.log(u"Not using: {git}".format(git=main_git), logger.DEBUG)
 
         # trying alternatives
 
@@ -137,33 +143,38 @@ class GitUpdateManager(UpdateManager):
             logger.log(u"Trying known alternative git locations", logger.DEBUG)
 
             for cur_git in alternative_git:
-                logger.log(u"Checking if we can use git commands: " + cur_git + ' ' + test_cmd, logger.DEBUG)
+                logger.log(u"Checking if we can use git commands: {git} {cmd}".format
+                           (git=cur_git, cmd=test_cmd), logger.DEBUG)
                 output, err, exit_status = self._run_git(cur_git, test_cmd)
 
                 if exit_status == 0:
-                    logger.log(u"Using: " + cur_git, logger.DEBUG)
+                    logger.log(u"Using: {git}".format(git=cur_git), logger.DEBUG)
                     return cur_git
                 else:
-                    logger.log(u"Not using: " + cur_git, logger.DEBUG)
+                    logger.log(u"Not using: {git}".format(git=cur_git), logger.DEBUG)
 
         # Still haven't found a working git
-        logger.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
+        logger.debug('Unable to find your git executable - '
+                     'Set git_path in your autoProcessMedia.cfg OR '
+                     'delete your .git folder and run from source to enable updates.')
 
         return None
 
     def _run_git(self, git_path, args):
 
-        output = err = exit_status = None
+        output = None
+        err = None
 
         if not git_path:
             logger.log(u"No git specified, can't use git commands", logger.DEBUG)
             exit_status = 1
-            return (output, err, exit_status)
+            return output, err, exit_status
 
-        cmd = git_path + ' ' + args
+        cmd = '{git} {args}'.format(git=git_path, args=args)
 
         try:
-            logger.log(u"Executing " + cmd + " with your shell in " + core.PROGRAM_DIR, logger.DEBUG)
+            logger.log(u"Executing {cmd} with your shell in {directory}".format
+                       (cmd=cmd, directory=core.PROGRAM_DIR), logger.DEBUG)
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                  shell=True, cwd=core.PROGRAM_DIR)
             output, err = p.communicate()
@@ -172,32 +183,26 @@ class GitUpdateManager(UpdateManager):
             if output:
                 output = output.strip()
             if core.LOG_GIT:
-                logger.log(u"git output: " + output, logger.DEBUG)
+                logger.log(u"git output: {output}".format(output=output), logger.DEBUG)
 
         except OSError:
-            logger.log(u"Command " + cmd + " didn't work")
+            logger.log(u"Command {cmd} didn't work".format(cmd=cmd))
             exit_status = 1
 
+        exit_status = 128 if ('fatal:' in output) or err else exit_status
         if exit_status == 0:
-            logger.log(cmd + u" : returned successful", logger.DEBUG)
+            logger.log(u"{cmd} : returned successful".format(cmd=cmd), logger.DEBUG)
             exit_status = 0
-
-        elif exit_status == 1:
-            if core.LOG_GIT:
-                logger.log(cmd + u" returned : " + output, logger.DEBUG)
-            exit_status = 1
-
-        elif exit_status == 128 or 'fatal:' in output or err:
-            if core.LOG_GIT:
-                logger.log(cmd + u" returned : " + output, logger.DEBUG)
-            exit_status = 128
-
+        elif core.LOG_GIT and exit_status in (1, 128):
+                logger.log(u"{cmd} returned : {output}".format
+                           (cmd=cmd, output=output), logger.DEBUG)
         else:
             if core.LOG_GIT:
-                logger.log(cmd + u" returned : " + output + u", treat as error for now", logger.DEBUG)
+                logger.log(u"{cmd} returned : {output}, treat as error for now".format
+                           (cmd=cmd, output=output), logger.DEBUG)
             exit_status = 1
 
-        return (output, err, exit_status)
+        return output, err, exit_status
 
     def _find_installed_version(self):
         """
@@ -278,20 +283,18 @@ class GitUpdateManager(UpdateManager):
                 logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
                 return
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
-                   + u", num_commits_behind = " + str(self._num_commits_behind) + u", num_commits_ahead = " + str(
-            self._num_commits_ahead), logger.DEBUG)
+        logger.log(u"cur_commit = {current} % (newest_commit)= {new}, "
+                   u"num_commits_behind = {x}, num_commits_ahead = {y}".format
+                   (current=self._cur_commit_hash, new=self._newest_commit_hash,
+                    x=self._num_commits_behind, y=self._num_commits_ahead), logger.DEBUG)
 
     def set_newest_text(self):
         if self._num_commits_ahead:
-            logger.log(u"Local branch is ahead of " + self.branch + ". Automatic update not possible.", logger.ERROR)
-        elif self._num_commits_behind > 0:
-            newest_text = 'There is a newer version available '
-            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
-            if self._num_commits_behind > 1:
-                newest_text += 's'
-            newest_text += ' behind)'
-            logger.log(newest_text, logger.MESSAGE)
+            logger.log(u"Local branch is ahead of {branch}. Automatic update not possible.".format
+                       (branch=self.branch), logger.ERROR)
+        elif self._num_commits_behind:
+            logger.log(u"There is a newer version available (you're {x} commit{s} behind)".format
+                       (x=self._num_commits_behind, s=u's' if self._num_commits_behind > 1 else u''), logger.MESSAGE)
         else:
             return
 
@@ -305,8 +308,8 @@ class GitUpdateManager(UpdateManager):
         else:
             try:
                 self._check_github_for_update()
-            except Exception, e:
-                logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
+            except Exception as error:
+                logger.log(u"Unable to contact github, can't check for update: {msg!r}".format(msg=error), logger.ERROR)
                 return False
 
             if self._num_commits_behind > 0:
@@ -320,7 +323,7 @@ class GitUpdateManager(UpdateManager):
         on the call's success.
         """
 
-        output, err, exit_status = self._run_git(self._git_path, 'pull origin ' + self.branch)  # @UnusedVariable
+        output, err, exit_status = self._run_git(self._git_path, 'pull origin {branch}'.format(branch=self.branch))  # @UnusedVariable
 
         if exit_status == 0:
             return True
@@ -349,8 +352,8 @@ class SourceUpdateManager(UpdateManager):
         try:
             with open(version_file, 'r') as fp:
                 self._cur_commit_hash = fp.read().strip(' \n\r')
-        except EnvironmentError, e:
-            logger.log(u"Unable to open 'version.txt': " + str(e), logger.DEBUG)
+        except EnvironmentError as error:
+            logger.log(u"Unable to open 'version.txt': {msg}".format(msg=error), logger.DEBUG)
 
         if not self._cur_commit_hash:
             self._cur_commit_hash = None
@@ -363,8 +366,8 @@ class SourceUpdateManager(UpdateManager):
 
         try:
             self._check_github_for_update()
-        except Exception, e:
-            logger.log(u"Unable to contact github, can't check for update: " + repr(e), logger.ERROR)
+        except Exception as error:
+            logger.log(u"Unable to contact github, can't check for update: {msg!r}".format(msg=error), logger.ERROR)
             return False
 
         if not self._cur_commit_hash or self._num_commits_behind > 0:
@@ -410,8 +413,8 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        logger.log(u"cur_commit = " + str(self._cur_commit_hash) + u" % (newest_commit)= " + str(self._newest_commit_hash)
-                   + u", num_commits_behind = " + str(self._num_commits_behind), logger.DEBUG)
+        logger.log(u"cur_commit = {current} % (newest_commit)= {new}, num_commits_behind = {x}".format
+                   (current=self._cur_commit_hash, new=self._newest_commit_hash, x=self._num_commits_behind), logger.DEBUG)
 
     def set_newest_text(self):
 
@@ -421,12 +424,8 @@ class SourceUpdateManager(UpdateManager):
         if not self._cur_commit_hash:
             logger.log(u"Unknown current version number, don't know if we should update or not", logger.ERROR)
         elif self._num_commits_behind > 0:
-            newest_text = 'There is a newer version available'
-            newest_text += " (you're " + str(self._num_commits_behind) + " commit"
-            if self._num_commits_behind > 1:
-                newest_text += "s"
-            newest_text += " behind)"
-            logger.log(newest_text, logger.MESSAGE)
+            logger.log(u"There is a newer version available (you're {x} commit{s} behind)".format
+                       (x=self._num_commits_behind, s=u's' if self._num_commits_behind > 1 else u''), logger.MESSAGE)
         else:
             return
 
@@ -434,8 +433,8 @@ class SourceUpdateManager(UpdateManager):
         """
         Downloads the latest source tarball from github and installs it over the existing version.
         """
-        base_url = 'https://github.com/' + self.github_repo_user + '/' + self.github_repo
-        tar_download_url = base_url + '/tarball/' + self.branch
+        tar_download_url = 'https://github.com/{org}/{repo}/tarball/{branch}'.format(
+            org=self.github_repo_user, repo=self.github_repo, branch=self.branch)
         version_path = os.path.join(core.PROGRAM_DIR, u'version.txt')
 
         try:
@@ -443,61 +442,65 @@ class SourceUpdateManager(UpdateManager):
             sb_update_dir = os.path.join(core.PROGRAM_DIR, u'sb-update')
 
             if os.path.isdir(sb_update_dir):
-                logger.log(u"Clearing out update folder " + sb_update_dir + " before extracting")
+                logger.log(u"Clearing out update folder {dir} before extracting".format(dir=sb_update_dir))
                 shutil.rmtree(sb_update_dir)
 
-            logger.log(u"Creating update folder " + sb_update_dir + " before extracting")
+            logger.log(u"Creating update folder {dir} before extracting".format(dir=sb_update_dir))
             os.makedirs(sb_update_dir)
 
             # retrieve file
-            logger.log(u"Downloading update from " + repr(tar_download_url))
+            logger.log(u"Downloading update from {url!r}".format(url=tar_download_url))
             tar_download_path = os.path.join(sb_update_dir, u'nzbtomedia-update.tar')
             urllib.urlretrieve(tar_download_url, tar_download_path)
 
             if not os.path.isfile(tar_download_path):
-                logger.log(u"Unable to retrieve new version from " + tar_download_url + ", can't update", logger.ERROR)
+                logger.log(u"Unable to retrieve new version from {url}, can't update".format
+                           (url=tar_download_url), logger.ERROR)
                 return False
 
             if not tarfile.is_tarfile(tar_download_path):
-                logger.log(u"Retrieved version from " + tar_download_url + " is corrupt, can't update", logger.ERROR)
+                logger.log(u"Retrieved version from {url} is corrupt, can't update".format
+                           (url=tar_download_url), logger.ERROR)
                 return False
 
             # extract to sb-update dir
-            logger.log(u"Extracting file " + tar_download_path)
+            logger.log(u"Extracting file {path}".format(path=tar_download_path))
             tar = tarfile.open(tar_download_path)
             tar.extractall(sb_update_dir)
             tar.close()
 
             # delete .tar.gz
-            logger.log(u"Deleting file " + tar_download_path)
+            logger.log(u"Deleting file {path}".format(path=tar_download_path))
             os.remove(tar_download_path)
 
             # find update dir name
             update_dir_contents = [x for x in os.listdir(sb_update_dir) if
                                    os.path.isdir(os.path.join(sb_update_dir, x))]
             if len(update_dir_contents) != 1:
-                logger.log(u"Invalid update data, update failed: " + str(update_dir_contents), logger.ERROR)
+                logger.log(u"Invalid update data, update failed: {0}".format(update_dir_contents), logger.ERROR)
                 return False
             content_dir = os.path.join(sb_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
-            logger.log(u"Moving files from " + content_dir + " to " + core.PROGRAM_DIR)
+            logger.log(u"Moving files from {source} to {destination}".format
+                       (source=content_dir, destination=core.PROGRAM_DIR))
             for dirname, dirnames, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
                     old_path = os.path.join(content_dir, dirname, curfile)
                     new_path = os.path.join(core.PROGRAM_DIR, dirname, curfile)
 
-                    #Avoid DLL access problem on WIN32/64
-                    #These files needing to be updated manually
-                    #or find a way to kill the access from memory
+                    # Avoid DLL access problem on WIN32/64
+                    # These files needing to be updated manually
+                    # or find a way to kill the access from memory
                     if curfile in ('unrar.dll', 'unrar64.dll'):
                         try:
                             os.chmod(new_path, stat.S_IWRITE)
                             os.remove(new_path)
                             os.renames(old_path, new_path)
-                        except Exception, e:
-                            logger.log(u"Unable to update " + new_path + ': ' + str(e), logger.DEBUG)
+                        except Exception as error:
+                            logger.log(u"Unable to update {path}: {msg}".format
+                                       (path=new_path, msg=error), logger.DEBUG)
                             os.remove(old_path)  # Trash the updated file without moving in new path
                         continue
 
@@ -509,13 +512,15 @@ class SourceUpdateManager(UpdateManager):
             try:
                 with open(version_path, 'w') as ver_file:
                     ver_file.write(self._newest_commit_hash)
-            except EnvironmentError, e:
-                logger.log(u"Unable to write version file, update not complete: " + str(e), logger.ERROR)
+            except EnvironmentError as error:
+                logger.log(u"Unable to write version file, update not complete: {msg}".format
+                           (msg=error), logger.ERROR)
                 return False
 
-        except Exception, e:
-            logger.log(u"Error while trying to update: " + str(e), logger.ERROR)
-            logger.log(u"Traceback: " + traceback.format_exc(), logger.DEBUG)
+        except Exception as error:
+            logger.log(u"Error while trying to update: {msg}".format
+                       (msg=error), logger.ERROR)
+            logger.log(u"Traceback: {error}".format(error=traceback.format_exc()), logger.DEBUG)
             return False
 
         return True

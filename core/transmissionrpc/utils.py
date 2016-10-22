@@ -2,13 +2,17 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import socket, datetime, logging, constants
+import constants
+import datetime
+import logging
+import socket
 from collections import namedtuple
-from constants import LOGGER
 
+from constants import LOGGER
 from six import string_types, iteritems
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB']
+
 
 def format_size(size):
     """
@@ -19,14 +23,16 @@ def format_size(size):
     while size >= 1024.0 and i < len(UNITS):
         i += 1
         size /= 1024.0
-    return (size, UNITS[i])
+    return size, UNITS[i]
+
 
 def format_speed(size):
     """
     Format bytes per second speed into IEC prefixes, B/s, KiB/s, MiB/s ...
     """
     (size, unit) = format_size(size)
-    return (size, unit + '/s')
+    return size, '{unit}/s'.format(unit=unit)
+
 
 def format_timedelta(delta):
     """
@@ -34,7 +40,8 @@ def format_timedelta(delta):
     """
     minutes, seconds = divmod(delta.seconds, 60)
     hours, minutes = divmod(minutes, 60)
-    return '%d %02d:%02d:%02d' % (delta.days, hours, minutes, seconds)
+    return '{0:d} {1:02d}:{2:02d}:{3:02d}'.format(delta.days, hours, minutes, seconds)
+
 
 def format_timestamp(timestamp, utc=False):
     """
@@ -49,11 +56,13 @@ def format_timestamp(timestamp, utc=False):
     else:
         return '-'
 
+
 class INetAddressError(Exception):
     """
     Error parsing / generating a internet address.
     """
     pass
+
 
 def inet_address(address, default_port, default_address='localhost'):
     """
@@ -71,18 +80,19 @@ def inet_address(address, default_port, default_address='localhost'):
         try:
             port = int(addr[1])
         except ValueError:
-            raise INetAddressError('Invalid address "%s".' % address)
+            raise INetAddressError('Invalid address "{0}".'.format(address))
         if len(addr[0]) == 0:
             addr = default_address
         else:
             addr = addr[0]
     else:
-        raise INetAddressError('Invalid address "%s".' % address)
+        raise INetAddressError('Invalid address "{0}".'.format(address))
     try:
         socket.getaddrinfo(addr, port, socket.AF_INET, socket.SOCK_STREAM)
     except socket.gaierror:
-        raise INetAddressError('Cannot look up address "%s".' % address)
-    return (addr, port)
+        raise INetAddressError('Cannot look up address "{0}".'.format(address))
+    return addr, port
+
 
 def rpc_bool(arg):
     """
@@ -95,14 +105,16 @@ def rpc_bool(arg):
             arg = arg.lower() in ['true', 'yes']
     return 1 if bool(arg) else 0
 
+
 TR_TYPE_MAP = {
-    'number' : int,
-    'string' : str,
+    'number': int,
+    'string': str,
     'double': float,
-    'boolean' : rpc_bool,
+    'boolean': rpc_bool,
     'array': list,
     'object': dict
 }
+
 
 def make_python_name(name):
     """
@@ -110,11 +122,13 @@ def make_python_name(name):
     """
     return name.replace('-', '_')
 
+
 def make_rpc_name(name):
     """
     Convert python compatible name to Transmission RPC name.
     """
     return name.replace('_', '-')
+
 
 def argument_value_convert(method, argument, value, rpc_version):
     """
@@ -125,7 +139,7 @@ def argument_value_convert(method, argument, value, rpc_version):
     elif method in ('session-get', 'session-set'):
         args = constants.SESSION_ARGS[method[-3:]]
     else:
-        return ValueError('Method "%s" not supported' % (method))
+        return ValueError('Method "{0}" not supported'.format(method))
     if argument in args:
         info = args[argument]
         invalid_version = True
@@ -141,18 +155,17 @@ def argument_value_convert(method, argument, value, rpc_version):
             if invalid_version:
                 if replacement:
                     LOGGER.warning(
-                        'Replacing requested argument "%s" with "%s".'
-                        % (argument, replacement))
+                        'Replacing requested argument "{0}" with "{1}".'.format(argument, replacement))
                     argument = replacement
                     info = args[argument]
                 else:
                     raise ValueError(
-                        'Method "%s" Argument "%s" does not exist in version %d.'
-                        % (method, argument, rpc_version))
-        return (argument, TR_TYPE_MAP[info[0]](value))
+                        'Method "{0}" Argument "{1}" does not exist in version {2:d}.'.format(method, argument, rpc_version))
+        return argument, TR_TYPE_MAP[info[0]](value)
     else:
         raise ValueError('Argument "%s" does not exists for method "%s".',
                          (argument, method))
+
 
 def get_arguments(method, rpc_version):
     """
@@ -163,7 +176,7 @@ def get_arguments(method, rpc_version):
     elif method in ('session-get', 'session-set'):
         args = constants.SESSION_ARGS[method[-3:]]
     else:
-        return ValueError('Method "%s" not supported' % (method))
+        return ValueError('Method "{0}" not supported'.format(method))
     accessible = []
     for argument, info in iteritems(args):
         valid_version = True
@@ -174,6 +187,7 @@ def get_arguments(method, rpc_version):
         if valid_version:
             accessible.append(argument)
     return accessible
+
 
 def add_stdout_logger(level='debug'):
     """
@@ -189,6 +203,7 @@ def add_stdout_logger(level='debug'):
         loghandler.setLevel(loglevel)
     trpc_logger.addHandler(loghandler)
 
+
 def add_file_logger(filepath, level='debug'):
     """
     Add a stdout target for the transmissionrpc logging.
@@ -202,5 +217,6 @@ def add_file_logger(filepath, level='debug'):
         trpc_logger.setLevel(loglevel)
         loghandler.setLevel(loglevel)
     trpc_logger.addHandler(loghandler)
+
 
 Field = namedtuple('Field', ['value', 'dirty'])
