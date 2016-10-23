@@ -665,7 +665,6 @@ def initialize(section=None):
             'ACODEC3':None,'ACODEC3_ALLOW':[],'ABITRATE3':None, 'ACHANNELS3':None,
             'SCODEC':'mov_text'
             }
-        }
     }
     if DEFAULTS and DEFAULTS in transcode_defaults:
         VEXTENSION = transcode_defaults[DEFAULTS]['VEXTENSION']
