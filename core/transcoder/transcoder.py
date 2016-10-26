@@ -267,20 +267,30 @@ def buildCommands(file, newDir, movieName, bitbucket):
             audio3 = [item for item in audioStreams if item["tags"]["language"] != core.ALANGUAGE]
         except:
             audio3 = []
+        try:
+            audio4 = [item for item in audio3 if item["codec_name"] in core.ACODEC_ALLOW]
+        except:
+            audio4 = []
 
-        if audio2:  # right language and codec...
+        if audio2:  # right (or only) language and codec...
             map_cmd.extend(['-map', '0:{index}'.format(index=audio2[0]["index"])])
             a_mapped.extend([audio2[0]["index"]])
             bitrate = int(float(audio2[0].get("bit_rate", 0))) / 1000
             channels = int(float(audio2[0].get("channels", 0)))
             audio_cmd.extend(['-c:a:{0}'.format(used_audio), 'copy'])
-        elif audio1:  # right language wrong codec.
+        elif audio1:  # right (or only) language, wrong codec.
             map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
             a_mapped.extend([audio1[0]["index"]])
             bitrate = int(float(audio1[0].get("bit_rate", 0))) / 1000
             channels = int(float(audio1[0].get("channels", 0)))
             audio_cmd.extend(['-c:a:{0}'.format(used_audio), core.ACODEC if core.ACODEC else 'copy'])
-        elif audio3:  # just pick the default audio track
+        elif audio4:  # wrong language, right codec.
+            map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]["index"])])
+            a_mapped.extend([audio4[0]["index"]])
+            bitrate = int(float(audio4[0].get("bit_rate", 0))) / 1000
+            channels = int(float(audio4[0].get("channels", 0)))
+            audio_cmd.extend(['-c:a:{0}'.format(used_audio), 'copy'])
+        elif audio3:  # wrong language, wrong codec. just pick the default audio track
             map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
             a_mapped.extend([audio3[0]["index"]])
             bitrate = int(float(audio3[0].get("bit_rate", 0))) / 1000
@@ -305,14 +315,18 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if core.ACODEC2_ALLOW:
             used_audio += 1
             try:
-                audio4 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
+                audio5 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
             except:
-                audio4 = []
-            if audio4:  # right language and codec.
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]["index"])])
-                a_mapped.extend([audio4[0]["index"]])
-                bitrate = int(float(audio4[0].get("bit_rate", 0))) / 1000
-                channels = int(float(audio4[0].get("channels", 0)))
+                audio5 = []
+            try:
+                audio6 = [item for item in audio3 if item["codec_name"] in core.ACODEC2_ALLOW]
+            except:
+                audio6 = []
+            if audio5:  # right language and codec.
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio5[0]["index"])])
+                a_mapped.extend([audio5[0]["index"]])
+                bitrate = int(float(audio5[0].get("bit_rate", 0))) / 1000
+                channels = int(float(audio5[0].get("channels", 0)))
                 audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
             elif audio1:  # right language wrong codec.
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]["index"])])
@@ -323,7 +337,13 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd2.extend(['-c:a:{0}'.format(used_audio), core.ACODEC2])
                 else:
                     audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
-            elif audio3:  # just pick the default audio track
+            elif audio6:  # wrong language, right codec
+                map_cmd.extend(['-map', '0:{index}'.format(index=audio6[0]["index"])])
+                a_mapped.extend([audio6[0]["index"]])
+                bitrate = int(float(audio6[0].get("bit_rate", 0))) / 1000
+                channels = int(float(audio6[0].get("channels", 0)))
+                audio_cmd2.extend(['-c:a:{0}'.format(used_audio), 'copy'])
+            elif audio3:  # wrong language, wrong codec just pick the default audio track
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]["index"])])
                 a_mapped.extend([audio3[0]["index"]])
                 bitrate = int(float(audio3[0].get("bit_rate", 0))) / 1000
@@ -349,7 +369,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd2[2:2] = ['-strict', '-2']
             audio_cmd.extend(audio_cmd2)
 
-        if core.AINCLUDE and audio3 and core.ACODEC3:
+        if core.AINCLUDE and core.ACODEC3:
             for audio in audioStreams:
                 if audio["index"] in a_mapped:
                     continue
