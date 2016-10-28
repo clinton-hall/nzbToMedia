@@ -426,6 +426,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 burnt = 1
             if not core.ALLOWSUBS:
                 break
+            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text": # We can't convert these.
+                continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
 
@@ -434,6 +436,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
             if not core.ALLOWSUBS:
                 break
             if sub["index"] in s_mapped:
+                continue
+            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text": # We can't convert these.
                 continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
