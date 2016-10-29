@@ -1,5 +1,23 @@
 Change_LOG / History
 
+V11.01 30/10/2016
+Updated external modules and changed config to dict.
+Started making code python 3 compatible.
+Fixed auto-fork detection for new Sick* branches.
+Fixed invalid indexing scope for TorrentToMedia.
+Add Medusa fork and new param "ignore_subs".
+Added check for language tag size, convert 3 letter language codes.
+Fixed guessit call to allow guessit to work of full file path.
+Add the ability to set octal permissions on the processed files prior to handing it off to Sickrage/Couchpotato.
+Catch errors if not audio codec name.
+Allow manual scans to continue.
+Revert to 7zip if others missing.
+Fixed int conversion base 8 from string or int.
+Added more logging to server tests.
+Added MKV-SD Profile.
+Check for preferred codec even if not preferred language.
+Don't convert VobSub to mov_text.
+
 V10.15 29/05/2016
 
 Don't copy archives when set to extract.
