@@ -86,7 +86,7 @@ class autoProcessMusic(object):
             params = {
                 'apikey': apikey,
                 'cmd': "forceProcess",
-                'dir': remoteDir(os.path.dirname(dirName)) if remote_path else os.path.dirname(dirName)
+                'dir': remoteDir(dirName) if remote_path else dirName
             }
 
             release_status = self.get_status(url, apikey, dirName)
