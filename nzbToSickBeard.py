@@ -210,6 +210,7 @@
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
 #VideoCodecAllow= 
+#outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
 #outputVideoBitrate=800k
