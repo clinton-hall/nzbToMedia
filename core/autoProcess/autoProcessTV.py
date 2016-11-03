@@ -182,6 +182,7 @@ class autoProcessTV(object):
         for param in copy.copy(fork_params):
             if param == "failed":
                 fork_params[param] = failed
+                del fork_params['proc_type']
 
             if param in ["dirName", "dir", "proc_dir"]:
                 fork_params[param] = dirName
