@@ -25,6 +25,11 @@
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
 #safe_mode=1
 
+# Disable additional extraction checks for failed (0, 1).
+#
+# Turn this on to disable additional extraction attempts for failed downloads. Default = 0 this will attempt to extract and verify if media is present.
+#no_extract_failed = 0
+
 ## HeadPhones
 
 # HeadPhones script category.

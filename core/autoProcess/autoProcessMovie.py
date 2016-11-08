@@ -116,8 +116,12 @@ class autoProcessMovie(object):
         ssl = int(cfg.get("ssl", 0))
         web_root = cfg.get("web_root", "")
         remote_path = int(cfg.get("remote_path", 0))
-        extract = int(cfg.get("extract", 0))
         protocol = "https://" if ssl else "http://"
+        status = int(status)
+        if status == 1 and core.NOEXTRACTFAILED:
+            extract = 0
+        else:
+            extract = int(cfg.get("extract", 0))
 
         baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)
         if not server_responding(baseURL):
@@ -163,7 +167,6 @@ class autoProcessMovie(object):
         good_files = 0
         num_files = 0
         # Check video files for corruption
-        status = int(status)
         for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
             num_files += 1
             if transcoder.isVideoGood(video, status):
