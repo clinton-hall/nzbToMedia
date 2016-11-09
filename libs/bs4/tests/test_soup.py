@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 """Tests of Beautiful Soup as a whole."""
 
+from pdb import set_trace
 import logging
 import unittest
 import sys
@@ -20,6 +21,7 @@ import bs4.dammit
 from bs4.dammit import (
     EntitySubstitution,
     UnicodeDammit,
+    EncodingDetector,
 )
 from bs4.testing import (
     SoupTest,
@@ -33,7 +35,6 @@ try:
 except ImportError, e:
     LXML_PRESENT = False
 
-PYTHON_2_PRE_2_7 = (sys.version_info < (2,7))
 PYTHON_3_PRE_3_2 = (sys.version_info[0] == 3 and sys.version_info < (3,2))
 
 class TestConstructor(SoupTest):
@@ -48,8 +49,34 @@ class TestConstructor(SoupTest):
         soup = self.soup(data)
         self.assertEqual(u"foo\0bar", soup.h1.string)
 
+    def test_exclude_encodings(self):
+        utf8_data = u"Räksmörgås".encode("utf-8")
+        soup = self.soup(utf8_data, exclude_encodings=["utf-8"])
+        self.assertEqual("windows-1252", soup.original_encoding)
 
-class TestDeprecatedConstructorArguments(SoupTest):
+
+class TestWarnings(SoupTest):
+
+    def _no_parser_specified(self, s, is_there=True):
+        v = s.startswith(BeautifulSoup.NO_PARSER_SPECIFIED_WARNING[:80])
+        self.assertTrue(v)
+
+    def test_warning_if_no_parser_specified(self):
+        with warnings.catch_warnings(record=True) as w:
+            soup = self.soup("<a><b></b></a>")
+        msg = str(w[0].message)
+        self._assert_no_parser_specified(msg)
+
+    def test_warning_if_parser_specified_too_vague(self):
+        with warnings.catch_warnings(record=True) as w:
+            soup = self.soup("<a><b></b></a>", "html")
+        msg = str(w[0].message)
+        self._assert_no_parser_specified(msg)
+
+    def test_no_warning_if_explicit_parser_specified(self):
+        with warnings.catch_warnings(record=True) as w:
+            soup = self.soup("<a><b></b></a>", "html.parser")
+        self.assertEqual([], w)
 
     def test_parseOnlyThese_renamed_to_parse_only(self):
         with warnings.catch_warnings(record=True) as w:
@@ -90,15 +117,34 @@ class TestWarnings(SoupTest):
             soup = self.soup(filename)
         self.assertEqual(0, len(w))
 
-    def test_url_warning(self):
-        with warnings.catch_warnings(record=True) as w:
-            soup = self.soup("http://www.crummy.com/")
-        msg = str(w[0].message)
-        self.assertTrue("looks like a URL" in msg)
+    def test_url_warning_with_bytes_url(self):
+        with warnings.catch_warnings(record=True) as warning_list:
+            soup = self.soup(b"http://www.crummybytes.com/")
+        # Be aware this isn't the only warning that can be raised during
+        # execution..
+        self.assertTrue(any("looks like a URL" in str(w.message) 
+            for w in warning_list))
 
-        with warnings.catch_warnings(record=True) as w:
-            soup = self.soup("http://www.crummy.com/ is great")
-        self.assertEqual(0, len(w))
+    def test_url_warning_with_unicode_url(self):
+        with warnings.catch_warnings(record=True) as warning_list:
+            # note - this url must differ from the bytes one otherwise
+            # python's warnings system swallows the second warning
+            soup = self.soup(u"http://www.crummyunicode.com/")
+        self.assertTrue(any("looks like a URL" in str(w.message) 
+            for w in warning_list))
+
+    def test_url_warning_with_bytes_and_space(self):
+        with warnings.catch_warnings(record=True) as warning_list:
+            soup = self.soup(b"http://www.crummybytes.com/ is great")
+        self.assertFalse(any("looks like a URL" in str(w.message) 
+            for w in warning_list))
+
+    def test_url_warning_with_unicode_and_space(self):
+        with warnings.catch_warnings(record=True) as warning_list:
+            soup = self.soup(u"http://www.crummyuncode.com/ is great")
+        self.assertFalse(any("looks like a URL" in str(w.message) 
+            for w in warning_list))
+
 
 class TestSelectiveParsing(SoupTest):
 
@@ -232,7 +278,7 @@ class TestEncodingConversion(SoupTest):
         self.assertEqual(soup_from_unicode.encode('utf-8'), self.utf8_data)
 
     @skipIf(
-        PYTHON_2_PRE_2_7 or PYTHON_3_PRE_3_2,
+        PYTHON_3_PRE_3_2,
         "Bad HTMLParser detected; skipping test of non-ASCII characters in attribute name.")
     def test_attribute_name_containing_unicode_characters(self):
         markup = u'<div><a \N{SNOWMAN}="snowman"></a></div>'
@@ -271,10 +317,11 @@ class TestUnicodeDammit(unittest.TestCase):
             dammit.unicode_markup, """<foo>''""</foo>""")
 
     def test_detect_utf8(self):
-        utf8 = b"\xc3\xa9"
+        utf8 = b"Sacr\xc3\xa9 bleu! \xe2\x98\x83"
         dammit = UnicodeDammit(utf8)
-        self.assertEqual(dammit.unicode_markup, u'\xe9')
         self.assertEqual(dammit.original_encoding.lower(), 'utf-8')
+        self.assertEqual(dammit.unicode_markup, u'Sacr\xe9 bleu! \N{SNOWMAN}')
+
 
     def test_convert_hebrew(self):
         hebrew = b"\xed\xe5\xec\xf9"
@@ -298,6 +345,26 @@ class TestUnicodeDammit(unittest.TestCase):
         for bad_encoding in ['.utf8', '...', 'utF---16.!']:
             dammit = UnicodeDammit(utf8_data, [bad_encoding])
             self.assertEqual(dammit.original_encoding.lower(), 'utf-8')
+
+    def test_exclude_encodings(self):
+        # This is UTF-8.
+        utf8_data = u"Räksmörgås".encode("utf-8")
+
+        # But if we exclude UTF-8 from consideration, the guess is
+        # Windows-1252.
+        dammit = UnicodeDammit(utf8_data, exclude_encodings=["utf-8"])
+        self.assertEqual(dammit.original_encoding.lower(), 'windows-1252')
+
+        # And if we exclude that, there is no valid guess at all.
+        dammit = UnicodeDammit(
+            utf8_data, exclude_encodings=["utf-8", "windows-1252"])
+        self.assertEqual(dammit.original_encoding, None)
+
+    def test_encoding_detector_replaces_junk_in_encoding_name_with_replacement_character(self):
+        detected = EncodingDetector(
+            b'<?xml version="1.0" encoding="UTF-\xdb" ?>')
+        encodings = list(detected.encodings)
+        assert u'utf-\N{REPLACEMENT CHARACTER}' in encodings
 
     def test_detect_html5_style_meta_tag(self):
 

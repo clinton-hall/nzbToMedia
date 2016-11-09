@@ -1,4 +1,9 @@
 """Diagnostic functions, mainly for use when doing tech support."""
+
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+__license__ = "MIT"
+
 import cProfile
 from StringIO import StringIO
 from HTMLParser import HTMLParser
@@ -33,18 +38,28 @@ def diagnose(data):
 
     if 'lxml' in basic_parsers:
         basic_parsers.append(["lxml", "xml"])
-        from lxml import etree
-        print "Found lxml version %s" % ".".join(map(str,etree.LXML_VERSION))
+        try:
+            from lxml import etree
+            print "Found lxml version %s" % ".".join(map(str,etree.LXML_VERSION))
+        except ImportError, e:
+            print (
+                "lxml is not installed or couldn't be imported.")
+
 
     if 'html5lib' in basic_parsers:
-        import html5lib
-        print "Found html5lib version %s" % html5lib.__version__
+        try:
+            import html5lib
+            print "Found html5lib version %s" % html5lib.__version__
+        except ImportError, e:
+            print (
+                "html5lib is not installed or couldn't be imported.")
 
     if hasattr(data, 'read'):
         data = data.read()
     elif os.path.exists(data):
         print '"%s" looks like a filename. Reading data from the file.' % data
-        data = open(data).read()
+        with open(data) as fp:
+            data = fp.read()
     elif data.startswith("http:") or data.startswith("https:"):
         print '"%s" looks like a URL. Beautiful Soup is not an HTTP client.' % data
         print "You need to use some other library to get the document behind the URL, and feed that document to Beautiful Soup."
