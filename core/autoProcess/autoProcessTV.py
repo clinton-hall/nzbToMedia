@@ -80,7 +80,7 @@ class autoProcessTV(object):
         delete_on = int(cfg.get("delete_on", 0))
         ignore_subs = int(cfg.get("ignore_subs", 0))
         status = int(failed)
-        if status == 1 and core.NOEXTRACTFAILED:
+        if status > 0 and core.NOEXTRACTFAILED:
             extract = 0
         else:
             extract = int(cfg.get("extract", 0))

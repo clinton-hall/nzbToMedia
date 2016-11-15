@@ -118,7 +118,7 @@ class autoProcessMovie(object):
         remote_path = int(cfg.get("remote_path", 0))
         protocol = "https://" if ssl else "http://"
         status = int(status)
-        if status == 1 and core.NOEXTRACTFAILED:
+        if status > 0 and core.NOEXTRACTFAILED:
             extract = 0
         else:
             extract = int(cfg.get("extract", 0))
