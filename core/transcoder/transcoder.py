@@ -26,8 +26,8 @@ def isVideoGood(videofile, status):
             disable = True
             logger.info("DISABLED: ffprobe failed to analyse test file. Stopping corruption check.", 'TRANSCODER')
         if test_details.get("streams"):
-            vidStreams = [item for item in test_details["streams"] if item["codec_type"] == "video"]
-            audStreams = [item for item in test_details["streams"] if item["codec_type"] == "audio"]
+            vidStreams = [item for item in test_details["streams"] if "codec_type" in item and item["codec_type"] == "video"]
+            audStreams = [item for item in test_details["streams"] if "codec_type" in item and item["codec_type"] == "audio"]
             if not (len(vidStreams) > 0 and len(audStreams) > 0):
                 disable = True
                 logger.info("DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.",
