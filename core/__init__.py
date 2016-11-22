@@ -347,7 +347,7 @@ def initialize(section=None):
 
     NZB_CLIENTAGENT = CFG["Nzb"]["clientAgent"]  # sabnzbd
     SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]
-    SABNZBDPORT = int(CFG["Nzb"]["sabnzbd_port"])
+    SABNZBDPORT = int(CFG["Nzb"]["sabnzbd_port"] Or 8080) # defaults to accomodate NzbGet
     SABNZBDAPIKEY = CFG["Nzb"]["sabnzbd_apikey"]
     NZB_DEFAULTDIR = CFG["Nzb"]["default_downloadDirectory"]
     GROUPS = CFG["Custom"]["remove_group"]
