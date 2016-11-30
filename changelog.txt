@@ -1,6 +1,18 @@
 Change_LOG / History
 
+V11.02 30/11/2016
+
+Added default "MKV-SD"
+Added VideoResolution in nzbGet.
+Fix Headphones direcotry parsing.
+Remove proc_type when failed.
+Added option "no_extract_failed"
+Updated beautifulsoup 4 module.
+Check for existence of codec_type key when counting streams.
+Added default fallback for sabnzbd port = 8080.
+
 V11.01 30/10/2016
+
 Updated external modules and changed config to dict.
 Started making code python 3 compatible.
 Fixed auto-fork detection for new Sick* branches.
