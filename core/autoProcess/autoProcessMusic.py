@@ -39,6 +39,44 @@ class autoProcessMusic(object):
             if os.path.basename(dirName) == album['FolderName']:
                 return album["Status"].lower()
 
+    def forceProcess(params):
+        release_status = self.get_status(url, apikey, dirName)
+        if not release_status:
+            logger.error("Could not find a status for {0}, is it in the wanted list ?".format(inputName), section)
+
+        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
+
+        try:
+            r = requests.get(url, params=params, verify=False, timeout=(30, 300))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL {0}".format(url), section)
+            return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
+
+        logger.debug("Result: {0}".format(r.text), section)
+
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
+        elif r.text == "OK":
+            logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(inputName, dirName), section)
+        else:
+            logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(inputName, dirName), section)
+            return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
+
+        # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
+        timeout = time.time() + 60 * wait_for
+        while time.time() < timeout:
+            current_status = self.get_status(url, apikey, dirName)
+            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
+                logger.postprocess("SUCCESS: This release is now marked as status [{0}]".format(current_status), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            if not os.path.isdir(dirName):
+                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dirName), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            time.sleep(10 * wait_for)
+        # The status hasn't changed.
+        return [2, "no change"]
+
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
         status = int(status)
 
@@ -93,45 +131,24 @@ class autoProcessMusic(object):
                 'dir': remoteDir(dirName) if remote_path else dirName
             }
 
-            release_status = self.get_status(url, apikey, dirName)
-            if not release_status:
-                logger.error("Could not find a status for {0}, is it in the wanted list ?".format(inputName), section)
+            res = forceProcess(params)
+            if res[0] in [0, 1]:
+                return res
 
-            logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
+            params = {
+                'apikey': apikey,
+                'cmd': "forceProcess",
+                'dir': os.path.split(remoteDir(dirName))[0] if remote_path else os.path.split(dirName)[0]
+            }
 
-            try:
-                r = requests.get(url, params=params, verify=False, timeout=(30, 300))
-            except requests.ConnectionError:
-                logger.error("Unable to open URL {0}".format(url), section)
-                return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
+            res = forceProcess(params)
+            if res[0] in [0, 1]:
+                return res
 
-            logger.debug("Result: {0}".format(r.text), section)
-
-            if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-                logger.error("Server returned status {0}".format(r.status_code), section)
-                return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
-            elif r.text == "OK":
-                logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(inputName, dirName), section)
-            else:
-                logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(inputName, dirName), section)
-                return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
+            # The status hasn't changed. uTorrent can resume seeding now.
+            logger.warning("The music album does not appear to have changed status after {0} minutes. Please check your Logs".format(wait_for), section)
+            return [1, "{0}: Failed to post-process - No change in wanted status".format(section)]
 
         else:
             logger.warning("FAILED DOWNLOAD DETECTED", section)
             return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]
-
-        # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
-        timeout = time.time() + 60 * wait_for
-        while time.time() < timeout:
-            current_status = self.get_status(url, apikey, dirName)
-            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-                logger.postprocess("SUCCESS: This release is now marked as status [{0}]".format(current_status), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
-            if not os.path.isdir(dirName):
-                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dirName), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
-            time.sleep(10 * wait_for)
-
-        # The status hasn't changed. uTorrent can resume seeding now.
-        logger.warning("The music album does not appear to have changed status after {0} minutes. Please check your Logs".format(wait_for), section)
-        return [1, "{0}: Failed to post-process - No change in wanted status".format(section)]
