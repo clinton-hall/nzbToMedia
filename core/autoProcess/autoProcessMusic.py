@@ -39,7 +39,7 @@ class autoProcessMusic(object):
             if os.path.basename(dirName) == album['FolderName']:
                 return album["Status"].lower()
 
-    def forceProcess(self, params, url, apikey, dirName):
+    def forceProcess(self, params, url, apikey, dirName, section):
         release_status = self.get_status(url, apikey, dirName)
         if not release_status:
             logger.error("Could not find a status for {0}, is it in the wanted list ?".format(inputName), section)
@@ -131,7 +131,7 @@ class autoProcessMusic(object):
                 'dir': remoteDir(dirName) if remote_path else dirName
             }
 
-            res = self.forceProcess(params, url, apikey, dirName)
+            res = self.forceProcess(params, url, apikey, dirName, section)
             if res[0] in [0, 1]:
                 return res
 
@@ -141,7 +141,7 @@ class autoProcessMusic(object):
                 'dir': os.path.split(remoteDir(dirName))[0] if remote_path else os.path.split(dirName)[0]
             }
 
-            res = self.forceProcess(params, url, apikey, dirName)
+            res = self.forceProcess(params, url, apikey, dirName, section)
             if res[0] in [0, 1]:
                 return res
 
