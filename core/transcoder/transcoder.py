@@ -367,7 +367,11 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     audio_cmd2[1] = core.ACODEC2
             if audio_cmd2[1] in ['aac', 'dts']:
                 audio_cmd2[2:2] = ['-strict', '-2']
-            audio_cmd.extend(audio_cmd2)
+
+            if a_mapped[1] == a_mapped[0] and audio_cmd2[1:] == audio_cmd[1:]: #check for duplicate output track.
+                del map_cmd[-2:]
+            else:
+                audio_cmd.extend(audio_cmd2)
 
         if core.AINCLUDE and core.ACODEC3:
             for audio in audioStreams:
