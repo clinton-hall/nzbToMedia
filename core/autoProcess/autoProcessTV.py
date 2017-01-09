@@ -275,6 +275,7 @@ class autoProcessTV(object):
             return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
 
         Success = False
+        Queued = False
         Started = False
         if section == "SickBeard":
             for line in r.iter_lines():
@@ -282,8 +283,12 @@ class autoProcessTV(object):
                     logger.postprocess("{0}".format(line), section)
                     if "Moving file from" in line:
                         inputName = os.path.split(line)[1]
+                    if "added to the queue" in line:
+                        Queued = True
                     if "Processing succeeded" in line or "Successfully processed" in line:
                         Success = True
+            if Queued:
+                time.sleep(60)
         elif section == "NzbDrone":
             try:
                 res = json.loads(r.content)
