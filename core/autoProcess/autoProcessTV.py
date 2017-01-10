@@ -15,7 +15,8 @@ from core.transcoder import transcoder
 requests.packages.urllib3.disable_warnings()
 
 class autoProcessTV:
-    def command_complete(self, url, params, headers, section):
+    @staticmethod
+    def command_complete(url, params, headers, section):
         r = None
         try:
             r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
@@ -111,6 +112,11 @@ class autoProcessTV:
         except:
             delete_on = 0
         try:
+            force_next = int(core.CFG[section][inputCategory]["force_next"])
+        except:
+            force_next = 0
+
+        try:
             extract = int(section[inputCategory]["extract"])
         except:
             extract = 0
@@ -140,7 +146,7 @@ class autoProcessTV:
                 process_all_exceptions(inputName, dirName)
                 inputName, dirName = convert_to_ascii(inputName, dirName)
 
-            # Now check if tv files exist in destination. 
+            # Now check if tv files exist in destination.
             if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
                 if listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
                     logger.debug('Checking for archives to extract in directory: %s' % (dirName))
@@ -148,8 +154,8 @@ class autoProcessTV:
                     inputName, dirName = convert_to_ascii(inputName, dirName)
 
             if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName) 
-            
+                flatten(dirName)
+
         # Check video files for corruption
         status = int(failed)
         good_files = 0
@@ -159,7 +165,7 @@ class autoProcessTV:
             if transcoder.isVideoGood(video, status):
                 good_files += 1
                 import_subs(video)
-        if num_files > 0: 
+        if num_files > 0:
             if good_files == num_files and not status == 0:
                 logger.info('Found Valid Videos. Setting status Success')
                 status = 0
@@ -200,7 +206,7 @@ class autoProcessTV:
             if param == "failed":
                 fork_params[param] = failed
 
-            if param in ["dirName", "dir", "proc_dir"]:
+            if param in ["dirName", "dir", "proc_dir", "process_directory"]:
                 fork_params[param] = dirName
                 if remote_path:
                     fork_params[param] = remoteDir(dirName)
@@ -220,6 +226,12 @@ class autoProcessTV:
             if param == "delete_on":
                 if delete_on:
                     fork_params[param] = delete_on
+                else:
+                    del fork_params[param]
+
+            if param == "force_next":
+                if force_next:
+                    fork_params[param] = force_next
                 else:
                     del fork_params[param]
 
@@ -261,7 +273,7 @@ class autoProcessTV:
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)
-                
+
         try:
             if section == "SickBeard":
                 logger.debug("Opening URL: %s with params: %s" % (url, str(fork_params)), section)
@@ -287,7 +299,7 @@ class autoProcessTV:
         Started = False
         if section == "SickBeard":
             for line in r.iter_lines():
-                if line: 
+                if line:
                     logger.postprocess("%s" % (line), section)
                     if "Moving file from" in line:
                         inputName = os.path.split(line)[1]
@@ -317,7 +329,7 @@ class autoProcessTV:
             while n < 6:  # set up wait_for minutes to see if command completes..
                 time.sleep(10 * wait_for)
                 command_status = self.command_complete(url, params, headers, section)
-                if command_status and command_status in ['completed', 'failed']:    
+                if command_status and command_status in ['completed', 'failed']:
                      break
                 n += 1
             if command_status:

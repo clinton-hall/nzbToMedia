@@ -54,12 +54,14 @@ FORK_FAILED = "failed"
 FORK_FAILED_TORRENT = "failed-torrent"
 FORK_SICKRAGETV = "sickragetv"
 FORK_SICKRAGE = "sickrage"
+FORK_SICKRAGE2 = "sickrage"
 FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
 FORKS[FORK_SICKRAGETV] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-FORKS[FORK_SICKRAGE] = {"dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+FORKS[FORK_SICKRAGE] = {"process_directory": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "force_next": True}
+ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "process_directory": None, "failed": None, "process_method": None, "force": None,
+             "delete_on": None, "force_next": True}
 SICKBEARD_FAILED = [FORK_FAILED, FORK_FAILED_TORRENT, FORK_SICKRAGETV, FORK_SICKRAGE]
 SICKBEARD_TORRENT = [FORK_FAILED_TORRENT, FORK_SICKRAGETV, FORK_SICKRAGE]
 
