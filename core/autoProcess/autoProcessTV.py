@@ -216,6 +216,9 @@ class autoProcessTV(object):
                 else:
                     del fork_params[param]
 
+            if fork in ["sickrage", "sickragetv"]:
+                fork_params['force_next'] = 1
+
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k, v in fork_params.items() if v is None]
 
