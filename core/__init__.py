@@ -69,11 +69,11 @@ FORKS[FORK_DEFAULT] = {"dir": None}
 FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
 FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
 FORKS[FORK_SICKRAGETV] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
+FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "force_next": None}
 FORKS[FORK_MEDUSA] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs":None}
 FORKS[FORK_SICKGEAR] = {"dir": None, "failed": None, "process_method": None, "force": None}
-ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "failed": None, "process_method": None, "force": None,
-             "delete_on": None, "ignore_subs": None}
+ALL_FORKS = {"dir": None, "dirName": None, "proc_dir": None, "process_directory": None, "failed": None, "process_method": None, "force": None,
+             "delete_on": None, "ignore_subs": None, "force_next": None}
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PARCHECK = 92

@@ -187,7 +187,7 @@ class autoProcessTV(object):
                 fork_params[param] = failed
                 del fork_params['proc_type']
 
-            if param in ["dirName", "dir", "proc_dir"]:
+            if param in ["dirName", "dir", "proc_dir", "process_directory"]:
                 fork_params[param] = dirName
                 if remote_path:
                     fork_params[param] = remoteDir(dirName)
@@ -216,8 +216,8 @@ class autoProcessTV(object):
                 else:
                     del fork_params[param]
 
-            if fork in ["sickrage", "sickragetv"]:
-                fork_params['force_next'] = 1
+            if param == "force_next":
+                fork_params[param] = 1
 
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k, v in fork_params.items() if v is None]
