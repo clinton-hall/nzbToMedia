@@ -1,5 +1,13 @@
 Change_LOG / History
 
+V11.03 15/01/2017
+
+Add -o to output path for 7zip.
+Try album directory then parent directory for HeadPhones variants.
+Prevent duplication of audio tracks in Transcoder.
+Update uTorrent Client interface.
+Updated to use force_next for SickRage to prevent postprocessing in queue.
+
 V11.02 30/11/2016
 
 Added default "MKV-SD"
