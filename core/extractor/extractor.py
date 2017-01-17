@@ -112,10 +112,7 @@ def extract(filePath, outputDestination):
 
     try:  # now works same for nt and *nix
         info = None
-        if "7z" in cmd[0] or "7z" in cmd[1]:
-            cmd.append("-o" + filePath) # add filePath with "-o" argument to prevent absolute path error.
-        else:
-            cmd.append(filePath)  # add filePath to final cmd arg.
+        cmd.append(filePath)  # add filePath to final cmd arg.
         if platform.system() == 'Windows':
             info = subprocess.STARTUPINFO()
             info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
