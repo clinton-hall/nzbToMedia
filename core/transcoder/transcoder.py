@@ -500,7 +500,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
 def get_subs(file):
     filepaths = []
-    subExt = ['.srt', '.sub', '.idx']
+    subExt = ['.srt'] #, '.sub', '.idx'] #remove .sub + .idx for now.
     name = os.path.splitext(os.path.split(file)[1])[0]
     dir = os.path.split(file)[0]
     for dirname, dirs, filenames in os.walk(dir):
