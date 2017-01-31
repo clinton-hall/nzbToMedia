@@ -254,7 +254,15 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
     used_audio = 0
     a_mapped = []
+    commentary = []
     if audioStreams:
+        for i, val in enumerate(audioStreams):
+            try:
+                if "Commentary" in val.get("tags").get("title"): # Split out commentry tracks.
+                    commentary.append(audioStreams[i])
+                    del audioStreams[i]
+            except:
+                continue
         try:
             audio1 = [item for item in audioStreams if item["tags"]["language"] == core.ALANGUAGE]
         except:  # no language tags. Assume only 1 language.
@@ -374,7 +382,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(audio_cmd2)
 
         if core.AINCLUDE and core.ACODEC3:
-            for audio in audioStreams:
+            for audio in audioStreams.extend(commentary): #add commentry tracks back here.
                 if audio["index"] in a_mapped:
                     continue
                 used_audio += 1
@@ -463,6 +471,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
             sub_details, result = getVideoDetails(subfile)
             if not sub_details or not sub_details.get("streams"):
                 continue
+            if core.SCODEC == "mov_text":
+                subcode = [stream["codec_name"] for stream in sub_details["streams"]]
+                if set(subcode).intersection(["dvd_subtitle", "VobSub"]): # We can't convert these.
+                    continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
             metlan = None
@@ -500,7 +512,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
 
 def get_subs(file):
     filepaths = []
-    subExt = ['.srt'] #, '.sub', '.idx'] #remove .sub + .idx for now.
+    subExt = ['.srt', '.sub', '.idx']
     name = os.path.splitext(os.path.split(file)[1])[0]
     dir = os.path.split(file)[0]
     for dirname, dirs, filenames in os.walk(dir):
