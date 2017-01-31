@@ -256,10 +256,10 @@ def buildCommands(file, newDir, movieName, bitbucket):
     a_mapped = []
     commentary = []
     if audioStreams:
-        for i, val in enumerate(audioStreams):
+        for i, val in reversed(list(enumerate(audioStreams))):
             try:
                 if "Commentary" in val.get("tags").get("title"): # Split out commentry tracks.
-                    commentary.append(audioStreams[i])
+                    commentary.append(val)
                     del audioStreams[i]
             except:
                 continue
