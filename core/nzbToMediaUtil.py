@@ -1047,7 +1047,10 @@ def find_imdbid(dirName, inputName):
                 logger.info("Found imdbID [{0}] from DNZB-MoreInfo".format(imdbid))
                 return imdbid
     logger.info('Searching IMDB for imdbID ...')
-    guess = guessit.guessit(inputName)
+    try:
+        guess = guessit.guessit(inputName)
+    except:
+        guess = None
     if guess:
         # Movie Title
         title = None
@@ -1069,12 +1072,15 @@ def find_imdbid(dirName, inputName):
             logger.error("Unable to open URL {0}".format(url))
             return
 
-        results = r.json()
+        try:
+            results = r.json()
+        except:
+            logger.error("No json data returned from omdbapi.com")
 
         try:
             imdbid = results['imdbID']
         except:
-            pass
+            logger.error("No imdbID returned from omdbapi.com")
 
         if imdbid:
             logger.info("Found imdbID [{0}]".format(imdbid))
