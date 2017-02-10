@@ -195,7 +195,7 @@ def getDirSize(inputPath):
     from functools import partial
     prepend = partial(os.path.join, inputPath)
     return sum(
-        [(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(inputPath))])
+        [(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(unicode(inputPath)))])
 
 
 def is_minSize(inputName, minSize):
@@ -322,7 +322,7 @@ def removeEmptyFolders(path, removeRoot=True):
 
     # remove empty subfolders
     logger.debug("Checking for empty folders in:{0}".format(path))
-    files = os.listdir(path)
+    files = os.listdir(unicode(path))
     if len(files):
         for f in files:
             fullpath = os.path.join(path, f)
@@ -330,7 +330,7 @@ def removeEmptyFolders(path, removeRoot=True):
                 removeEmptyFolders(fullpath)
 
     # if folder empty, delete it
-    files = os.listdir(path)
+    files = os.listdir(unicode(path))
     if len(files) == 0 and removeRoot:
         logger.debug("Removing empty folder:{}".format(path))
         os.rmdir(path)
@@ -607,9 +607,9 @@ def getDirs(section, subsection, link='hard'):
         folders = []
 
         logger.info("Searching {0} for mediafiles to post-process ...".format(path))
-        sync = [o for o in os.listdir(path) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+        sync = [o for o in os.listdir(unicode(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
         # search for single files and move them into their own folder for post-processing
-        for mediafile in [os.path.join(path, o) for o in os.listdir(path) if
+        for mediafile in [os.path.join(path, o) for o in os.listdir(unicode(path)) if
                           os.path.isfile(os.path.join(path, o))]:
             if len(sync) > 0:
                 break
@@ -673,11 +673,11 @@ def getDirs(section, subsection, link='hard'):
 
         # removeEmptyFolders(path, removeRoot=False)
 
-        if os.listdir(path):
-            for dir in [os.path.join(path, o) for o in os.listdir(path) if
+        if os.listdir(unicode(path)):
+            for dir in [os.path.join(path, o) for o in os.listdir(unicode(path)) if
                         os.path.isdir(os.path.join(path, o))]:
-                sync = [o for o in os.listdir(dir) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-                if len(sync) > 0 or len(os.listdir(dir)) == 0:
+                sync = [o for o in os.listdir(unicode(dir)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+                if len(sync) > 0 or len(os.listdir(unicode(dir))) == 0:
                     continue
                 folders.extend([dir])
         return folders
@@ -994,7 +994,7 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
 
         return files
 
-    for curFile in os.listdir(path):
+    for curFile in os.listdir(unicode(path)):
         fullCurFile = os.path.join(path, curFile)
 
         # if it's a folder do it recursively
@@ -1031,7 +1031,7 @@ def find_imdbid(dirName, inputName):
         logger.info("Found imdbID [{0}]".format(imdbid))
         return imdbid
     if os.path.isdir(dirName):
-        for file in os.listdir(dirName):
+        for file in os.listdir(unicode(dirName)):
             m = re.search('(tt\d{7})', file)
             if m:
                 imdbid = m.group(1)

@@ -814,7 +814,7 @@ def Transcode_directory(dirName):
                 os.unlink(file)
             except:
                 pass
-    if not os.listdir(newDir):  # this is an empty directory and we didn't transcode into it.
+    if not os.listdir(unicode(newDir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(newDir)
         newDir = dirName
     if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB 
