@@ -123,13 +123,16 @@ class autoProcessMovie(object):
         else:
             extract = int(cfg.get("extract", 0))
 
+        imdbid = find_imdbid(dirName, inputName)
         baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)
-        if not server_responding(baseURL):
+        if not apikey:
+            logger.info('No CouchPotato apikey entered. Performing transcoder functions only')
+            release = None
+        elif server_responding(baseURL):
+            release = self.get_release(baseURL, imdbid, download_id)
+        else:
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
-
-        imdbid = find_imdbid(dirName, inputName)
-        release = self.get_release(baseURL, imdbid, download_id)
 
         # pull info from release found if available
         release_id = None

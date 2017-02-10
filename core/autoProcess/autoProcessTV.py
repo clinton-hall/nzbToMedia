@@ -60,17 +60,20 @@ class autoProcessTV(object):
         ssl = int(cfg.get("ssl", 0))
         web_root = cfg.get("web_root", "")
         protocol = "https://" if ssl else "http://"
-
-        if not server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
-            logger.error("Server did not respond. Exiting", section)
-            return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
-
-        # auto-detect correct fork
-        fork, fork_params = autoFork(section, inputCategory)
-
         username = cfg.get("username", "")
         password = cfg.get("password", "")
         apikey = cfg.get("apikey", "")
+
+        if not username and not apikey:
+            logger.info('No SickBeard username or Sonarr apikey entered. Performing transcoder functions only')
+            fork, fork_params = "None", []
+        elif server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
+            # auto-detect correct fork
+            fork, fork_params = autoFork(section, inputCategory)
+        else:
+            logger.error("Server did not respond. Exiting", section)
+            return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
+
         delete_failed = int(cfg.get("delete_failed", 0))
         nzbExtractionBy = cfg.get("nzbExtractionBy", "Downloader")
         process_method = cfg.get("process_method")
