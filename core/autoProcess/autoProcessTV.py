@@ -66,7 +66,7 @@ class autoProcessTV(object):
 
         if not username and not apikey:
             logger.info('No SickBeard username or Sonarr apikey entered. Performing transcoder functions only')
-            fork, fork_params = "None", []
+            fork, fork_params = "None", {}
         elif server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
             # auto-detect correct fork
             fork, fork_params = autoFork(section, inputCategory)
