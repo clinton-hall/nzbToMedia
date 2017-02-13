@@ -20,13 +20,13 @@ class autoProcessMovie(object):
 
         # determine cmd and params to send to CouchPotato to get our results
         section = 'movies'
-        cmd = "/media.list"
+        cmd = "media.list"
         if release_id or imdbid:
             section = 'media'
-            cmd = "/media.get"
+            cmd = "media.get"
             params['id'] = release_id or imdbid
 
-        url = baseURL + cmd
+        url = "{0}{1}".format(baseURL, cmd)
         logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
 
         try:
@@ -124,7 +124,7 @@ class autoProcessMovie(object):
             extract = int(cfg.get("extract", 0))
 
         imdbid = find_imdbid(dirName, inputName)
-        baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)
+        baseURL = "{0}{1}:{2}{3}/api/{4}/".format(protocol, host, port, web_root, apikey)
         if not apikey:
             logger.info('No CouchPotato apikey entered. Performing transcoder functions only')
             release = None
@@ -226,10 +226,10 @@ class autoProcessMovie(object):
             params['media_folder'] = remoteDir(dirName) if remote_path else dirName
 
             if method == "manage":
-                command = "/manage.update"
+                command = "manage.update"
                 params = {}
             else:
-                command = "/renamer.scan"
+                command = "renamer.scan"
 
             url = "{0}{1}".format(baseURL, command)
 
@@ -274,7 +274,7 @@ class autoProcessMovie(object):
             if release_id:
                 logger.postprocess("Setting failed release {0} to ignored ...".format(inputName), section)
 
-                url = "{url}/release.ignore".format(url=baseURL)
+                url = "{url}release.ignore".format(url=baseURL)
                 params = {'id': release_id}
 
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
@@ -297,7 +297,7 @@ class autoProcessMovie(object):
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
-            url = "{0}/movie.searcher.try_next".format(baseURL)
+            url = "{0}movie.searcher.try_next".format(baseURL)
             logger.debug("Opening URL: {0}".format(url), section)
 
             try:
