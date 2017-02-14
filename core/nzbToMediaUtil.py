@@ -728,7 +728,7 @@ def onerror(func, path, exc_info):
 def rmDir(dirName):
     logger.info("Deleting {0}".format(dirName))
     try:
-        shutil.rmtree(dirName, onerror=onerror)
+        shutil.rmtree(unicode(dirName), onerror=onerror)
     except:
         logger.error("Unable to delete folder {0}".format(dirName))
 
