@@ -69,6 +69,33 @@
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
 
+[Radarr]
+    #### autoProcessing for Movies
+    #### raCategory - category that gets called for post-processing with Radarr
+    [[movie]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 8989
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        nzbExtractionBy = Downloader
+        wait_for = 2
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if NzbDrone is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+
 [SickBeard]
     #### autoProcessing for TV Series
     #### tv - category that gets called for post-processing with SB
@@ -107,8 +134,9 @@
         chmodDirectory = 0
 
 [NzbDrone]
+    #### Formerly known as NzbDrone this is now Sonarr
     #### autoProcessing for TV Series
-    #### ndCategory - category that gets called for post-processing with NzbDrone
+    #### ndCategory - category that gets called for post-processing with NzbDrone/Sonarr
     [[tv]]
         enabled = 0
         apikey =

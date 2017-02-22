@@ -142,7 +142,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():
-                if option in ["category", "cpsCategory", "sbCategory", "hpCategory", "mlCategory", "gzCategory"]:
+                if option in ["category", "cpsCategory", "sbCategory", "hpCategory", "mlCategory", "gzCategory", "raCategory", "ndCategory"]:
                     if not isinstance(value, list):
                         value = [value]
 
@@ -255,10 +255,14 @@ class ConfigObj(configobj.ConfigObj, Section):
         try:
             if 'NZBPO_NDCATEGORY' in os.environ and 'NZBPO_SBCATEGORY' in os.environ:
                 if os.environ['NZBPO_NDCATEGORY'] == os.environ['NZBPO_SBCATEGORY']:
-                    logger.warning("{x} category is set for SickBeard and NzbDrone. "
+                    logger.warning("{x} category is set for SickBeard and Sonarr. "
                                    "Please check your config in NZBGet".format
                                    (x=os.environ['NZBPO_NDCATEGORY']))
-
+            if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
+                if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
+                    logger.warning("{x} category is set for CouchPotato and Radarr. "
+                                   "Please check your config in NZBGet".format
+                                   (x=os.environ['NZBPO_RACATEGORY']))
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
             if key in os.environ:
@@ -302,6 +306,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                             CFG_NEW[section][os.environ[envCatKey]] = {}
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['Radarr'].sections:
+                    CFG_NEW['Radarr'][envCatKey]['enabled'] = 0
 
             section = "SickBeard"
             envCatKey = 'NZBPO_SBCATEGORY'
@@ -387,6 +393,25 @@ class ConfigObj(configobj.ConfigObj, Section):
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
                 if os.environ[envCatKey] in CFG_NEW['SickBeard'].sections:
                     CFG_NEW['SickBeard'][envCatKey]['enabled'] = 0
+
+            section = "Radarr"
+            envCatKey = 'NZBPO_RACATEGORY'
+            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
+                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
+                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
+            if envCatKey in os.environ:
+                for index in range(len(envKeys)):
+                    key = 'NZBPO_RA{index}'.format(index=envKeys[index])
+                    if key in os.environ:
+                        option = cfgKeys[index]
+                        value = os.environ[key]
+                        if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                            CFG_NEW[section][os.environ[envCatKey]] = {}
+                        CFG_NEW[section][os.environ[envCatKey]][option] = value
+                CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['CouchPotato'].sections:
+                    CFG_NEW['CouchPotato'][envCatKey]['enabled'] = 0
 
             section = "Extensions"
             envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']

@@ -200,7 +200,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         core.flatten(outputDestination)
 
     # Now check if video files exist in destination:
-    if sectionName in ["SickBeard", "NzbDrone", "CouchPotato"]:
+    if sectionName in ["SickBeard", "NzbDrone", "Sonarr", "CouchPotato", "Radarr"]:
         numVideos = len(
             core.listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False))
         if numVideos > 0:
@@ -214,7 +214,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     # Only these sections can handling failed downloads
     # so make sure everything else gets through without the check for failed
-    if sectionName not in ['CouchPotato', 'SickBeard', 'NzbDrone']:
+    if sectionName not in ['CouchPotato', 'Radarr', 'SickBeard', 'NzbDrone', 'Sonarr']:
         status = 0
 
     logger.info("Calling {0}:{1} to post-process:{2}".format(sectionName, usercat, inputName))
@@ -226,10 +226,10 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     if sectionName == 'UserScript':
         result = external_script(outputDestination, inputName, inputCategory, section)
 
-    elif sectionName == 'CouchPotato':
+    elif sectionName in ['CouchPotato', 'Radarr']:
         result = core.autoProcessMovie().process(sectionName, outputDestination, inputName,
                                                  status, clientAgent, inputHash, inputCategory)
-    elif sectionName in ['SickBeard', 'NzbDrone']:
+    elif sectionName in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if inputHash:
             inputHash = inputHash.upper()
         result = core.autoProcessTV().processEpisode(sectionName, outputDestination, inputName,

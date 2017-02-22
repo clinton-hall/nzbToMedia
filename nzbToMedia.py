@@ -83,6 +83,49 @@
 # Enable to replace local path with the path as per the mountPoints below.
 #cpsremote_path=0
 
+## Radarr
+
+# Radarr script category.
+#
+# category that gets called for post-processing with NzbDrone.
+#raCategory=movies2
+
+# Radarr host.
+#
+# The ipaddress for your Radarr server. e.g For the Same system use localhost or 127.0.0.1
+#rahost=localhost
+
+# Radarr port.
+#raport=8989
+
+# Radarr API key.
+#raapikey=
+
+# Radarr uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#rassl=0
+
+# Radarr web_root
+#
+# set this if using a reverse proxy.
+#raweb_root=
+
+# Radarr wait_for
+#
+# Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
+#rawait_for=2
+
+# Radarr Delete Failed Downloads (0, 1).
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#radelete_failed=0
+
+# Radarr and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#raremote_path=0
+
 ## SickBeard
 
 # SickBeard script category.
@@ -613,10 +656,10 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     logger.info("Calling {0}:{1} to post-process:{2}".format(sectionName, inputCategory, inputName))
 
-    if sectionName == "CouchPotato":
+    if sectionName in ["CouchPotato", "Radarr"]:
         result = autoProcessMovie().process(sectionName, inputDirectory, inputName, status, clientAgent, download_id,
                                             inputCategory, failureLink)
-    elif sectionName in ["SickBeard", "NzbDrone"]:
+    elif sectionName in ["SickBeard", "NzbDrone", "Sonarr"]:
         result = autoProcessTV().processEpisode(sectionName, inputDirectory, inputName, status, clientAgent,
                                                 download_id, inputCategory, failureLink)
     elif sectionName == "HeadPhones":
@@ -637,7 +680,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         if clientAgent != 'manual':
             # update download status in our DB
             update_downloadInfoStatus(inputName, 1)
-        if sectionName not in ['UserScript', 'NzbDrone']:
+        if sectionName not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr']:
             # cleanup our processing folders of any misc unwanted files and empty directories
             cleanDir(inputDirectory, sectionName, inputCategory)
 
@@ -708,6 +751,8 @@ def main(args, section=None):
             download_id = os.environ['NZBPR_DRONE']
         elif 'NZBPR_SONARR' in os.environ:
             download_id = os.environ['NZBPR_SONARR']
+        elif 'NZBPR_RADARR' in os.environ:
+            download_id = os.environ['NZBPR_RADARR']
         if 'NZBPR__DNZB_FAILURE' in os.environ:
             failureLink = os.environ['NZBPR__DNZB_FAILURE']
 

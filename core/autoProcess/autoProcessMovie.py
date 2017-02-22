@@ -3,6 +3,7 @@
 import os
 import time
 import requests
+import json
 import core
 
 from core.nzbToMediaSceneExceptions import process_all_exceptions
@@ -110,7 +111,10 @@ class autoProcessMovie(object):
         host = cfg["host"]
         port = cfg["port"]
         apikey = cfg["apikey"]
-        method = cfg["method"]
+        if section == "CouchPotato":
+            method = cfg["method"]
+        else:
+            method = None
         delete_failed = int(cfg["delete_failed"])
         wait_for = int(cfg["wait_for"])
         ssl = int(cfg.get("ssl", 0))
@@ -124,12 +128,17 @@ class autoProcessMovie(object):
             extract = int(cfg.get("extract", 0))
 
         imdbid = find_imdbid(dirName, inputName)
-        baseURL = "{0}{1}:{2}{3}/api/{4}/".format(protocol, host, port, web_root, apikey)
+        if section == "CouchPotato":
+            baseURL = "{0}{1}:{2}{3}/api/{4}/".format(protocol, host, port, web_root, apikey)
+        if section == "Radarr":
+            baseURL = "{0}{1}:{2}{3}/api/command".format(protocol, host, port, web_root)
+            headers = {'X-Api-Key': apikey}
         if not apikey:
-            logger.info('No CouchPotato apikey entered. Performing transcoder functions only')
+            logger.info('No CouchPotato or Radarr apikey entered. Performing transcoder functions only')
             release = None
         elif server_responding(baseURL):
-            release = self.get_release(baseURL, imdbid, download_id)
+            if section == "CouchPotato":
+                release = self.get_release(baseURL, imdbid, download_id)
         else:
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
@@ -225,20 +234,27 @@ class autoProcessMovie(object):
 
             params['media_folder'] = remoteDir(dirName) if remote_path else dirName
 
-            if method == "manage":
-                command = "manage.update"
-                params = {}
-            else:
-                command = "renamer.scan"
+            if section == "CouchPotato": 
+                if method == "manage":
+                    command = "manage.update"
+                    params = {}
+                else:
+                    command = "renamer.scan"
 
-            url = "{0}{1}".format(baseURL, command)
+                url = "{0}{1}".format(baseURL, command)
+                logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
+                logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
 
-            logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
-
-            logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
+            if section == "Radarr":
+                payload = {'name': 'DownloadedMovieScan', 'path': params['media_folder']}
+                logger.debug("Opening URL: {0} with PARAMS: {1}".format(baseURL, payload), section)
+                logger.postprocess("Starting DownloadedMovieScan scan for {1}".format(inputName), section)
 
             try:
-                r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
+                if section == "CouchPotato":
+                    r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
+                else:
+                    r = requests.post(url, data=json.dumps(payload), headers=headers, stream=True, verify=False, timeout=(30, 1800))
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
                 return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
@@ -247,10 +263,12 @@ class autoProcessMovie(object):
             if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status {0}".format(r.status_code), section)
                 return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
-            elif result['success']:
+            elif section == "CouchPotato" and result['success']:
                 logger.postprocess("SUCCESS: Finished {0} scan for folder {1}".format(method, dirName), section)
                 if method == "manage":
                     return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            elif section == "Radarr":
+                logger.postprocess("Radarr response: {0}".format(result['state']))
             else:
                 logger.error("FAILED: {0} scan was unable to finish for folder {1}. exiting!".format(method, dirName),
                              section)
@@ -261,6 +279,10 @@ class autoProcessMovie(object):
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR {0}".format(inputName), section)
             if failureLink:
                 reportNzb(failureLink, clientAgent)
+
+            if section == "Radarr":
+                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(fork), section)
+                return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
@@ -325,7 +347,10 @@ class autoProcessMovie(object):
         timeout = time.time() + 60 * wait_for
         while time.time() < timeout:  # only wait 2 (default) minutes, then return.
             logger.postprocess("Checking for status change, please stand by ...", section)
-            release = self.get_release(baseURL, imdbid, download_id, release_id)
+            if section == "CouchPotato":
+                release = self.get_release(baseURL, imdbid, download_id, release_id)
+            else:
+                release = None
             if release:
                 try:
                     if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.

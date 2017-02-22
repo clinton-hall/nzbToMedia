@@ -4,7 +4,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to NzbDrone.
+# Post-Process to NzbDrone/Sonarr.
 #
 # This script sends the download to your automated media management servers.
 #
