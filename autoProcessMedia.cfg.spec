@@ -76,7 +76,7 @@
         enabled = 0
         apikey =
         host = localhost
-        port = 8989
+        port = 7878
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root =
         ssl = 0

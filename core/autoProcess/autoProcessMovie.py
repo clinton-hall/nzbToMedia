@@ -139,6 +139,8 @@ class autoProcessMovie(object):
         elif server_responding(baseURL):
             if section == "CouchPotato":
                 release = self.get_release(baseURL, imdbid, download_id)
+            else:
+                release = None
         else:
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]

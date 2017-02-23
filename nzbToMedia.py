@@ -96,7 +96,7 @@
 #rahost=localhost
 
 # Radarr port.
-#raport=8989
+#raport=7878
 
 # Radarr API key.
 #raapikey=
