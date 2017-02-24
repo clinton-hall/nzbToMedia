@@ -256,7 +256,7 @@ class autoProcessMovie(object):
                 if section == "CouchPotato":
                     r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
                 else:
-                    r = requests.post(url, data=json.dumps(payload), headers=headers, stream=True, verify=False, timeout=(30, 1800))
+                    r = requests.post(baseURL, data=json.dumps(payload), headers=headers, stream=True, verify=False, timeout=(30, 1800))
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
                 return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
