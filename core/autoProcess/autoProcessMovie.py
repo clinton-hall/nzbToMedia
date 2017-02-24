@@ -248,7 +248,7 @@ class autoProcessMovie(object):
                 logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
 
             if section == "Radarr":
-                payload = {'name': 'DownloadedMovieScan', 'path': params['media_folder']}
+                payload = {'name': 'DownloadedMovieScan', 'path': params['media_folder'], "downloadClientId": download_id}
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(baseURL, payload), section)
                 logger.postprocess("Starting DownloadedMovieScan scan for {0}".format(inputName), section)
 
