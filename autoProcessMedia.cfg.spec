@@ -86,7 +86,7 @@
         keep_archive = 1
         extract = 1
         nzbExtractionBy = Downloader
-        wait_for = 2
+        wait_for = 6
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
         # Enable/Disable deleting ignored files (samples and invalid media files)
@@ -153,7 +153,7 @@
         keep_archive = 1
         extract = 1
         nzbExtractionBy = Downloader
-        wait_for = 2
+        wait_for = 6
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
         # Enable/Disable deleting ignored files (samples and invalid media files)

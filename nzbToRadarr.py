@@ -66,7 +66,7 @@
 # Radarr wait_for
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
-#rawait_for=2
+#rawait_for=6
 
 # Radarr Delete Failed Downloads (0, 1).
 #
