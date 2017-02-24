@@ -117,7 +117,7 @@ def getVideoDetails(videofile, img=None, bitbucket=None):
 def buildCommands(file, newDir, movieName, bitbucket):
     if isinstance(file, basestring):
         inputFile = file
-        if '"concat:' in file:
+        if 'concat:' in file:
             file = file.split('|')[0].replace('concat:', '')
         video_details, result = getVideoDetails(file)
         dir, name = os.path.split(file)
