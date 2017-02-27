@@ -327,7 +327,7 @@ class autoProcessMovie(object):
                 reportNzb(failureLink, clientAgent)
 
             if section == "Radarr":
-                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(fork), section)
+                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(section), section)
                 return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
