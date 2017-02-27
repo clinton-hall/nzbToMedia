@@ -382,7 +382,8 @@ def buildCommands(file, newDir, movieName, bitbucket):
                 audio_cmd.extend(audio_cmd2)
 
         if core.AINCLUDE and core.ACODEC3:
-            for audio in audioStreams.extend(commentary): #add commentry tracks back here.
+            audioStreams.extend(commentary) #add commentry tracks back here.
+            for audio in audioStreams:
                 if audio["index"] in a_mapped:
                     continue
                 used_audio += 1
