@@ -282,11 +282,11 @@ class autoProcessMovie(object):
                 logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
 
             if section == "Radarr":
-                payload = {'name': 'DownloadedMovieScan', 'path': params['media_folder'], 'downloadClientId': download_id}
+                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id}
                 if not download_id:
                     payload.pop("downloadClientId")
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(baseURL, payload), section)
-                logger.postprocess("Starting DownloadedMovieScan scan for {0}".format(inputName), section)
+                logger.postprocess("Starting DownloadedMoviesScan scan for {0}".format(inputName), section)
 
             try:
                 if section == "CouchPotato":
