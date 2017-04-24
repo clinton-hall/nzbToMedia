@@ -263,6 +263,10 @@ class autoProcessMovie(object):
                         logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                         os.rename(video, video2)
 
+            if not apikey: #If only using Transcoder functions, exit here.
+                logger.info('No CouchPotato or Radarr apikey entered. Processing completed.')
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+
             params = {}
             if download_id:
                 params['downloader'] = downloader or clientAgent
