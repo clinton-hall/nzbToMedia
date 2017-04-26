@@ -226,7 +226,7 @@ class autoProcessTV(object):
         [fork_params.pop(k) for k, v in fork_params.items() if v is None]
 
         if status == 0:
-            if not apikey:
+            if section == "NzbDrone" and not apikey:
                 logger.info('No Sonarr apikey entered. Processing completed.')
                 return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
