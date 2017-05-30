@@ -117,6 +117,7 @@ class autoProcessMovie(object):
         web_root = cfg.get("web_root", "")
         remote_path = int(cfg.get("remote_path", 0))
         protocol = "https://" if ssl else "http://"
+        omdbapikey = cfg.get("omdbapikey", "")
         status = int(status)
         if status > 0 and core.NOEXTRACTFAILED:
             extract = 0
@@ -128,7 +129,7 @@ class autoProcessMovie(object):
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
-        imdbid = find_imdbid(dirName, inputName)
+        imdbid = find_imdbid(dirName, inputName, omdbapikey)
         release = self.get_release(baseURL, imdbid, download_id)
 
         # pull info from release found if available

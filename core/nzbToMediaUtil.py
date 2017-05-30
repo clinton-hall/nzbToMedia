@@ -1018,7 +1018,7 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
     return sorted(files, key=len)
 
 
-def find_imdbid(dirName, inputName):
+def find_imdbid(dirName, inputName, omdbApiKey):
     imdbid = None
 
     logger.info('Attemping imdbID lookup for {0}'.format(inputName))
@@ -1064,7 +1064,8 @@ def find_imdbid(dirName, inputName):
         logger.debug("Opening URL: {0}".format(url))
 
         try:
-            r = requests.get(url, params={'y': year, 't': title}, verify=False, timeout=(60, 300))
+            r = requests.get(url, params={'apikey': omdbApiKey, 'y': year, 't': title},
+            verify=False, timeout=(60, 300))
         except requests.ConnectionError:
             logger.error("Unable to open URL {0}".format(url))
             return

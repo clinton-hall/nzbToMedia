@@ -68,6 +68,8 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
+        # api key for www.omdbapi.com (used as alternative to imdb)
+        omdbapikey = 
 
 [SickBeard]
     #### autoProcessing for TV Series
