@@ -1063,6 +1063,8 @@ def find_imdbid(dirName, inputName, omdbApiKey):
 
         logger.debug("Opening URL: {0}".format(url))
 
+        if not omdbApiKey:
+            return
         try:
             r = requests.get(url, params={'apikey': omdbApiKey, 'y': year, 't': title},
             verify=False, timeout=(60, 300))
