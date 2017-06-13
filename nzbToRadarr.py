@@ -4,7 +4,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to NzbDrone/Sonarr.
+# Post-Process to Radarr.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -35,48 +35,48 @@
 # Turn this on to disable additional extraction attempts for failed downloads. Default = 0 this will attempt to extract and verify if media is present.
 #no_extract_failed = 0
 
-## NzbDrone
+## Radarr
 
-# NzbDrone script category.
+# Radarr script category.
 #
 # category that gets called for post-processing with NzbDrone.
-#ndCategory=tv2
+#raCategory=movies2
 
-# NzbDrone host.
+# Radarr host.
 #
-# The ipaddress for your NzbDrone/Sonarr server. e.g For the Same system use localhost or 127.0.0.1
-#ndhost=localhost
+# The ipaddress for your Radarr server. e.g For the Same system use localhost or 127.0.0.1
+#rahost=localhost
 
-# NzbDrone port.
-#ndport=8989
+# Radarr port.
+#raport=7878
 
-# NzbDrone API key.
-#ndapikey=
+# Radarr API key.
+#raapikey=
 
-# NzbDrone uses ssl (0, 1).
+# Radarr uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#ndssl=0
+#rassl=0
 
-# NzbDrone web_root
+# Radarr web_root
 #
 # set this if using a reverse proxy.
-#ndweb_root=
+#raweb_root=
 
-# NzbDrone wait_for
+# Radarr wait_for
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
-#ndwait_for=6
+#rawait_for=6
 
-# NzbDrone Delete Failed Downloads (0, 1).
+# Radarr Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
-#nddelete_failed=0
+#radelete_failed=0
 
-# NzbDrone and NZBGet are a different system (0, 1).
+# Radarr and NZBGet are a different system (0, 1).
 #
 # Enable to replace local path with the path as per the mountPoints below.
-#ndremote_path=0
+#raremote_path=0
 
 ## Network
 
@@ -240,6 +240,6 @@
 import sys
 import nzbToMedia
 
-section = "NzbDrone"
+section = "Radarr"
 result = nzbToMedia.main(sys.argv, section)
 sys.exit(result)

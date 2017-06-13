@@ -3,6 +3,7 @@
 import os
 import time
 import requests
+import json
 import core
 
 from core.nzbToMediaSceneExceptions import process_all_exceptions
@@ -20,13 +21,13 @@ class autoProcessMovie(object):
 
         # determine cmd and params to send to CouchPotato to get our results
         section = 'movies'
-        cmd = "/media.list"
+        cmd = "media.list"
         if release_id or imdbid:
             section = 'media'
-            cmd = "/media.get"
+            cmd = "media.get"
             params['id'] = release_id or imdbid
 
-        url = baseURL + cmd
+        url = "{0}{1}".format(baseURL, cmd)
         logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
 
         try:
@@ -103,6 +104,39 @@ class autoProcessMovie(object):
 
         return results
 
+    def command_complete(self, url, params, headers, section):
+        try:
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return None
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return None
+        else:
+            try:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
+                return None
+
+    def CDH(self, url2, headers, section="MAIN"):
+        try:
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url2), section)
+            return False
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return False
+        else:
+            try:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                return False
+
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None, failureLink=None):
 
         cfg = dict(core.CFG[section][inputCategory])
@@ -110,7 +144,10 @@ class autoProcessMovie(object):
         host = cfg["host"]
         port = cfg["port"]
         apikey = cfg["apikey"]
-        method = cfg["method"]
+        if section == "CouchPotato":
+            method = cfg["method"]
+        else:
+            method = None
         delete_failed = int(cfg["delete_failed"])
         wait_for = int(cfg["wait_for"])
         ssl = int(cfg.get("ssl", 0))
@@ -124,13 +161,24 @@ class autoProcessMovie(object):
         else:
             extract = int(cfg.get("extract", 0))
 
-        baseURL = "{0}{1}:{2}{3}/api/{4}".format(protocol, host, port, web_root, apikey)
-        if not server_responding(baseURL):
+        imdbid = find_imdbid(dirName, inputName)
+        if section == "CouchPotato":
+            baseURL = "{0}{1}:{2}{3}/api/{4}/".format(protocol, host, port, web_root, apikey)
+        if section == "Radarr":
+            baseURL = "{0}{1}:{2}{3}/api/command".format(protocol, host, port, web_root)
+            url2 = "{0}{1}:{2}{3}/api/config/downloadClient".format(protocol, host, port, web_root)
+            headers = {'X-Api-Key': apikey}
+        if not apikey:
+            logger.info('No CouchPotato or Radarr apikey entered. Performing transcoder functions only')
+            release = None
+        elif server_responding(baseURL):
+            if section == "CouchPotato":
+                release = self.get_release(baseURL, imdbid, download_id)
+            else:
+                release = None
+        else:
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
-
-        imdbid = find_imdbid(dirName, inputName, omdbapikey)
-        release = self.get_release(baseURL, imdbid, download_id)
 
         # pull info from release found if available
         release_id = None
@@ -216,6 +264,10 @@ class autoProcessMovie(object):
                         logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                         os.rename(video, video2)
 
+            if not apikey: #If only using Transcoder functions, exit here.
+                logger.info('No CouchPotato or Radarr apikey entered. Processing completed.')
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+
             params = {}
             if download_id:
                 params['downloader'] = downloader or clientAgent
@@ -223,20 +275,29 @@ class autoProcessMovie(object):
 
             params['media_folder'] = remoteDir(dirName) if remote_path else dirName
 
-            if method == "manage":
-                command = "/manage.update"
-                params = {}
-            else:
-                command = "/renamer.scan"
+            if section == "CouchPotato": 
+                if method == "manage":
+                    command = "manage.update"
+                    params = {}
+                else:
+                    command = "renamer.scan"
 
-            url = "{0}{1}".format(baseURL, command)
+                url = "{0}{1}".format(baseURL, command)
+                logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
+                logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
 
-            logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
-
-            logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
+            if section == "Radarr":
+                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id}
+                if not download_id:
+                    payload.pop("downloadClientId")
+                logger.debug("Opening URL: {0} with PARAMS: {1}".format(baseURL, payload), section)
+                logger.postprocess("Starting DownloadedMoviesScan scan for {0}".format(inputName), section)
 
             try:
-                r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
+                if section == "CouchPotato":
+                    r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
+                else:
+                    r = requests.post(baseURL, data=json.dumps(payload), headers=headers, stream=True, verify=False, timeout=(30, 1800))
             except requests.ConnectionError:
                 logger.error("Unable to open URL", section)
                 return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
@@ -245,10 +306,20 @@ class autoProcessMovie(object):
             if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 logger.error("Server returned status {0}".format(r.status_code), section)
                 return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
-            elif result['success']:
+            elif section == "CouchPotato" and result['success']:
                 logger.postprocess("SUCCESS: Finished {0} scan for folder {1}".format(method, dirName), section)
                 if method == "manage":
                     return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            elif section == "Radarr":
+                logger.postprocess("Radarr response: {0}".format(result['state']))
+                try:
+                    res = json.loads(r.content)
+                    scan_id = int(res['id'])
+                    logger.debug("Scan started with id: {0}".format(scan_id), section)
+                    Started = True
+                except Exception as e:
+                    logger.warning("No scan id was returned due to: {0}".format(e), section)
+                    scan_id = None
             else:
                 logger.error("FAILED: {0} scan was unable to finish for folder {1}. exiting!".format(method, dirName),
                              section)
@@ -259,6 +330,10 @@ class autoProcessMovie(object):
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR {0}".format(inputName), section)
             if failureLink:
                 reportNzb(failureLink, clientAgent)
+
+            if section == "Radarr":
+                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(section), section)
+                return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
 
             if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
                 logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
@@ -272,7 +347,7 @@ class autoProcessMovie(object):
             if release_id:
                 logger.postprocess("Setting failed release {0} to ignored ...".format(inputName), section)
 
-                url = "{url}/release.ignore".format(url=baseURL)
+                url = "{url}release.ignore".format(url=baseURL)
                 params = {'id': release_id}
 
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
@@ -295,7 +370,7 @@ class autoProcessMovie(object):
 
             logger.postprocess("Trying to snatch the next highest ranked release.", section)
 
-            url = "{0}/movie.searcher.try_next".format(baseURL)
+            url = "{0}movie.searcher.try_next".format(baseURL)
             logger.debug("Opening URL: {0}".format(url), section)
 
             try:
@@ -323,7 +398,11 @@ class autoProcessMovie(object):
         timeout = time.time() + 60 * wait_for
         while time.time() < timeout:  # only wait 2 (default) minutes, then return.
             logger.postprocess("Checking for status change, please stand by ...", section)
-            release = self.get_release(baseURL, imdbid, download_id, release_id)
+            if section == "CouchPotato":
+                release = self.get_release(baseURL, imdbid, download_id, release_id)
+                scan_id = None
+            else:
+                release = None
             if release:
                 try:
                     if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.
@@ -337,6 +416,18 @@ class autoProcessMovie(object):
                         return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
                 except:
                     pass
+            elif scan_id:
+                    url = "{0}/{1}".format(baseURL, scan_id)
+                    command_status = self.command_complete(url, params, headers, section)
+                    if command_status:
+                        logger.debug("The Scan command return status: {0}".format(command_status), section)
+                        if command_status in ['completed']:
+                            logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
+                            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+                        elif command_status in ['failed']:
+                            logger.debug("The Scan command has failed. Renaming was not successful.", section)
+                            # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+
             if not os.path.isdir(dirName):
                 logger.postprocess("SUCCESS: Input Directory [{0}] has been processed and removed".format(
                     dirName), section)
@@ -347,10 +438,13 @@ class autoProcessMovie(object):
                     dirName), section)
                 return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
 
-            # pause and let CouchPotatoServer catch its breath
+            # pause and let CouchPotatoServer/Radarr catch its breath
             time.sleep(10 * wait_for)
 
-        # The status hasn't changed. we have waited 2 minutes which is more than enough. uTorrent can resume seeding now.
+        # The status hasn't changed. we have waited wait_for minutes which is more than enough. uTorrent can resume seeding now.
+        if section == "Radarr" and self.CDH(url2, headers, section=section):
+            logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
+            return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
         logger.warning(
             "{0} does not appear to have changed status after {1} minutes, Please check your logs.".format(inputName, wait_for),
             section)

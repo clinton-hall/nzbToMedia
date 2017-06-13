@@ -61,6 +61,8 @@ def strip_groups(filename):
 
 
 def rename_file(filename, newfilePath):
+    if os.path.isfile(newfilePath):
+        newfilePath = os.path.splitext(newfilePath)[0] + ".NTM" + os.path.splitext(newfilePath)[1]
     logger.debug("Replacing file name {old} with download name {new}".format
                  (old=filename, new=newfilePath), "EXCEPTION")
     try:
