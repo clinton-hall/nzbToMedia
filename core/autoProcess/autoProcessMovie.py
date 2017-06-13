@@ -154,6 +154,7 @@ class autoProcessMovie(object):
         web_root = cfg.get("web_root", "")
         remote_path = int(cfg.get("remote_path", 0))
         protocol = "https://" if ssl else "http://"
+        omdbapikey = cfg.get("omdbapikey", "")
         status = int(status)
         if status > 0 and core.NOEXTRACTFAILED:
             extract = 0
