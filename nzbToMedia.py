@@ -68,6 +68,11 @@
 # use "renamer" for CPS renamer (default) or "manage" to call a manage update.
 #cpsmethod=renamer
 
+# CouchPotato OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#cpsomdbapikey=
+
 # CouchPotato Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
@@ -115,6 +120,11 @@
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
 #rawait_for=6
+
+# Radarr OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#raomdbapikey=
 
 # Radarr Delete Failed Downloads (0, 1).
 #

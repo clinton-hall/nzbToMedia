@@ -51,6 +51,8 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        # api key for www.omdbapi.com (used as alternative to imdb)
+        omdbapikey =
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
         keep_archive = 1
@@ -68,8 +70,6 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
-        # api key for www.omdbapi.com (used as alternative to imdb)
-        omdbapikey = 
 
 [Radarr]
     #### autoProcessing for Movies
@@ -82,6 +82,8 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root =
         ssl = 0
+        # api key for www.omdbapi.com (used as alternative to imdb)
+        omdbapikey =
         delete_failed = 0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0

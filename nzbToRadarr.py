@@ -63,6 +63,11 @@
 # set this if using a reverse proxy.
 #raweb_root=
 
+# Radarr OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#raomdbapikey=
+
 # Radarr wait_for
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.

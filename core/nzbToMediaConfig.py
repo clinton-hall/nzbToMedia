@@ -293,9 +293,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "CouchPotato"
             envCatKey = 'NZBPO_CPSCATEGORY'
             envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
-                       'WAIT_FOR', 'WATCH_DIR']
+                       'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
             cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
-                       'wait_for', 'watch_dir']
+                       'wait_for', 'watch_dir', 'omdbapikey']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
                     key = 'NZBPO_CPS{index}'.format(index=envKeys[index])
@@ -397,9 +397,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "Radarr"
             envCatKey = 'NZBPO_RACATEGORY'
             envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
+                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY']
             cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
+                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
                     key = 'NZBPO_RA{index}'.format(index=envKeys[index])

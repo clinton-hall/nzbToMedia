@@ -68,6 +68,11 @@
 # set this to where your CouchPotato completed downloads are.
 #cpswatch_dir=
 
+# CouchPotato OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#cpsomdbapikey=
+
 # CouchPotato Postprocess Method (renamer, manage).
 #
 # use "renamer" for CPS renamer (default) or "manage" to call a manage update.
