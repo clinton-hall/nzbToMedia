@@ -161,7 +161,7 @@ class autoProcessMovie(object):
         else:
             extract = int(cfg.get("extract", 0))
 
-        imdbid = find_imdbid(dirName, inputName)
+        imdbid = find_imdbid(dirName, inputName, omdbapikey)
         if section == "CouchPotato":
             baseURL = "{0}{1}:{2}{3}/api/{4}/".format(protocol, host, port, web_root, apikey)
         if section == "Radarr":
