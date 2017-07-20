@@ -256,10 +256,10 @@ class autoProcessTV(object):
             # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
                 logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
-                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id}
+                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": "Move"}
             else:
                 logger.debug("path: {0}".format(dirName), section)
-                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id}
+                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id, "importMode": "Move"}
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)
