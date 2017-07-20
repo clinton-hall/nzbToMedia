@@ -1108,7 +1108,7 @@ def extractFiles(src, dst=None, keep_archive=None):
 
         try:
             if extractor.extract(inputFile, dst or dirPath):
-                extracted_folder.append(dst or dirPath)
+                extracted_folder.append(dirPath)
                 extracted_archive.append(archiveName)
         except Exception:
             logger.error("Extraction failed for: {0}".format(fullFileName))
