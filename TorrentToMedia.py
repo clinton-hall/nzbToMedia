@@ -109,7 +109,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         outputDestination = os.path.join(core.OUTPUTDIRECTORY, inputCategory, basename)
     elif uniquePath:
         outputDestination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, inputCategory, core.sanitizeName(inputName)))
+            core.os.path.join(core.OUTPUTDIRECTORY, inputCategory, core.sanitizeName(inputName).replace(" ",".")))
     else:
         outputDestination = os.path.normpath(
             core.os.path.join(core.OUTPUTDIRECTORY, inputCategory))
