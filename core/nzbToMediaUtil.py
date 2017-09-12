@@ -1147,7 +1147,7 @@ def import_subs(filename):
     if not languages:
         return
 
-    logger.debug("Attempting to download subtitles for {0}".format(filename), 'SUBTITLES')
+    logger.info("Attempting to download subtitles for {0}".format(filename), 'SUBTITLES')
     try:
         video = subliminal.scan_video(filename)
         subtitles = subliminal.download_best_subtitles({video}, languages)
