@@ -27,6 +27,11 @@ from core import logger, nzbToMediaDB
 
 requests.packages.urllib3.disable_warnings()
 
+# Monkey Patch shutil.copyfileobj() to adjust the buffer length to 512KB rather than 4KB
+shutil.copyfileobjOrig = shutil.copyfileobj
+def copyfileobjFast(fsrc, fdst, length=512*1024):
+    shutil.copyfileobjOrig(fsrc, fdst, length=length)
+shutil.copyfileobj = copyfileobjFast
 
 def reportNzb(failure_link, clientAgent):
     # Contact indexer site
