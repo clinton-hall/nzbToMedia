@@ -95,6 +95,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     Torrent_NoLink = int(section.get("Torrent_NoLink", 0))
     keep_archive = int(section.get("keep_archive", 0))
     extract = int(section.get('extract', 0))
+    extensions = section.get('user_script_mediaExtensions', "").lower().split(',')
     uniquePath = int(section.get("unique_path", 1))
 
     if clientAgent != 'manual':
@@ -138,9 +139,9 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
     now = datetime.datetime.now()
 
     if extract == 1:
-        inputFiles = core.listMediaFiles(inputDirectory, archives=False)
+        inputFiles = core.listMediaFiles(inputDirectory, archives=False, other=True, otherext=extensions)
     else:
-        inputFiles = core.listMediaFiles(inputDirectory)
+        inputFiles = core.listMediaFiles(inputDirectory, other=True, otherext=extensions)
     logger.debug("Found {0} files in {1}".format(len(inputFiles), inputDirectory))
     for inputFile in inputFiles:
         filePath = os.path.dirname(inputFile)

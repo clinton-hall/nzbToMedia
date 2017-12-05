@@ -11,7 +11,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     final_result = 0  # start at 0.
     num_files = 0
     try:
-        core.USER_SCRIPT_MEDIAEXTENSIONS = settings["user_script_mediaExtensions"]
+        core.USER_SCRIPT_MEDIAEXTENSIONS = settings["user_script_mediaExtensions"].lower()
         if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
             core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
     except:
@@ -51,7 +51,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
             filePath = core.os.path.join(dirpath, file)
             fileName, fileExtension = os.path.splitext(file)
 
-            if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or "ALL" in core.USER_SCRIPT_MEDIAEXTENSIONS:
+            if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or "all" in core.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files += 1
                 if core.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
