@@ -960,7 +960,7 @@ def is_archive_file(filename):
     return False
 
 
-def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
+def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
     fileName, fileExt = os.path.splitext(mediafile)
 
     try:
@@ -969,22 +969,22 @@ def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True):
             return False
     except:
         pass
-
     if (media and fileExt.lower() in core.MEDIACONTAINER) \
             or (audio and fileExt.lower() in core.AUDIOCONTAINER) \
             or (meta and fileExt.lower() in core.METACONTAINER) \
-            or (archives and is_archive_file(mediafile)):
+            or (archives and is_archive_file(mediafile)) \
+            or (other and (fileExt.lower() in otherext or 'all' in otherext)):
         return True
     else:
         return False
 
 
-def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True):
+def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
     files = []
     if not os.path.isdir(path):
         if os.path.isfile(path):  # Single file downloads.
             curFile = os.path.split(path)[1]
-            if isMediaFile(curFile, media, audio, meta, archives):
+            if isMediaFile(curFile, media, audio, meta, archives, other, otherext):
                 # Optionally ignore sample files
                 if is_sample(path) or not is_minSize(path, minSize):
                     if delete_ignored == 1:
@@ -1004,9 +1004,9 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
 
         # if it's a folder do it recursively
         if os.path.isdir(fullCurFile) and not curFile.startswith('.'):
-            files += listMediaFiles(fullCurFile, minSize, delete_ignored, media, audio, meta, archives)
+            files += listMediaFiles(fullCurFile, minSize, delete_ignored, media, audio, meta, archives, other, otherext)
 
-        elif isMediaFile(curFile, media, audio, meta, archives):
+        elif isMediaFile(curFile, media, audio, meta, archives, other, otherext):
             # Optionally ignore sample files
             if is_sample(fullCurFile) or not is_minSize(fullCurFile, minSize):
                 if delete_ignored == 1:
