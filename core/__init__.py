@@ -195,6 +195,7 @@ OUTPUTFASTSTART = None
 OUTPUTQUALITYPERCENT = None
 FFMPEG = None
 SEVENZIP = None
+PAR2CMD = None
 FFPROBE = None
 CHECK_MEDIA = None
 NICENESS = []
@@ -233,7 +234,7 @@ def initialize(section=None):
         DELETE_ORIGINAL, TORRENT_CHMOD_DIRECTORY, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
         TORRENT_DEFAULTDIR, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
-        PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC, TORRENT_RESUME
+        PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC, TORRENT_RESUME, PAR2CMD
 
     if __INITIALIZED__:
         return False
@@ -760,7 +761,15 @@ def initialize(section=None):
         if not SEVENZIP:
             SEVENZIP = None
             logger.warning(
-                "Failed to locate 7zip. Transcosing of disk images and extraction of .7z files will not be possible!")
+                "Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!")
+        try:
+            PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip()
+        except:
+            pass
+        if not PAR2CMD:
+            PAR2CMD = None
+            logger.warning(
+                "Failed to locate par2. Repair and rename using par files will not be possible!")
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'),
                                                                             os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')

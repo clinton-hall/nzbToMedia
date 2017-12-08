@@ -3,6 +3,8 @@ import os
 import re
 import core
 import shlex
+import platform
+import subprocess
 from core import logger
 from core.nzbToMediaUtil import listMediaFiles
 
@@ -26,6 +28,7 @@ char_replace = [[r"(\w)1\.(\w)", r"\1i\2"]
 
 
 def process_all_exceptions(name, dirname):
+    par2(dirname)
     rename_script(dirname)
     for filename in listMediaFiles(dirname):
         newfilename = None
@@ -140,6 +143,41 @@ def rename_script(dirname):
                     os.rename(orig, dest)
                 except Exception as error:
                     logger.error("Unable to rename file due to: {error}".format(error=error), "EXCEPTION")
+
+def par2(dirname):
+    newlist = []
+    sofar = 0
+    parfile = ""
+    objects = os.listdir(dirname)
+    for item in objects:
+        if item.endswith(".par2"):
+            size = os.path.getsize(item)
+            if size > sofar:
+                sofar = size
+                parfile = item
+    if core.PAR2CMD and parfile:
+        pwd = os.getcwd()  # Get our Present Working Directory
+        os.chdir(dirname)  # set directory to run par on.
+        if platform.system() == 'Windows':
+            bitbucket = open('NUL')
+        else:
+            bitbucket = open('/dev/null')
+        logger.info("Running par2 on file {0}.".format(parfile), "PAR2")
+        command = [core.PAR2CMD, 'r', parfile, "*"]
+        cmd = ""
+        for item in command:
+            cmd = "{cmd} {item}".format(cmd=cmd, item=item)
+        logger.debug("calling command:{0}".format(cmd), "PAR2")    
+        try:
+            proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
+            proc.communicate()
+            result = proc.returncode
+        except:
+            logger.error("par2 file processing for {0} has failed".format(parfile), "PAR2")
+        if result == 0:
+            logger.info("par2 file processing succeeded", "PAR2")
+        os.chdir(pwd)
+        bitbucket.close()
 
 # dict for custom groups
 # we can add more to this list
