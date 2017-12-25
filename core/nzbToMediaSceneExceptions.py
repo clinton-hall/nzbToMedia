@@ -148,7 +148,9 @@ def par2(dirname):
     newlist = []
     sofar = 0
     parfile = ""
-    objects = os.listdir(dirname)
+    objects = []
+    if os.path.exists(dirname):
+        objects = os.listdir(dirname)
     for item in objects:
         if item.endswith(".par2"):
             size = os.path.getsize(os.path.join(dirname, item))
