@@ -588,6 +588,34 @@ def parse_vuze(args):
 
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
+def parse_qbittorrent(args):
+    # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
+    try:
+        input = args[1].split('|')
+    except:
+        input = []
+    try:
+        inputDirectory = os.path.normpath(input[0].replace('"',''))
+    except:
+        inputDirectory = ''
+    try:
+        inputName = input[1].replace('"','')
+    except:
+        inputName = ''
+    try:
+        inputCategory = input[2].replace('"','')
+    except:
+        inputCategory = ''
+    try:
+        inputHash = input[3].replace('"','')
+    except:
+        inputHash = ''
+    try:
+        inputID = input[3].replace('"','')
+    except:
+        inputID = ''
+
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 def parse_args(clientAgent, args):
     clients = {
@@ -596,6 +624,7 @@ def parse_args(clientAgent, args):
         'utorrent': parse_utorrent,
         'deluge': parse_deluge,
         'transmission': parse_transmission,
+        'qbittorrent': parse_qbittorrent,
         'vuze': parse_vuze,
     }
 

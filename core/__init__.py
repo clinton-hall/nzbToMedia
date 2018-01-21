@@ -50,7 +50,7 @@ from core.databases import mainDB
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
-TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'other', 'manual']
+TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'qbittorrent', 'other', 'manual']
 
 # sabnzbd constants
 SABNZB_NO_OF_ARGUMENTS = 8
@@ -357,7 +357,7 @@ def initialize(section=None):
     if GROUPS == ['']:
         GROUPS = None
 
-    TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | vuze |other
+    TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
     USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
     OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
     TORRENT_DEFAULTDIR = CFG["Torrent"]["default_downloadDirectory"]
