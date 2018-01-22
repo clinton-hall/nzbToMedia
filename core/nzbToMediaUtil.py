@@ -909,7 +909,7 @@ def find_download(clientAgent, download_id):
     if clientAgent == 'qbittorrent':
         torrents = core.TORRENT_CLASS.torrents()
         for torrent in torrents:
-            if torrent['infohash'] == download_id:
+            if torrent['hash'] == download_id:
                 return True
     if clientAgent == 'sabnzbd':
         if "http" in core.SABNZBDHOST:
