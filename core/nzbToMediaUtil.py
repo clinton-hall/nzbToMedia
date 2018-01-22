@@ -829,7 +829,7 @@ def create_torrent_class(clientAgent):
     if clientAgent == 'qbittorrent':
         try:
             logger.debug("Connecting to {0}: http://{1}:{2}".format(clientAgent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
-            tc = qBittorrentClient("http://{1}:{2}/".format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
+            tc = qBittorrentClient("http://{0}:{1}/".format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
             tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
         except:
             logger.error("Failed to connect to qBittorrent")
