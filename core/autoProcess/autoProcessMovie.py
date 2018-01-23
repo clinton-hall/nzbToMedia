@@ -185,7 +185,7 @@ class autoProcessMovie(object):
         media_id = None
         downloader = None
         release_status_old = None
-        if release and imdbid:
+        if release:
             try:
                 release_id = release.keys()[0]
                 media_id = release[release_id]['media_id']
