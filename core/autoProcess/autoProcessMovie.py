@@ -75,7 +75,7 @@ class autoProcessMovie(object):
                     if release['status'] not in ['snatched', 'downloaded', 'done']:
                         continue
                     if download_id:
-                        if download_id != release['download_info']['id']:
+                        if download_id.lower() != release['download_info']['id'].lower():
                             continue
 
                     id = release['_id']
