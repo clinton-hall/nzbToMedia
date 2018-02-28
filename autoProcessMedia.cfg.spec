@@ -251,7 +251,7 @@
 [Nzb]
     ###### clientAgent - Supported clients: sabnzbd, nzbget
     clientAgent = sabnzbd
-    ###### SabNZBD (You must edit this if your using nzbToMedia.py with SabNZBD)
+    ###### SabNZBD (You must edit this if you're using nzbToMedia.py with SabNZBD)
     sabnzbd_host = http://localhost
     sabnzbd_port = 8080
     sabnzbd_apikey =
@@ -271,21 +271,21 @@
     categories = music_videos,pictures,software,manual
     ###### A list of categories that you don't want to be flattened (i.e preserve the directory structure when copying/linking.
     noFlatten = pictures,manual
-    ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
+    ###### uTorrent Hardlink solution (You must edit this if you're using TorrentToMedia.py with uTorrent)
     uTorrentWEBui = http://localhost:8090/gui/
     uTorrentUSR = your username
     uTorrentPWD = your password
-    ###### Transmission (You must edit this if your using TorrentToMedia.py with Transmission)
+    ###### Transmission (You must edit this if you're using TorrentToMedia.py with Transmission)
     TransmissionHost = localhost
     TransmissionPort = 9091
     TransmissionUSR = your username
     TransmissionPWD = your password
-    #### Deluge (You must edit this if your using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
+    #### Deluge (You must edit this if you're using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
     DelugeHost = localhost
     DelugePort = 58846
     DelugeUSR = your username
     DelugePWD = your password
-    ###### qBittorrent (You must edit this if your using TorrentToMedia.py with qBittorrent)
+    ###### qBittorrent (You must edit this if you're using TorrentToMedia.py with qBittorrent)
     qBittorrenHost = localhost
     qBittorrentPort = 8080
     qBittorrentUSR = your username

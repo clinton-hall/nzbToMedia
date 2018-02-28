@@ -119,9 +119,9 @@ class autoProcessMusic(object):
             core.extractFiles(dirName)
             inputName, dirName = convert_to_ascii(inputName, dirName)
 
-        if listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and status:
-            logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
-            status = 0
+        #if listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and status:
+        #    logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
+        #    status = 0
 
         if status == 0:
 
