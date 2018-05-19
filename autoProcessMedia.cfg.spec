@@ -192,6 +192,33 @@
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
+[Lidarr]
+    #### autoProcessing for Movies
+    #### raCategory - category that gets called for post-processing with Radarr
+    [[music]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 8686
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        nzbExtractionBy = Downloader
+        wait_for = 6
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if NzbDrone is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+
 [Mylar]
     #### autoProcessing for Comics
     #### comics - category that gets called for post-processing with Mylar

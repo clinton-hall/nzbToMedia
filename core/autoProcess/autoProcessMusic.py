@@ -4,6 +4,7 @@ import os
 import time
 import requests
 import core
+import json
 
 from core.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles, server_responding
 from core.nzbToMediaSceneExceptions import process_all_exceptions
@@ -13,6 +14,39 @@ requests.packages.urllib3.disable_warnings()
 
 
 class autoProcessMusic(object):
+    def command_complete(self, url, params, headers, section):
+        try:
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return None
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return None
+        else:
+            try:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
+                return None
+
+    def CDH(self, url2, headers, section="MAIN"):
+        try:
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url2), section)
+            return False
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return False
+        else:
+            try:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                return False
+
     def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dirName)))
 
@@ -96,7 +130,10 @@ class autoProcessMusic(object):
         else:
             extract = int(cfg.get("extract", 0))
 
-        url = "{0}{1}:{2}{3}/api".format(protocol, host, port, web_root)
+        if section == "Lidarr":
+            url = "{0}{1}:{2}{3}/api/v1".format(protocol, host, port, web_root)
+        else:
+            url = "{0}{1}:{2}{3}/api".format(protocol, host, port, web_root)
         if not server_responding(url):
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
@@ -123,7 +160,7 @@ class autoProcessMusic(object):
         #    logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
         #    status = 0
 
-        if status == 0:
+        if status == 0 and section == "HeadPhones":
 
             params = {
                 'apikey': apikey,
@@ -149,6 +186,74 @@ class autoProcessMusic(object):
             logger.warning("The music album does not appear to have changed status after {0} minutes. Please check your Logs".format(wait_for), section)
             return [1, "{0}: Failed to post-process - No change in wanted status".format(section)]
 
+        elif status == 0 and section == "Lidarr":
+            url = "{0}{1}:{2}{3}/api/v1/command".format(protocol, host, port, web_root)
+            url2 = "{0}{1}:{2}{3}/api/v1/config/downloadClient".format(protocol, host, port, web_root)
+            headers = {"X-Api-Key": apikey}
+            if remote_path:
+                logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
+                data = {"name": "DownloadedAlbumScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": "Move"}
+            else:
+                logger.debug("path: {0}".format(dirName), section)
+                data = {"name": "DownloadedAlbumScan", "path": dirName, "downloadClientId": download_id, "importMode": "Move"}
+            if not download_id:
+                data.pop("downloadClientId")
+            data = json.dumps(data)
+            try:
+                logger.debug("Opening URL: {0} with data: {1}".format(url, data), section)
+                r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
+            except requests.ConnectionError:
+                logger.error("Unable to open URL: {0}".format(url), section)
+                return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
+
+            Success = False
+            Queued = False
+            Started = False
+            try:
+                res = json.loads(r.content)
+                scan_id = int(res['id'])
+                logger.debug("Scan started with id: {0}".format(scan_id), section)
+                Started = True
+            except Exception as e:
+                logger.warning("No scan id was returned due to: {0}".format(e), section)
+                scan_id = None
+                Started = False
+                return [1, "{0}: Failed to post-process - Unable to start scan".format(section)]
+
+            n = 0
+            params = {}
+            url = "{0}/{1}".format(url, scan_id)
+            while n < 6:  # set up wait_for minutes to see if command completes..
+                time.sleep(10 * wait_for)
+                command_status = self.command_complete(url, params, headers, section)
+                if command_status and command_status in ['completed', 'failed']:
+                    break
+                n += 1
+            if command_status:
+                logger.debug("The Scan command return status: {0}".format(command_status), section)
+            if not os.path.exists(dirName):
+                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dirName), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            elif command_status and command_status in ['completed']:
+                logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            elif command_status and command_status in ['failed']:
+                logger.debug("The Scan command has failed. Renaming was not successful.", section)
+                # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+            if self.CDH(url2, headers, section=section):
+                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
+                return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
+            else:
+                logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
+                return [1, "{0}: Failed to post-process {1}".format(section, inputName)]
+
         else:
-            logger.warning("FAILED DOWNLOAD DETECTED", section)
-            return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]
+            if section == "Lidarr":
+                logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(section), section)
+                return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
+            else:
+                logger.warning("FAILED DOWNLOAD DETECTED", section)
+                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
+                    logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
+                    rmDir(dirName)
+                return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
