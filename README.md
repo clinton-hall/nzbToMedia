@@ -17,7 +17,7 @@ Failed download handling for SickBeard is available by using Tolstyak's fork [Si
 To use this feature, in autoProcessTV.cfg set the parameter "fork=failed". Default is "fork=default" and will work with the standard version of SickBeard and just ignores failed downloads.
 Development of Tolstyak's fork ended in 2013, but newer forks exist with significant feature updates such as [Mr-Orange TPB](https://github.com/coach0742/Sick-Beard) (discontinued), [SickRageTV](https://github.com/SiCKRAGETV/SickRage) and [SickRage](https://github.com/SickRage/SickRage) (active). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/Failed-Download-Handling-%28FDH%29#sick-beard-and-its-forks "SickBeard Forks") for a list of known forks.
 
-Full support is provided for [SickRageTV](https://github.com/SiCKRAGETV/SickRage) and [SickRage](https://github.com/SickRage/SickRage). 
+Full support is provided for [SickRageTV](https://github.com/SiCKRAGETV/SickRage), [SickRage](https://github.com/SickRage/SickRage), and [SickGear](https://github.com/SickGear/SickGear).
 
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmission, Deluge and possibly more.
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
