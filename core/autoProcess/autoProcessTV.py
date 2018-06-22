@@ -285,6 +285,9 @@ class autoProcessTV(object):
                 if not apikey and username and password:
                     login = "{0}{1}:{2}{3}/login".format(protocol, host, port, web_root)
                     login_params = {'username': username, 'password': password}
+                    r = s.get(login, verify=False, timeout=(30,60))
+                    if r.status_code == 401 and r.cookies.get('_xsrf'):
+                        login_params['_xsrf'] = r.cookies.get('_xsrf')
                     s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
                 r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
             elif section == "NzbDrone":

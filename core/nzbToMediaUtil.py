@@ -23,6 +23,7 @@ from core.linktastic import linktastic
 from core.synchronousdeluge.client import DelugeClient
 from core.utorrent.client import UTorrentClient
 from core.transmissionrpc.client import Client as TransmissionClient
+from core.qbittorrent.client import Client as qBittorrentClient
 from core import logger, nzbToMediaDB
 
 requests.packages.urllib3.disable_warnings()
@@ -588,6 +589,34 @@ def parse_vuze(args):
 
     return inputDirectory, inputName, inputCategory, inputHash, inputID
 
+def parse_qbittorrent(args):
+    # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
+    try:
+        input = args[1].split('|')
+    except:
+        input = []
+    try:
+        inputDirectory = os.path.normpath(input[0].replace('"',''))
+    except:
+        inputDirectory = ''
+    try:
+        inputName = input[1].replace('"','')
+    except:
+        inputName = ''
+    try:
+        inputCategory = input[2].replace('"','')
+    except:
+        inputCategory = ''
+    try:
+        inputHash = input[3].replace('"','')
+    except:
+        inputHash = ''
+    try:
+        inputID = input[3].replace('"','')
+    except:
+        inputID = ''
+
+    return inputDirectory, inputName, inputCategory, inputHash, inputID
 
 def parse_args(clientAgent, args):
     clients = {
@@ -596,6 +625,7 @@ def parse_args(clientAgent, args):
         'utorrent': parse_utorrent,
         'deluge': parse_deluge,
         'transmission': parse_transmission,
+        'qbittorrent': parse_qbittorrent,
         'vuze': parse_vuze,
     }
 
@@ -796,6 +826,14 @@ def create_torrent_class(clientAgent):
         except:
             logger.error("Failed to connect to Deluge")
 
+    if clientAgent == 'qbittorrent':
+        try:
+            logger.debug("Connecting to {0}: http://{1}:{2}".format(clientAgent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
+            tc = qBittorrentClient("http://{0}:{1}/".format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
+            tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
+        except:
+            logger.error("Failed to connect to qBittorrent")
+
     return tc
 
 
@@ -808,6 +846,8 @@ def pause_torrent(clientAgent, inputHash, inputID, inputName):
             core.TORRENT_CLASS.stop_torrent(inputID)
         if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
             core.TORRENT_CLASS.core.pause_torrent([inputID])
+        if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.pause(inputHash)
         time.sleep(5)
     except:
         logger.warning("Failed to stop torrent {0} in {1}".format(inputName, clientAgent))
@@ -824,6 +864,8 @@ def resume_torrent(clientAgent, inputHash, inputID, inputName):
             core.TORRENT_CLASS.start_torrent(inputID)
         if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
             core.TORRENT_CLASS.core.resume_torrent([inputID])
+        if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.resume(inputHash)
         time.sleep(5)
     except:
         logger.warning("Failed to start torrent {0} in {1}".format(inputName, clientAgent))
@@ -840,6 +882,8 @@ def remove_torrent(clientAgent, inputHash, inputID, inputName):
                 core.TORRENT_CLASS.remove_torrent(inputID, True)
             if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
                 core.TORRENT_CLASS.core.remove_torrent(inputID, True)
+            if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.delete(inputHash)
             time.sleep(5)
         except:
             logger.warning("Failed to delete torrent {0} in {1}".format(inputName, clientAgent))
@@ -862,6 +906,11 @@ def find_download(clientAgent, download_id):
                 return True
     if clientAgent == 'deluge':
         return False
+    if clientAgent == 'qbittorrent':
+        torrents = core.TORRENT_CLASS.torrents()
+        for torrent in torrents:
+            if torrent['hash'] == download_id:
+                return True
     if clientAgent == 'sabnzbd':
         if "http" in core.SABNZBDHOST:
             baseURL = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)

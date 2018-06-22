@@ -132,7 +132,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
 
     logger.debug("Scanning files in directory: {0}".format(inputDirectory))
 
-    if sectionName == 'HeadPhones':
+    if sectionName in ['HeadPhones', 'Lidarr']:
         core.NOFLATTEN.extend(
             inputCategory)  # Make sure we preserve folder structure for HeadPhones.
 
@@ -142,7 +142,11 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
         inputFiles = core.listMediaFiles(inputDirectory, archives=False, other=True, otherext=extensions)
     else:
         inputFiles = core.listMediaFiles(inputDirectory, other=True, otherext=extensions)
-    logger.debug("Found {0} files in {1}".format(len(inputFiles), inputDirectory))
+    if len(inputFiles) == 0 and os.path.isfile(inputDirectory):
+        inputFiles = [inputDirectory]
+        logger.debug("Found 1 file to process: {0}".format(inputDirectory))
+    else:
+        logger.debug("Found {0} files in {1}".format(len(inputFiles), inputDirectory))
     for inputFile in inputFiles:
         filePath = os.path.dirname(inputFile)
         fileName, fileExt = os.path.splitext(os.path.basename(inputFile))
@@ -235,7 +239,7 @@ def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID,
             inputHash = inputHash.upper()
         result = core.autoProcessTV().processEpisode(sectionName, outputDestination, inputName,
                                                      status, clientAgent, inputHash, inputCategory)
-    elif sectionName == 'HeadPhones':
+    elif sectionName in ['HeadPhones', 'Lidarr']:
         result = core.autoProcessMusic().process(sectionName, outputDestination, inputName,
                                                  status, clientAgent, inputCategory)
     elif sectionName == 'Mylar':

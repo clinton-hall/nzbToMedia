@@ -21,8 +21,10 @@ def autoFork(section, inputCategory):
     apikey = cfg.get("apikey")
     ssl = int(cfg.get("ssl", 0))
     web_root = cfg.get("web_root", "")
+    replace = {'sickrage':'SickRage', 'sickragetv':'SickRageTV', 'sickgear':'SickGear', 'medusa':'Medusa'}
+    f1 = replace[cfg.get("fork", "auto")] if cfg.get("fork", "auto") in replace else cfg.get("fork", "auto")
     try:
-        fork = core.FORKS.items()[core.FORKS.keys().index(cfg.get("fork", "auto"))]
+        fork = core.FORKS.items()[core.FORKS.keys().index(f1)]
     except:
         fork = "auto"
     protocol = "https://" if ssl else "http://"
@@ -67,6 +69,9 @@ def autoFork(section, inputCategory):
                 login = "{protocol}{host}:{port}{root}/login".format(
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
+                r = s.get(login, verify=False, timeout=(30,60))
+                if r.status_code == 401 and r.cookies.get('_xsrf'):
+                    login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
             r = s.get(url, auth=(username, password), verify=False)
         except requests.ConnectionError:

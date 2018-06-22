@@ -263,6 +263,11 @@ class ConfigObj(configobj.ConfigObj, Section):
                     logger.warning("{x} category is set for CouchPotato and Radarr. "
                                    "Please check your config in NZBGet".format
                                    (x=os.environ['NZBPO_RACATEGORY']))
+            if 'NZBPO_LICATEGORY' in os.environ and 'NZBPO_HPCATEGORY' in os.environ:
+                if os.environ['NZBPO_LICATEGORY'] == os.environ['NZBPO_HPCATEGORY']:
+                    logger.warning("{x} category is set for HeadPhones and Lidarr. "
+                                   "Please check your config in NZBGet".format
+                                   (x=os.environ['NZBPO_LICATEGORY']))
             section = "Nzb"
             key = 'NZBOP_DESTDIR'
             if key in os.environ:
@@ -400,6 +405,25 @@ class ConfigObj(configobj.ConfigObj, Section):
                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY']
             cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey']
+            if envCatKey in os.environ:
+                for index in range(len(envKeys)):
+                    key = 'NZBPO_RA{index}'.format(index=envKeys[index])
+                    if key in os.environ:
+                        option = cfgKeys[index]
+                        value = os.environ[key]
+                        if os.environ[envCatKey] not in CFG_NEW[section].sections:
+                            CFG_NEW[section][os.environ[envCatKey]] = {}
+                        CFG_NEW[section][os.environ[envCatKey]][option] = value
+                CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['CouchPotato'].sections:
+                    CFG_NEW['CouchPotato'][envCatKey]['enabled'] = 0
+
+            section = "Lidarr"
+            envCatKey = 'NZBPO_LICATEGORY'
+            envKeys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
+                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
+            cfgKeys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
+                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
                     key = 'NZBPO_RA{index}'.format(index=envKeys[index])
