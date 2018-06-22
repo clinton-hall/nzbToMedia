@@ -21,7 +21,7 @@ def autoFork(section, inputCategory):
     apikey = cfg.get("apikey")
     ssl = int(cfg.get("ssl", 0))
     web_root = cfg.get("web_root", "")
-    replace = {'sickrage':'SickRage', 'sickragetv':'SickRageTV', 'sickgear':'SickGear', 'medusa':'Medusa'}
+    replace = {'sickrage':'SickRage', 'sickragetv':'SickRageTV', 'sickgear':'SickGear', 'medusa':'Medusa', 'sickrage-api':'SiCKRAGE-api'}
     f1 = replace[cfg.get("fork", "auto")] if cfg.get("fork", "auto") in replace else cfg.get("fork", "auto")
     try:
         fork = core.FORKS.items()[core.FORKS.keys().index(f1)]
