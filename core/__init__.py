@@ -248,10 +248,10 @@ def initialize(section=None):
     if not makeDir(LOG_DIR):
         print("No log folder, logging to screen only")
 
-    #MYAPP = RunningProcess()
-    #while MYAPP.alreadyrunning():
-    #    print("Waiting for existing session to end")
-    #    time.sleep(30)
+    MYAPP = RunningProcess()
+    while MYAPP.alreadyrunning():
+        print("Waiting for existing session to end")
+        time.sleep(30)
 
     try:
         locale.setlocale(locale.LC_ALL, "")
