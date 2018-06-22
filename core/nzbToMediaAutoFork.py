@@ -62,15 +62,13 @@ def autoFork(section, inputCategory):
 
         # attempting to auto-detect fork
         try:
-            if username and password:
-                s = requests.Session()
+            s = requests.Session()
+            if not apikey and username and password:
                 login = "{protocol}{host}:{port}{root}/login".format(
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
                 s.post(login, data=login_params, stream=True, verify=False)
-                r = s.get(url, auth=(username, password), verify=False)
-            else:
-                r = requests.get(url, verify=False)
+            r = s.get(url, auth=(username, password), verify=False)
         except requests.ConnectionError:
             logger.info("Could not connect to {section}:{category} to perform auto-fork detection!".format
                         (section=section, category=inputCategory))

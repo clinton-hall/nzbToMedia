@@ -282,7 +282,7 @@ class autoProcessTV(object):
             if section == "SickBeard":
                 logger.debug("Opening URL: {0} with params: {1}".format(url, fork_params), section)
                 s = requests.Session()
-                if not apikey:
+                if not apikey and username and password:
                     login = "{0}{1}:{2}{3}/login".format(protocol, host, port, web_root)
                     login_params = {'username': username, 'password': password}
                     s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
