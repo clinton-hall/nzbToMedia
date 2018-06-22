@@ -54,12 +54,18 @@ def autoFork(section, inputCategory):
         logger.info("Attempting to auto-detect {category} fork".format(category=inputCategory))
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
-        url = "{protocol}{host}:{port}{root}/home/postprocess/".format(
-                    protocol=protocol, host=host, port=port, root=web_root)
+
+        if apikey:
+            url = "{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess".format(
+                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey)
+        else:
+            url = "{protocol}{host}:{port}{root}/home/postprocess/".format(
+                        protocol=protocol, host=host, port=port, root=web_root)
+
         # attempting to auto-detect fork
         try:
-            if username and password:
-                s = requests.Session()
+            s = requests.Session()
+            if not apikey and username and password:
                 login = "{protocol}{host}:{port}{root}/login".format(
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
@@ -67,17 +73,19 @@ def autoFork(section, inputCategory):
                 if r.status_code == 401 and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
-                r = s.get(url, auth=(username, password), verify=False)
-            else:
-                r = requests.get(url, verify=False)
+            r = s.get(url, auth=(username, password), verify=False)
         except requests.ConnectionError:
             logger.info("Could not connect to {section}:{category} to perform auto-fork detection!".format
                         (section=section, category=inputCategory))
             r = []
         if r and r.ok:
             for param in params:
-                if not 'name="{param}"'.format(param=param) in r.text:
-                    rem_params.append(param)
+                if apikey:
+                    if param not in r.json()['data']['optionalParameters'].keys():
+                        rem_params.append(param)
+                else:
+                    if 'name="{param}"'.format(param=param) not in r.text:
+                        rem_params.append(param)
             for param in rem_params:
                 params.pop(param)
             for fork in sorted(iteritems(core.FORKS), reverse=False):
