@@ -107,6 +107,7 @@
         enabled = 0
         host = localhost
         port = 8081
+        apikey =
         username =
         password =
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######

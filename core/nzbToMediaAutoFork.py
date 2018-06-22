@@ -52,8 +52,14 @@ def autoFork(section, inputCategory):
         logger.info("Attempting to auto-detect {category} fork".format(category=inputCategory))
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
-        url = "{protocol}{host}:{port}{root}/home/postprocess/".format(
-                    protocol=protocol, host=host, port=port, root=web_root)
+
+        if apikey:
+            url = "{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess".format(
+                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey)
+        else:
+            url = "{protocol}{host}:{port}{root}/home/postprocess/".format(
+                        protocol=protocol, host=host, port=port, root=web_root)
+
         # attempting to auto-detect fork
         try:
             if username and password:
@@ -71,8 +77,12 @@ def autoFork(section, inputCategory):
             r = []
         if r and r.ok:
             for param in params:
-                if not 'name="{param}"'.format(param=param) in r.text:
-                    rem_params.append(param)
+                if apikey:
+                    if param not in r.json()['data']['optionalParameters'].keys():
+                        rem_params.append(param)
+                else:
+                    if 'name="{param}"'.format(param=param) not in r.text:
+                        rem_params.append(param)
             for param in rem_params:
                 params.pop(param)
             for fork in sorted(iteritems(core.FORKS), reverse=False):
