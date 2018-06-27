@@ -1,5 +1,13 @@
 Change_LOG / History
 
+V11.05 27/06/2018
+Add qBittorrent support.
+Add SickGear support.
+Add SiCKRAGE api support.
+Fix for single file download.
+Diable media check for failed HeadPhones downloads.
+Added Lidarr flow. Still awaiting confirmation of api interface commands and return.
+
 V11.04 30/12/2017
 
 do not embed .sub.
