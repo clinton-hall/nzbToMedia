@@ -179,6 +179,7 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        delete_failed = 0
         wait_for = 2
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0

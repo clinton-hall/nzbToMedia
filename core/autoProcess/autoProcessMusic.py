@@ -121,6 +121,7 @@ class autoProcessMusic(object):
         apikey = cfg["apikey"]
         wait_for = int(cfg["wait_for"])
         ssl = int(cfg.get("ssl", 0))
+        delete_failed = int(cfg["delete_failed"])
         web_root = cfg.get("web_root", "")
         remote_path = int(cfg.get("remote_path", 0))
         protocol = "https://" if ssl else "http://"
