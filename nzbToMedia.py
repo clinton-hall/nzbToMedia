@@ -126,6 +126,11 @@
 # api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
 #raomdbapikey=
 
+# Radarr import mode (Move, Copy).
+#
+# set to define import behaviour Move or Copy
+#raimportmode=Copy
+
 # Radarr Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
@@ -229,6 +234,11 @@
 #
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
 #ndwait_for=6
+
+# NzbDrone import mode (Move, Copy).
+#
+# set to define import behaviour Move or Copy
+#ndimportmode=Copy
 
 # NzbDrone Delete Failed Downloads (0, 1).
 #
