@@ -99,8 +99,8 @@
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
-		##### Set to define import behavior Move or Copy
-		importMode = Copy
+        ##### Set to define import behavior Move or Copy
+        importMode = Copy
 
 [SickBeard]
     #### autoProcessing for TV Series
@@ -169,8 +169,8 @@
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
-		##### Set to define import behavior Move or Copy
-		importMode = Copy
+        ##### Set to define import behavior Move or Copy
+        importMode = Copy
 
 [HeadPhones]
     #### autoProcessing for Music
