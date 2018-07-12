@@ -68,6 +68,11 @@
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
 #ndwait_for=6
 
+# NzbDrone import mode (Move, Copy).
+#
+# set to define inport behaviour Move or Copy
+#ndimportmode=Copy
+
 # NzbDrone Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
