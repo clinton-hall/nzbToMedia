@@ -87,6 +87,8 @@ class autoProcessTV(object):
             extract = 0
         else:
             extract = int(cfg.get("extract", 0))
+        #get importmode, default to "Move" for consistency with legacy
+        importMode = cfg.get("importMode","Move")
 
         if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
             dirName = os.path.split(os.path.normpath(dirName))[0]
@@ -270,10 +272,10 @@ class autoProcessTV(object):
             # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
                 logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
-                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": "Move"}
+                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": importMode}
             else:
                 logger.debug("path: {0}".format(dirName), section)
-                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id, "importMode": "Move"}
+                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id, "importMode": importMode}
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)

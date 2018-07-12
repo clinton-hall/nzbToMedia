@@ -148,6 +148,11 @@ class autoProcessMovie(object):
             method = cfg["method"]
         else:
             method = None
+        #added importMode for Radarr config
+        if section == "Radarr":
+            importMode = cfg.get("importMode","Move")
+        else:
+            importMode = None
         delete_failed = int(cfg["delete_failed"])
         wait_for = int(cfg["wait_for"])
         ssl = int(cfg.get("ssl", 0))
@@ -287,7 +292,7 @@ class autoProcessMovie(object):
                 logger.postprocess("Starting {0} scan for {1}".format(method, inputName), section)
 
             if section == "Radarr":
-                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id}
+                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id,'importMode' : importMode}
                 if not download_id:
                     payload.pop("downloadClientId")
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(baseURL, payload), section)
