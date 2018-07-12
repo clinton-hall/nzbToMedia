@@ -70,7 +70,7 @@
 
 # NzbDrone import mode (Move, Copy).
 #
-# set to define inport behaviour Move or Copy
+# set to define import behaviour Move or Copy
 #ndimportmode=Copy
 
 # NzbDrone Delete Failed Downloads (0, 1).
