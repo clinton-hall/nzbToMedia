@@ -73,6 +73,11 @@
 # Set the number of minutes to wait after calling the renamer, to check the episode has changed status.
 #rawait_for=6
 
+# Radarr import mode (Move, Copy).
+#
+# set to define import behaviour Move or Copy
+#raimportmode=Copy
+
 # Radarr Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
