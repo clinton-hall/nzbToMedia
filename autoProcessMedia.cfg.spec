@@ -195,8 +195,8 @@
         watch_dir =
 
 [Lidarr]
-    #### autoProcessing for Movies
-    #### raCategory - category that gets called for post-processing with Radarr
+    #### autoProcessing for Music
+    #### raCategory - category that gets called for post-processing with Lidarr
     [[music]]
         enabled = 0
         apikey =
@@ -452,7 +452,7 @@
     #Set convert =1 if you want to convert any "foreign" characters to ASCII (UTF8) before passing to SB/CP etc. Default is disabled (0).
     convert = 0
 
-[passwords]
+[Passwords]
     # enter the full path to a text file containing passwords to be used for extraction attempts.
     # In the passwords file, every password should be on a new line
     PassWordFile =
