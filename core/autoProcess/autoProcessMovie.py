@@ -274,7 +274,7 @@ class autoProcessMovie(object):
                 return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
 
             params = {}
-            if download_id:
+            if download_id and release_id:
                 params['downloader'] = downloader or clientAgent
                 params['download_id'] = download_id
 
