@@ -27,6 +27,10 @@ class autoProcessMovie(object):
             cmd = "media.get"
             params['id'] = release_id or imdbid
 
+        if not (release_id or imdbid or download_id):
+            logger.debug("No information available to filter CP results")
+            return results
+
         url = "{0}{1}".format(baseURL, cmd)
         logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
 
@@ -411,7 +415,7 @@ class autoProcessMovie(object):
             if release:
                 try:
                     if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.
-                        logger.postprocess("SUCCESS: Movie {0} has now been added to CouchPotato".format(imdbid), section)
+                        logger.postprocess("SUCCESS: Movie {0} has now been added to CouchPotato".format(imdbid or inputName), section)
                         return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
 
                     release_status_new = release[release_id]['status']
