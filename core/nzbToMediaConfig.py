@@ -347,6 +347,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                             CFG_NEW[section][os.environ[envCatKey]] = {}
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
+                if os.environ[envCatKey] in CFG_NEW['Lidarr'].sections:
+                    CFG_NEW['Lidarr'][envCatKey]['enabled'] = 0
 
             section = "Mylar"
             envCatKey = 'NZBPO_MYCATEGORY'
@@ -428,7 +430,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
-                    key = 'NZBPO_RA{index}'.format(index=envKeys[index])
+                    key = 'NZBPO_LI{index}'.format(index=envKeys[index])
                     if key in os.environ:
                         option = cfgKeys[index]
                         value = os.environ[key]
@@ -436,8 +438,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                             CFG_NEW[section][os.environ[envCatKey]] = {}
                         CFG_NEW[section][os.environ[envCatKey]][option] = value
                 CFG_NEW[section][os.environ[envCatKey]]['enabled'] = 1
-                if os.environ[envCatKey] in CFG_NEW['CouchPotato'].sections:
-                    CFG_NEW['CouchPotato'][envCatKey]['enabled'] = 0
+                if os.environ[envCatKey] in CFG_NEW['HeadPhones'].sections:
+                    CFG_NEW['HeadPhones'][envCatKey]['enabled'] = 0
 
             section = "Extensions"
             envKeys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
