@@ -200,7 +200,7 @@
 
 [Lidarr]
     #### autoProcessing for Music
-    #### raCategory - category that gets called for post-processing with Lidarr
+    #### LiCategory - category that gets called for post-processing with Lidarr
     [[music]]
         enabled = 0
         apikey =
