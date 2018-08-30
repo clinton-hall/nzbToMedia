@@ -84,6 +84,7 @@ class autoProcessMovie(object):
 
                     id = release['_id']
                     results[id] = release
+                    results[id]['title'] = movie['title']
                 except:
                     continue
 
@@ -414,14 +415,17 @@ class autoProcessMovie(object):
                 release = None
             if release:
                 try:
-                    if release_id is None and release_status_old is None:  # we didn't have a release before, but now we do.
-                        logger.postprocess("SUCCESS: Movie {0} has now been added to CouchPotato".format(imdbid or inputName), section)
+                    release_id = release.keys()[0]
+                    title = release[release_id]['title']
+                    release_status_new = release[release_id]['status']
+                    if release_status_old is None:  # we didn't have a release before, but now we do.
+                        logger.postprocess("SUCCESS: Movie {0} has now been added to CouchPotato with release status of [{1}]".format(
+                            title, str(release_status_new).upper()), section)
                         return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
 
-                    release_status_new = release[release_id]['status']
                     if release_status_new != release_status_old:
-                        logger.postprocess("SUCCESS: Release {0} has now been marked with a status of [{1}]".format(
-                            inputName, str(release_status_new).upper()), section)
+                        logger.postprocess("SUCCESS: Release for {0} has now been marked with a status of [{1}]".format(
+                            title, str(release_status_new).upper()), section)
                         return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
                 except:
                     pass
