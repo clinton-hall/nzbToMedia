@@ -1118,10 +1118,12 @@ def find_imdbid(dirName, inputName, omdbApiKey):
 
         url = "http://www.omdbapi.com"
 
+        if not omdbApiKey:
+            logger.info("Unable to determine imdbID: No api key provided for ombdapi.com.")
+            return
+
         logger.debug("Opening URL: {0}".format(url))
 
-        if not omdbApiKey:
-            return
         try:
             r = requests.get(url, params={'apikey': omdbApiKey, 'y': year, 't': title},
             verify=False, timeout=(60, 300))
