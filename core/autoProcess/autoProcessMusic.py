@@ -31,22 +31,6 @@ class autoProcessMusic(object):
                 logger.error("{0} did not return expected json data.".format(section), section)
                 return None
 
-    def CDH(self, url2, headers, section="MAIN"):
-        try:
-            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url2), section)
-            return False
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return False
-        else:
-            try:
-                return r.json().get("enableCompletedDownloadHandling", False)
-            except ValueError:
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                return False
-
     def get_status(self, url, apikey, dirName):
         logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dirName)))
 
@@ -189,16 +173,13 @@ class autoProcessMusic(object):
 
         elif status == 0 and section == "Lidarr":
             url = "{0}{1}:{2}{3}/api/v1/command".format(protocol, host, port, web_root)
-            url2 = "{0}{1}:{2}{3}/api/v1/config/downloadClient".format(protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             if remote_path:
                 logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
-                data = {"name": "DownloadedAlbumScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": "Move"}
+                data = {"name": "Rename", "path": remoteDir(dirName)}
             else:
                 logger.debug("path: {0}".format(dirName), section)
-                data = {"name": "DownloadedAlbumScan", "path": dirName, "downloadClientId": download_id, "importMode": "Move"}
-            if not download_id:
-                data.pop("downloadClientId")
+                data = {"name": "Rename", "path": dirName}
             data = json.dumps(data)
             try:
                 logger.debug("Opening URL: {0} with data: {1}".format(url, data), section)
@@ -241,12 +222,9 @@ class autoProcessMusic(object):
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
                 # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
-            if self.CDH(url2, headers, section=section):
-                logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
-                return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
             else:
-                logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
-                return [1, "{0}: Failed to post-process {1}".format(section, inputName)]
+                logger.debug("The Scan command did not return status completed. Passing back to {0} to attempt complete download handling.".format(section), section)
+                return [status, "{0}: Passing back to {1} to attempt Complete Download Handling".format(section, section)]
 
         else:
             if section == "Lidarr":
