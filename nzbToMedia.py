@@ -341,11 +341,8 @@
 # Mylar port.
 #myport=8090
 
-# Mylar username.
-#myusername=
-
-# Mylar password.
-#mypassword=
+# Mylar api key.
+#myapikey=
 
 # Mylar uses ssl (0, 1).
 #

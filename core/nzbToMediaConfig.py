@@ -157,7 +157,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == ['outputDirectory']:
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)
-                if section in ['CouchPotato', 'HeadPhones', 'Gamez']:
+                if section in ['CouchPotato', 'HeadPhones', 'Gamez', 'Mylar']:
                     if option in ['username', 'password']:
                         values.pop(option)
                 if section in ["SickBeard", "Mylar"]:

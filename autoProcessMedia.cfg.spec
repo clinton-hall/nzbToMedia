@@ -232,8 +232,7 @@
         enabled = 0
         host = localhost
         port= 8090
-        username=
-        password=
+        apikey=
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root=
         ssl=0
