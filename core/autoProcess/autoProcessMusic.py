@@ -6,7 +6,7 @@ import requests
 import core
 import json
 
-from core.nzbToMediaUtil import convert_to_ascii, remoteDir, listMediaFiles, server_responding
+from core.nzbToMediaUtil import convert_to_ascii, rmDir, remoteDir, listMediaFiles, server_responding
 from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core import logger
 
