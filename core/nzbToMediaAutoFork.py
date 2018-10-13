@@ -21,7 +21,7 @@ def autoFork(section, inputCategory):
     apikey = cfg.get("apikey")
     ssl = int(cfg.get("ssl", 0))
     web_root = cfg.get("web_root", "")
-    replace = {'sickrage':'SickRage', 'sickragetv':'SickRageTV', 'sickgear':'SickGear', 'medusa':'Medusa', 'sickrage-api':'SiCKRAGE-api'}
+    replace = {'sickrage':'SickRage', 'sickchill':'SickChill', 'sickgear':'SickGear', 'medusa':'Medusa', 'sickbeard-api':'SickBeard-api'}
     f1 = replace[cfg.get("fork", "auto")] if cfg.get("fork", "auto") in replace else cfg.get("fork", "auto")
     try:
         fork = core.FORKS.items()[core.FORKS.keys().index(f1)]
@@ -79,11 +79,17 @@ def autoFork(section, inputCategory):
                         (section=section, category=inputCategory))
             r = []
         if r and r.ok:
-            for param in params:
-                if apikey:
-                    if param not in r.json()['data']['optionalParameters'].keys():
+            if apikey:
+                optionalParameters = []
+                try:
+                    optionalParameters = r.json()['data']['optionalParameters'].keys()
+                except:
+                    optionalParameters = r.json()['data']['data']['optionalParameters'].keys()
+                for param in params:
+                    if param not in optionalParameters:
                         rem_params.append(param)
-                else:
+            else:
+                for param in params:
                     if 'name="{param}"'.format(param=param) not in r.text:
                         rem_params.append(param)
             for param in rem_params:
