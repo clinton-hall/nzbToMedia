@@ -335,8 +335,8 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "HeadPhones"
             envCatKey = 'NZBPO_HPCATEGORY'
-            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WAIT_FOR', 'WATCH_DIR', 'REMOTE_PATH']
-            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir', 'remote_path']
+            envKeys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WAIT_FOR', 'WATCH_DIR', 'REMOTE_PATH', 'DELETE_FAILED']
+            cfgKeys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir', 'remote_path', 'delete_failed']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
                     key = 'NZBPO_HP{index}'.format(index=envKeys[index])

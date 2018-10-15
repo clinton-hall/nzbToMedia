@@ -58,6 +58,11 @@
 # set this if using a reverse proxy.
 #hpweb_root=
 
+# HeadPhones Delete Failed Downloads (0, 1).
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#hpdelete_failed=0
+
 # HeadPhones watch directory.
 #
 # set this to where your HeadPhones completed downloads are.
