@@ -883,7 +883,7 @@ def remove_torrent(clientAgent, inputHash, inputID, inputName):
             if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
                 core.TORRENT_CLASS.core.remove_torrent(inputID, True)
             if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
-                core.TORRENT_CLASS.delete(inputHash)
+                core.TORRENT_CLASS.delete_permanently(inputHash)
             time.sleep(5)
         except:
             logger.warning("Failed to delete torrent {0} in {1}".format(inputName, clientAgent))
