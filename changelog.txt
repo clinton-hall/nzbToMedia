@@ -1,6 +1,25 @@
 Change_LOG / History
 
+V11.06 11/03/2018
+
+updates to incorporate importMode for NzbDrone/Sonarr and Radarr.
+Correct typo(s) for "Lidarr" category.
+only pass id to CP if release id found.
+fix issue with no release id and no imdbid.
+Fixed NZBGet save of Lidarr config.
+improve logging for imdb id lookup.
+fix minor description error.
+add better logging of movie name when added to CP.
+attempt to clean up Liddar api commands.
+update to use Mylar api.
+set Torrent move-sym option to force SickRage process_method.
+add rmDir import for HeadPhones processing.
+change sickrage and sickchill names and modify api process to work with multiple sick* forks.
+add NZBGet WebUI set of delete failed for HP.
+fix qbittorrent to delete permanently (remove files on delete).
+
 V11.05 27/06/2018
+
 Add qBittorrent support.
 Add SickGear support.
 Add SiCKRAGE api support.

@@ -317,7 +317,7 @@ def initialize(section=None):
     nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
 
     # Set Version and GIT variables
-    NZBTOMEDIA_VERSION = '11.05'
+    NZBTOMEDIA_VERSION = '11.06'
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
     AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_REPO = 'nzbToMedia'
