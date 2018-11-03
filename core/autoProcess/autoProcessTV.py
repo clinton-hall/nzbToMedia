@@ -78,7 +78,7 @@ class autoProcessTV(object):
         nzbExtractionBy = cfg.get("nzbExtractionBy", "Downloader")
         process_method = cfg.get("process_method")
         if  clientAgent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
-            process_method = "Symbolic Link Reversed"
+            process_method = "symlink"
         remote_path = int(cfg.get("remote_path", 0))
         wait_for = int(cfg.get("wait_for", 2))
         force = int(cfg.get("force", 0))
