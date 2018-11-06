@@ -156,6 +156,9 @@
 # SickBeard port.
 #sbport=8081
 
+# SickBeard api key. For SickChill, Medusa, SiCKRAGE only.
+#sbapikey=
+
 # SickBeard username.
 #sbusername=
 

@@ -316,9 +316,9 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "SickBeard"
             envCatKey = 'NZBPO_SBCATEGORY'
-            envKeys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
+            envKeys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
                        'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
-            cfgKeys = ['enabled', 'host', 'port', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork',
+            cfgKeys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork',
                        'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
             if envCatKey in os.environ:
                 for index in range(len(envKeys)):
