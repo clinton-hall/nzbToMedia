@@ -18,7 +18,7 @@ def isVideoGood(videofile, status):
     fileNameExt = os.path.basename(videofile)
     fileName, fileExt = os.path.splitext(fileNameExt)
     disable = False
-    if fileExt not in core.MEDIACONTAINER or not core.FFPROBE or not core.CHECK_MEDIA or fileExt in ['.iso']:
+    if fileExt not in core.MEDIACONTAINER or not core.FFPROBE or not core.CHECK_MEDIA or fileExt in ['.iso'] or (status > 0 and core.NOEXTRACTFAILED):
         disable = True
     else:
         test_details, res = getVideoDetails(core.TEST_FILE)
