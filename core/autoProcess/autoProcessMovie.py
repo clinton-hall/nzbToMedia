@@ -74,6 +74,8 @@ class autoProcessMovie(object):
             if movie['status'] not in ['active', 'done']:
                 continue
             releases = movie['releases']
+            if not releases:
+                continue
             for release in releases:
                 try:
                     if release['status'] not in ['snatched', 'downloaded', 'done']:
