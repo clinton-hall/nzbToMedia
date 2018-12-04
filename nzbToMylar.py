@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# coding=utf-8
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -33,16 +34,15 @@
 #myCategory=comics
 
 # Mylar host.
+#
+# The ipaddress for your Mylar server. e.g For the Same system use localhost or 127.0.0.1
 #myhost=localhost
 
 # Mylar port.
 #myport=8090
 
-# Mylar username.
-#myusername=
-
-# Mylar password.
-#mypassword=
+# Mylar api key.
+#myapikey=
 
 # Mylar uses ssl (0, 1).
 #
@@ -112,6 +112,7 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
 import sys
 import nzbToMedia
 

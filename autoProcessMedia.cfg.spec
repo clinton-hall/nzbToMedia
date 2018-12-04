@@ -28,15 +28,17 @@
     check_media = 1
     # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectories by mistake.
     safe_mode = 1
+    # Turn this on to disable additional extraction attempts for failed downloads. Default = 0 will attempt to extract and verify if media is present.
+    no_extract_failed = 0
 
 [Posix]
     ### Process priority setting for External commands (Extractor and Transcoder) on Posix (Unix/Linux/OSX) systems.
     # Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-    niceness = 10
+    niceness = 0
     # Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
-    ionice_class = 2
+    ionice_class = 0
     # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
-    ionice_classdata = 4
+    ionice_classdata = 0
 
 [CouchPotato]
     #### autoProcessing for Movies
@@ -49,20 +51,56 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        # api key for www.omdbapi.com (used as alternative to imdb)
+        omdbapikey =
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         method = renamer
         delete_failed = 0
         wait_for = 2
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Couchpotato is on a remote server for this category
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+        ##### Set the recursive directory permissions to the following (0 to disable)
+        chmodDirectory = 0
+
+[Radarr]
+    #### autoProcessing for Movies
+    #### raCategory - category that gets called for post-processing with Radarr
+    [[movie]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 7878
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        # api key for www.omdbapi.com (used as alternative to imdb)
+        omdbapikey =
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        nzbExtractionBy = Downloader
+        wait_for = 6
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if NzbDrone is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+        ##### Set to define import behavior Move or Copy
+        importMode = Copy
 
 [SickBeard]
     #### autoProcessing for TV Series
@@ -71,6 +109,7 @@
         enabled = 0
         host = localhost
         port = 8081
+        apikey =
         username =
         password =
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
@@ -80,23 +119,31 @@
         delete_failed = 0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         process_method =
         # force processing of already processed content when running a manual scan.
         force = 0
+        # tell SickRage/Medusa to delete all source files after processing.
+        delete_on = 0
+        # tell Medusa to ignore check for associated subtitle check when postponing release
+        ignore_subs = 0
         extract = 1
         nzbExtractionBy = Downloader
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if SickBeard is on a remote server for this category
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+        ##### Set the recursive directory permissions to the following (0 to disable)
+        chmodDirectory = 0
 
 [NzbDrone]
+    #### Formerly known as NzbDrone this is now Sonarr
     #### autoProcessing for TV Series
-    #### ndCategory - category that gets called for post-processing with NzbDrone
+    #### ndCategory - category that gets called for post-processing with NzbDrone/Sonarr
     [[tv]]
         enabled = 0
         apikey =
@@ -110,17 +157,20 @@
         delete_failed = 0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         nzbExtractionBy = Downloader
-        wait_for = 2
+        wait_for = 6
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if NzbDrone is on a remote server for this category
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
+        ##### Set to define import behavior Move or Copy
+        importMode = Copy
 
 [HeadPhones]
     #### autoProcessing for Music
@@ -133,15 +183,44 @@
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         ssl = 0
         web_root =
+        delete_failed = 0
         wait_for = 2
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if HeadPhones is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+
+[Lidarr]
+    #### autoProcessing for Music
+    #### LiCategory - category that gets called for post-processing with Lidarr
+    [[music]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 8686
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        nzbExtractionBy = Downloader
+        wait_for = 6
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if NzbDrone is on a remote server for this category
         remote_path = 0
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
@@ -153,17 +232,17 @@
         enabled = 0
         host = localhost
         port= 8090
-        username=
-        password=
+        apikey=
         ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
         web_root=
         ssl=0
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Mylar is on a remote server for this category
         remote_path = 0
@@ -185,10 +264,11 @@
         web_root =
         # Enable/Disable linking for Torrents
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
-        # Enable/Disable deleteing ignored files (samples and invalid media files)
+        # Enable/Disable deleting ignored files (samples and invalid media files)
         delete_ignored = 0
         ##### Enable if Gamez is on a remote server for this category
         remote_path = 0
@@ -203,17 +283,17 @@
 [Nzb]
     ###### clientAgent - Supported clients: sabnzbd, nzbget
     clientAgent = sabnzbd
-    ###### SabNZBD (You must edit this if your using nzbToMedia.py with SabNZBD)
-    sabnzbd_host = localhost
+    ###### SabNZBD (You must edit this if you're using nzbToMedia.py with SabNZBD)
+    sabnzbd_host = http://localhost
     sabnzbd_port = 8080
     sabnzbd_apikey =
     ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.
     default_downloadDirectory =
 
 [Torrent]
-    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, other
+    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, other
     clientAgent = other
-    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, and no to not use links (copy)
+    ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, move-sym to move and link back, and no to not use links (copy)
     useLink = hard
     ###### outputDirectory - Default output directory (categories will be appended as sub directory to outputDirectory)
     outputDirectory = /abs/path/to/complete/
@@ -223,28 +303,47 @@
     categories = music_videos,pictures,software,manual
     ###### A list of categories that you don't want to be flattened (i.e preserve the directory structure when copying/linking.
     noFlatten = pictures,manual
-    ###### uTorrent Hardlink solution (You must edit this if your using TorrentToMedia.py with uTorrent)
+    ###### uTorrent Hardlink solution (You must edit this if you're using TorrentToMedia.py with uTorrent)
     uTorrentWEBui = http://localhost:8090/gui/
     uTorrentUSR = your username
     uTorrentPWD = your password
-    ###### Transmission (You must edit this if your using TorrentToMedia.py with uTorrent)
+    ###### Transmission (You must edit this if you're using TorrentToMedia.py with Transmission)
     TransmissionHost = localhost
-    TransmissionPort = 8084
+    TransmissionPort = 9091
     TransmissionUSR = your username
     TransmissionPWD = your password
-    #### Deluge (You must edit this if your using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
+    #### Deluge (You must edit this if you're using TorrentToMedia.py with deluge. Note that the host/port is for the deluge daemon, not the webui)
     DelugeHost = localhost
     DelugePort = 58846
     DelugeUSR = your username
     DelugePWD = your password
+    ###### qBittorrent (You must edit this if you're using TorrentToMedia.py with qBittorrent)
+    qBittorrenHost = localhost
+    qBittorrentPort = 8080
+    qBittorrentUSR = your username
+    qBittorrentPWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
+    chmodDirectory = 0
+    resume = 1
+    resumeOnFailure = 1
 
 [Extensions]
     compressedExtensions = .zip,.rar,.7z,.gz,.bz,.tar,.arj,.1,.01,.001
-    mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v
+    mediaExtensions = .mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.m4v,.ts
     audioExtensions = .mp3, .aac, .ogg, .ape, .m4a, .asf, .wma, .flac
     metaExtensions = .nfo,.sub,.srt,.jpg,.gif
+
+[Plex]
+    # Only enter these details if you want to update plex library after processing.
+    # Do not enter these details if you send the plex notifications from Sickbeard/CouchPotato.
+    plex_host = localhost
+    plex_port = 32400
+    plex_token =
+    plex_ssl = 0 
+    # Enter Plex category to section mapping as Category,section and separate each pair with '|'
+    # e.g. plex_sections = movie,3|tv,4
+    plex_sections = 
 
 [Transcoder]
     # getsubs. enable to download subtitles.
@@ -253,10 +352,11 @@
     subLanguages = eng,spa,fra
     # transcode. enable to use transcoder
     transcode = 0
-    ###### duplicate =1 will cretae a new file. =0 will replace the original
+    ###### duplicate =1 will create a new file. =0 will replace the original
     duplicate = 1
     # concat. joins cd1 cd2 etc into a single video.
     concat = 1
+    # IgnoreExtensions is a comma-separated list of extensions that will not be transcoded.
     ignoreExtensions = .avi,.mkv,.mp4
     # outputFastStart. 1 will use -movflags + faststart. 0 will disable this from being used.
     outputFastStart = 0
@@ -270,9 +370,9 @@
     audioLanguage = eng
     # allAudioLanguages. 1 will keep all audio tracks (uses AudioCodec3) where available.
     allAudioLanguages = 0
-    # allSubLanguages. 1 will keep all exisiting sub languages. 0 will discare those not in your list above.
+    # allSubLanguages. 1 will keep all existing sub languages. 0 will discard those not in your list above.
     allSubLanguages = 0
-    # embedSubs. 1 will embded external sub/srt subs into your video if this is supported.
+    # embedSubs. 1 will embed external sub/srt subs into your video if this is supported.
     embedSubs = 1
     # burnInSubtitle. burns the default sub language into your video (needed for players that don't support subs)
     burnInSubtitle = 0
@@ -327,6 +427,7 @@
         #Enable/Disable this subsection category
         enabled = 0
         Torrent_NoLink = 0
+        keep_archive = 1
         extract = 1
         #Enable if you are sending commands to a remote server for this category
         remote_path = 0
@@ -338,7 +439,7 @@
         #for example FP,FN,DN, TN, TL for file path (absolute file name with path), file name, absolute directory name (with path), Torrent Name, Torrent Label/Category.
         #So the result is /media/test/script/script.sh FP FN DN TN TL. Add other arguments as needed eg -f, -r
         user_script_param = FN
-        #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on teh entire directory).
+        #Set user_script_runOnce = 0 to run for each file, or 1 to only run once (presumably on the entire directory).
         user_script_runOnce = 0
         #Specify the successcodes returned by the user script as a comma separated list. Linux default is 0
         user_script_successCodes = 0
@@ -354,7 +455,7 @@
     #Set convert =1 if you want to convert any "foreign" characters to ASCII (UTF8) before passing to SB/CP etc. Default is disabled (0).
     convert = 0
 
-[passwords]
+[Passwords]
     # enter the full path to a text file containing passwords to be used for extraction attempts.
     # In the passwords file, every password should be on a new line
     PassWordFile =
@@ -362,5 +463,5 @@
 [Custom]
     # enter a list (comma separated) of Group Tags you want removed from filenames to help with subtitle matching.
     # e.g remove_group = [rarbag],-NZBgeek
-    # be careful if your "group" is a common "real" word. Please report if you have any group replacments that would fall in this category.
+    # be careful if your "group" is a common "real" word. Please report if you have any group replacements that would fall in this category.
     remove_group = 

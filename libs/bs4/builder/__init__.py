@@ -1,9 +1,13 @@
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
 from collections import defaultdict
 import itertools
 import sys
 from bs4.element import (
     CharsetMetaAttributeValue,
     ContentMetaAttributeValue,
+    HTMLAwareEntitySubstitution,
     whitespace_re
     )
 
@@ -80,9 +84,12 @@ builder_registry = TreeBuilderRegistry()
 class TreeBuilder(object):
     """Turn a document into a Beautiful Soup object tree."""
 
+    NAME = "[Unknown tree builder]"
+    ALTERNATE_NAMES = []
     features = []
 
     is_xml = False
+    picklable = False
     preserve_whitespace_tags = set()
     empty_element_tags = None # A tag will be considered an empty-element
                               # tag when and only when it has no contents.
@@ -224,7 +231,7 @@ class HTMLTreeBuilder(TreeBuilder):
     Such as which tags are empty-element tags.
     """
 
-    preserve_whitespace_tags = set(['pre', 'textarea'])
+    preserve_whitespace_tags = HTMLAwareEntitySubstitution.preserve_whitespace_tags
     empty_element_tags = set(['br' , 'hr', 'input', 'img', 'meta',
                               'spacer', 'link', 'frame', 'base'])
 

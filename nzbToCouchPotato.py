@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# coding=utf-8
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -29,6 +30,11 @@
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
 #safe_mode=1
 
+# Disable additional extraction checks for failed (0, 1).
+#
+# Turn this on to disable additional extraction attempts for failed downloads. Default = 0 this will attempt to extract and verify if media is present.
+#no_extract_failed = 0
+
 ## CouchPotato
 
 # CouchPotato script category.
@@ -40,6 +46,8 @@
 #cpsapikey=
 
 # CouchPotato host.
+#
+# The ipaddress for your CouchPotato server. e.g For the Same system use localhost or 127.0.0.1
 #cpshost=localhost
 
 # CouchPotato port.
@@ -59,6 +67,11 @@
 #
 # set this to where your CouchPotato completed downloads are.
 #cpswatch_dir=
+
+# CouchPotato OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#cpsomdbapikey=
 
 # CouchPotato Postprocess Method (renamer, manage).
 #
@@ -93,7 +106,7 @@
 # Media Extensions
 #
 # This is a list of media extensions that are used to verify that the download does contain valid media.
-#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso
+#mediaExtensions=.mkv,.avi,.divx,.xvid,.mov,.wmv,.mp4,.mpg,.mpeg,.vob,.iso,.ts
 
 ## Posix
 
@@ -189,7 +202,7 @@
 # externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
 #externalSubDir=
 
-# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release).
+# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release, MKV-SD).
 #
 # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
 # If you want to use your own profile, set None and set the remaining options below.
@@ -204,6 +217,7 @@
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
 #VideoCodecAllow= 
+#outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
 #outputVideoBitrate=800k
@@ -240,6 +254,7 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
 import sys
 import nzbToMedia
 

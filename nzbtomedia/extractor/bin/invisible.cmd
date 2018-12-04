@@ -1,1 +1,0 @@
-start /wait wscript "%~dp0\invisible.vbs" %*

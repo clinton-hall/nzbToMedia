@@ -83,3 +83,27 @@ class HTML5LibBuilderSmokeTest(SoupTest, HTML5TreeBuilderSmokeTest):
         soup = self.soup(markup)
         self.assertEqual(u"<body><p><em>foo</em></p><em>\n</em><p><em>bar<a></a></em></p>\n</body>", soup.body.decode())
         self.assertEqual(2, len(soup.find_all('p')))
+
+    def test_reparented_markup_containing_identical_whitespace_nodes(self):
+        """Verify that we keep the two whitespace nodes in this
+        document distinct when reparenting the adjacent <tbody> tags.
+        """
+        markup = '<table> <tbody><tbody><ims></tbody> </table>'
+        soup = self.soup(markup)
+        space1, space2 = soup.find_all(string=' ')
+        tbody1, tbody2 = soup.find_all('tbody')
+        assert space1.next_element is tbody1
+        assert tbody2.next_element is space2
+
+    def test_processing_instruction(self):
+        """Processing instructions become comments."""
+        markup = b"""<?PITarget PIContent?>"""
+        soup = self.soup(markup)
+        assert str(soup).startswith("<!--?PITarget PIContent?-->")
+
+    def test_cloned_multivalue_node(self):
+        markup = b"""<a class="my_class"><p></a>"""
+        soup = self.soup(markup)
+        a1, a2 = soup.find_all('a')
+        self.assertEqual(a1, a2)
+        assert a1 is not a2

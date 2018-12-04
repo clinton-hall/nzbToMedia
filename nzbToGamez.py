@@ -1,4 +1,5 @@
 #!/usr/bin/env python2
+# coding=utf-8
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -36,6 +37,8 @@
 #gzapikey=
 
 # Gamez host.
+#
+# The ipaddress for your Gamez server. e.g For the Same system use localhost or 127.0.0.1
 #gzhost=localhost
 
 # Gamez port.
@@ -96,6 +99,7 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
 import sys
 import nzbToMedia
 

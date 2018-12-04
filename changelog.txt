@@ -1,5 +1,176 @@
 Change_LOG / History
 
+V11.06 11/03/2018
+
+updates to incorporate importMode for NzbDrone/Sonarr and Radarr.
+Correct typo(s) for "Lidarr" category.
+only pass id to CP if release id found.
+fix issue with no release id and no imdbid.
+Fixed NZBGet save of Lidarr config.
+improve logging for imdb id lookup.
+fix minor description error.
+add better logging of movie name when added to CP.
+attempt to clean up Liddar api commands.
+update to use Mylar api.
+set Torrent move-sym option to force SickRage process_method.
+add rmDir import for HeadPhones processing.
+change sickrage and sickchill names and modify api process to work with multiple sick* forks.
+add NZBGet WebUI set of delete failed for HP.
+fix qbittorrent to delete permanently (remove files on delete).
+
+V11.05 27/06/2018
+
+Add qBittorrent support.
+Add SickGear support.
+Add SiCKRAGE api support.
+Fix for single file download.
+Diable media check for failed HeadPhones downloads.
+Added Lidarr flow. Still awaiting confirmation of api interface commands and return.
+
+V11.04 30/12/2017
+
+do not embed .sub.
+add proper check of sub streams #1150 and filter out commentary.
+traverse audiostreams in reverse.
+add catch for OMDB api errors.
+convert all listdir functions to unicode.
+perform extraction, corruption checks, and transcoding when no server.
+fix list indices errors when no fork set.
+fix CP server responding test. Add trailing /.
+use basestring to match unicode path in transcoder.
+attempt autofork even if no username set.
+allow long paths in Cleandir.
+add Radarr handling.
+minor fix for transcoder.
+fix non-iterable type.
+fix logging error.
+DownloadedMovieScan updated to DownloadedMoviesScan.
+add check to exception rename to not over-write exisiting.
+don't try and process when no api/user.
+Added omdbapikey functionality
+force sonarr processing to "move".
+already extracted archive not skipped.
+fix text for keep_archive.
+try to avoid spaces in outputdir.
+change subtitle logging level.
+Increase shutil copy buffer length from 4KB to 512KB.
+improve user script media extension handling
+add par2 rename/repair (linux only).
+
+V11.03 15/01/2017
+
+Add -o to output path for 7zip.
+Try album directory then parent directory for HeadPhones variants.
+Prevent duplication of audio tracks in Transcoder.
+Update uTorrent Client interface.
+Updated to use force_next for SickRage to prevent postprocessing in queue.
+
+V11.02 30/11/2016
+
+Added default "MKV-SD"
+Added VideoResolution in nzbGet.
+Fix Headphones direcotry parsing.
+Remove proc_type when failed.
+Added option "no_extract_failed"
+Updated beautifulsoup 4 module.
+Check for existence of codec_type key when counting streams.
+Added default fallback for sabnzbd port = 8080.
+
+V11.01 30/10/2016
+
+Updated external modules and changed config to dict.
+Started making code python 3 compatible.
+Fixed auto-fork detection for new Sick* branches.
+Fixed invalid indexing scope for TorrentToMedia.
+Add Medusa fork and new param "ignore_subs".
+Added check for language tag size, convert 3 letter language codes.
+Fixed guessit call to allow guessit to work of full file path.
+Add the ability to set octal permissions on the processed files prior to handing it off to Sickrage/Couchpotato.
+Catch errors if not audio codec name.
+Allow manual scans to continue.
+Revert to 7zip if others missing.
+Fixed int conversion base 8 from string or int.
+Added more logging to server tests.
+Added MKV-SD Profile.
+Check for preferred codec even if not preferred language.
+Don't convert VobSub to mov_text.
+
+V10.15 29/05/2016
+
+Don't copy archives when set to extract.
+Specifically check for failed download handing regardless of fork.
+sort Media file results by pathlength.
+Synchronize changed SickRage directory param.
+Don't remove release group information from base folder.
+Don't add imdb id to file name when move-sym in use.
+Fix string and integer concat error.
+
+V10.14 13/03/2016
+
+Add option move-sym to create symlink to renamed files.
+Transmission comment fix.
+Prevent int errors in chmod.
+Fix urllib warnings.
+Create unique directory in output incase of rename error in sick/couch.
+Add -strict -2 to dts codec.
+Added support to handle archives in SickRage.
+Report Downloader failures to SickRage.
+Continue on encoding detection failure.
+Strip trailing and leading whitespaces from `mount_points`.
+Also check sabnzbd history for nzoid.
+Add generic run mode (manually enter parameters for execution).
+
+V10.13 11/12/2015
+
+Always add -strict -2 to aac codec.
+Add "delete_on" for SickRage.
+Add https handling for SABnzbd.
+Added the ability to chmod Torrent diretory before processing.
+Add option to not resume failed torrent.
+Add Option to not resume successful torrent.
+Add procees name to final SABnzbd message.
+Fix SSL warnings forcomic processing.
+Add .ts to mediaExtensions.
+Don't update plex on failed.
+Add option to preserve archive files after extraction.
+Force_Clean doesn't over-ride delete_failed.
+Added support for SickRageTV and SickRage branches.
+
+V10.12 21/09/2015
+
+Updated Requests Module to Latest Version. Works with Python 2.7.10
+Add .img files to transcoder extraction routines.
+
+V10.11 28/05/2015
+
+Use socket to verify if running on Linux. Prevents issues with stale pid.
+Add timeouts and improve single instance handling.
+Prevent Scale Up.
+Improve regex for rename script.
+Improve safe rename functionality.
+Ignore .bts extensions.
+Don't process output when no transcoding needed.
+Ignore Thumbs.db on manual run.
+Rename nzbtomedia to core. To prevent erros on non-case sensitive file systems.
+Mark as bad if no media files found.
+Increase server responding timeout.
+Don't use last modified entry for CP renamer when no imdb id found.
+Add plex library update.
+
+V10.10 29/01/2015
+
+Fix error when extracting on windows. (added import of subprocess)
+Fix subtitles download and emdedding.
+
+V10.9 19/01/2015
+
+Prevent Errors when trying next release from CouchPotato (CouchPotato failed handling)
+Prevent check for status change when using Manage scan (CouchPotato)
+Better Tooltip for "host" in NZBGet settings.
+Continue if failed to connect to Torrent Client.
+Fixed resolution settings in Transcoder.
+Make Windows Linking and extraction invisible.
+
 V10.8 15/12/2014
 
 Impacts All
