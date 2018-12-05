@@ -122,7 +122,7 @@ def extract(filePath, outputDestination):
         cmd2.append("-p-")  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
-        if (res >= 0 and os.name == 'nt') or res == 0:  # for windows chp returns process id if successful or -1*Error code. Linux returns 0 for successful.
+        if res == 0:  # Both Linux and Windows return 0 for successful.
             core.logger.info("EXTRACTOR: Extraction was successful for {file} to {destination}".format
                              (file=filePath, destination=outputDestination))
             success = 1
