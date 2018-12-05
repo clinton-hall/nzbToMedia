@@ -80,6 +80,8 @@ def extract(filePath, outputDestination):
     else:
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]
+            core.logger.debug("EXTRACTOR: cmd: {cmd} set for file: {file}".format
+                              (cmd=cmd, file=filePath))
         else:
             core.logger.debug("EXTRACTOR: Unknown file type: {ext}".format
                               (ext=ext[1]))
@@ -87,6 +89,8 @@ def extract(filePath, outputDestination):
 
         # Create outputDestination folder
         core.makeDir(outputDestination)
+        core.logger.debug("EXTRACTOR: output folder: {folder} exists".format
+                              (folder=outputDestination))
 
     if core.PASSWORDSFILE != "" and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
         passwords = [line.strip() for line in open(os.path.normpath(core.PASSWORDSFILE))]
