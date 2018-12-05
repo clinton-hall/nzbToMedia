@@ -19,7 +19,7 @@ def extract(filePath, outputDestination):
             return False
         invislocation = os.path.join(core.PROGRAM_DIR, 'core', 'extractor', 'bin', 'invisible.cmd')
         cmd_7zip = [invislocation, core.SEVENZIP, "x", "-y"]
-        ext_7zip = [".rar", ".r00", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
+        ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
         EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
     else:
@@ -32,7 +32,7 @@ def extract(filePath, outputDestination):
         # ".bz2": ["bzip2", "-d --keep"],
 
         EXTRACT_COMMANDS = {
-            ".rar": ["unrar", "x", "-o+", "-y"], ".r00": ["unrar", "x", "-o+", "-y"],
+            ".rar": ["unrar", "x", "-o+", "-y"],
             ".tar": ["tar", "-xf"],
             ".zip": ["unzip"],
             ".tar.gz": ["tar", "-xzf"], ".tgz": ["tar", "-xzf"],
