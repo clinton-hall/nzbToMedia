@@ -18,7 +18,7 @@ def extract(filePath, outputDestination):
             core.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
         invislocation = os.path.join(core.PROGRAM_DIR, 'core', 'extractor', 'bin', 'invisible.cmd')
-        cmd_7zip = [invislocation, core.SEVENZIP, "x", "-y"]
+        cmd_7zip = [invislocation, core.SHOWEXTRACT, core.SEVENZIP, "x", "-y"]
         ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
         EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
@@ -80,8 +80,6 @@ def extract(filePath, outputDestination):
     else:
         if ext[1] in EXTRACT_COMMANDS:
             cmd = EXTRACT_COMMANDS[ext[1]]
-            core.logger.debug("EXTRACTOR: cmd: {cmd} set for file: {file}".format
-                              (cmd=cmd, file=filePath))
         else:
             core.logger.debug("EXTRACTOR: Unknown file type: {ext}".format
                               (ext=ext[1]))
@@ -89,10 +87,8 @@ def extract(filePath, outputDestination):
 
         # Create outputDestination folder
         core.makeDir(outputDestination)
-        core.logger.debug("EXTRACTOR: output folder: {folder} exists".format
-                              (folder=outputDestination))
 
-    if core.PASSWORDSFILE != "" and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
+    if core.PASSWORDSFILE and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
         passwords = [line.strip() for line in open(os.path.normpath(core.PASSWORDSFILE))]
     else:
         passwords = []
