@@ -17,8 +17,9 @@ def extract(filePath, outputDestination):
         if not os.path.exists(core.SEVENZIP):
             core.logger.error("EXTRACTOR: Could not find 7-zip, Exiting")
             return False
-        invislocation = os.path.join(core.PROGRAM_DIR, 'core', 'extractor', 'bin', 'invisible.cmd')
-        cmd_7zip = [invislocation, str(core.SHOWEXTRACT), core.SEVENZIP, "x", "-y"]
+        wscriptlocation = os.path.join(os.environ['WINDIR'], 'system32', 'wscript.exe')
+        invislocation = os.path.join(core.PROGRAM_DIR, 'core', 'extractor', 'bin', 'invisible.vbs')
+        cmd_7zip = [wscriptlocation, invislocation, str(core.SHOWEXTRACT), core.SEVENZIP, "x", "-y"]
         ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
         EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
