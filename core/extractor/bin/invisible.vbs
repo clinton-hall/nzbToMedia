@@ -17,5 +17,5 @@ end if
 
 Set WshShell = WScript.CreateObject("WScript.Shell")
 
-returnValue = WshShell.Run("""" & WScript.Arguments(1) & """" & sargs, WScript.Arguments(0), True)
+returnValue = WshShell.Run("""" & args(1) & """" & sargs, args(0), True)
 WScript.Quit(returnValue)
