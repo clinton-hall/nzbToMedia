@@ -1,0 +1,15 @@
+babelfish
+beets
+configobj
+guessit
+linktastic
+python-qbittorrent
+rencode
+requests
+setuptools
+six
+subliminal
+transmissionrpc
+
+# synchronousdeluge
+# utorrent
