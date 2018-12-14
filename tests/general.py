@@ -1,4 +1,6 @@
 #! /usr/bin/env python2
+from __future__ import print_function
+
 import os
 import sys
 import datetime
@@ -18,32 +20,32 @@ core.initialize()
 #print label
 
 if transcoder.isVideoGood(core.TEST_FILE, 0):
-    print "FFPROBE Works"
+    print("FFPROBE Works")
 else:
-    print "FFPROBE FAILED"
+    print("FFPROBE FAILED")
 
 test = core.CFG['SickBeard','NzbDrone']['tv'].isenabled()
-print test
+print(test)
 section = core.CFG.findsection('tv').isenabled()
-print section
-print len(section)
+print(section)
+print(len(section))
 fork, fork_params = autoFork('SickBeard', 'tv')
 
 if server_responding("http://127.0.0.1:5050"):
-    print "CouchPotato Running"
+    print("CouchPotato Running")
 if server_responding("http://127.0.0.1:7073"):
-    print "SickBeard Running"
+    print("SickBeard Running")
 if server_responding("http://127.0.0.1:8181"):
-    print "HeadPhones Running"
+    print("HeadPhones Running")
 if server_responding("http://127.0.0.1:8085"):
-    print "Gamez Running"
+    print("Gamez Running")
 if server_responding("http://127.0.0.1:8090"):
-    print "Mylar Running"
+    print("Mylar Running")
 
 from babelfish import Language
 lan = 'pt'
 lan = Language.fromalpha2(lan)
-print lan.alpha3
+print(lan.alpha3)
 vidName = "/volume1/Public/Movies/A Few Good Men/A Few Good Men(1992).mkv"
 inputName = "in.the.name.of.ben.hur.2016.bdrip.x264-rusted.nzb"
 guess = guessit.guessit(inputName)
@@ -59,7 +61,7 @@ if guess:
     url = "http://www.omdbapi.com"
     r = requests.get(url, params={'y': year, 't': title}, verify=False, timeout=(60, 300))
     results = r.json()
-    print results
+    print(results)
 
 import subliminal
 subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
