@@ -1,14 +1,15 @@
 # coding=utf-8
 
-from six import iteritems
+import copy
 import os
 import shutil
-import copy
-import core
-from configobj import *
-from core import logger
-
 from itertools import chain
+
+import configobj
+from six import iteritems
+
+import core
+from core import logger
 
 
 class Section(configobj.Section, object):

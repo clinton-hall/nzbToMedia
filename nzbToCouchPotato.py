@@ -256,6 +256,7 @@
 ##############################################################################
 
 import sys
+
 import nzbToMedia
 
 section = "CouchPotato"

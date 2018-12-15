@@ -7,10 +7,61 @@ import operator
 import collections
 import itertools
 import copy
+import functools
+
+try:
+	import collections.abc
+except ImportError:
+	# Python 2.7
+	collections.abc = collections
 
 import six
 from jaraco.classes.properties import NonDataProperty
 import jaraco.text
+
+
+class Projection(collections.abc.Mapping):
+	"""
+	Project a set of keys over a mapping
+
+	>>> sample = {'a': 1, 'b': 2, 'c': 3}
+	>>> prj = Projection(['a', 'c', 'd'], sample)
+	>>> prj == {'a': 1, 'c': 3}
+	True
+
+	Keys should only appear if they were specified and exist in the space.
+
+	>>> sorted(list(prj.keys()))
+	['a', 'c']
+
+	Use the projection to update another dict.
+
+	>>> target = {'a': 2, 'b': 2}
+	>>> target.update(prj)
+	>>> target == {'a': 1, 'b': 2, 'c': 3}
+	True
+
+	Also note that Projection keeps a reference to the original dict, so
+	if you modify the original dict, that could modify the Projection.
+
+	>>> del sample['a']
+	>>> dict(prj)
+	{'c': 3}
+	"""
+	def __init__(self, keys, space):
+		self._keys = tuple(keys)
+		self._space = space
+
+	def __getitem__(self, key):
+		if key not in self._keys:
+			raise KeyError(key)
+		return self._space[key]
+
+	def __iter__(self):
+		return iter(set(self._keys).intersection(self._space))
+
+	def __len__(self):
+		return len(tuple(iter(self)))
 
 
 class DictFilter(object):
@@ -52,7 +103,6 @@ class DictFilter(object):
 			self.pattern_keys = set()
 
 	def get_pattern_keys(self):
-		#key_matches = lambda k, v: self.include_pattern.match(k)
 		keys = filter(self.include_pattern.match, self.dict.keys())
 		return set(keys)
 	pattern_keys = NonDataProperty(get_pattern_keys)
@@ -70,7 +120,7 @@ class DictFilter(object):
 		return values
 
 	def __getitem__(self, i):
-		if not i in self.include_keys:
+		if i not in self.include_keys:
 			return KeyError, i
 		return self.dict[i]
 
@@ -162,7 +212,7 @@ class RangeMap(dict):
 	>>> r.get(7, 'not found')
 	'not found'
 	"""
-	def __init__(self, source, sort_params = {}, key_match_comparator = operator.le):
+	def __init__(self, source, sort_params={}, key_match_comparator=operator.le):
 		dict.__init__(self, source)
 		self.sort_params = sort_params
 		self.match = key_match_comparator
@@ -190,7 +240,7 @@ class RangeMap(dict):
 			return default
 
 	def _find_first_match_(self, keys, item):
-		is_match = lambda k: self.match(item, k)
+		is_match = functools.partial(self.match, item)
 		matches = list(filter(is_match, keys))
 		if matches:
 			return matches[0]
@@ -205,12 +255,15 @@ class RangeMap(dict):
 
 	# some special values for the RangeMap
 	undefined_value = type(str('RangeValueUndefined'), (object,), {})()
-	class Item(int): pass
+
+	class Item(int):
+		"RangeMap Item"
 	first_item = Item(0)
 	last_item = Item(-1)
 
 
-__identity = lambda x: x
+def __identity(x):
+	return x
 
 
 def sorted_items(d, key=__identity, reverse=False):
@@ -229,7 +282,8 @@ def sorted_items(d, key=__identity, reverse=False):
 	(('foo', 20), ('baz', 10), ('bar', 42))
 	"""
 	# wrap the key func so it operates on the first element of each item
-	pairkey_key = lambda item: key(item[0])
+	def pairkey_key(item):
+		return key(item[0])
 	return sorted(d.items(), key=pairkey_key, reverse=reverse)
 
 
@@ -414,7 +468,11 @@ class ItemsAsAttributes(object):
 	It also works on dicts that customize __getitem__
 
 	>>> missing_func = lambda self, key: 'missing item'
-	>>> C = type(str('C'), (dict, ItemsAsAttributes), dict(__missing__ = missing_func))
+	>>> C = type(
+	...     str('C'),
+	...     (dict, ItemsAsAttributes),
+	...     dict(__missing__ = missing_func),
+	... )
 	>>> i = C()
 	>>> i.missing
 	'missing item'
@@ -428,6 +486,7 @@ class ItemsAsAttributes(object):
 			# attempt to get the value from the mapping (return self[key])
 			#  but be careful not to lose the original exception context.
 			noval = object()
+
 			def _safe_getitem(cont, key, missing_result):
 				try:
 					return cont[key]
@@ -460,7 +519,7 @@ def invert_map(map):
 	...
 	ValueError: Key conflict in inverted mapping
 	"""
-	res = dict((v,k) for k, v in map.items())
+	res = dict((v, k) for k, v in map.items())
 	if not len(res) == len(map):
 		raise ValueError('Key conflict in inverted mapping')
 	return res
@@ -483,7 +542,7 @@ class IdentityOverrideMap(dict):
 		return key
 
 
-class DictStack(list, collections.Mapping):
+class DictStack(list, collections.abc.Mapping):
 	"""
 	A stack of dictionaries that behaves as a view on those dictionaries,
 	giving preference to the last.
@@ -506,6 +565,7 @@ class DictStack(list, collections.Mapping):
 	>>> d = stack.pop()
 	>>> stack['a']
 	1
+	>>> stack.get('b', None)
 	"""
 
 	def keys(self):
@@ -513,7 +573,8 @@ class DictStack(list, collections.Mapping):
 
 	def __getitem__(self, key):
 		for scope in reversed(self):
-			if key in scope: return scope[key]
+			if key in scope:
+				return scope[key]
 		raise KeyError(key)
 
 	push = list.append
@@ -553,6 +614,10 @@ class BijectiveMap(dict):
 	Traceback (most recent call last):
 	ValueError: Key/Value pairs may not overlap
 
+	>>> m['e'] = 'd'
+	Traceback (most recent call last):
+	ValueError: Key/Value pairs may not overlap
+
 	>>> print(m.pop('d'))
 	c
 
@@ -583,7 +648,12 @@ class BijectiveMap(dict):
 	def __setitem__(self, item, value):
 		if item == value:
 			raise ValueError("Key cannot map to itself")
-		if (value in self or item in self) and self[item] != value:
+		overlap = (
+			item in self and self[item] != value
+			or
+			value in self and self[value] != item
+		)
+		if overlap:
 			raise ValueError("Key/Value pairs may not overlap")
 		super(BijectiveMap, self).__setitem__(item, value)
 		super(BijectiveMap, self).__setitem__(value, item)
@@ -607,7 +677,7 @@ class BijectiveMap(dict):
 			self.__setitem__(*item)
 
 
-class FrozenDict(collections.Mapping, collections.Hashable):
+class FrozenDict(collections.abc.Mapping, collections.abc.Hashable):
 	"""
 	An immutable mapping.
 
@@ -641,8 +711,8 @@ class FrozenDict(collections.Mapping, collections.Hashable):
 	>>> isinstance(copy.copy(a), FrozenDict)
 	True
 
-	FrozenDict supplies .copy(), even though collections.Mapping doesn't
-	demand it.
+	FrozenDict supplies .copy(), even though
+	collections.abc.Mapping doesn't demand it.
 
 	>>> a.copy() == a
 	True
@@ -747,6 +817,9 @@ class Everything(object):
 	>>> import random
 	>>> random.randint(1, 999) in Everything()
 	True
+
+	>>> random.choice([None, 'foo', 42, ('a', 'b', 'c')]) in Everything()
+	True
 	"""
 	def __contains__(self, other):
 		return True
@@ -771,3 +844,63 @@ class InstrumentedDict(six.moves.UserDict):
 	def __init__(self, data):
 		six.moves.UserDict.__init__(self)
 		self.data = data
+
+
+class Least(object):
+	"""
+	A value that is always lesser than any other
+
+	>>> least = Least()
+	>>> 3 < least
+	False
+	>>> 3 > least
+	True
+	>>> least < 3
+	True
+	>>> least <= 3
+	True
+	>>> least > 3
+	False
+	>>> 'x' > least
+	True
+	>>> None > least
+	True
+	"""
+
+	def __le__(self, other):
+		return True
+	__lt__ = __le__
+
+	def __ge__(self, other):
+		return False
+	__gt__ = __ge__
+
+
+class Greatest(object):
+	"""
+	A value that is always greater than any other
+
+	>>> greatest = Greatest()
+	>>> 3 < greatest
+	True
+	>>> 3 > greatest
+	False
+	>>> greatest < 3
+	False
+	>>> greatest > 3
+	True
+	>>> greatest >= 3
+	True
+	>>> 'x' > greatest
+	False
+	>>> None > greatest
+	False
+	"""
+
+	def __ge__(self, other):
+		return True
+	__gt__ = __ge__
+
+	def __le__(self, other):
+		return False
+	__lt__ = __le__

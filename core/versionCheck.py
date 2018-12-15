@@ -4,17 +4,16 @@
 
 import os
 import platform
-import shutil
-import subprocess
 import re
-import urllib
-import tarfile
+import shutil
 import stat
+import subprocess
+import tarfile
 import traceback
-import gh_api as github
+import urllib
 
 import core
-from core import logger
+from core import gh_api as github, logger
 
 
 class CheckVersion(object):
@@ -182,6 +181,7 @@ class GitUpdateManager(UpdateManager):
 
             if output:
                 output = output.strip()
+                output = output.decode('utf-8')
             if core.LOG_GIT:
                 logger.log(u"git output: {output}".format(output=output), logger.DEBUG)
 

@@ -1,17 +1,13 @@
 #! /usr/bin/env python2
 from __future__ import print_function
 
-import os
-import sys
-import datetime
-import re
-import core
 import guessit
 import requests
+
+import core
 from core.nzbToMediaAutoFork import autoFork
-from core import nzbToMediaDB
+from core.nzbToMediaUtil import server_responding
 from core.transcoder import transcoder
-from core.nzbToMediaUtil import get_downloadInfo, server_responding
 
 # Initialize the config
 core.initialize()

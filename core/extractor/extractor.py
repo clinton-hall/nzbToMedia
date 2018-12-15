@@ -4,10 +4,11 @@ import os
 import platform
 import shutil
 import stat
-from time import sleep
-import core
-from subprocess import call, Popen
 import subprocess
+from subprocess import Popen, call
+from time import sleep
+
+import core
 
 
 def extract(filePath, outputDestination):

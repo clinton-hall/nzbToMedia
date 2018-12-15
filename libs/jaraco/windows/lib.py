@@ -2,6 +2,7 @@ import ctypes
 
 from .api import library
 
+
 def find_lib(lib):
 	r"""
 	Find the DLL for a given library.

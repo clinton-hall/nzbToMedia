@@ -5,6 +5,7 @@ import six
 from .error import handle_nonzero_success
 from .api import memory
 
+
 class MemoryMap(object):
 	"""
 	A memory map object which can have security attributes overridden.

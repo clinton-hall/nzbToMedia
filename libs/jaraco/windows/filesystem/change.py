@@ -17,6 +17,8 @@ from threading import Thread
 import itertools
 import logging
 
+import six
+
 from more_itertools.recipes import consume
 import jaraco.text
 
@@ -25,8 +27,10 @@ from jaraco.windows.api import event
 
 log = logging.getLogger(__name__)
 
+
 class NotifierException(Exception):
 	pass
+
 
 class FileFilter(object):
 	def set_root(self, root):
@@ -35,8 +39,10 @@ class FileFilter(object):
 	def _get_file_path(self, filename):
 		try:
 			filename = os.path.join(self.root, filename)
-		except AttributeError: pass
+		except AttributeError:
+			pass
 		return filename
+
 
 class ModifiedTimeFilter(FileFilter):
 	"""
@@ -53,6 +59,7 @@ class ModifiedTimeFilter(FileFilter):
 		log.debug('{filepath} last modified at {last_mod}.'.format(**vars()))
 		return last_mod > self.cutoff
 
+
 class PatternFilter(FileFilter):
 	"""
 	Filter that returns True for files that match pattern (a regular
@@ -60,12 +67,13 @@ class PatternFilter(FileFilter):
 	"""
 	def __init__(self, pattern):
 		self.pattern = (
-			re.compile(pattern) if isinstance(pattern, basestring)
+			re.compile(pattern) if isinstance(pattern, six.string_types)
 			else pattern
 		)
 
 	def __call__(self, file):
 		return bool(self.pattern.match(file, re.I))
+
 
 class GlobFilter(PatternFilter):
 	"""
@@ -102,6 +110,7 @@ class AggregateFilter(FileFilter):
 	def __call__(self, file):
 		return all(fil(file) for fil in self.filters)
 
+
 class OncePerModFilter(FileFilter):
 	def __init__(self):
 		self.history = list()
@@ -115,15 +124,18 @@ class OncePerModFilter(FileFilter):
 			del self.history[-50:]
 		return result
 
+
 def files_with_path(files, path):
 	return (os.path.join(path, file) for file in files)
+
 
 def get_file_paths(walk_result):
 	root, dirs, files = walk_result
 	return files_with_path(files, root)
 
+
 class Notifier(object):
-	def __init__(self, root = '.', filters = []):
+	def __init__(self, root='.', filters=[]):
 		# assign the root, verify it exists
 		self.root = root
 		if not os.path.isdir(self.root):
@@ -138,7 +150,8 @@ class Notifier(object):
 	def __del__(self):
 		try:
 			fs.FindCloseChangeNotification(self.hChange)
-		except: pass
+		except Exception:
+			pass
 
 	def _get_change_handle(self):
 		# set up to monitor the directory tree specified
@@ -151,8 +164,8 @@ class Notifier(object):
 		# make sure it worked; if not, bail
 		INVALID_HANDLE_VALUE = fs.INVALID_HANDLE_VALUE
 		if self.hChange == INVALID_HANDLE_VALUE:
-			raise NotifierException('Could not set up directory change '
-				'notification')
+			raise NotifierException(
+				'Could not set up directory change notification')
 
 	@staticmethod
 	def _filtered_walk(path, file_filter):
@@ -170,6 +183,7 @@ class Notifier(object):
 
 	def quit(self):
 		event.SetEvent(self.quit_event)
+
 
 class BlockingNotifier(Notifier):
 
@@ -215,17 +229,18 @@ class BlockingNotifier(Notifier):
 			result = next(results)
 		return result
 
+
 class ThreadedNotifier(BlockingNotifier, Thread):
 	r"""
 	ThreadedNotifier provides a simple interface that calls the handler
 	for each file rooted in root that passes the filters.  It runs as its own
-	thread, so must be started as such.
+	thread, so must be started as such::
 
-	>>> notifier = ThreadedNotifier('c:\\', handler = StreamHandler()) # doctest: +SKIP
-	>>> notifier.start() # doctest: +SKIP
-	C:\Autoexec.bat changed.
+		notifier = ThreadedNotifier('c:\\', handler = StreamHandler())
+		notifier.start()
+		C:\Autoexec.bat changed.
 	"""
-	def __init__(self, root = '.', filters = [], handler = lambda file: None):
+	def __init__(self, root='.', filters=[], handler=lambda file: None):
 		# init notifier stuff
 		BlockingNotifier.__init__(self, root, filters)
 		# init thread stuff
@@ -242,13 +257,14 @@ class ThreadedNotifier(BlockingNotifier, Thread):
 		for file in self.get_changed_files():
 			self.handle(file)
 
+
 class StreamHandler(object):
 	"""
 	StreamHandler: a sample handler object for use with the threaded
 	notifier that will announce by writing to the supplied stream
 	(stdout by default) the name of the file.
 	"""
-	def __init__(self, output = sys.stdout):
+	def __init__(self, output=sys.stdout):
 		self.output = output
 
 	def __call__(self, filename):
