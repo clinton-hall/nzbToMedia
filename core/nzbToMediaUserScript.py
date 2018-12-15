@@ -1,10 +1,12 @@
 # coding=utf-8
+
 import os
-import core
 from subprocess import Popen
-from core.transcoder import transcoder
-from core.nzbToMediaUtil import import_subs, listMediaFiles, rmDir
+
+import core
 from core import logger
+from core.nzbToMediaUtil import import_subs, listMediaFiles, rmDir
+from core.transcoder import transcoder
 
 
 def external_script(outputDestination, torrentName, torrentLabel, settings):

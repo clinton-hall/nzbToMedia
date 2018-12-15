@@ -1,12 +1,13 @@
 # coding=utf-8
 
 import os
-import core
-import requests
 import shutil
 
-from core.nzbToMediaUtil import convert_to_ascii, server_responding
+import requests
+
+import core
 from core import logger
+from core.nzbToMediaUtil import convert_to_ascii, server_responding
 
 requests.packages.urllib3.disable_warnings()
 

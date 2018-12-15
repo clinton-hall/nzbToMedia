@@ -1,10 +1,11 @@
 # coding=utf-8
 from __future__ import with_statement
 
+import logging
 import os
 import sys
 import threading
-import logging
+
 import core
 
 # number of log files to keep

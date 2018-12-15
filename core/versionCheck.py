@@ -4,16 +4,16 @@
 
 import os
 import platform
-import shutil
-import subprocess
 import re
-import urllib
-import tarfile
+import shutil
 import stat
+import subprocess
+import tarfile
 import traceback
-import gh_api as github
+import urllib
 
 import core
+import gh_api as github
 from core import logger
 
 

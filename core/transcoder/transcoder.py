@@ -1,17 +1,19 @@
 # coding=utf-8
 
-from six import iteritems
 import errno
+import json
 import os
 import platform
-import subprocess
-import core
-import json
-import shutil
 import re
+import shutil
+import subprocess
+
+from babelfish import Language
+from six import iteritems
+
+import core
 from core import logger
 from core.nzbToMediaUtil import makeDir
-from babelfish import Language
 
 
 def isVideoGood(videofile, status):
