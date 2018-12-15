@@ -4,9 +4,7 @@
 import itertools
 import mimetools
 import mimetypes
-from cStringIO import StringIO
-import urllib
-import urllib2
+
 
 class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""
