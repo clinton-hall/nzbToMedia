@@ -4,6 +4,7 @@ configobj
 guessit
 linktastic
 python-qbittorrent
+pyxdg
 rencode
 requests
 setuptools
