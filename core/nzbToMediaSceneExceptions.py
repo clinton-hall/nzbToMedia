@@ -1,10 +1,12 @@
 # coding=utf-8
+
 import os
-import re
-import core
-import shlex
 import platform
+import re
+import shlex
 import subprocess
+
+import core
 from core import logger
 from core.nzbToMediaUtil import listMediaFiles
 

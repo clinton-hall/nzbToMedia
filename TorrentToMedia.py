@@ -3,12 +3,12 @@
 import datetime
 import os
 import sys
-import core
 
-from libs.six import text_type
+import core
 from core import logger, nzbToMediaDB
-from core.nzbToMediaUtil import convert_to_ascii, CharReplace, plex_update, replace_links
 from core.nzbToMediaUserScript import external_script
+from core.nzbToMediaUtil import CharReplace, convert_to_ascii, plex_update, replace_links
+from libs.six import text_type
 
 
 def processTorrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):

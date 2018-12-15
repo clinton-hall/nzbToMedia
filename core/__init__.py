@@ -5,10 +5,10 @@ from __future__ import print_function
 import itertools
 import locale
 import os
+import platform
 import re
 import subprocess
 import sys
-import platform
 import time
 
 
@@ -34,21 +34,22 @@ MYAPP = None
 import six
 from six.moves import reload_module
 
+from core import logger, nzbToMediaDB, versionCheck
 from core.autoProcess.autoProcessComics import autoProcessComics
 from core.autoProcess.autoProcessGames import autoProcessGames
 from core.autoProcess.autoProcessMovie import autoProcessMovie
 from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
-from core import logger, versionCheck, nzbToMediaDB
+from core.databases import mainDB
 from core.nzbToMediaConfig import config
 from core.nzbToMediaUtil import (
-    category_search, sanitizeName, copy_link, parse_args, flatten, getDirs,
-    rmReadOnly, rmDir, pause_torrent, resume_torrent, remove_torrent, listMediaFiles,
-    extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, WakeUp, makeDir, cleanDir,
-    create_torrent_class, listMediaFiles, RunningProcess,
- )
+    RunningProcess, WakeUp, category_search, cleanDir, cleanDir, copy_link,
+    create_torrent_class, extractFiles, flatten, getDirs, get_downloadInfo,
+    listMediaFiles, makeDir, parse_args, pause_torrent, remove_torrent,
+    resume_torrent, rmDir, rmReadOnly, sanitizeName, update_downloadInfoStatus,
+)
 from core.transcoder import transcoder
-from core.databases import mainDB
+
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']

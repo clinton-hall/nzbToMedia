@@ -4,17 +4,16 @@
 
 import os
 import platform
-import shutil
-import subprocess
 import re
-import urllib
-import tarfile
+import shutil
 import stat
+import subprocess
+import tarfile
 import traceback
-import gh_api as github
+import urllib
 
 import core
-from core import logger
+from core import gh_api as github, logger
 
 
 class CheckVersion(object):

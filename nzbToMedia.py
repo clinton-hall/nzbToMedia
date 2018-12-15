@@ -623,20 +623,20 @@
 
 from __future__ import print_function
 
+import datetime
 import os
 import sys
-import datetime
-from libs.six import text_type
 
 import core
+from core import logger, nzbToMediaDB
 from core.autoProcess.autoProcessComics import autoProcessComics
 from core.autoProcess.autoProcessGames import autoProcessGames
 from core.autoProcess.autoProcessMovie import autoProcessMovie
 from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
-from core.nzbToMediaUtil import getDirs, extractFiles, cleanDir, update_downloadInfoStatus, get_downloadInfo, CharReplace, convert_to_ascii, get_nzoid, plex_update
 from core.nzbToMediaUserScript import external_script
-from core import logger, nzbToMediaDB
+from core.nzbToMediaUtil import CharReplace, cleanDir, convert_to_ascii, extractFiles, getDirs, get_downloadInfo, get_nzoid, plex_update, update_downloadInfoStatus
+from libs.six import text_type
 
 
 # post-processing

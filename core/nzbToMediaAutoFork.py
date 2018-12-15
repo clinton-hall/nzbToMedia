@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import requests
-
 from six import iteritems
 
 import core
