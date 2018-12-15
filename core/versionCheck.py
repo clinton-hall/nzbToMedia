@@ -182,6 +182,7 @@ class GitUpdateManager(UpdateManager):
 
             if output:
                 output = output.strip()
+                output = output.decode('utf-8')
             if core.LOG_GIT:
                 logger.log(u"git output: {output}".format(output=output), logger.DEBUG)
 
