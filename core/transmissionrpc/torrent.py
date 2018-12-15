@@ -5,9 +5,10 @@
 import sys
 import datetime
 
+from six import integer_types, string_types, text_type, iteritems
+
 from core.transmissionrpc.constants import PRIORITY, RATIO_LIMIT, IDLE_LIMIT
 from core.transmissionrpc.utils import Field, format_timedelta
-from six import integer_types, string_types, text_type, iteritems
 
 
 def get_status_old(code):

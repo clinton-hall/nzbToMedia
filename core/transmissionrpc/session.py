@@ -2,9 +2,9 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-from core.transmissionrpc.utils import Field
+from six import iteritems, integer_types
 
-from core.transmissionrpc.six import iteritems, integer_types
+from core.transmissionrpc.utils import Field
 
 
 class Session(object):
