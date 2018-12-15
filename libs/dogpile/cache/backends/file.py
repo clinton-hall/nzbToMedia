@@ -7,13 +7,14 @@ Provides backends that deal with local filesystem access.
 """
 
 from __future__ import with_statement
-from dogpile.cache.api import CacheBackend, NO_VALUE
+from ..api import CacheBackend, NO_VALUE
 from contextlib import contextmanager
-from dogpile.cache import compat
-from dogpile.cache import util
+from ...util import compat
+from ... import util
 import os
 
 __all__ = 'DBMBackend', 'FileLock', 'AbstractFileLock'
+
 
 class DBMBackend(CacheBackend):
     """A file-backend using a dbm file to store keys.
@@ -135,19 +136,19 @@ class DBMBackend(CacheBackend):
     """
     def __init__(self, arguments):
         self.filename = os.path.abspath(
-                            os.path.normpath(arguments['filename'])
-                        )
+            os.path.normpath(arguments['filename'])
+        )
         dir_, filename = os.path.split(self.filename)
 
         self.lock_factory = arguments.get("lock_factory", FileLock)
         self._rw_lock = self._init_lock(
-                                arguments.get('rw_lockfile'),
-                                ".rw.lock", dir_, filename)
+            arguments.get('rw_lockfile'),
+            ".rw.lock", dir_, filename)
         self._dogpile_lock = self._init_lock(
-                                arguments.get('dogpile_lockfile'),
-                                ".dogpile.lock",
-                                dir_, filename,
-                                util.KeyReentrantMutex.factory)
+            arguments.get('dogpile_lockfile'),
+            ".dogpile.lock",
+            dir_, filename,
+            util.KeyReentrantMutex.factory)
 
         # TODO: make this configurable
         if compat.py3k:
@@ -162,9 +163,9 @@ class DBMBackend(CacheBackend):
             lock = self.lock_factory(os.path.join(basedir, basefile + suffix))
         elif argument is not False:
             lock = self.lock_factory(
-                        os.path.abspath(
-                            os.path.normpath(argument)
-                        ))
+                os.path.abspath(
+                    os.path.normpath(argument)
+                ))
         else:
             return None
         if wrapper:
@@ -209,8 +210,9 @@ class DBMBackend(CacheBackend):
     @contextmanager
     def _dbm_file(self, write):
         with self._use_rw_lock(write):
-            dbm = self.dbmmodule.open(self.filename,
-                                "w" if write else "r")
+            dbm = self.dbmmodule.open(
+                self.filename,
+                "w" if write else "r")
             yield dbm
             dbm.close()
 
@@ -233,12 +235,14 @@ class DBMBackend(CacheBackend):
 
     def set(self, key, value):
         with self._dbm_file(True) as dbm:
-            dbm[key] = compat.pickle.dumps(value)
+            dbm[key] = compat.pickle.dumps(value,
+                                           compat.pickle.HIGHEST_PROTOCOL)
 
     def set_multi(self, mapping):
         with self._dbm_file(True) as dbm:
-            for key,value in mapping.items():
-                dbm[key] = compat.pickle.dumps(value)
+            for key, value in mapping.items():
+                dbm[key] = compat.pickle.dumps(value,
+                                               compat.pickle.HIGHEST_PROTOCOL)
 
     def delete(self, key):
         with self._dbm_file(True) as dbm:
@@ -254,6 +258,7 @@ class DBMBackend(CacheBackend):
                     del dbm[key]
                 except KeyError:
                     pass
+
 
 class AbstractFileLock(object):
     """Coordinate read/write access to a file.
@@ -275,10 +280,10 @@ class AbstractFileLock(object):
     file.
 
     Note that multithreaded environments must provide a thread-safe
-    version of this lock.  The recommended approach for file-descriptor-based
-    locks is to use a Python ``threading.local()`` so that a unique file descriptor
-    is held per thread.  See the source code of :class:`.FileLock` for an
-    implementation example.
+    version of this lock.  The recommended approach for file-
+    descriptor-based locks is to use a Python ``threading.local()`` so
+    that a unique file descriptor is held per thread.  See the source
+    code of :class:`.FileLock` for an implementation example.
 
 
     """
@@ -376,6 +381,7 @@ class AbstractFileLock(object):
         implemented by subclasses.
         """
         raise NotImplementedError()
+
 
 class FileLock(AbstractFileLock):
     """Use lockfiles to coordinate read/write access to a file.

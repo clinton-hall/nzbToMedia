@@ -6,14 +6,15 @@ Provides backends for talking to `memcached <http://memcached.org>`_.
 
 """
 
-from dogpile.cache.api import CacheBackend, NO_VALUE
-from dogpile.cache import compat
-from dogpile.cache import util
+from ..api import CacheBackend, NO_VALUE
+from ...util import compat
+from ... import util
 import random
 import time
 
 __all__ = 'GenericMemcachedBackend', 'MemcachedBackend',\
           'PylibmcBackend', 'BMemcachedBackend', 'MemcachedLock'
+
 
 class MemcachedLock(object):
     """Simple distributed lock using memcached.
@@ -23,20 +24,21 @@ class MemcachedLock(object):
 
     """
 
-    def __init__(self, client_fn, key):
+    def __init__(self, client_fn, key, timeout=0):
         self.client_fn = client_fn
         self.key = "_lock" + key
+        self.timeout = timeout
 
     def acquire(self, wait=True):
         client = self.client_fn()
         i = 0
         while True:
-            if client.add(self.key, 1):
+            if client.add(self.key, 1, self.timeout):
                 return True
             elif not wait:
                 return False
             else:
-                sleep_time = (((i+1)*random.random()) + 2**i) / 2.5
+                sleep_time = (((i + 1) * random.random()) + 2 ** i) / 2.5
                 time.sleep(sleep_time)
             if i < 15:
                 i += 1
@@ -44,6 +46,7 @@ class MemcachedLock(object):
     def release(self):
         client = self.client_fn()
         client.delete(self.key)
+
 
 class GenericMemcachedBackend(CacheBackend):
     """Base class for memcached backends.
@@ -60,6 +63,12 @@ class GenericMemcachedBackend(CacheBackend):
      processes will be talking to the same memcached instance.
      When left at False, dogpile will coordinate on a regular
      threading mutex.
+    :param lock_timeout: integer, number of seconds after acquiring a lock that
+     memcached should expire it.  This argument is only valid when
+     ``distributed_lock`` is ``True``.
+
+     .. versionadded:: 0.5.7
+
     :param memcached_expire_time: integer, when present will
      be passed as the ``time`` parameter to ``pylibmc.Client.set``.
      This is used to set the memcached expiry time for a value.
@@ -104,8 +113,12 @@ class GenericMemcachedBackend(CacheBackend):
         # automatically.
         self.url = util.to_list(arguments['url'])
         self.distributed_lock = arguments.get('distributed_lock', False)
+        self.lock_timeout = arguments.get('lock_timeout', 0)
         self.memcached_expire_time = arguments.get(
             'memcached_expire_time', 0)
+
+    def has_lock_timeout(self):
+        return self.lock_timeout != 0
 
     def _imports(self):
         """client library imports go here."""
@@ -118,6 +131,7 @@ class GenericMemcachedBackend(CacheBackend):
     @util.memoized_property
     def _clients(self):
         backend = self
+
         class ClientPool(compat.threading.local):
             def __init__(self):
                 self.memcached = backend._create_client()
@@ -138,7 +152,8 @@ class GenericMemcachedBackend(CacheBackend):
 
     def get_mutex(self, key):
         if self.distributed_lock:
-            return MemcachedLock(lambda: self.client, key)
+            return MemcachedLock(lambda: self.client, key,
+                                 timeout=self.lock_timeout)
         else:
             return None
 
@@ -157,13 +172,15 @@ class GenericMemcachedBackend(CacheBackend):
         ]
 
     def set(self, key, value):
-        self.client.set(key,
+        self.client.set(
+            key,
             value,
             **self.set_arguments
         )
 
     def set_multi(self, mapping):
-        self.client.set_multi(mapping,
+        self.client.set_multi(
+            mapping,
             **self.set_arguments
         )
 
@@ -172,6 +189,7 @@ class GenericMemcachedBackend(CacheBackend):
 
     def delete_multi(self, keys):
         self.client.delete_multi(keys)
+
 
 class MemcacheArgs(object):
     """Mixin which provides support for the 'time' argument to set(),
@@ -183,12 +201,14 @@ class MemcacheArgs(object):
 
         self.set_arguments = {}
         if "memcached_expire_time" in arguments:
-            self.set_arguments["time"] =\
-            arguments["memcached_expire_time"]
+            self.set_arguments["time"] = arguments["memcached_expire_time"]
         if "min_compress_len" in arguments:
-            self.set_arguments["min_compress_len"] =\
-            arguments["min_compress_len"]
+            self.set_arguments["min_compress_len"] = \
+                arguments["min_compress_len"]
         super(MemcacheArgs, self).__init__(arguments)
+
+pylibmc = None
+
 
 class PylibmcBackend(MemcacheArgs, GenericMemcachedBackend):
     """A backend for the
@@ -229,19 +249,24 @@ class PylibmcBackend(MemcacheArgs, GenericMemcachedBackend):
         self.behaviors = arguments.get('behaviors', {})
         super(PylibmcBackend, self).__init__(arguments)
 
-
     def _imports(self):
         global pylibmc
-        import pylibmc
+        import pylibmc  # noqa
 
     def _create_client(self):
-        return pylibmc.Client(self.url,
+        return pylibmc.Client(
+            self.url,
             binary=self.binary,
             behaviors=self.behaviors
         )
 
+memcache = None
+
+
 class MemcachedBackend(MemcacheArgs, GenericMemcachedBackend):
-    """A backend using the standard `Python-memcached <http://www.tummy.com/Community/software/python-memcached/>`_
+    """A backend using the standard
+    `Python-memcached <http://www.tummy.com/Community/software/\
+    python-memcached/>`_
     library.
 
     Example::
@@ -259,14 +284,19 @@ class MemcachedBackend(MemcacheArgs, GenericMemcachedBackend):
     """
     def _imports(self):
         global memcache
-        import memcache
+        import memcache  # noqa
 
     def _create_client(self):
         return memcache.Client(self.url)
 
+
+bmemcached = None
+
+
 class BMemcachedBackend(GenericMemcachedBackend):
     """A backend for the
-    `python-binary-memcached <https://github.com/jaysonsantos/python-binary-memcached>`_
+    `python-binary-memcached <https://github.com/jaysonsantos/\
+    python-binary-memcached>`_
     memcached client.
 
     This is a pure Python memcached client which
@@ -312,16 +342,18 @@ class BMemcachedBackend(GenericMemcachedBackend):
 
             """
 
-            def add(self, key, value):
+            def add(self, key, value, timeout=0):
                 try:
-                    return super(RepairBMemcachedAPI, self).add(key, value)
+                    return super(RepairBMemcachedAPI, self).add(
+                        key, value, timeout)
                 except ValueError:
                     return False
 
         self.Client = RepairBMemcachedAPI
 
     def _create_client(self):
-        return self.Client(self.url,
+        return self.Client(
+            self.url,
             username=self.username,
             password=self.password
         )
