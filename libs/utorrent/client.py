@@ -1,10 +1,17 @@
 # coding=utf8
-import StringIO
-import cookielib
 import re
 import urllib
-import urllib2
-import urlparse
+
+from six import StringIO
+from six.moves.http_cookiejar import CookieJar
+from six.moves.urllib.request import (
+    HTTPBasicAuthHandler,
+    HTTPCookieProcessor,
+    Request,
+    build_opener,
+    install_opener,
+)
+from six.moves.urllib_parse import urljoin
 
 from .upload import MultiPartForm
 
@@ -26,23 +33,23 @@ class UTorrentClient(object):
     def _make_opener(self, realm, base_url, username, password):
         '''uTorrent API need HTTP Basic Auth and cookie support for token verify.'''
 
-        auth_handler = urllib2.HTTPBasicAuthHandler()
+        auth_handler = HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm,
                                   uri=base_url,
                                   user=username,
                                   passwd=password)
-        opener = urllib2.build_opener(auth_handler)
-        urllib2.install_opener(opener)
+        opener = build_opener(auth_handler)
+        install_opener(opener)
 
-        cookie_jar = cookielib.CookieJar()
-        cookie_handler = urllib2.HTTPCookieProcessor(cookie_jar)
+        cookie_jar = CookieJar()
+        cookie_handler = HTTPCookieProcessor(cookie_jar)
 
         handlers = [auth_handler, cookie_handler]
-        opener = urllib2.build_opener(*handlers)
+        opener = build_opener(*handlers)
         return opener
 
     def _get_token(self):
-        url = urlparse.urljoin(self.base_url, 'token.html')
+        url = urljoin(self.base_url, 'token.html')
         response = self.opener.open(url)
         token_re = "<div id='token' style='display:none;'>([^<>]+)</div>"
         match = re.search(token_re, response.read())
@@ -132,7 +139,7 @@ class UTorrentClient(object):
     def _action(self, params, body=None, content_type=None):
         #about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
         url = self.base_url + '?token=' + self.token + '&' + urllib.urlencode(params)
-        request = urllib2.Request(url)
+        request = Request(url)
 
         if body:
             request.add_data(body)
