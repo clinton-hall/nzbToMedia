@@ -1,6 +1,5 @@
-import json
-
 import requests
+import json
 
 
 class LoginRequired(Exception):
