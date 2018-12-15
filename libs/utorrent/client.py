@@ -140,8 +140,5 @@ class UTorrentClient(object):
         if content_type:
             request.add_header('Content-type', content_type)
 
-        try:
-            response = self.opener.open(request)
-            return response.code, json.loads(response.read())
-        except urllib2.HTTPError,e:
-            raise
+        response = self.opener.open(request)
+        return response.code, json.loads(response.read())
