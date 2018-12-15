@@ -14,10 +14,10 @@ import time
 
 import beets
 import guessit
+import linktastic
 import requests
 import subliminal
 from babelfish import Language
-from linktastic import linktastic
 from qbittorrent import Client as qBittorrentClient
 from six import text_type
 from synchronousdeluge.client import DelugeClient
