@@ -1,6 +1,7 @@
 import ctypes.wintypes
 BOOL = ctypes.wintypes.BOOL
 
+
 class SHELLSTATE(ctypes.Structure):
 	_fields_ = [
 		('show_all_objects', BOOL, 1),
@@ -34,6 +35,7 @@ class SHELLSTATE(ctypes.Structure):
 		('spare_flags', ctypes.wintypes.UINT, 13),
 	]
 
+
 SSF_SHOWALLOBJECTS = 0x00000001
 "The fShowAllObjects member is being requested."
 
@@ -62,7 +64,13 @@ SSF_SHOWATTRIBCOL = 0x00000100
 "The fShowAttribCol member is being requested. (Windows Vista: Not used.)"
 
 SSF_DESKTOPHTML = 0x00000200
-"The fDesktopHTML member is being requested. Set is not available. Instead, for versions of Microsoft Windows prior to Windows XP, enable Desktop HTML by IActiveDesktop. The use of IActiveDesktop for this purpose, however, is not recommended for Windows XP and later versions of Windows, and is deprecated in Windows Vista."
+"""
+The fDesktopHTML member is being requested. Set is not available.
+Instead, for versions of Microsoft Windows prior to Windows XP,
+enable Desktop HTML by IActiveDesktop. The use of IActiveDesktop
+for this purpose, however, is not recommended for Windows XP and
+later versions of Windows, and is deprecated in Windows Vista.
+"""
 
 SSF_WIN95CLASSIC = 0x00000400
 "The fWin95Classic member is being requested."
@@ -117,6 +125,6 @@ SHGetSetSettings = ctypes.windll.shell32.SHGetSetSettings
 SHGetSetSettings.argtypes = [
 	ctypes.POINTER(SHELLSTATE),
 	ctypes.wintypes.DWORD,
-	ctypes.wintypes.BOOL, # get or set (True: set)
-	]
+	ctypes.wintypes.BOOL,  # get or set (True: set)
+]
 SHGetSetSettings.restype = None

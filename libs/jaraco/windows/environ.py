@@ -7,7 +7,7 @@ import ctypes
 import ctypes.wintypes
 
 import six
-winreg = six.moves.winreg
+from six.moves import winreg
 
 from jaraco.ui.editor import EditableFile
 
@@ -19,16 +19,20 @@ from .registry import key_values as registry_key_values
 def SetEnvironmentVariable(name, value):
 	error.handle_nonzero_success(environ.SetEnvironmentVariable(name, value))
 
+
 def ClearEnvironmentVariable(name):
 	error.handle_nonzero_success(environ.SetEnvironmentVariable(name, None))
 
+
 def GetEnvironmentVariable(name):
-	max_size = 2**15-1
+	max_size = 2**15 - 1
 	buffer = ctypes.create_unicode_buffer(max_size)
-	error.handle_nonzero_success(environ.GetEnvironmentVariable(name, buffer, max_size))
+	error.handle_nonzero_success(
+		environ.GetEnvironmentVariable(name, buffer, max_size))
 	return buffer.value
 
 ###
+
 
 class RegisteredEnvironment(object):
 	"""
@@ -68,7 +72,7 @@ class RegisteredEnvironment(object):
 			return class_.delete(name)
 		do_append = options.append or (
 			name.upper() in ('PATH', 'PATHEXT') and not options.replace
-			)
+		)
 		if do_append:
 			sep = ';'
 			values = class_.get_values_list(name, sep) + [value]
@@ -86,8 +90,8 @@ class RegisteredEnvironment(object):
 		if value in values:
 			return
 		new_value = sep.join(values + [value])
-		winreg.SetValueEx(class_.key, name, 0, winreg.REG_EXPAND_SZ,
-			new_value)
+		winreg.SetValueEx(
+			class_.key, name, 0, winreg.REG_EXPAND_SZ, new_value)
 		class_.notify()
 
 	@classmethod
@@ -98,7 +102,7 @@ class RegisteredEnvironment(object):
 			value
 			for value in values
 			if value_substring.lower() not in value.lower()
-			]
+		]
 		values = sep.join(new_values)
 		winreg.SetValueEx(class_.key, name, 0, winreg.REG_EXPAND_SZ, values)
 		class_.notify()
@@ -133,31 +137,37 @@ class RegisteredEnvironment(object):
 		res = message.SendMessageTimeout(
 			message.HWND_BROADCAST,
 			message.WM_SETTINGCHANGE,
-			0, # wparam must be null
+			0,  # wparam must be null
 			'Environment',
 			message.SMTO_ABORTIFHUNG,
-			5000, # timeout in ms
+			5000,  # timeout in ms
 			return_val,
 		)
 		error.handle_nonzero_success(res)
+
 
 class MachineRegisteredEnvironment(RegisteredEnvironment):
 	path = r'SYSTEM\CurrentControlSet\Control\Session Manager\Environment'
 	hklm = winreg.ConnectRegistry(None, winreg.HKEY_LOCAL_MACHINE)
 	try:
-		key = winreg.OpenKey(hklm, path, 0,
+		key = winreg.OpenKey(
+			hklm, path, 0,
 			winreg.KEY_READ | winreg.KEY_WRITE)
 	except WindowsError:
 		key = winreg.OpenKey(hklm, path, 0, winreg.KEY_READ)
 
+
 class UserRegisteredEnvironment(RegisteredEnvironment):
 	hkcu = winreg.ConnectRegistry(None, winreg.HKEY_CURRENT_USER)
-	key = winreg.OpenKey(hkcu, 'Environment', 0,
+	key = winreg.OpenKey(
+		hkcu, 'Environment', 0,
 		winreg.KEY_READ | winreg.KEY_WRITE)
+
 
 def trim(s):
 	from textwrap import dedent
 	return dedent(s).strip()
+
 
 def enver(*args):
 	"""
@@ -200,23 +210,27 @@ def enver(*args):
 		default=MachineRegisteredEnvironment,
 		dest='class_',
 		help="Use the current user's environment",
-		)
-	parser.add_option('-a', '--append',
+	)
+	parser.add_option(
+		'-a', '--append',
 		action='store_true', default=False,
-		help="Append the value to any existing value (default for PATH and PATHEXT)",)
+		help="Append the value to any existing value (default for PATH and PATHEXT)",
+	)
 	parser.add_option(
 		'-r', '--replace',
 		action='store_true', default=False,
-		help="Replace any existing value (used to override default append for PATH and PATHEXT)",
-		)
+		help="Replace any existing value (used to override default append "
+		"for PATH and PATHEXT)",
+	)
 	parser.add_option(
 		'--remove-value', action='store_true', default=False,
-		help="Remove any matching values from a semicolon-separated multi-value variable",
-		)
+		help="Remove any matching values from a semicolon-separated "
+		"multi-value variable",
+	)
 	parser.add_option(
 		'-e', '--edit', action='store_true', default=False,
 		help="Edit the value in a local editor",
-		)
+	)
 	options, args = parser.parse_args(*args)
 
 	try:
@@ -224,7 +238,7 @@ def enver(*args):
 		if args:
 			parser.error("Too many parameters specified")
 			raise SystemExit(1)
-		if not '=' in param and not options.edit:
+		if '=' not in param and not options.edit:
 			parser.error("Expected <name>= or <name>=<value>")
 			raise SystemExit(2)
 		name, sep, value = param.partition('=')
@@ -237,6 +251,7 @@ def enver(*args):
 		method(name, value, options)
 	except IndexError:
 		options.class_.show()
+
 
 if __name__ == '__main__':
 	enver()

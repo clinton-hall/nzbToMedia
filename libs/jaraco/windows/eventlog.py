@@ -6,7 +6,8 @@ import win32api
 import win32evtlog
 import win32evtlogutil
 
-error = win32api.error # The error the evtlog module raises.
+error = win32api.error  # The error the evtlog module raises.
+
 
 class EventLog(object):
 	def __init__(self, name="Application", machine_name=None):
@@ -29,6 +30,7 @@ class EventLog(object):
 		win32evtlog.EVENTLOG_BACKWARDS_READ
 		| win32evtlog.EVENTLOG_SEQUENTIAL_READ
 	)
+
 	def get_records(self, flags=_default_flags):
 		with self:
 			while True:

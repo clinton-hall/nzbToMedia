@@ -14,6 +14,7 @@ from jaraco.windows.api import event as win32event
 
 __author__ = 'Jason R. Coombs <jaraco@jaraco.com>'
 
+
 class WaitableTimer:
 	"""
 	t = WaitableTimer()
@@ -32,12 +33,12 @@ class WaitableTimer:
 	def stop(self):
 		win32event.SetEvent(self.stop_event)
 
-	def wait_for_signal(self, timeout = None):
+	def wait_for_signal(self, timeout=None):
 		"""
 		wait for the signal; return after the signal has occurred or the
 		timeout in seconds elapses.
 		"""
-		timeout_ms = int(timeout*1000) if timeout else win32event.INFINITE
+		timeout_ms = int(timeout * 1000) if timeout else win32event.INFINITE
 		win32event.WaitForSingleObject(self.signal_event, timeout_ms)
 
 	def _signal_loop(self, due_time, period):
@@ -54,14 +55,14 @@ class WaitableTimer:
 		except Exception:
 			pass
 
-		#we're done here, just quit
-
 	def _wait(self, seconds):
-		milliseconds = int(seconds*1000)
+		milliseconds = int(seconds * 1000)
 		if milliseconds > 0:
 			res = win32event.WaitForSingleObject(self.stop_event, milliseconds)
-			if res == win32event.WAIT_OBJECT_0: raise Exception
-			if res == win32event.WAIT_TIMEOUT: pass
+			if res == win32event.WAIT_OBJECT_0:
+				raise Exception
+			if res == win32event.WAIT_TIMEOUT:
+				pass
 		win32event.SetEvent(self.signal_event)
 
 	@staticmethod

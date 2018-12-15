@@ -1,5 +1,6 @@
 from __future__ import absolute_import, unicode_literals
 
+import numbers
 from functools import reduce
 
 
@@ -25,6 +26,7 @@ def get_bit_values(number, size=32):
 	number += 2**size
 	return list(map(int, bin(number)[-size:]))
 
+
 def gen_bit_values(number):
 	"""
 	Return a zero or one for each bit of a numeric value up to the most
@@ -36,6 +38,7 @@ def gen_bit_values(number):
 	digits = bin(number)[2:]
 	return map(int, reversed(digits))
 
+
 def coalesce(bits):
 	"""
 	Take a sequence of bits, most significant first, and
@@ -46,6 +49,7 @@ def coalesce(bits):
 	"""
 	operation = lambda a, b: (a << 1 | b)
 	return reduce(operation, bits)
+
 
 class Flags(object):
 	"""
@@ -96,6 +100,7 @@ class Flags(object):
 			index = self._names.index(key)
 			return self._values[index]
 
+
 class BitMask(type):
 	"""
 	A metaclass to create a bitmask with attributes. Subclass an int and
@@ -119,12 +124,28 @@ class BitMask(type):
 	>>> b2 = MyBits(8)
 	>>> any([b2.a, b2.b, b2.c])
 	False
+
+	If the instance defines methods, they won't be wrapped in
+	properties.
+
+	>>> ns['get_value'] = classmethod(lambda cls: 'some value')
+	>>> ns['prop'] = property(lambda self: 'a property')
+	>>> MyBits = BitMask(str('MyBits'), (int,), ns)
+
+	>>> MyBits(3).get_value()
+	'some value'
+	>>> MyBits(3).prop
+	'a property'
 	"""
 
 	def __new__(cls, name, bases, attrs):
+		def make_property(name, value):
+			if name.startswith('_') or not isinstance(value, numbers.Number):
+				return value
+			return property(lambda self, value=value: bool(self & value))
+
 		newattrs = dict(
-			(attr, property(lambda self, value=value: bool(self & value)))
-			for attr, value in attrs.items()
-			if not attr.startswith('_')
+			(name, make_property(name, value))
+			for name, value in attrs.items()
 		)
 		return type.__new__(cls, name, bases, newattrs)

@@ -3,6 +3,7 @@ from ctypes import WinError
 
 from .api import memory
 
+
 class LockedMemory(object):
 	def __init__(self, handle):
 		self.handle = handle

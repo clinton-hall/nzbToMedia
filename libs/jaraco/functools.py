@@ -1,8 +1,16 @@
-from __future__ import absolute_import, unicode_literals, print_function, division
+from __future__ import (
+	absolute_import, unicode_literals, print_function, division,
+)
 
 import functools
 import time
 import warnings
+import inspect
+import collections
+from itertools import count
+
+__metaclass__ = type
+
 
 try:
 	from functools import lru_cache
@@ -16,13 +24,17 @@ except ImportError:
 			warnings.warn("No lru_cache available")
 
 
+import more_itertools.recipes
+
+
 def compose(*funcs):
 	"""
 	Compose any number of unary functions into a single unary function.
 
 	>>> import textwrap
 	>>> from six import text_type
-	>>> text_type.strip(textwrap.dedent(compose.__doc__)) == compose(text_type.strip, textwrap.dedent)(compose.__doc__)
+	>>> stripped = text_type.strip(textwrap.dedent(compose.__doc__))
+	>>> compose(text_type.strip, textwrap.dedent)(compose.__doc__) == stripped
 	True
 
 	Compose also allows the innermost function to take arbitrary arguments.
@@ -33,7 +45,8 @@ def compose(*funcs):
 	[1.5, 2.0, 2.25, 2.4, 2.5, 2.571, 2.625, 2.667, 2.7]
 	"""
 
-	compose_two = lambda f1, f2: lambda *args, **kwargs: f1(f2(*args, **kwargs))
+	def compose_two(f1, f2):
+		return lambda *args, **kwargs: f1(f2(*args, **kwargs))
 	return functools.reduce(compose_two, funcs)
 
 
@@ -60,19 +73,36 @@ def once(func):
 	This decorator can ensure that an expensive or non-idempotent function
 	will not be expensive on subsequent calls and is idempotent.
 
-	>>> func = once(lambda a: a+3)
-	>>> func(3)
+	>>> add_three = once(lambda a: a+3)
+	>>> add_three(3)
 	6
-	>>> func(9)
+	>>> add_three(9)
 	6
-	>>> func('12')
+	>>> add_three('12')
 	6
+
+	To reset the stored value, simply clear the property ``saved_result``.
+
+	>>> del add_three.saved_result
+	>>> add_three(9)
+	12
+	>>> add_three(8)
+	12
+
+	Or invoke 'reset()' on it.
+
+	>>> add_three.reset()
+	>>> add_three(-3)
+	0
+	>>> add_three(0)
+	0
 	"""
 	@functools.wraps(func)
 	def wrapper(*args, **kwargs):
-		if not hasattr(func, 'always_returns'):
-			func.always_returns = func(*args, **kwargs)
-		return func.always_returns
+		if not hasattr(wrapper, 'saved_result'):
+			wrapper.saved_result = func(*args, **kwargs)
+		return wrapper.saved_result
+	wrapper.reset = lambda: vars(wrapper).__delitem__('saved_result')
 	return wrapper
 
 
@@ -131,17 +161,22 @@ def method_cache(method, cache_wrapper=None):
 	>>> a.method2()
 	3
 
+	Caution - do not subsequently wrap the method with another decorator, such
+	as ``@property``, which changes the semantics of the function.
+
 	See also
 	http://code.activestate.com/recipes/577452-a-memoize-decorator-for-instance-methods/
 	for another implementation and additional justification.
 	"""
 	cache_wrapper = cache_wrapper or lru_cache()
+
 	def wrapper(self, *args, **kwargs):
 		# it's the first call, replace the method with a cached, bound method
 		bound_method = functools.partial(method, self)
 		cached_method = cache_wrapper(bound_method)
 		setattr(self, method.__name__, cached_method)
 		return cached_method(*args, **kwargs)
+
 	return _special_method_cache(method, cache_wrapper) or wrapper
 
 
@@ -191,6 +226,29 @@ def apply(transform):
 	return wrap
 
 
+def result_invoke(action):
+	r"""
+	Decorate a function with an action function that is
+	invoked on the results returned from the decorated
+	function (for its side-effect), then return the original
+	result.
+
+	>>> @result_invoke(print)
+	... def add_two(a, b):
+	...     return a + b
+	>>> x = add_two(2, 3)
+	5
+	"""
+	def wrap(func):
+		@functools.wraps(func)
+		def wrapper(*args, **kwargs):
+			result = func(*args, **kwargs)
+			action(result)
+			return result
+		return wrapper
+	return wrap
+
+
 def call_aside(f, *args, **kwargs):
 	"""
 	Call a function for its side effect after initialization.
@@ -211,7 +269,7 @@ def call_aside(f, *args, **kwargs):
 	return f
 
 
-class Throttler(object):
+class Throttler:
 	"""
 	Rate-limit a function (or other callable)
 	"""
@@ -259,10 +317,143 @@ def retry_call(func, cleanup=lambda: None, retries=0, trap=()):
 	exception. On the final attempt, allow any exceptions
 	to propagate.
 	"""
-	for attempt in range(retries):
+	attempts = count() if retries == float('inf') else range(retries)
+	for attempt in attempts:
 		try:
 			return func()
 		except trap:
 			cleanup()
 
 	return func()
+
+
+def retry(*r_args, **r_kwargs):
+	"""
+	Decorator wrapper for retry_call. Accepts arguments to retry_call
+	except func and then returns a decorator for the decorated function.
+
+	Ex:
+
+	>>> @retry(retries=3)
+	... def my_func(a, b):
+	...     "this is my funk"
+	...     print(a, b)
+	>>> my_func.__doc__
+	'this is my funk'
+	"""
+	def decorate(func):
+		@functools.wraps(func)
+		def wrapper(*f_args, **f_kwargs):
+			bound = functools.partial(func, *f_args, **f_kwargs)
+			return retry_call(bound, *r_args, **r_kwargs)
+		return wrapper
+	return decorate
+
+
+def print_yielded(func):
+	"""
+	Convert a generator into a function that prints all yielded elements
+
+	>>> @print_yielded
+	... def x():
+	...     yield 3; yield None
+	>>> x()
+	3
+	None
+	"""
+	print_all = functools.partial(map, print)
+	print_results = compose(more_itertools.recipes.consume, print_all, func)
+	return functools.wraps(func)(print_results)
+
+
+def pass_none(func):
+	"""
+	Wrap func so it's not called if its first param is None
+
+	>>> print_text = pass_none(print)
+	>>> print_text('text')
+	text
+	>>> print_text(None)
+	"""
+	@functools.wraps(func)
+	def wrapper(param, *args, **kwargs):
+		if param is not None:
+			return func(param, *args, **kwargs)
+	return wrapper
+
+
+def assign_params(func, namespace):
+	"""
+	Assign parameters from namespace where func solicits.
+
+	>>> def func(x, y=3):
+	...     print(x, y)
+	>>> assigned = assign_params(func, dict(x=2, z=4))
+	>>> assigned()
+	2 3
+
+	The usual errors are raised if a function doesn't receive
+	its required parameters:
+
+	>>> assigned = assign_params(func, dict(y=3, z=4))
+	>>> assigned()
+	Traceback (most recent call last):
+	TypeError: func() ...argument...
+	"""
+	try:
+		sig = inspect.signature(func)
+		params = sig.parameters.keys()
+	except AttributeError:
+		spec = inspect.getargspec(func)
+		params = spec.args
+	call_ns = {
+		k: namespace[k]
+		for k in params
+		if k in namespace
+	}
+	return functools.partial(func, **call_ns)
+
+
+def save_method_args(method):
+	"""
+	Wrap a method such that when it is called, the args and kwargs are
+	saved on the method.
+
+	>>> class MyClass:
+	...     @save_method_args
+	...     def method(self, a, b):
+	...         print(a, b)
+	>>> my_ob = MyClass()
+	>>> my_ob.method(1, 2)
+	1 2
+	>>> my_ob._saved_method.args
+	(1, 2)
+	>>> my_ob._saved_method.kwargs
+	{}
+	>>> my_ob.method(a=3, b='foo')
+	3 foo
+	>>> my_ob._saved_method.args
+	()
+	>>> my_ob._saved_method.kwargs == dict(a=3, b='foo')
+	True
+
+	The arguments are stored on the instance, allowing for
+	different instance to save different args.
+
+	>>> your_ob = MyClass()
+	>>> your_ob.method({str('x'): 3}, b=[4])
+	{'x': 3} [4]
+	>>> your_ob._saved_method.args
+	({'x': 3},)
+	>>> my_ob._saved_method.args
+	()
+	"""
+	args_and_kwargs = collections.namedtuple('args_and_kwargs', 'args kwargs')
+
+	@functools.wraps(method)
+	def wrapper(self, *args, **kwargs):
+		attr_name = '_saved_' + method.__name__
+		attr = args_and_kwargs(args, kwargs)
+		setattr(self, attr_name, attr)
+		return method(self, *args, **kwargs)
+	return wrapper

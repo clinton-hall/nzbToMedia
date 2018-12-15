@@ -14,19 +14,20 @@ from jaraco.windows.api import errors, inet
 
 def GetAdaptersAddresses():
 	size = ctypes.c_ulong()
-	res = inet.GetAdaptersAddresses(0,0,None, None,size)
+	res = inet.GetAdaptersAddresses(0, 0, None, None, size)
 	if res != errors.ERROR_BUFFER_OVERFLOW:
 		raise RuntimeError("Error getting structure length (%d)" % res)
 	print(size.value)
 	pointer_type = ctypes.POINTER(inet.IP_ADAPTER_ADDRESSES)
 	buffer = ctypes.create_string_buffer(size.value)
 	struct_p = ctypes.cast(buffer, pointer_type)
-	res = inet.GetAdaptersAddresses(0,0,None, struct_p, size)
+	res = inet.GetAdaptersAddresses(0, 0, None, struct_p, size)
 	if res != errors.NO_ERROR:
 		raise RuntimeError("Error retrieving table (%d)" % res)
 	while struct_p:
 		yield struct_p.contents
 		struct_p = struct_p.contents.next
+
 
 class AllocatedTable(object):
 	"""
@@ -79,19 +80,22 @@ class AllocatedTable(object):
 		on the table size.
 		"""
 		table = self.get_table()
-		entries_array = self.row_structure*table.num_entries
+		entries_array = self.row_structure * table.num_entries
 		pointer_type = ctypes.POINTER(entries_array)
 		return ctypes.cast(table.entries, pointer_type).contents
+
 
 class InterfaceTable(AllocatedTable):
 	method = inet.GetIfTable
 	structure = inet.MIB_IFTABLE
 	row_structure = inet.MIB_IFROW
 
+
 class AddressTable(AllocatedTable):
 	method = inet.GetIpAddrTable
 	structure = inet.MIB_IPADDRTABLE
 	row_structure = inet.MIB_IPADDRROW
+
 
 class AddressManager(object):
 	@staticmethod
@@ -100,7 +104,8 @@ class AddressManager(object):
 		return ':'.join(hex_bytes)
 
 	def get_host_mac_address_strings(self):
-		return (self.hardware_address_to_string(addr)
+		return (
+			self.hardware_address_to_string(addr)
 			for addr in self.get_host_mac_addresses())
 
 	def get_host_ip_address_strings(self):
@@ -110,10 +115,10 @@ class AddressManager(object):
 		return (
 			entry.physical_address
 			for entry in InterfaceTable().entries
-			)
+		)
 
 	def get_host_ip_addresses(self):
 		return (
 			entry.address
 			for entry in AddressTable().entries
-			)
+		)

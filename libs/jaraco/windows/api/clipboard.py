@@ -45,3 +45,9 @@ GetClipboardData.restype = ctypes.wintypes.HANDLE
 SetClipboardData = ctypes.windll.user32.SetClipboardData
 SetClipboardData.argtypes = ctypes.wintypes.UINT, ctypes.wintypes.HANDLE
 SetClipboardData.restype = ctypes.wintypes.HANDLE
+
+OpenClipboard = ctypes.windll.user32.OpenClipboard
+OpenClipboard.argtypes = ctypes.wintypes.HANDLE,
+OpenClipboard.restype = ctypes.wintypes.BOOL
+
+ctypes.windll.user32.CloseClipboard.restype = ctypes.wintypes.BOOL

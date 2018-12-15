@@ -7,23 +7,30 @@ from .api import security
 from .api import privilege
 from .api import process
 
+
 def get_process_token():
 	"""
 	Get the current process token
 	"""
 	token = wintypes.HANDLE()
-	res = process.OpenProcessToken(process.GetCurrentProcess(), process.TOKEN_ALL_ACCESS, token)
-	if not res > 0: raise RuntimeError("Couldn't get process token")
+	res = process.OpenProcessToken(
+		process.GetCurrentProcess(), process.TOKEN_ALL_ACCESS, token)
+	if not res > 0:
+		raise RuntimeError("Couldn't get process token")
 	return token
+
 
 def get_symlink_luid():
 	"""
 	Get the LUID for the SeCreateSymbolicLinkPrivilege
 	"""
 	symlink_luid = privilege.LUID()
-	res = privilege.LookupPrivilegeValue(None, "SeCreateSymbolicLinkPrivilege", symlink_luid)
-	if not res > 0: raise RuntimeError("Couldn't lookup privilege value")
+	res = privilege.LookupPrivilegeValue(
+		None, "SeCreateSymbolicLinkPrivilege", symlink_luid)
+	if not res > 0:
+		raise RuntimeError("Couldn't lookup privilege value")
 	return symlink_luid
+
 
 def get_privilege_information():
 	"""
@@ -38,7 +45,7 @@ def get_privilege_information():
 		None,
 		0,
 		return_length,
-		]
+	]
 
 	res = privilege.GetTokenInformation(*params)
 
@@ -51,8 +58,10 @@ def get_privilege_information():
 	res = privilege.GetTokenInformation(*params)
 	assert res > 0, "Error in second GetTokenInformation (%d)" % res
 
-	privileges = ctypes.cast(buffer, ctypes.POINTER(privilege.TOKEN_PRIVILEGES)).contents
+	privileges = ctypes.cast(
+		buffer, ctypes.POINTER(privilege.TOKEN_PRIVILEGES)).contents
 	return privileges
+
 
 def report_privilege_information():
 	"""
@@ -61,6 +70,7 @@ def report_privilege_information():
 	privileges = get_privilege_information()
 	print("found {0} privileges".format(privileges.count))
 	tuple(map(print, privileges))
+
 
 def enable_symlink_privilege():
 	"""
@@ -84,8 +94,10 @@ def enable_symlink_privilege():
 	ERROR_NOT_ALL_ASSIGNED = 1300
 	return ctypes.windll.kernel32.GetLastError() != ERROR_NOT_ALL_ASSIGNED
 
+
 class PolicyHandle(wintypes.HANDLE):
 	pass
+
 
 class LSA_UNICODE_STRING(ctypes.Structure):
 	_fields_ = [
@@ -94,14 +106,19 @@ class LSA_UNICODE_STRING(ctypes.Structure):
 		('buffer', ctypes.wintypes.LPWSTR),
 	]
 
+
 def OpenPolicy(system_name, object_attributes, access_mask):
 	policy = PolicyHandle()
-	raise NotImplementedError("Need to construct structures for parameters "
-		"(see http://msdn.microsoft.com/en-us/library/windows/desktop/aa378299%28v=vs.85%29.aspx)")
-	res = ctypes.windll.advapi32.LsaOpenPolicy(system_name, object_attributes,
+	raise NotImplementedError(
+		"Need to construct structures for parameters "
+		"(see http://msdn.microsoft.com/en-us/library/windows"
+		"/desktop/aa378299%28v=vs.85%29.aspx)")
+	res = ctypes.windll.advapi32.LsaOpenPolicy(
+		system_name, object_attributes,
 		access_mask, ctypes.byref(policy))
 	assert res == 0, "Error status {res}".format(**vars())
 	return policy
+
 
 def grant_symlink_privilege(who, machine=''):
 	"""
@@ -113,10 +130,13 @@ def grant_symlink_privilege(who, machine=''):
 	policy = OpenPolicy(machine, flags)
 	return policy
 
+
 def main():
 	assigned = enable_symlink_privilege()
 	msg = ['failure', 'success'][assigned]
 
 	print("Symlink privilege assignment completed with {0}".format(msg))
 
-if __name__ == '__main__': main()
+
+if __name__ == '__main__':
+	main()

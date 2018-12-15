@@ -3,19 +3,23 @@ import ctypes.wintypes
 from jaraco.windows.error import handle_nonzero_success
 from .api import security
 
+
 def GetTokenInformation(token, information_class):
 	"""
 	Given a token, get the token information for it.
 	"""
 	data_size = ctypes.wintypes.DWORD()
-	ctypes.windll.advapi32.GetTokenInformation(token, information_class.num,
+	ctypes.windll.advapi32.GetTokenInformation(
+		token, information_class.num,
 		0, 0, ctypes.byref(data_size))
 	data = ctypes.create_string_buffer(data_size.value)
-	handle_nonzero_success(ctypes.windll.advapi32.GetTokenInformation(token,
+	handle_nonzero_success(ctypes.windll.advapi32.GetTokenInformation(
+		token,
 		information_class.num,
 		ctypes.byref(data), ctypes.sizeof(data),
 		ctypes.byref(data_size)))
 	return ctypes.cast(data, ctypes.POINTER(security.TOKEN_USER)).contents
+
 
 def OpenProcessToken(proc_handle, access):
 	result = ctypes.wintypes.HANDLE()
@@ -23,6 +27,7 @@ def OpenProcessToken(proc_handle, access):
 	handle_nonzero_success(ctypes.windll.advapi32.OpenProcessToken(
 		proc_handle, access, ctypes.byref(result)))
 	return result
+
 
 def get_current_user():
 	"""
@@ -34,6 +39,7 @@ def get_current_user():
 	)
 	return GetTokenInformation(process, security.TOKEN_USER)
 
+
 def get_security_attributes_for_user(user=None):
 	"""
 	Return a SECURITY_ATTRIBUTES structure with the SID set to the
@@ -42,7 +48,8 @@ def get_security_attributes_for_user(user=None):
 	if user is None:
 		user = get_current_user()
 
-	assert isinstance(user, security.TOKEN_USER), "user must be TOKEN_USER instance"
+	assert isinstance(user, security.TOKEN_USER), (
+		"user must be TOKEN_USER instance")
 
 	SD = security.SECURITY_DESCRIPTOR()
 	SA = security.SECURITY_ATTRIBUTES()
@@ -51,8 +58,10 @@ def get_security_attributes_for_user(user=None):
 	SA.descriptor = SD
 	SA.bInheritHandle = 1
 
-	ctypes.windll.advapi32.InitializeSecurityDescriptor(ctypes.byref(SD),
+	ctypes.windll.advapi32.InitializeSecurityDescriptor(
+		ctypes.byref(SD),
 		security.SECURITY_DESCRIPTOR.REVISION)
-	ctypes.windll.advapi32.SetSecurityDescriptorOwner(ctypes.byref(SD),
+	ctypes.windll.advapi32.SetSecurityDescriptorOwner(
+		ctypes.byref(SD),
 		user.SID, 0)
 	return SA

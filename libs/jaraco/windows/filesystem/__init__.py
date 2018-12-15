@@ -7,18 +7,23 @@ import sys
 import operator
 import collections
 import functools
-from ctypes import (POINTER, byref, cast, create_unicode_buffer,
+import stat
+from ctypes import (
+	POINTER, byref, cast, create_unicode_buffer,
 	create_string_buffer, windll)
+from ctypes.wintypes import LPWSTR
+import nt
+import posixpath
 
 import six
 from six.moves import builtins, filter, map
 
 from jaraco.structures import binary
-from jaraco.text import local_format as lf
 
 from jaraco.windows.error import WindowsError, handle_nonzero_success
 import jaraco.windows.api.filesystem as api
 from jaraco.windows import reparse
+
 
 def mklink():
 	"""
@@ -27,7 +32,8 @@ def mklink():
 	"""
 	from optparse import OptionParser
 	parser = OptionParser(usage="usage: %prog [options] link target")
-	parser.add_option('-d', '--directory',
+	parser.add_option(
+		'-d', '--directory',
 		help="Target is a directory (only necessary if not present)",
 		action="store_true")
 	options, args = parser.parse_args()
@@ -38,6 +44,7 @@ def mklink():
 	symlink(target, link, options.directory)
 	sys.stdout.write("Symbolic link created: %(link)s --> %(target)s\n" % vars())
 
+
 def _is_target_a_directory(link, rel_target):
 	"""
 	If creating a symlink from link to a target, determine if target
@@ -46,21 +53,27 @@ def _is_target_a_directory(link, rel_target):
 	target = os.path.join(os.path.dirname(link), rel_target)
 	return os.path.isdir(target)
 
-def symlink(target, link, target_is_directory = False):
+
+def symlink(target, link, target_is_directory=False):
 	"""
 	An implementation of os.symlink for Windows (Vista and greater)
 	"""
-	target_is_directory = (target_is_directory or
-		_is_target_a_directory(link, target))
+	target_is_directory = (
+		target_is_directory or
+		_is_target_a_directory(link, target)
+	)
 	# normalize the target (MS symlinks don't respect forward slashes)
 	target = os.path.normpath(target)
-	handle_nonzero_success(api.CreateSymbolicLink(link, target, target_is_directory))
+	handle_nonzero_success(
+		api.CreateSymbolicLink(link, target, target_is_directory))
+
 
 def link(target, link):
 	"""
 	Establishes a hard link between an existing file and a new file.
 	"""
 	handle_nonzero_success(api.CreateHardLink(link, target, None))
+
 
 def is_reparse_point(path):
 	"""
@@ -74,9 +87,11 @@ def is_reparse_point(path):
 		and bool(res & api.FILE_ATTRIBUTE_REPARSE_POINT)
 	)
 
+
 def islink(path):
 	"Determine if the given path is a symlink"
 	return is_reparse_point(path) and is_symlink(path)
+
 
 def _patch_path(path):
 	"""
@@ -86,12 +101,14 @@ def _patch_path(path):
 	See http://msdn.microsoft.com/en-us/library/aa365247%28v=vs.85%29.aspx for
 	details.
 	"""
-	if path.startswith('\\\\?\\'): return path
+	if path.startswith('\\\\?\\'):
+		return path
 	abs_path = os.path.abspath(path)
 	if not abs_path[1] == ':':
 		# python doesn't include the drive letter, but \\?\ requires it
 		abs_path = os.getcwd()[:2] + abs_path
 	return '\\\\?\\' + abs_path
+
 
 def is_symlink(path):
 	"""
@@ -102,10 +119,12 @@ def is_symlink(path):
 		return _is_symlink(next(find_files(path)))
 	except WindowsError as orig_error:
 		tmpl = "Error accessing {path}: {orig_error.message}"
-		raise builtins.WindowsError(lf(tmpl))
+		raise builtins.WindowsError(tmpl.format(**locals()))
+
 
 def _is_symlink(find_data):
 	return find_data.reserved[0] == api.IO_REPARSE_TAG_SYMLINK
+
 
 def find_files(spec):
 	"""
@@ -133,10 +152,12 @@ def find_files(spec):
 			error = WindowsError()
 			if error.code == api.ERROR_NO_MORE_FILES:
 				break
-			else: raise error
+			else:
+				raise error
 	# todo: how to close handle when generator is destroyed?
 	# hint: catch GeneratorExit
 	windll.kernel32.FindClose(handle)
+
 
 def get_final_path(path):
 	"""
@@ -150,7 +171,9 @@ def get_final_path(path):
 	trace_symlink_target instead.
 	"""
 	desired_access = api.NULL
-	share_mode = api.FILE_SHARE_READ | api.FILE_SHARE_WRITE | api.FILE_SHARE_DELETE
+	share_mode = (
+		api.FILE_SHARE_READ | api.FILE_SHARE_WRITE | api.FILE_SHARE_DELETE
+	)
 	security_attributes = api.LPSECURITY_ATTRIBUTES()  # NULL pointer
 	hFile = api.CreateFile(
 		path,
@@ -160,15 +183,17 @@ def get_final_path(path):
 		api.OPEN_EXISTING,
 		api.FILE_FLAG_BACKUP_SEMANTICS,
 		api.NULL,
-		)
+	)
 
 	if hFile == api.INVALID_HANDLE_VALUE:
 		raise WindowsError()
 
-	buf_size = api.GetFinalPathNameByHandle(hFile, api.LPWSTR(), 0, api.VOLUME_NAME_DOS)
+	buf_size = api.GetFinalPathNameByHandle(
+		hFile, LPWSTR(), 0, api.VOLUME_NAME_DOS)
 	handle_nonzero_success(buf_size)
 	buf = create_unicode_buffer(buf_size)
-	result_length = api.GetFinalPathNameByHandle(hFile, buf, len(buf), api.VOLUME_NAME_DOS)
+	result_length = api.GetFinalPathNameByHandle(
+		hFile, buf, len(buf), api.VOLUME_NAME_DOS)
 
 	assert result_length < len(buf)
 	handle_nonzero_success(result_length)
@@ -176,21 +201,82 @@ def get_final_path(path):
 
 	return buf[:result_length]
 
+
+def compat_stat(path):
+	"""
+	Generate stat as found on Python 3.2 and later.
+	"""
+	stat = os.stat(path)
+	info = get_file_info(path)
+	# rewrite st_ino, st_dev, and st_nlink based on file info
+	return nt.stat_result(
+		(stat.st_mode,) +
+		(info.file_index, info.volume_serial_number, info.number_of_links) +
+		stat[4:]
+	)
+
+
+def samefile(f1, f2):
+	"""
+	Backport of samefile from Python 3.2 with support for Windows.
+	"""
+	return posixpath.samestat(compat_stat(f1), compat_stat(f2))
+
+
+def get_file_info(path):
+	# open the file the same way CPython does in posixmodule.c
+	desired_access = api.FILE_READ_ATTRIBUTES
+	share_mode = 0
+	security_attributes = None
+	creation_disposition = api.OPEN_EXISTING
+	flags_and_attributes = (
+		api.FILE_ATTRIBUTE_NORMAL |
+		api.FILE_FLAG_BACKUP_SEMANTICS |
+		api.FILE_FLAG_OPEN_REPARSE_POINT
+	)
+	template_file = None
+
+	handle = api.CreateFile(
+		path,
+		desired_access,
+		share_mode,
+		security_attributes,
+		creation_disposition,
+		flags_and_attributes,
+		template_file,
+	)
+
+	if handle == api.INVALID_HANDLE_VALUE:
+		raise WindowsError()
+
+	info = api.BY_HANDLE_FILE_INFORMATION()
+	res = api.GetFileInformationByHandle(handle, info)
+	handle_nonzero_success(res)
+	handle_nonzero_success(api.CloseHandle(handle))
+
+	return info
+
+
 def GetBinaryType(filepath):
 	res = api.DWORD()
 	handle_nonzero_success(api._GetBinaryType(filepath, res))
 	return res
 
+
 def _make_null_terminated_list(obs):
 	obs = _makelist(obs)
-	if obs is None: return
+	if obs is None:
+		return
 	return u'\x00'.join(obs) + u'\x00\x00'
 
+
 def _makelist(ob):
-	if ob is None: return
+	if ob is None:
+		return
 	if not isinstance(ob, (list, tuple, set)):
 		return [ob]
 	return ob
+
 
 def SHFileOperation(operation, from_, to=None, flags=[]):
 	flags = functools.reduce(operator.or_, flags, 0)
@@ -200,6 +286,7 @@ def SHFileOperation(operation, from_, to=None, flags=[]):
 	res = api._SHFileOperation(params)
 	if res != 0:
 		raise RuntimeError("SHFileOperation returned %d" % res)
+
 
 def join(*paths):
 	r"""
@@ -214,17 +301,17 @@ def join(*paths):
 	drive = next(filter(None, reversed(drives)), '')
 	return os.path.join(drive, os.path.join(*paths))
 
+
 def resolve_path(target, start=os.path.curdir):
 	r"""
 	Find a path from start to target where target is relative to start.
 
-	>>> orig_wd = os.getcwd()
-	>>> os.chdir('c:\\windows') # so we know what the working directory is
+	>>> tmp = str(getfixture('tmpdir_as_cwd'))
 
 	>>> findpath('d:\\')
 	'd:\\'
 
-	>>> findpath('d:\\', 'c:\\windows')
+	>>> findpath('d:\\', tmp)
 	'd:\\'
 
 	>>> findpath('\\bar', 'd:\\')
@@ -239,11 +326,11 @@ def resolve_path(target, start=os.path.curdir):
 	>>> findpath('\\baz', 'd:\\foo\\bar') # fails with '\\baz'
 	'd:\\baz'
 
-	>>> os.path.abspath(findpath('\\bar'))
+	>>> os.path.abspath(findpath('\\bar')).lower()
 	'c:\\bar'
 
 	>>> os.path.abspath(findpath('bar'))
-	'c:\\windows\\bar'
+	'...\\bar'
 
 	>>> findpath('..', 'd:\\foo\\bar')
 	'd:\\foo'
@@ -254,7 +341,9 @@ def resolve_path(target, start=os.path.curdir):
 	"""
 	return os.path.normpath(join(start, target))
 
+
 findpath = resolve_path
+
 
 def trace_symlink_target(link):
 	"""
@@ -273,6 +362,7 @@ def trace_symlink_target(link):
 		link = resolve_path(link, orig)
 	return link
 
+
 def readlink(link):
 	"""
 	readlink(link) -> target
@@ -286,12 +376,13 @@ def readlink(link):
 		api.OPEN_EXISTING,
 		api.FILE_FLAG_OPEN_REPARSE_POINT | api.FILE_FLAG_BACKUP_SEMANTICS,
 		None,
-		)
+	)
 
 	if handle == api.INVALID_HANDLE_VALUE:
 		raise WindowsError()
 
-	res = reparse.DeviceIoControl(handle, api.FSCTL_GET_REPARSE_POINT, None, 10240)
+	res = reparse.DeviceIoControl(
+		handle, api.FSCTL_GET_REPARSE_POINT, None, 10240)
 
 	bytes = create_string_buffer(res)
 	p_rdb = cast(bytes, POINTER(api.REPARSE_DATA_BUFFER))
@@ -301,6 +392,7 @@ def readlink(link):
 
 	handle_nonzero_success(api.CloseHandle(handle))
 	return rdb.get_substitute_name()
+
 
 def patch_os_module():
 	"""
@@ -313,6 +405,7 @@ def patch_os_module():
 	if not hasattr(os, 'readlink'):
 		os.readlink = readlink
 
+
 def find_symlinks(root):
 	for dirpath, dirnames, filenames in os.walk(root):
 		for name in dirnames + filenames:
@@ -322,6 +415,7 @@ def find_symlinks(root):
 				# don't traverse symlinks
 				if name in dirnames:
 					dirnames.remove(name)
+
 
 def find_symlinks_cmd():
 	"""
@@ -333,7 +427,8 @@ def find_symlinks_cmd():
 	from textwrap import dedent
 	parser = OptionParser(usage=dedent(find_symlinks_cmd.__doc__).strip())
 	options, args = parser.parse_args()
-	if not args: args = ['.']
+	if not args:
+		args = ['.']
 	root = args.pop()
 	if args:
 		parser.error("unexpected argument(s)")
@@ -346,8 +441,19 @@ def find_symlinks_cmd():
 	except KeyboardInterrupt:
 		pass
 
+
 @six.add_metaclass(binary.BitMask)
 class FileAttributes(int):
+
+	# extract the values from the stat module on Python 3.5
+	# and later.
+	locals().update(
+		(name.split('FILE_ATTRIBUTES_')[1].lower(), value)
+		for name, value in vars(stat).items()
+		if name.startswith('FILE_ATTRIBUTES_')
+	)
+
+	# For Python 3.4 and earlier, define the constants here
 	archive = 0x20
 	compressed = 0x800
 	hidden = 0x2
@@ -364,11 +470,16 @@ class FileAttributes(int):
 	temporary = 0x100
 	virtual = 0x10000
 
-def GetFileAttributes(filepath):
-	attrs = api.GetFileAttributes(filepath)
-	if attrs == api.INVALID_FILE_ATTRIBUTES:
-		raise WindowsError()
-	return FileAttributes(attrs)
+	@classmethod
+	def get(cls, filepath):
+		attrs = api.GetFileAttributes(filepath)
+		if attrs == api.INVALID_FILE_ATTRIBUTES:
+			raise WindowsError()
+		return cls(attrs)
+
+
+GetFileAttributes = FileAttributes.get
+
 
 def SetFileAttributes(filepath, *attrs):
 	"""
@@ -382,8 +493,8 @@ def SetFileAttributes(filepath, *attrs):
 	"""
 	nice_names = collections.defaultdict(
 		lambda key: key,
-		hidden = 'FILE_ATTRIBUTE_HIDDEN',
-		read_only = 'FILE_ATTRIBUTE_READONLY',
+		hidden='FILE_ATTRIBUTE_HIDDEN',
+		read_only='FILE_ATTRIBUTE_READONLY',
 	)
 	flags = (getattr(api, nice_names[attr], attr) for attr in attrs)
 	flags = functools.reduce(operator.or_, flags)

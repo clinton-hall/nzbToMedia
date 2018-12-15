@@ -1,7 +1,8 @@
 """
 Windows Services support for controlling Windows Services.
 
-Based on http://code.activestate.com/recipes/115875-controlling-windows-services/
+Based on http://code.activestate.com
+/recipes/115875-controlling-windows-services/
 """
 
 from __future__ import print_function
@@ -12,6 +13,7 @@ import time
 import win32api
 import win32con
 import win32service
+
 
 class Service(object):
 	"""
@@ -47,7 +49,8 @@ class Service(object):
 		pause:			Pauses service (Only if service supports feature).
 		resume:			Resumes service that has been paused.
 		status:			Queries current status of service.
-		fetchstatus:	Continually queries service until requested status(STARTING, RUNNING,
+		fetchstatus:	Continually queries service until requested
+							status(STARTING, RUNNING,
 							STOPPING & STOPPED) is met or timeout value(in seconds) reached.
 							Default timeout value is infinite.
 		infotype:		Queries service for process type. (Single, shared and/or
@@ -64,18 +67,21 @@ class Service(object):
 
 	def __init__(self, service, machinename=None, dbname=None):
 		self.userv = service
-		self.scmhandle = win32service.OpenSCManager(machinename, dbname, win32service.SC_MANAGER_ALL_ACCESS)
+		self.scmhandle = win32service.OpenSCManager(
+			machinename, dbname, win32service.SC_MANAGER_ALL_ACCESS)
 		self.sserv, self.lserv = self.getname()
 		if (self.sserv or self.lserv) is None:
 			sys.exit()
-		self.handle = win32service.OpenService(self.scmhandle, self.sserv, win32service.SERVICE_ALL_ACCESS)
+		self.handle = win32service.OpenService(
+			self.scmhandle, self.sserv, win32service.SERVICE_ALL_ACCESS)
 		self.sccss = "SYSTEM\\CurrentControlSet\\Services\\"
 
 	def start(self):
 		win32service.StartService(self.handle, None)
 
 	def stop(self):
-		self.stat = win32service.ControlService(self.handle, win32service.SERVICE_CONTROL_STOP)
+		self.stat = win32service.ControlService(
+			self.handle, win32service.SERVICE_CONTROL_STOP)
 
 	def restart(self):
 		self.stop()
@@ -83,29 +89,31 @@ class Service(object):
 		self.start()
 
 	def pause(self):
-		self.stat = win32service.ControlService(self.handle, win32service.SERVICE_CONTROL_PAUSE)
+		self.stat = win32service.ControlService(
+			self.handle, win32service.SERVICE_CONTROL_PAUSE)
 
 	def resume(self):
-		self.stat = win32service.ControlService(self.handle, win32service.SERVICE_CONTROL_CONTINUE)
+		self.stat = win32service.ControlService(
+			self.handle, win32service.SERVICE_CONTROL_CONTINUE)
 
-	def status(self, prn = 0):
+	def status(self, prn=0):
 		self.stat = win32service.QueryServiceStatus(self.handle)
-		if self.stat[1]==win32service.SERVICE_STOPPED:
+		if self.stat[1] == win32service.SERVICE_STOPPED:
 			if prn == 1:
 				print("The %s service is stopped." % self.lserv)
 			else:
 				return "STOPPED"
-		elif self.stat[1]==win32service.SERVICE_START_PENDING:
+		elif self.stat[1] == win32service.SERVICE_START_PENDING:
 			if prn == 1:
 				print("The %s service is starting." % self.lserv)
 			else:
 				return "STARTING"
-		elif self.stat[1]==win32service.SERVICE_STOP_PENDING:
+		elif self.stat[1] == win32service.SERVICE_STOP_PENDING:
 			if prn == 1:
 				print("The %s service is stopping." % self.lserv)
 			else:
 				return "STOPPING"
-		elif self.stat[1]==win32service.SERVICE_RUNNING:
+		elif self.stat[1] == win32service.SERVICE_RUNNING:
 			if prn == 1:
 				print("The %s service is running." % self.lserv)
 			else:
@@ -116,6 +124,7 @@ class Service(object):
 		if timeout is not None:
 			timeout = int(timeout)
 			timeout *= 2
+
 		def to(timeout):
 			time.sleep(.5)
 			if timeout is not None:
@@ -127,11 +136,11 @@ class Service(object):
 		if self.fstatus == "STOPPED":
 			while 1:
 				self.stat = win32service.QueryServiceStatus(self.handle)
-				if self.stat[1]==win32service.SERVICE_STOPPED:
+				if self.stat[1] == win32service.SERVICE_STOPPED:
 					self.fstate = "STOPPED"
 					break
 				else:
-					timeout=to(timeout)
+					timeout = to(timeout)
 					if timeout == "TO":
 						return "TIMEDOUT"
 						break

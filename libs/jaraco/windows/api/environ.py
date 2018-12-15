@@ -2,7 +2,7 @@ import ctypes.wintypes
 
 SetEnvironmentVariable = ctypes.windll.kernel32.SetEnvironmentVariableW
 SetEnvironmentVariable.restype = ctypes.wintypes.BOOL
-SetEnvironmentVariable.argtypes = [ctypes.wintypes.LPCWSTR]*2
+SetEnvironmentVariable.argtypes = [ctypes.wintypes.LPCWSTR] * 2
 
 GetEnvironmentVariable = ctypes.windll.kernel32.GetEnvironmentVariableW
 GetEnvironmentVariable.restype = ctypes.wintypes.BOOL

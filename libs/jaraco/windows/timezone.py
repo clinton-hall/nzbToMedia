@@ -8,6 +8,7 @@ from ctypes.wintypes import WORD, WCHAR, BOOL, LONG
 from jaraco.windows.util import Extended
 from jaraco.collections import RangeMap
 
+
 class AnyDict(object):
 	"A dictionary that returns the same value regardless of key"
 
@@ -16,6 +17,7 @@ class AnyDict(object):
 
 	def __getitem__(self, key):
 		return self.value
+
 
 class SYSTEMTIME(Extended, ctypes.Structure):
 	_fields_ = [
@@ -29,6 +31,7 @@ class SYSTEMTIME(Extended, ctypes.Structure):
 		('millisecond', WORD),
 	]
 
+
 class REG_TZI_FORMAT(Extended, ctypes.Structure):
 	_fields_ = [
 		('bias', LONG),
@@ -38,16 +41,18 @@ class REG_TZI_FORMAT(Extended, ctypes.Structure):
 		('daylight_start', SYSTEMTIME),
 	]
 
+
 class TIME_ZONE_INFORMATION(Extended, ctypes.Structure):
 	_fields_ = [
 		('bias', LONG),
-		('standard_name', WCHAR*32),
+		('standard_name', WCHAR * 32),
 		('standard_start', SYSTEMTIME),
 		('standard_bias', LONG),
-		('daylight_name', WCHAR*32),
+		('daylight_name', WCHAR * 32),
 		('daylight_start', SYSTEMTIME),
 		('daylight_bias', LONG),
 	]
+
 
 class DYNAMIC_TIME_ZONE_INFORMATION(TIME_ZONE_INFORMATION):
 	"""
@@ -70,7 +75,7 @@ class DYNAMIC_TIME_ZONE_INFORMATION(TIME_ZONE_INFORMATION):
 	"""
 	_fields_ = [
 		# ctypes automatically includes the fields from the parent
-		('key_name', WCHAR*128),
+		('key_name', WCHAR * 128),
 		('dynamic_daylight_time_disabled', BOOL),
 	]
 
@@ -88,6 +93,7 @@ class DYNAMIC_TIME_ZONE_INFORMATION(TIME_ZONE_INFORMATION):
 			field_name, spec = field
 			kwargs[field_name] = arg
 		super(DYNAMIC_TIME_ZONE_INFORMATION, self).__init__(*self_args, **kwargs)
+
 
 class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 	"""
@@ -114,7 +120,7 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 			self.__init_from_other,
 			self.__init_from_reg_tzi,
 			self.__init_from_bytes,
-			)
+		)
 		for func in funcs:
 			try:
 				func(*args, **kwargs)
@@ -126,7 +132,7 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 	def __init_from_bytes(self, bytes, **kwargs):
 		reg_tzi = REG_TZI_FORMAT()
 		# todo: use buffer API in Python 3
-		buffer = buffer(bytes)
+		buffer = memoryview(bytes)
 		ctypes.memmove(ctypes.addressof(reg_tzi), buffer, len(buffer))
 		self.__init_from_reg_tzi(self, reg_tzi, **kwargs)
 
@@ -146,12 +152,14 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 			value = super(Info, other).__getattribute__(other, name)
 			setattr(self, name, value)
 		# consider instead of the loop above just copying the memory directly
-		#size = max(ctypes.sizeof(DYNAMIC_TIME_ZONE_INFO), ctypes.sizeof(other))
-		#ctypes.memmove(ctypes.addressof(self), other, size)
+		# size = max(ctypes.sizeof(DYNAMIC_TIME_ZONE_INFO), ctypes.sizeof(other))
+		# ctypes.memmove(ctypes.addressof(self), other, size)
 
 	def __getattribute__(self, attr):
 		value = super(Info, self).__getattribute__(attr)
-		make_minute_timedelta = lambda m: datetime.timedelta(minutes = m)
+
+		def make_minute_timedelta(m):
+			datetime.timedelta(minutes=m)
 		if 'bias' in attr:
 			value = make_minute_timedelta(value)
 		return value
@@ -205,10 +213,12 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 	def _locate_day(year, cutoff):
 		"""
 		Takes a SYSTEMTIME object, such as retrieved from a TIME_ZONE_INFORMATION
-		structure or call to GetTimeZoneInformation and interprets it based on the given
+		structure or call to GetTimeZoneInformation and interprets
+		it based on the given
 		year to identify the actual day.
 
-		This method is necessary because the SYSTEMTIME structure refers to a day by its
+		This method is necessary because the SYSTEMTIME structure
+		refers to a day by its
 		day of the week and week of the month (e.g. 4th saturday in March).
 
 		>>> SATURDAY = 6
@@ -227,9 +237,11 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 		week_of_month = cutoff.day
 		# so the following is the first day of that week
 		day = (week_of_month - 1) * 7 + 1
-		result = datetime.datetime(year, cutoff.month, day,
+		result = datetime.datetime(
+			year, cutoff.month, day,
 			cutoff.hour, cutoff.minute, cutoff.second, cutoff.millisecond)
-		# now the result is the correct week, but not necessarily the correct day of the week
+		# now the result is the correct week, but not necessarily
+		# the correct day of the week
 		days_to_go = (target_weekday - result.weekday()) % 7
 		result += datetime.timedelta(days_to_go)
 		# if we selected a day in the month following the target month,
@@ -238,5 +250,5 @@ class Info(DYNAMIC_TIME_ZONE_INFORMATION):
 		#  to be the last week in a month and adding the time delta might have
 		#  pushed the result into the next month.
 		while result.month == cutoff.month + 1:
-			result -= datetime.timedelta(weeks = 1)
+			result -= datetime.timedelta(weeks=1)
 		return result
