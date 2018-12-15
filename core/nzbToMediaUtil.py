@@ -1315,9 +1315,16 @@ class WindowsProcess(object):
         self.mutex = None
         self.mutexname = "nzbtomedia_{pid}".format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
         if platform.system() == 'Windows':
-            from win32.win32event import CreateMutex
-            from win32.win32api import CloseHandle, GetLastError
-            from win32.lib.winerror import ERROR_ALREADY_EXISTS
+            try:
+                from win32 import win32event, win32api
+                from win32.lib import winerror
+            except ImportError:
+                pass
+
+            from win32event import CreateMutex
+            from win32api import CloseHandle, GetLastError
+            from winerror import ERROR_ALREADY_EXISTS
+
             self.CreateMutex = CreateMutex
             self.CloseHandle = CloseHandle
             self.GetLastError = GetLastError
