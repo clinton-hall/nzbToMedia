@@ -13,8 +13,7 @@ import traceback
 import urllib
 
 import core
-import gh_api as github
-from core import logger
+from core import gh_api as github, logger
 
 
 class CheckVersion(object):
