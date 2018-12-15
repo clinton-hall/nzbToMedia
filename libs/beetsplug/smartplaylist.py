@@ -20,11 +20,13 @@ from __future__ import division, absolute_import, print_function
 
 from beets.plugins import BeetsPlugin
 from beets import ui
-from beets.util import mkdirall, normpath, syspath
+from beets.util import (mkdirall, normpath, sanitize_path, syspath,
+                        bytestring_path)
 from beets.library import Item, Album, parse_query_string
 from beets.dbcore import OrQuery
 from beets.dbcore.query import MultipleSort, ParsingError
 import os
+import six
 
 
 class SmartPlaylistPlugin(BeetsPlugin):
@@ -97,7 +99,7 @@ class SmartPlaylistPlugin(BeetsPlugin):
 
         for playlist in self.config['playlists'].get(list):
             if 'name' not in playlist:
-                self._log.warn(u"playlist configuration is missing name")
+                self._log.warning(u"playlist configuration is missing name")
                 continue
 
             playlist_data = (playlist['name'],)
@@ -106,7 +108,7 @@ class SmartPlaylistPlugin(BeetsPlugin):
                     qs = playlist.get(key)
                     if qs is None:
                         query_and_sort = None, None
-                    elif isinstance(qs, basestring):
+                    elif isinstance(qs, six.string_types):
                         query_and_sort = parse_query_string(qs, Model)
                     elif len(qs) == 1:
                         query_and_sort = parse_query_string(qs[0], Model)
@@ -133,8 +135,8 @@ class SmartPlaylistPlugin(BeetsPlugin):
                     playlist_data += (query_and_sort,)
 
             except ParsingError as exc:
-                self._log.warn(u"invalid query in playlist {}: {}",
-                               playlist['name'], exc)
+                self._log.warning(u"invalid query in playlist {}: {}",
+                                  playlist['name'], exc)
                 continue
 
             self._unmatched_playlists.add(playlist_data)
@@ -165,9 +167,13 @@ class SmartPlaylistPlugin(BeetsPlugin):
                        len(self._matched_playlists))
 
         playlist_dir = self.config['playlist_dir'].as_filename()
+        playlist_dir = bytestring_path(playlist_dir)
         relative_to = self.config['relative_to'].get()
         if relative_to:
             relative_to = normpath(relative_to)
+
+        # Maps playlist filenames to lists of track filenames.
+        m3us = {}
 
         for playlist in self._matched_playlists:
             name, (query, q_sort), (album_query, a_q_sort) = playlist
@@ -180,11 +186,11 @@ class SmartPlaylistPlugin(BeetsPlugin):
                 for album in lib.albums(album_query, a_q_sort):
                     items.extend(album.items())
 
-            m3us = {}
             # As we allow tags in the m3u names, we'll need to iterate through
             # the items and generate the correct m3u file names.
             for item in items:
                 m3u_name = item.evaluate_template(name, True)
+                m3u_name = sanitize_path(m3u_name, lib.replacements)
                 if m3u_name not in m3us:
                     m3us[m3u_name] = []
                 item_path = item.path
@@ -192,11 +198,14 @@ class SmartPlaylistPlugin(BeetsPlugin):
                     item_path = os.path.relpath(item.path, relative_to)
                 if item_path not in m3us[m3u_name]:
                     m3us[m3u_name].append(item_path)
-            # Now iterate through the m3us that we need to generate
-            for m3u in m3us:
-                m3u_path = normpath(os.path.join(playlist_dir, m3u))
-                mkdirall(m3u_path)
-                with open(syspath(m3u_path), 'w') as f:
-                    for path in m3us[m3u]:
-                        f.write(path + b'\n')
+
+        # Write all of the accumulated track lists to files.
+        for m3u in m3us:
+            m3u_path = normpath(os.path.join(playlist_dir,
+                                bytestring_path(m3u)))
+            mkdirall(m3u_path)
+            with open(syspath(m3u_path), 'wb') as f:
+                for path in m3us[m3u]:
+                    f.write(path + b'\n')
+
         self._log.info(u"{0} playlists updated", len(self._matched_playlists))

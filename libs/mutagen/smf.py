@@ -2,8 +2,9 @@
 # Copyright 2015 Christoph Reiter
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of version 2 of the GNU General Public License as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Standard MIDI File (SMF)"""
 
@@ -11,6 +12,7 @@ import struct
 
 from mutagen import StreamInfo, MutagenError
 from mutagen._file import FileType
+from mutagen._util import loadfile
 from mutagen._compat import xrange, endswith
 
 
@@ -163,27 +165,38 @@ def _read_midi_length(fileobj):
 
 
 class SMFInfo(StreamInfo):
+    """SMFInfo()
+
+    Attributes:
+        length (`float`): Length in seconds
+
+    """
 
     def __init__(self, fileobj):
         """Raises SMFError"""
 
         self.length = _read_midi_length(fileobj)
-        """Length in seconds"""
 
     def pprint(self):
         return u"SMF, %.2f seconds" % self.length
 
 
 class SMF(FileType):
-    """Standard MIDI File (SMF)"""
+    """SMF(filething)
+
+    Standard MIDI File (SMF)
+
+    Attributes:
+        info (`SMFInfo`)
+        tags: `None`
+    """
 
     _mimes = ["audio/midi", "audio/x-midi"]
 
-    def load(self, filename):
-        self.filename = filename
+    @loadfile()
+    def load(self, filething):
         try:
-            with open(filename, "rb") as h:
-                self.info = SMFInfo(h)
+            self.info = SMFInfo(filething.fileobj)
         except IOError as e:
             raise SMFError(e)
 

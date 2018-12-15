@@ -2,12 +2,17 @@
 # Copyright (C) 2005  Michael Urman
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of version 2 of the GNU General Public License as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
+
+from ._util import loadfile
 
 
 class PaddingInfo(object):
-    """Abstract padding information object.
+    """PaddingInfo()
+
+    Abstract padding information object.
 
     This will be passed to the callback function that can be used
     for saving tags.
@@ -24,15 +29,13 @@ class PaddingInfo(object):
 
     The default implementation can be accessed using the
     :meth:`get_default_padding` method in the callback.
-    """
 
-    padding = 0
-    """The amount of padding left after saving in bytes (can be negative if
-    more data needs to be added as padding is available)
+    Attributes:
+        padding (`int`): The amount of padding left after saving in bytes
+            (can be negative if more data needs to be added as padding is
+            available)
+        size (`int`): The amount of data following the padding
     """
-
-    size = 0
-    """The amount of data following the padding"""
 
     def __init__(self, padding, size):
         self.padding = padding
@@ -42,8 +45,8 @@ class PaddingInfo(object):
         """The default implementation which tries to select a reasonable
         amount of padding and which might change in future versions.
 
-        :return: Amount of padding after saving
-        :rtype: int
+        Returns:
+            int: Amount of padding after saving
         """
 
         high = 1024 * 10 + self.size // 100  # 10 KiB + 1% of trailing data
@@ -81,15 +84,21 @@ class Tags(object):
 
     def pprint(self):
         """
-        :returns: tag information
-        :rtype: mutagen.text
+        Returns:
+            text: tag information
         """
 
         raise NotImplementedError
 
 
 class Metadata(Tags):
-    """Like :class:`Tags` but for standalone tagging formats that are not
+    """Metadata(filething=None, **kwargs)
+
+    Args:
+        filething (filething): a filename or a file-like object or `None`
+            to create an empty instance (like ``ID3()``)
+
+    Like :class:`Tags` but for standalone tagging formats that are not
     solely managed by a container format.
 
     Provides methods to load, save and delete tags.
@@ -101,24 +110,37 @@ class Metadata(Tags):
         if args or kwargs:
             self.load(*args, **kwargs)
 
-    def load(self, filename, **kwargs):
+    @loadfile()
+    def load(self, filething, **kwargs):
         raise NotImplementedError
 
-    def save(self, filename=None):
-        """Save changes to a file.
+    @loadfile(writable=False)
+    def save(self, filething, **kwargs):
+        """save(filething=None, **kwargs)
 
-        :raises mutagen.MutagenError: if saving wasn't possible
+        Save changes to a file.
+
+        Args:
+            filething (filething): or `None`
+        Raises:
+            MutagenError: if saving wasn't possible
         """
 
         raise NotImplementedError
 
-    def delete(self, filename=None):
-        """Remove tags from a file.
+    @loadfile(writable=False)
+    def delete(self, filething):
+        """delete(filething=None)
+
+        Remove tags from a file.
 
         In most cases this means any traces of the tag will be removed
         from the file.
 
-        :raises mutagen.MutagenError: if deleting wasn't possible
+        Args:
+            filething (filething): or `None`
+        Raises:
+            MutagenError: if deleting wasn't possible
         """
 
         raise NotImplementedError

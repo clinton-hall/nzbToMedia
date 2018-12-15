@@ -73,7 +73,7 @@ def library_data_emitter(item):
 
 
 def update_summary(summary, tags):
-    for key, value in tags.iteritems():
+    for key, value in tags.items():
         if key not in summary:
             summary[key] = value
         elif summary[key] != value:
@@ -96,7 +96,7 @@ def print_data(data, item=None, fmt=None):
 
     path = displayable_path(item.path) if item else None
     formatted = {}
-    for key, value in data.iteritems():
+    for key, value in data.items():
         if isinstance(value, list):
             formatted[key] = u'; '.join(value)
         if value is not None:
@@ -123,7 +123,7 @@ def print_data_keys(data, item=None):
     """
     path = displayable_path(item.path) if item else None
     formatted = []
-    for key, value in data.iteritems():
+    for key, value in data.items():
         formatted.append(key)
 
     if len(formatted) == 0:
@@ -204,7 +204,8 @@ class InfoPlugin(BeetsPlugin):
                 if opts.keys_only:
                     print_data_keys(data, item)
                 else:
-                    print_data(data, item, opts.format)
+                    fmt = ui.decargs([opts.format])[0] if opts.format else None
+                    print_data(data, item, fmt)
                 first = False
 
         if opts.summarize:
@@ -230,7 +231,7 @@ def make_key_filter(include):
     def filter_(data):
         filtered = dict()
         for key, value in data.items():
-            if any(map(lambda m: m.match(key), matchers)):
+            if any([m.match(key) for m in matchers]):
                 filtered[key] = value
         return filtered
 

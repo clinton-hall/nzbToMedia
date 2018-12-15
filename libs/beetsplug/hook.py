@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2015, Adrian Sampson.
 #
@@ -17,15 +18,20 @@ from __future__ import division, absolute_import, print_function
 
 import string
 import subprocess
+import six
 
 from beets.plugins import BeetsPlugin
-from beets.ui import _arg_encoding
-from beets.util import shlex_split
+from beets.util import shlex_split, arg_encoding
 
 
 class CodingFormatter(string.Formatter):
-    """A custom string formatter that decodes the format string and it's
-    fields.
+    """A variant of `string.Formatter` that converts everything to `unicode`
+    strings.
+
+    This is necessary on Python 2, where formatting otherwise occurs on
+    bytestrings. It intercepts two points in the formatting process to decode
+    the format string and all fields using the specified encoding. If decoding
+    fails, the values are used as-is.
     """
 
     def __init__(self, coding):
@@ -57,10 +63,9 @@ class CodingFormatter(string.Formatter):
         """
         converted = super(CodingFormatter, self).convert_field(value,
                                                                conversion)
-        try:
-            converted = converted.decode(self._coding)
-        except UnicodeEncodeError:
-            pass
+
+        if isinstance(converted, bytes):
+            return converted.decode(self._coding)
 
         return converted
 
@@ -79,8 +84,8 @@ class HookPlugin(BeetsPlugin):
         for hook_index in range(len(hooks)):
             hook = self.config['hooks'][hook_index]
 
-            hook_event = hook['event'].get(unicode)
-            hook_command = hook['command'].get(unicode)
+            hook_event = hook['event'].as_str()
+            hook_command = hook['command'].as_str()
 
             self.create_and_register_hook(hook_event, hook_command)
 
@@ -90,7 +95,12 @@ class HookPlugin(BeetsPlugin):
                     self._log.error('invalid command "{0}"', command)
                     return
 
-                formatter = CodingFormatter(_arg_encoding())
+                # Use a string formatter that works on Unicode strings.
+                if six.PY2:
+                    formatter = CodingFormatter(arg_encoding())
+                else:
+                    formatter = string.Formatter()
+
                 command_pieces = shlex_split(command)
 
                 for i, piece in enumerate(command_pieces):

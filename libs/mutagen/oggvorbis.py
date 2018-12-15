@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2006 Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Read and write Ogg Vorbis comments.
 
@@ -21,7 +21,7 @@ import struct
 
 from mutagen import StreamInfo
 from mutagen._vorbis import VCommentDict
-from mutagen._util import get_size
+from mutagen._util import get_size, loadfile, convert_error
 from mutagen._tags import PaddingInfo
 from mutagen.ogg import OggPage, OggFileType, error as OggError
 
@@ -35,21 +35,26 @@ class OggVorbisHeaderError(error):
 
 
 class OggVorbisInfo(StreamInfo):
-    """Ogg Vorbis stream information."""
+    """OggVorbisInfo()
 
-    length = 0
-    """File length in seconds, as a float"""
+    Ogg Vorbis stream information.
 
+    Attributes:
+        length (`float`): File length in seconds, as a float
+        channels (`int`): Number of channels
+        bitrate (`int`): Nominal ('average') bitrate in bits per second
+        sample_Rate (`int`): Sample rate in Hz
+
+    """
+
+    length = 0.0
     channels = 0
-    """Number of channels"""
-
     bitrate = 0
-    """Nominal ('average') bitrate in bits per second, as an int"""
-
     sample_rate = 0
-    """Sample rate in Hz"""
 
     def __init__(self, fileobj):
+        """Raises ogg.error, IOError"""
+
         page = OggPage(fileobj)
         while not page.packets[0].startswith(b"\x01vorbis"):
             page = OggPage(fileobj)
@@ -76,7 +81,11 @@ class OggVorbisInfo(StreamInfo):
             self.bitrate = nominal_bitrate
 
     def _post_tags(self, fileobj):
-        page = OggPage.find_last(fileobj, self.serial)
+        """Raises ogg.error"""
+
+        page = OggPage.find_last(fileobj, self.serial, finishing=True)
+        if page is None:
+            raise OggVorbisHeaderError
         self.length = page.position / float(self.sample_rate)
 
     def pprint(self):
@@ -132,7 +141,17 @@ class OggVCommentDict(VCommentDict):
 
 
 class OggVorbis(OggFileType):
-    """An Ogg Vorbis file."""
+    """OggVorbis(filething)
+
+    Arguments:
+        filething (filething)
+
+    An Ogg Vorbis file.
+
+    Attributes:
+        info (`OggVorbisInfo`)
+        tags (`mutagen._vorbis.VCommentDict`)
+    """
 
     _Info = OggVorbisInfo
     _Tags = OggVCommentDict
@@ -140,10 +159,7 @@ class OggVorbis(OggFileType):
     _mimes = ["audio/vorbis", "audio/x-vorbis"]
 
     info = None
-    """A `OggVorbisInfo`"""
-
     tags = None
-    """A `VCommentDict`"""
 
     @staticmethod
     def score(filename, fileobj, header):
@@ -153,7 +169,19 @@ class OggVorbis(OggFileType):
 Open = OggVorbis
 
 
-def delete(filename):
-    """Remove tags from a file."""
+@convert_error(IOError, error)
+@loadfile(method=False, writable=True)
+def delete(filething):
+    """ delete(filething)
 
-    OggVorbis(filename).delete()
+    Arguments:
+        filething (filething)
+    Raises:
+        mutagen.MutagenError
+
+    Remove tags from a file.
+    """
+
+    t = OggVorbis(filething)
+    filething.fileobj.seek(0)
+    t.delete(filething)

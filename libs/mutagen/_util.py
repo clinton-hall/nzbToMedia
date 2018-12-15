@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Utility classes for Mutagen.
 
@@ -12,13 +12,262 @@ You should not rely on the interfaces here being stable. They are
 intended for internal use in Mutagen only.
 """
 
+import sys
 import struct
 import codecs
+import errno
+import decimal
+from io import BytesIO
 
+try:
+    import mmap
+except ImportError:
+    # Google App Engine has no mmap:
+    #   https://github.com/quodlibet/mutagen/issues/286
+    mmap = None
+
+from collections import namedtuple
+from contextlib import contextmanager
+from functools import wraps
 from fnmatch import fnmatchcase
 
 from ._compat import chr_, PY2, iteritems, iterbytes, integer_types, xrange, \
-    izip
+    izip, text_type, reraise
+
+
+def intround(value):
+    """Given a float returns a rounded int. Should give the same result on
+    both Py2/3
+    """
+
+    return int(decimal.Decimal.from_float(
+        value).to_integral_value(decimal.ROUND_HALF_EVEN))
+
+
+def is_fileobj(fileobj):
+    """Returns:
+        bool: if an argument passed ot mutagen should be treated as a
+            file object
+    """
+
+    return not (isinstance(fileobj, (text_type, bytes)) or
+                hasattr(fileobj, "__fspath__"))
+
+
+def verify_fileobj(fileobj, writable=False):
+    """Verifies that the passed fileobj is a file like object which
+    we can use.
+
+    Args:
+        writable (bool): verify that the file object is writable as well
+
+    Raises:
+        ValueError: In case the object is not a file object that is readable
+            (or writable if required) or is not opened in bytes mode.
+    """
+
+    try:
+        data = fileobj.read(0)
+    except Exception:
+        if not hasattr(fileobj, "read"):
+            raise ValueError("%r not a valid file object" % fileobj)
+        raise ValueError("Can't read from file object %r" % fileobj)
+
+    if not isinstance(data, bytes):
+        raise ValueError(
+            "file object %r not opened in binary mode" % fileobj)
+
+    if writable:
+        try:
+            fileobj.write(b"")
+        except Exception:
+            if not hasattr(fileobj, "write"):
+                raise ValueError("%r not a valid file object" % fileobj)
+            raise ValueError("Can't write to file object %r" % fileobj)
+
+
+def verify_filename(filename):
+    """Checks of the passed in filename has the correct type.
+
+    Raises:
+        ValueError: if not a filename
+    """
+
+    if is_fileobj(filename):
+        raise ValueError("%r not a filename" % filename)
+
+
+def fileobj_name(fileobj):
+    """
+    Returns:
+        text: A potential filename for a file object. Always a valid
+            path type, but might be empty or non-existent.
+    """
+
+    value = getattr(fileobj, "name", u"")
+    if not isinstance(value, (text_type, bytes)):
+        value = text_type(value)
+    return value
+
+
+def loadfile(method=True, writable=False, create=False):
+    """A decorator for functions taking a `filething` as a first argument.
+
+    Passes a FileThing instance as the first argument to the wrapped function.
+
+    Args:
+        method (bool): If the wrapped functions is a method
+        writable (bool): If a filename is passed opens the file readwrite, if
+            passed a file object verifies that it is writable.
+        create (bool): If passed a filename that does not exist will create
+            a new empty file.
+    """
+
+    def convert_file_args(args, kwargs):
+        filething = args[0] if args else None
+        filename = kwargs.pop("filename", None)
+        fileobj = kwargs.pop("fileobj", None)
+        return filething, filename, fileobj, args[1:], kwargs
+
+    def wrap(func):
+
+        @wraps(func)
+        def wrapper(self, *args, **kwargs):
+            filething, filename, fileobj, args, kwargs = \
+                convert_file_args(args, kwargs)
+            with _openfile(self, filething, filename, fileobj,
+                           writable, create) as h:
+                return func(self, h, *args, **kwargs)
+
+        @wraps(func)
+        def wrapper_func(*args, **kwargs):
+            filething, filename, fileobj, args, kwargs = \
+                convert_file_args(args, kwargs)
+            with _openfile(None, filething, filename, fileobj,
+                           writable, create) as h:
+                return func(h, *args, **kwargs)
+
+        return wrapper if method else wrapper_func
+
+    return wrap
+
+
+def convert_error(exc_src, exc_dest):
+    """A decorator for reraising exceptions with a different type.
+    Mostly useful for IOError.
+
+    Args:
+        exc_src (type): The source exception type
+        exc_dest (type): The target exception type.
+    """
+
+    def wrap(func):
+
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except exc_dest:
+                raise
+            except exc_src as err:
+                reraise(exc_dest, err, sys.exc_info()[2])
+
+        return wrapper
+
+    return wrap
+
+
+FileThing = namedtuple("FileThing", ["fileobj", "filename", "name"])
+"""filename is None if the source is not a filename. name is a filename which
+can be used for file type detection
+"""
+
+
+@contextmanager
+def _openfile(instance, filething, filename, fileobj, writable, create):
+    """yields a FileThing
+
+    Args:
+        filething: Either a file name, a file object or None
+        filename: Either a file name or None
+        fileobj: Either a file object or None
+        writable (bool): if the file should be opened
+        create (bool): if the file should be created if it doesn't exist.
+            implies writable
+    Raises:
+        MutagenError: In case opening the file failed
+        TypeError: in case neither a file name or a file object is passed
+    """
+
+    assert not create or writable
+
+    # to allow stacked context managers, just pass the result through
+    if isinstance(filething, FileThing):
+        filename = filething.filename
+        fileobj = filething.fileobj
+        filething = None
+
+    if filething is not None:
+        if is_fileobj(filething):
+            fileobj = filething
+        elif hasattr(filething, "__fspath__"):
+            filename = filething.__fspath__()
+            if not isinstance(filename, (bytes, text_type)):
+                raise TypeError("expected __fspath__() to return a filename")
+        else:
+            filename = filething
+
+    if instance is not None:
+        # XXX: take "not writable" as loading the file..
+        if not writable:
+            instance.filename = filename
+        elif filename is None:
+            filename = getattr(instance, "filename", None)
+
+    if fileobj is not None:
+        verify_fileobj(fileobj, writable=writable)
+        yield FileThing(fileobj, filename, filename or fileobj_name(fileobj))
+    elif filename is not None:
+        verify_filename(filename)
+
+        inmemory_fileobj = False
+        try:
+            fileobj = open(filename, "rb+" if writable else "rb")
+        except IOError as e:
+            if writable and e.errno == errno.EOPNOTSUPP:
+                # Some file systems (gvfs over fuse) don't support opening
+                # files read/write. To make things still work read the whole
+                # file into an in-memory file like object and write it back
+                # later.
+                # https://github.com/quodlibet/mutagen/issues/300
+                try:
+                    with open(filename, "rb") as fileobj:
+                        fileobj = BytesIO(fileobj.read())
+                except IOError as e2:
+                    raise MutagenError(e2)
+                inmemory_fileobj = True
+            elif create and e.errno == errno.ENOENT:
+                assert writable
+                try:
+                    fileobj = open(filename, "wb+")
+                except IOError as e2:
+                    raise MutagenError(e2)
+            else:
+                raise MutagenError(e)
+
+        with fileobj as fileobj:
+            yield FileThing(fileobj, filename, filename)
+
+            if inmemory_fileobj:
+                assert writable
+                data = fileobj.getvalue()
+                try:
+                    with open(filename, "wb") as fileobj:
+                        fileobj.write(data)
+                except IOError as e:
+                    raise MutagenError(e)
+    else:
+        raise TypeError("Missing filename or fileobj argument")
 
 
 class MutagenError(Exception):
@@ -31,6 +280,11 @@ class MutagenError(Exception):
 
 
 def total_ordering(cls):
+    """Adds all possible ordering methods to a class.
+
+    Needs a working __eq__ and __lt__ and will supply the rest.
+    """
+
     assert "__eq__" in cls.__dict__
     assert "__lt__" in cls.__dict__
 
@@ -60,6 +314,25 @@ def hashable(cls):
 
 
 def enum(cls):
+    """A decorator for creating an int enum class.
+
+    Makes the values a subclass of the type and implements repr/str.
+    The new class will be a subclass of int.
+
+    Args:
+        cls (type): The class to convert to an enum
+
+    Returns:
+        type: A new class
+
+    ::
+
+        @enum
+        class Foo(object):
+            FOO = 1
+            BAR = 2
+    """
+
     assert cls.__bases__ == (object,)
 
     d = dict(cls.__dict__)
@@ -82,6 +355,60 @@ def enum(cls):
         if self in map_:
             return "<%s.%s: %d>" % (type(self).__name__, map_[self], int(self))
         return "%d" % int(self)
+
+    setattr(new_type, "__repr__", repr_)
+    setattr(new_type, "__str__", str_)
+
+    return new_type
+
+
+def flags(cls):
+    """A decorator for creating an int flags class.
+
+    Makes the values a subclass of the type and implements repr/str.
+    The new class will be a subclass of int.
+
+    Args:
+        cls (type): The class to convert to an flags
+
+    Returns:
+        type: A new class
+
+    ::
+
+        @flags
+        class Foo(object):
+            FOO = 1
+            BAR = 2
+    """
+
+    assert cls.__bases__ == (object,)
+
+    d = dict(cls.__dict__)
+    new_type = type(cls.__name__, (int,), d)
+    new_type.__module__ = cls.__module__
+
+    map_ = {}
+    for key, value in iteritems(d):
+        if key.upper() == key and isinstance(value, integer_types):
+            value_instance = new_type(value)
+            setattr(new_type, key, value_instance)
+            map_[value] = key
+
+    def str_(self):
+        value = int(self)
+        matches = []
+        for k, v in map_.items():
+            if value & k:
+                matches.append("%s.%s" % (type(self).__name__, v))
+                value &= ~k
+        if value != 0 or not matches:
+            matches.append(text_type(value))
+
+        return " | ".join(matches)
+
+    def repr_(self):
+        return "<%s: %d>" % (str(self), int(self))
 
     setattr(new_type, "__repr__", repr_)
     setattr(new_type, "__str__", str_)
@@ -244,6 +571,19 @@ def _fill_cdata(cls):
                 if s.size == 1:
                     esuffix = ""
                 bits = str(s.size * 8)
+
+                if unsigned:
+                    max_ = 2 ** (s.size * 8) - 1
+                    min_ = 0
+                else:
+                    max_ = 2 ** (s.size * 8 - 1) - 1
+                    min_ = - 2 ** (s.size * 8 - 1)
+
+                funcs["%s%s_min" % (prefix, name)] = min_
+                funcs["%s%s_max" % (prefix, name)] = max_
+                funcs["%sint%s_min" % (prefix, bits)] = min_
+                funcs["%sint%s_max" % (prefix, bits)] = max_
+
                 funcs["%s%s%s" % (prefix, name, esuffix)] = unpack
                 funcs["%sint%s%s" % (prefix, bits, esuffix)] = unpack
                 funcs["%s%s%s_from" % (prefix, name, esuffix)] = unpack_from
@@ -276,10 +616,15 @@ _fill_cdata(cdata)
 
 
 def get_size(fileobj):
-    """Returns the size of the file object. The position when passed in will
-    be preserved if no error occurs.
+    """Returns the size of the file.
+    The position when passed in will be preserved if no error occurs.
 
-    In case of an error raises IOError.
+    Args:
+        fileobj (fileobj)
+    Returns:
+        int: The size of the file
+    Raises:
+        IOError
     """
 
     old_pos = fileobj.tell()
@@ -290,62 +635,226 @@ def get_size(fileobj):
         fileobj.seek(old_pos, 0)
 
 
+def read_full(fileobj, size):
+    """Like fileobj.read but raises IOError if not all requested data is
+    returned.
+
+    If you want to distinguish IOError and the EOS case, better handle
+    the error yourself instead of using this.
+
+    Args:
+        fileobj (fileobj)
+        size (int): amount of bytes to read
+    Raises:
+        IOError: In case read fails or not enough data is read
+    """
+
+    if size < 0:
+        raise ValueError("size must not be negative")
+
+    data = fileobj.read(size)
+    if len(data) != size:
+        raise IOError
+    return data
+
+
+def seek_end(fileobj, offset):
+    """Like fileobj.seek(-offset, 2), but will not try to go beyond the start
+
+    Needed since file objects from BytesIO will not raise IOError and
+    file objects from open() will raise IOError if going to a negative offset.
+    To make things easier for custom implementations, instead of allowing
+    both behaviors, we just don't do it.
+
+    Args:
+        fileobj (fileobj)
+        offset (int): how many bytes away from the end backwards to seek to
+
+    Raises:
+        IOError
+    """
+
+    if offset < 0:
+        raise ValueError
+
+    if get_size(fileobj) < offset:
+        fileobj.seek(0, 0)
+    else:
+        fileobj.seek(-offset, 2)
+
+
+def mmap_move(fileobj, dest, src, count):
+    """Mmaps the file object if possible and moves 'count' data
+    from 'src' to 'dest'. All data has to be inside the file size
+    (enlarging the file through this function isn't possible)
+
+    Will adjust the file offset.
+
+    Args:
+        fileobj (fileobj)
+        dest (int): The destination offset
+        src (int): The source offset
+        count (int) The amount of data to move
+    Raises:
+        mmap.error: In case move failed
+        IOError: In case an operation on the fileobj fails
+        ValueError: In case invalid parameters were given
+    """
+
+    assert mmap is not None, "no mmap support"
+
+    if dest < 0 or src < 0 or count < 0:
+        raise ValueError("Invalid parameters")
+
+    try:
+        fileno = fileobj.fileno()
+    except (AttributeError, IOError):
+        raise mmap.error(
+            "File object does not expose/support a file descriptor")
+
+    fileobj.seek(0, 2)
+    filesize = fileobj.tell()
+    length = max(dest, src) + count
+
+    if length > filesize:
+        raise ValueError("Not in file size boundary")
+
+    offset = ((min(dest, src) // mmap.ALLOCATIONGRANULARITY) *
+              mmap.ALLOCATIONGRANULARITY)
+    assert dest >= offset
+    assert src >= offset
+    assert offset % mmap.ALLOCATIONGRANULARITY == 0
+
+    # Windows doesn't handle empty mappings, add a fast path here instead
+    if count == 0:
+        return
+
+    # fast path
+    if src == dest:
+        return
+
+    fileobj.flush()
+    file_map = mmap.mmap(fileno, length - offset, offset=offset)
+    try:
+        file_map.move(dest - offset, src - offset, count)
+    finally:
+        file_map.close()
+
+
+def resize_file(fobj, diff, BUFFER_SIZE=2 ** 16):
+    """Resize a file by `diff`.
+
+    New space will be filled with zeros.
+
+    Args:
+        fobj (fileobj)
+        diff (int): amount of size to change
+    Raises:
+        IOError
+    """
+
+    fobj.seek(0, 2)
+    filesize = fobj.tell()
+
+    if diff < 0:
+        if filesize + diff < 0:
+            raise ValueError
+        # truncate flushes internally
+        fobj.truncate(filesize + diff)
+    elif diff > 0:
+        try:
+            while diff:
+                addsize = min(BUFFER_SIZE, diff)
+                fobj.write(b"\x00" * addsize)
+                diff -= addsize
+            fobj.flush()
+        except IOError as e:
+            if e.errno == errno.ENOSPC:
+                # To reduce the chance of corrupt files in case of missing
+                # space try to revert the file expansion back. Of course
+                # in reality every in-file-write can also fail due to COW etc.
+                # Note: IOError gets also raised in flush() due to buffering
+                fobj.truncate(filesize)
+            raise
+
+
+def fallback_move(fobj, dest, src, count, BUFFER_SIZE=2 ** 16):
+    """Moves data around using read()/write().
+
+    Args:
+        fileobj (fileobj)
+        dest (int): The destination offset
+        src (int): The source offset
+        count (int) The amount of data to move
+    Raises:
+        IOError: In case an operation on the fileobj fails
+        ValueError: In case invalid parameters were given
+    """
+
+    if dest < 0 or src < 0 or count < 0:
+        raise ValueError
+
+    fobj.seek(0, 2)
+    filesize = fobj.tell()
+
+    if max(dest, src) + count > filesize:
+        raise ValueError("area outside of file")
+
+    if src > dest:
+        moved = 0
+        while count - moved:
+            this_move = min(BUFFER_SIZE, count - moved)
+            fobj.seek(src + moved)
+            buf = fobj.read(this_move)
+            fobj.seek(dest + moved)
+            fobj.write(buf)
+            moved += this_move
+        fobj.flush()
+    else:
+        while count:
+            this_move = min(BUFFER_SIZE, count)
+            fobj.seek(src + count - this_move)
+            buf = fobj.read(this_move)
+            fobj.seek(count + dest - this_move)
+            fobj.write(buf)
+            count -= this_move
+        fobj.flush()
+
+
 def insert_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
     """Insert size bytes of empty space starting at offset.
 
     fobj must be an open file object, open rb+ or
     equivalent. Mutagen tries to use mmap to resize the file, but
     falls back to a significantly slower method if mmap fails.
+
+    Args:
+        fobj (fileobj)
+        size (int): The amount of space to insert
+        offset (int): The offset at which to insert the space
+    Raises:
+        IOError
     """
 
-    assert 0 < size
-    assert 0 <= offset
+    if size < 0 or offset < 0:
+        raise ValueError
 
     fobj.seek(0, 2)
     filesize = fobj.tell()
     movesize = filesize - offset
-    fobj.write(b'\x00' * size)
-    fobj.flush()
 
-    try:
-        import mmap
-        file_map = mmap.mmap(fobj.fileno(), filesize + size)
+    if movesize < 0:
+        raise ValueError
+
+    resize_file(fobj, size, BUFFER_SIZE)
+
+    if mmap is not None:
         try:
-            file_map.move(offset + size, offset, movesize)
-        finally:
-            file_map.close()
-    except (ValueError, EnvironmentError, ImportError, AttributeError):
-        # handle broken mmap scenarios, BytesIO()
-        fobj.truncate(filesize)
-
-        fobj.seek(0, 2)
-        padsize = size
-        # Don't generate an enormous string if we need to pad
-        # the file out several megs.
-        while padsize:
-            addsize = min(BUFFER_SIZE, padsize)
-            fobj.write(b"\x00" * addsize)
-            padsize -= addsize
-
-        fobj.seek(filesize, 0)
-        while movesize:
-            # At the start of this loop, fobj is pointing at the end
-            # of the data we need to move, which is of movesize length.
-            thismove = min(BUFFER_SIZE, movesize)
-            # Seek back however much we're going to read this frame.
-            fobj.seek(-thismove, 1)
-            nextpos = fobj.tell()
-            # Read it, so we're back at the end.
-            data = fobj.read(thismove)
-            # Seek back to where we need to write it.
-            fobj.seek(-thismove + size, 1)
-            # Write it.
-            fobj.write(data)
-            # And seek back to the end of the unmoved data.
-            fobj.seek(nextpos)
-            movesize -= thismove
-
-        fobj.flush()
+            mmap_move(fobj, offset + size, offset, movesize)
+        except mmap.error:
+            fallback_move(fobj, offset + size, offset, movesize, BUFFER_SIZE)
+    else:
+        fallback_move(fobj, offset + size, offset, movesize, BUFFER_SIZE)
 
 
 def delete_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
@@ -354,42 +863,47 @@ def delete_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
     fobj must be an open file object, open rb+ or
     equivalent. Mutagen tries to use mmap to resize the file, but
     falls back to a significantly slower method if mmap fails.
+
+    Args:
+        fobj (fileobj)
+        size (int): The amount of space to delete
+        offset (int): The start of the space to delete
+    Raises:
+        IOError
     """
 
-    assert 0 < size
-    assert 0 <= offset
+    if size < 0 or offset < 0:
+        raise ValueError
 
     fobj.seek(0, 2)
     filesize = fobj.tell()
     movesize = filesize - offset - size
-    assert 0 <= movesize
 
-    if movesize > 0:
-        fobj.flush()
+    if movesize < 0:
+        raise ValueError
+
+    if mmap is not None:
         try:
-            import mmap
-            file_map = mmap.mmap(fobj.fileno(), filesize)
-            try:
-                file_map.move(offset, offset + size, movesize)
-            finally:
-                file_map.close()
-        except (ValueError, EnvironmentError, ImportError, AttributeError):
-            # handle broken mmap scenarios, BytesIO()
-            fobj.seek(offset + size)
-            buf = fobj.read(BUFFER_SIZE)
-            while buf:
-                fobj.seek(offset)
-                fobj.write(buf)
-                offset += len(buf)
-                fobj.seek(offset + size)
-                buf = fobj.read(BUFFER_SIZE)
-    fobj.truncate(filesize - size)
-    fobj.flush()
+            mmap_move(fobj, offset, offset + size, movesize)
+        except mmap.error:
+            fallback_move(fobj, offset, offset + size, movesize, BUFFER_SIZE)
+    else:
+        fallback_move(fobj, offset, offset + size, movesize, BUFFER_SIZE)
+
+    resize_file(fobj, -size, BUFFER_SIZE)
 
 
 def resize_bytes(fobj, old_size, new_size, offset):
     """Resize an area in a file adding and deleting at the end of it.
     Does nothing if no resizing is needed.
+
+    Args:
+        fobj (fileobj)
+        old_size (int): The area starting at offset
+        new_size (int): The new size of the area
+        offset (int): The start of the area
+    Raises:
+        IOError
     """
 
     if new_size < old_size:
@@ -405,6 +919,15 @@ def resize_bytes(fobj, old_size, new_size, offset):
 def dict_match(d, key, default=None):
     """Like __getitem__ but works as if the keys() are all filename patterns.
     Returns the value of any dict key that matches the passed key.
+
+    Args:
+        d (dict): A dict with filename patterns as keys
+        key (str): A key potentially matching any of the keys
+        default (object): The object to return if no pattern matched the
+            passed in key
+    Returns:
+        object: The dict value where the dict key matched the passed in key.
+            Or default if there was no match.
     """
 
     if key in d and "[" not in key:
@@ -416,15 +939,57 @@ def dict_match(d, key, default=None):
     return default
 
 
+def encode_endian(text, encoding, errors="strict", le=True):
+    """Like text.encode(encoding) but always returns little endian/big endian
+    BOMs instead of the system one.
+
+    Args:
+        text (text)
+        encoding (str)
+        errors (str)
+        le (boolean): if little endian
+    Returns:
+        bytes
+    Raises:
+        UnicodeEncodeError
+        LookupError
+    """
+
+    encoding = codecs.lookup(encoding).name
+
+    if encoding == "utf-16":
+        if le:
+            return codecs.BOM_UTF16_LE + text.encode("utf-16-le", errors)
+        else:
+            return codecs.BOM_UTF16_BE + text.encode("utf-16-be", errors)
+    elif encoding == "utf-32":
+        if le:
+            return codecs.BOM_UTF32_LE + text.encode("utf-32-le", errors)
+        else:
+            return codecs.BOM_UTF32_BE + text.encode("utf-32-be", errors)
+    else:
+        return text.encode(encoding, errors)
+
+
 def decode_terminated(data, encoding, strict=True):
     """Returns the decoded data until the first NULL terminator
     and all data after it.
 
-    In case the data can't be decoded raises UnicodeError.
-    In case the encoding is not found raises LookupError.
-    In case the data isn't null terminated (even if it is encoded correctly)
-    raises ValueError except if strict is False, then the decoded string
-    will be returned anyway.
+    Args:
+        data (bytes): data to decode
+        encoding (str): The codec to use
+        strict (bool): If True will raise ValueError in case no NULL is found
+            but the available data decoded successfully.
+    Returns:
+        Tuple[`text`, `bytes`]: A tuple containing the decoded text and the
+            remaining data after the found NULL termination.
+
+    Raises:
+        UnicodeError: In case the data can't be decoded.
+        LookupError:In case the encoding is not found.
+        ValueError: In case the data isn't null terminated (even if it is
+            encoded correctly) except if strict is False, then the decoded
+            string will be returned anyway.
     """
 
     codec_info = codecs.lookup(encoding)

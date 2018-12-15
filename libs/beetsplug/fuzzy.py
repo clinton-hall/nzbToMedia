@@ -44,5 +44,5 @@ class FuzzyPlugin(BeetsPlugin):
         })
 
     def queries(self):
-        prefix = self.config['prefix'].get(basestring)
+        prefix = self.config['prefix'].as_str()
         return {prefix: FuzzyQuery}

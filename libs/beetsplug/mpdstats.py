@@ -40,21 +40,9 @@ mpd_config = config['mpd']
 def is_url(path):
     """Try to determine if the path is an URL.
     """
+    if isinstance(path, bytes):  # if it's bytes, then it's a path
+        return False
     return path.split('://', 1)[0] in ['http', 'https']
-
-
-# Use the MPDClient internals to get unicode.
-# see http://www.tarmack.eu/code/mpdunicode.py for the general idea
-class MPDClient(mpd.MPDClient):
-    def _write_command(self, command, args=[]):
-        args = [unicode(arg).encode('utf-8') for arg in args]
-        super(MPDClient, self)._write_command(command, args)
-
-    def _read_line(self):
-        line = super(MPDClient, self)._read_line()
-        if line is not None:
-            return line.decode('utf-8')
-        return None
 
 
 class MPDClientWrapper(object):
@@ -62,14 +50,14 @@ class MPDClientWrapper(object):
         self._log = log
 
         self.music_directory = (
-            mpd_config['music_directory'].get(unicode))
+            mpd_config['music_directory'].as_str())
 
-        self.client = MPDClient()
+        self.client = mpd.MPDClient(use_unicode=True)
 
     def connect(self):
         """Connect to the MPD.
         """
-        host = mpd_config['host'].get(unicode)
+        host = mpd_config['host'].as_str()
         port = mpd_config['port'].get(int)
 
         if host[0] in ['/', '~']:
@@ -81,7 +69,7 @@ class MPDClientWrapper(object):
         except socket.error as e:
             raise ui.UserError(u'could not connect to MPD: {0}'.format(e))
 
-        password = mpd_config['password'].get(unicode)
+        password = mpd_config['password'].as_str()
         if password:
             try:
                 self.client.password(password)
@@ -268,32 +256,41 @@ class MPDStats(object):
         if not path:
             return
 
-        if is_url(path):
-            self._log.info(u'playing stream {0}', displayable_path(path))
-            return
-
         played, duration = map(int, status['time'].split(':', 1))
         remaining = duration - played
 
-        if self.now_playing and self.now_playing['path'] != path:
-            skipped = self.handle_song_change(self.now_playing)
-            # mpd responds twice on a natural new song start
-            going_to_happen_twice = not skipped
-        else:
-            going_to_happen_twice = False
+        if self.now_playing:
+            if self.now_playing['path'] != path:
+                self.handle_song_change(self.now_playing)
+            else:
+                # In case we got mpd play event with same song playing
+                # multiple times,
+                # assume low diff means redundant second play event
+                # after natural song start.
+                diff = abs(time.time() - self.now_playing['started'])
 
-        if not going_to_happen_twice:
-            self._log.info(u'playing {0}', displayable_path(path))
+                if diff <= self.time_threshold:
+                    return
 
-            self.now_playing = {
-                'started':    time.time(),
-                'remaining':  remaining,
-                'path':       path,
-                'beets_item': self.get_item(path),
-            }
+                if self.now_playing['path'] == path and played == 0:
+                    self.handle_song_change(self.now_playing)
 
-            self.update_item(self.now_playing['beets_item'],
-                             'last_played', value=int(time.time()))
+        if is_url(path):
+            self._log.info(u'playing stream {0}', displayable_path(path))
+            self.now_playing = None
+            return
+
+        self._log.info(u'playing {0}', displayable_path(path))
+
+        self.now_playing = {
+            'started':    time.time(),
+            'remaining':  remaining,
+            'path':       path,
+            'beets_item': self.get_item(path),
+        }
+
+        self.update_item(self.now_playing['beets_item'],
+                         'last_played', value=int(time.time()))
 
     def run(self):
         self.mpd.connect()
@@ -328,7 +325,7 @@ class MPDStatsPlugin(plugins.BeetsPlugin):
             'music_directory': config['directory'].as_filename(),
             'rating':          True,
             'rating_mix':      0.75,
-            'host':            u'localhost',
+            'host':            os.environ.get('MPD_HOST', u'localhost'),
             'port':            6600,
             'password':        u'',
         })
@@ -353,11 +350,11 @@ class MPDStatsPlugin(plugins.BeetsPlugin):
 
             # Overrides for MPD settings.
             if opts.host:
-                mpd_config['host'] = opts.host.decode('utf8')
+                mpd_config['host'] = opts.host.decode('utf-8')
             if opts.port:
                 mpd_config['host'] = int(opts.port)
             if opts.password:
-                mpd_config['password'] = opts.password.decode('utf8')
+                mpd_config['password'] = opts.password.decode('utf-8')
 
             try:
                 MPDStats(lib, self._log).run()
