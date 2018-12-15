@@ -22,7 +22,7 @@ from qbittorrent import Client as qBittorrentClient
 from six import text_type
 from synchronousdeluge.client import DelugeClient
 from transmissionrpc.client import Client as TransmissionClient
-from utorrent import UTorrentClient
+from utorrent.client import UTorrentClient
 
 import core
 from core import logger, nzbToMediaDB
