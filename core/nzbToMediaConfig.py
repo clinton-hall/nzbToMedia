@@ -5,7 +5,7 @@ import os
 import shutil
 import copy
 import core
-from configobj import *
+import configobj
 from core import logger
 
 from itertools import chain
