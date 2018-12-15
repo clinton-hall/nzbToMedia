@@ -6,12 +6,12 @@ import urllib
 import urllib2
 import urlparse
 
+from .upload import MultiPartForm
+
 try:
     import json
 except ImportError:
     import simplejson as json
-
-from upload import MultiPartForm
 
 class UTorrentClient(object):
 
