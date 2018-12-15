@@ -4,7 +4,7 @@
 
 import logging
 
-from core.transmissionrpc.six import iteritems
+from six import iteritems
 
 LOGGER = logging.getLogger('transmissionrpc')
 LOGGER.setLevel(logging.ERROR)

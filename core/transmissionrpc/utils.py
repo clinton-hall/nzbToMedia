@@ -8,8 +8,9 @@ import logging
 import socket
 from collections import namedtuple
 
+from six import iteritems, string_types
+
 from constants import LOGGER
-from six import string_types, iteritems
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB']
 

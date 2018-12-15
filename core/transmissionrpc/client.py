@@ -10,16 +10,16 @@ import os
 import base64
 import json
 
+from six import PY3, integer_types, string_types, iteritems
+from six.moves.urllib_parse import urlparse
+from six.moves.urllib_request import urlopen
+
 from core.transmissionrpc.constants import DEFAULT_PORT, DEFAULT_TIMEOUT
 from core.transmissionrpc.error import TransmissionError, HTTPHandlerError
 from core.transmissionrpc.utils import LOGGER, get_arguments, make_rpc_name, argument_value_convert, rpc_bool
 from core.transmissionrpc.httphandler import DefaultHTTPHandler
 from core.transmissionrpc.torrent import Torrent
 from core.transmissionrpc.session import Session
-from six import PY3, integer_types, string_types, iteritems
-
-from six.moves.urllib_parse import urlparse
-from six.moves.urllib_request import urlopen
 
 
 def debug_httperror(error):
