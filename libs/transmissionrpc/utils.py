@@ -2,7 +2,6 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import constants
 import datetime
 import logging
 import socket
@@ -10,7 +9,8 @@ from collections import namedtuple
 
 from six import iteritems, string_types
 
-from constants import LOGGER
+from . import constants
+from .constants import LOGGER
 
 UNITS = ['B', 'KiB', 'MiB', 'GiB', 'TiB', 'PiB', 'EiB']
 

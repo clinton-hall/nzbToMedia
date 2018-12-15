@@ -1,30 +1,32 @@
 # coding=utf-8
 
 from __future__ import print_function, unicode_literals
-from six import text_type
+
+import datetime
 import os
+import platform
 import re
+import shutil
 import socket
 import stat
 import struct
-import shutil
 import time
-import datetime
-import platform
-import guessit
-import beets
-import requests
-import core
-from babelfish import Language
-import subliminal
 
-from core.extractor import extractor
-from core.linktastic import linktastic
-from core.synchronousdeluge.client import DelugeClient
-from core.utorrent.client import UTorrentClient
-from core.transmissionrpc.client import Client as TransmissionClient
-from core.qbittorrent.client import Client as qBittorrentClient
+import beets
+import guessit
+import requests
+import subliminal
+from babelfish import Language
+from linktastic import linktastic
+from qbittorrent import Client as qBittorrentClient
+from six import text_type
+from synchronousdeluge.client import DelugeClient
+from transmissionrpc.client import Client as TransmissionClient
+from utorrent import UTorrentClient
+
+import core
 from core import logger, nzbToMediaDB
+from core.extractor import extractor
 
 requests.packages.urllib3.disable_warnings()
 

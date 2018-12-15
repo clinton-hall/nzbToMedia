@@ -2,24 +2,24 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import re
-import time
-import operator
-import warnings
-import os
 import base64
 import json
+import operator
+import os
+import re
+import time
+import warnings
 
-from six import PY3, integer_types, string_types, iteritems
+from six import PY3, integer_types, iteritems, string_types
 from six.moves.urllib_parse import urlparse
 from six.moves.urllib_request import urlopen
 
-from core.transmissionrpc.constants import DEFAULT_PORT, DEFAULT_TIMEOUT
-from core.transmissionrpc.error import TransmissionError, HTTPHandlerError
-from core.transmissionrpc.utils import LOGGER, get_arguments, make_rpc_name, argument_value_convert, rpc_bool
-from core.transmissionrpc.httphandler import DefaultHTTPHandler
-from core.transmissionrpc.torrent import Torrent
-from core.transmissionrpc.session import Session
+from .constants import DEFAULT_PORT, DEFAULT_TIMEOUT
+from .error import HTTPHandlerError, TransmissionError
+from .httphandler import DefaultHTTPHandler
+from .session import Session
+from .torrent import Torrent
+from .utils import LOGGER, argument_value_convert, get_arguments, make_rpc_name, rpc_bool
 
 
 def debug_httperror(error):

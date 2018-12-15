@@ -1,10 +1,11 @@
 # coding=utf8
+import StringIO
+import cookielib
+import re
 import urllib
 import urllib2
 import urlparse
-import cookielib
-import re
-import StringIO
+
 try:
     import json
 except ImportError:

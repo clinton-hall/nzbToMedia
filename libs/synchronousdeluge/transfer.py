@@ -1,10 +1,10 @@
 # coding=utf-8
-import zlib
-import struct
 import socket
 import ssl
+import struct
+import zlib
 
-from core.synchronousdeluge import rencode
+from . import rencode
 
 __all__ = ["DelugeTransfer"]
 

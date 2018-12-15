@@ -4,15 +4,17 @@
 
 import sys
 
-from six.moves.urllib_request import (
-    build_opener, install_opener,
-    HTTPBasicAuthHandler, HTTPDigestAuthHandler, HTTPPasswordMgrWithDefaultRealm,
-    Request,
-)
-from six.moves.urllib_error import HTTPError, URLError
 from six.moves.http_client import BadStatusLine
+from six.moves.urllib_error import HTTPError, URLError
+from six.moves.urllib_request import (
+    HTTPBasicAuthHandler,
+    HTTPDigestAuthHandler,
+    HTTPPasswordMgrWithDefaultRealm,
+    Request,
+    build_opener,
+)
 
-from core.transmissionrpc.error import HTTPHandlerError
+from .error import HTTPHandlerError
 
 
 class HTTPHandler(object):

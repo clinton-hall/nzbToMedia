@@ -21,6 +21,7 @@ same rencode version throughout your project.
 
 import struct
 from threading import Lock
+
 from six import PY3
 
 if PY3:

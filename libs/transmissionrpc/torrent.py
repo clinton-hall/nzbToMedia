@@ -2,13 +2,13 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-import sys
 import datetime
+import sys
 
-from six import integer_types, string_types, text_type, iteritems
+from six import integer_types, iteritems, string_types, text_type
 
-from core.transmissionrpc.constants import PRIORITY, RATIO_LIMIT, IDLE_LIMIT
-from core.transmissionrpc.utils import Field, format_timedelta
+from .constants import IDLE_LIMIT, PRIORITY, RATIO_LIMIT
+from .utils import Field, format_timedelta
 
 
 def get_status_old(code):
