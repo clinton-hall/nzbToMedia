@@ -2,8 +2,10 @@ from __future__ import unicode_literals
 
 import six
 
+__metaclass__ = type
 
-class NonDataProperty(object):
+
+class NonDataProperty:
 	"""Much like the property builtin, but only implements __get__,
 	making it a non-data property, and can be subsequently reset.
 
@@ -34,7 +36,7 @@ class NonDataProperty(object):
 
 
 # from http://stackoverflow.com/a/5191224
-class ClassPropertyDescriptor(object):
+class ClassPropertyDescriptor:
 
 	def __init__(self, fget, fset=None):
 		self.fget = fget

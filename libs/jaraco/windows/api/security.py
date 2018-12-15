@@ -60,11 +60,14 @@ POLICY_EXECUTE = (
 	POLICY_VIEW_LOCAL_INFORMATION |
 	POLICY_LOOKUP_NAMES)
 
+
 class TokenAccess:
 	TOKEN_QUERY = 0x8
 
+
 class TokenInformationClass:
 	TokenUser = 1
+
 
 class TOKEN_USER(ctypes.Structure):
 	num = 1
@@ -100,6 +103,7 @@ class SECURITY_DESCRIPTOR(ctypes.Structure):
 		('Dacl', ctypes.c_void_p),
 	]
 
+
 class SECURITY_ATTRIBUTES(ctypes.Structure):
 	"""
 	typedef struct _SECURITY_ATTRIBUTES {
@@ -126,3 +130,10 @@ class SECURITY_ATTRIBUTES(ctypes.Structure):
 	def descriptor(self, value):
 		self._descriptor = value
 		self.lpSecurityDescriptor = ctypes.addressof(value)
+
+
+ctypes.windll.advapi32.SetSecurityDescriptorOwner.argtypes = (
+	ctypes.POINTER(SECURITY_DESCRIPTOR),
+	ctypes.c_void_p,
+	ctypes.wintypes.BOOL,
+)

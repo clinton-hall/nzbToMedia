@@ -60,3 +60,18 @@ class Command(object):
 		cls.add_subparsers(parser)
 		args = parser.parse_args()
 		args.action.run(args)
+
+
+class Extend(argparse.Action):
+	"""
+	Argparse action to take an nargs=* argument
+	and add any values to the existing value.
+
+	>>> parser = argparse.ArgumentParser()
+	>>> _ = parser.add_argument('--foo', nargs='*', default=[], action=Extend)
+	>>> args = parser.parse_args(['--foo', 'a=1', '--foo', 'b=2', 'c=3'])
+	>>> args.foo
+	['a=1', 'b=2', 'c=3']
+	"""
+	def __call__(self, parser, namespace, values, option_string=None):
+		getattr(namespace, self.dest).extend(values)

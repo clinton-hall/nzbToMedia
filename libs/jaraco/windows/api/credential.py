@@ -10,8 +10,10 @@ try:
 except ImportError:
 	LPBYTE = ctypes.POINTER(ctypes.wintypes.BYTE)
 
+
 class CredentialAttribute(ctypes.Structure):
 	_fields_ = []
+
 
 class Credential(ctypes.Structure):
 	_fields_ = [
@@ -32,28 +34,29 @@ class Credential(ctypes.Structure):
 	def __del__(self):
 		ctypes.windll.advapi32.CredFree(ctypes.byref(self))
 
+
 PCREDENTIAL = ctypes.POINTER(Credential)
 
 CredRead = ctypes.windll.advapi32.CredReadW
 CredRead.argtypes = (
-	LPCWSTR, # TargetName
-	DWORD, # Type
-	DWORD, # Flags
-	ctypes.POINTER(PCREDENTIAL), # Credential
+	LPCWSTR,  # TargetName
+	DWORD,  # Type
+	DWORD,  # Flags
+	ctypes.POINTER(PCREDENTIAL),  # Credential
 )
 CredRead.restype = BOOL
 
 CredWrite = ctypes.windll.advapi32.CredWriteW
 CredWrite.argtypes = (
-	PCREDENTIAL, # Credential
-	DWORD, # Flags
+	PCREDENTIAL,  # Credential
+	DWORD,  # Flags
 )
 CredWrite.restype = BOOL
 
 CredDelete = ctypes.windll.advapi32.CredDeleteW
 CredDelete.argtypes = (
-	LPCWSTR, # TargetName
-	DWORD, # Type
-	DWORD, # Flags
+	LPCWSTR,  # TargetName
+	DWORD,  # Type
+	DWORD,  # Flags
 )
 CredDelete.restype = BOOL

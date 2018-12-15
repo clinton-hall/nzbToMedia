@@ -5,19 +5,21 @@ import re
 import itertools
 from contextlib import contextmanager
 import io
-
-import six
 import ctypes
 from ctypes import windll
+
+import six
+from six.moves import map
 
 from jaraco.windows.api import clipboard, memory
 from jaraco.windows.error import handle_nonzero_success, WindowsError
 from jaraco.windows.memory import LockedMemory
 
 __all__ = (
-	'CF_TEXT', 'GetClipboardData', 'CloseClipboard',
+	'GetClipboardData', 'CloseClipboard',
 	'SetClipboardData', 'OpenClipboard',
 )
+
 
 def OpenClipboard(owner=None):
 	"""
@@ -30,9 +32,14 @@ def OpenClipboard(owner=None):
 	"""
 	handle_nonzero_success(windll.user32.OpenClipboard(owner))
 
-CloseClipboard = lambda: handle_nonzero_success(windll.user32.CloseClipboard())
+
+def CloseClipboard():
+	handle_nonzero_success(windll.user32.CloseClipboard())
+
 
 data_handlers = dict()
+
+
 def handles(*formats):
 	def register(func):
 		for format in formats:
@@ -40,36 +47,43 @@ def handles(*formats):
 		return func
 	return register
 
-def nts(s):
+
+def nts(buffer):
 	"""
 	Null Terminated String
-	Get the portion of s up to a null character.
+	Get the portion of bytestring buffer up to a null character.
 	"""
-	result, null, rest = s.partition('\x00')
+	result, null, rest = buffer.partition('\x00')
 	return result
+
 
 @handles(clipboard.CF_DIBV5, clipboard.CF_DIB)
 def raw_data(handle):
 	return LockedMemory(handle).data
 
+
 @handles(clipboard.CF_TEXT)
 def text_string(handle):
 	return nts(raw_data(handle))
+
 
 @handles(clipboard.CF_UNICODETEXT)
 def unicode_string(handle):
 	return nts(raw_data(handle).decode('utf-16'))
 
+
 @handles(clipboard.CF_BITMAP)
 def as_bitmap(handle):
 	# handle is HBITMAP
 	raise NotImplementedError("Can't convert to DIB")
-	# todo: use GetDIBits http://msdn.microsoft.com/en-us/library/dd144879%28v=VS.85%29.aspx
+	# todo: use GetDIBits http://msdn.microsoft.com
+	# /en-us/library/dd144879%28v=VS.85%29.aspx
+
 
 @handles(clipboard.CF_HTML)
 class HTMLSnippet(object):
 	def __init__(self, handle):
-		self.data = text_string(handle)
+		self.data = nts(raw_data(handle).decode('utf-8'))
 		self.headers = self.parse_headers(self.data)
 
 	@property
@@ -79,11 +93,13 @@ class HTMLSnippet(object):
 	@staticmethod
 	def parse_headers(data):
 		d = io.StringIO(data)
+
 		def header_line(line):
 			return re.match('(\w+):(.*)', line)
-		headers = itertools.imap(header_line, d)
+		headers = map(header_line, d)
 		# grab headers until they no longer match
 		headers = itertools.takewhile(bool, headers)
+
 		def best_type(value):
 			try:
 				return int(value)
@@ -101,26 +117,34 @@ class HTMLSnippet(object):
 		)
 		return dict(pairs)
 
+
 def GetClipboardData(type=clipboard.CF_UNICODETEXT):
-	if not type in data_handlers:
+	if type not in data_handlers:
 		raise NotImplementedError("No support for data of type %d" % type)
 	handle = clipboard.GetClipboardData(type)
 	if handle is None:
 		raise TypeError("No clipboard data of type %d" % type)
 	return data_handlers[type](handle)
 
-EmptyClipboard = lambda: handle_nonzero_success(windll.user32.EmptyClipboard())
+
+def EmptyClipboard():
+	handle_nonzero_success(windll.user32.EmptyClipboard())
+
 
 def SetClipboardData(type, content):
 	"""
-	Modeled after http://msdn.microsoft.com/en-us/library/ms649016%28VS.85%29.aspx#_win32_Copying_Information_to_the_Clipboard
+	Modeled after http://msdn.microsoft.com
+	/en-us/library/ms649016%28VS.85%29.aspx
+	#_win32_Copying_Information_to_the_Clipboard
 	"""
 	allocators = {
 		clipboard.CF_TEXT: ctypes.create_string_buffer,
 		clipboard.CF_UNICODETEXT: ctypes.create_unicode_buffer,
+		clipboard.CF_HTML: ctypes.create_string_buffer,
 	}
-	if not type in allocators:
-		raise NotImplementedError("Only text types are supported at this time")
+	if type not in allocators:
+		raise NotImplementedError(
+			"Only text and HTML types are supported at this time")
 	# allocate the memory for the data
 	content = allocators[type](content)
 	flags = memory.GMEM_MOVEABLE
@@ -132,46 +156,56 @@ def SetClipboardData(type, content):
 	if result is None:
 		raise WindowsError()
 
+
 def set_text(source):
 	with context():
 		EmptyClipboard()
 		SetClipboardData(clipboard.CF_TEXT, source)
+
 
 def get_text():
 	with context():
 		result = GetClipboardData(clipboard.CF_TEXT)
 	return result
 
+
 def set_unicode_text(source):
 	with context():
 		EmptyClipboard()
 		SetClipboardData(clipboard.CF_UNICODETEXT, source)
 
+
 def get_unicode_text():
 	with context():
 		return GetClipboardData()
+
 
 def get_html():
 	with context():
 		result = GetClipboardData(clipboard.CF_HTML)
 	return result
 
+
 def set_html(source):
 	with context():
 		EmptyClipboard()
 		SetClipboardData(clipboard.CF_UNICODETEXT, source)
 
+
 def get_image():
 	with context():
 		return GetClipboardData(clipboard.CF_DIB)
+
 
 def paste_stdout():
 	getter = get_unicode_text if six.PY3 else get_text
 	sys.stdout.write(getter())
 
+
 def stdin_copy():
 	setter = set_unicode_text if six.PY3 else set_text
 	setter(sys.stdin.read())
+
 
 @contextmanager
 def context():
@@ -181,10 +215,12 @@ def context():
 	finally:
 		CloseClipboard()
 
+
 def get_formats():
 	with context():
 		format_index = 0
 		while True:
 			format_index = clipboard.EnumClipboardFormats(format_index)
-			if format_index == 0: break
+			if format_index == 0:
+				break
 			yield format_index

@@ -5,6 +5,7 @@ mpr = ctypes.windll.mpr
 
 RESOURCETYPE_ANY = 0
 
+
 class NETRESOURCE(ctypes.Structure):
 	_fields_ = [
 		('scope', ctypes.wintypes.DWORD),
@@ -16,6 +17,8 @@ class NETRESOURCE(ctypes.Structure):
 		('comment', ctypes.wintypes.LPWSTR),
 		('provider', ctypes.wintypes.LPWSTR),
 	]
+
+
 LPNETRESOURCE = ctypes.POINTER(NETRESOURCE)
 
 WNetAddConnection2 = mpr.WNetAddConnection2W

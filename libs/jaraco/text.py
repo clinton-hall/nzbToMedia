@@ -39,6 +39,7 @@ class FoldedCase(six.text_type):
 	"""
 	A case insensitive string class; behaves just like str
 	except compares equal when the only variation is case.
+
 	>>> s = FoldedCase('hello world')
 
 	>>> s == 'Hello World'
@@ -46,6 +47,9 @@ class FoldedCase(six.text_type):
 
 	>>> 'Hello World' == s
 	True
+
+	>>> s != 'Hello World'
+	False
 
 	>>> s.index('O')
 	4
@@ -55,6 +59,38 @@ class FoldedCase(six.text_type):
 
 	>>> sorted(map(FoldedCase, ['GAMMA', 'alpha', 'Beta']))
 	['alpha', 'Beta', 'GAMMA']
+
+	Sequence membership is straightforward.
+
+	>>> "Hello World" in [s]
+	True
+	>>> s in ["Hello World"]
+	True
+
+	You may test for set inclusion, but candidate and elements
+	must both be folded.
+
+	>>> FoldedCase("Hello World") in {s}
+	True
+	>>> s in {FoldedCase("Hello World")}
+	True
+
+	String inclusion works as long as the FoldedCase object
+	is on the right.
+
+	>>> "hello" in FoldedCase("Hello World")
+	True
+
+	But not if the FoldedCase object is on the left:
+
+	>>> FoldedCase('hello') in 'Hello World'
+	False
+
+	In that case, use in_:
+
+	>>> FoldedCase('hello').in_('Hello World')
+	True
+
 	"""
 	def __lt__(self, other):
 		return self.lower() < other.lower()
@@ -65,14 +101,23 @@ class FoldedCase(six.text_type):
 	def __eq__(self, other):
 		return self.lower() == other.lower()
 
+	def __ne__(self, other):
+		return self.lower() != other.lower()
+
 	def __hash__(self):
 		return hash(self.lower())
 
+	def __contains__(self, other):
+		return super(FoldedCase, self).lower().__contains__(other.lower())
+
+	def in_(self, other):
+		"Does self appear in other?"
+		return self in FoldedCase(other)
+
 	# cache lower since it's likely to be called frequently.
+	@jaraco.functools.method_cache
 	def lower(self):
-		self._lower = super(FoldedCase, self).lower()
-		self.lower = lambda: self._lower
-		return self._lower
+		return super(FoldedCase, self).lower()
 
 	def index(self, sub):
 		return self.lower().index(sub.lower())
@@ -147,12 +192,14 @@ def is_decodable(value):
 		return False
 	return True
 
+
 def is_binary(value):
 	"""
 	Return True if the value appears to be binary (that is, it's a byte
 	string and isn't decodable).
 	"""
 	return isinstance(value, bytes) and not is_decodable(value)
+
 
 def trim(s):
 	r"""
@@ -164,8 +211,10 @@ def trim(s):
 	"""
 	return textwrap.dedent(s).strip()
 
+
 class Splitter(object):
 	"""object that will split a string with the given arguments for each call
+
 	>>> s = Splitter(',')
 	>>> s('hello, world, this is your, master calling')
 	['hello', ' world', ' this is your', ' master calling']
@@ -176,8 +225,10 @@ class Splitter(object):
 	def __call__(self, s):
 		return s.split(*self.args)
 
+
 def indent(string, prefix=' ' * 4):
 	return prefix + string
+
 
 class WordSet(tuple):
 	"""
@@ -269,6 +320,7 @@ class WordSet(tuple):
 	def from_class_name(cls, subject):
 		return cls.parse(subject.__class__.__name__)
 
+
 # for backward compatibility
 words = WordSet.parse
 
@@ -317,6 +369,7 @@ class SeparatedValues(six.text_type):
 	def __iter__(self):
 		parts = self.split(self.separator)
 		return six.moves.filter(None, (part.strip() for part in parts))
+
 
 class Stripper:
 	r"""
@@ -369,3 +422,31 @@ class Stripper:
 		while s1[:index] != s2[:index]:
 			index -= 1
 		return s1[:index]
+
+
+def remove_prefix(text, prefix):
+	"""
+	Remove the prefix from the text if it exists.
+
+	>>> remove_prefix('underwhelming performance', 'underwhelming ')
+	'performance'
+
+	>>> remove_prefix('something special', 'sample')
+	'something special'
+	"""
+	null, prefix, rest = text.rpartition(prefix)
+	return rest
+
+
+def remove_suffix(text, suffix):
+	"""
+	Remove the suffix from the text if it exists.
+
+	>>> remove_suffix('name.git', '.git')
+	'name'
+
+	>>> remove_suffix('something special', 'sample')
+	'something special'
+	"""
+	rest, suffix, null = text.partition(suffix)
+	return rest

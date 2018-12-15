@@ -6,8 +6,11 @@ import ctypes
 import ctypes.wintypes
 
 import six
-
 builtins = six.moves.builtins
+
+
+__import__('jaraco.windows.api.memory')
+
 
 def format_system_message(errno):
 	"""
@@ -35,7 +38,7 @@ def format_system_message(errno):
 		ctypes.byref(result_buffer),
 		buffer_size,
 		arguments,
-		)
+	)
 	# note the following will cause an infinite loop if GetLastError
 	#  repeatedly returns an error that cannot be formatted, although
 	#  this should not happen.
@@ -46,13 +49,16 @@ def format_system_message(errno):
 
 
 class WindowsError(builtins.WindowsError):
-	"more info about errors at http://msdn.microsoft.com/en-us/library/ms681381(VS.85).aspx"
+	"""
+	More info about errors at
+	http://msdn.microsoft.com/en-us/library/ms681381(VS.85).aspx
+	"""
 
 	def __init__(self, value=None):
 		if value is None:
 			value = ctypes.windll.kernel32.GetLastError()
 		strerror = format_system_message(value)
-		if sys.version_info > (3,3):
+		if sys.version_info > (3, 3):
 			args = 0, strerror, None, value
 		else:
 			args = value, strerror
@@ -71,6 +77,7 @@ class WindowsError(builtins.WindowsError):
 
 	def __repr__(self):
 		return '{self.__class__.__name__}({self.winerror})'.format(**vars())
+
 
 def handle_nonzero_success(result):
 	if result == 0:

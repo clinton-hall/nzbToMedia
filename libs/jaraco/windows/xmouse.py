@@ -17,6 +17,7 @@ def set(value):
 	)
 	handle_nonzero_success(result)
 
+
 def get():
 	value = ctypes.wintypes.BOOL()
 	result = system.SystemParametersInfo(
@@ -28,6 +29,7 @@ def get():
 	handle_nonzero_success(result)
 	return bool(value)
 
+
 def set_delay(milliseconds):
 	result = system.SystemParametersInfo(
 		system.SPI_SETACTIVEWNDTRKTIMEOUT,
@@ -36,6 +38,7 @@ def set_delay(milliseconds):
 		0,
 	)
 	handle_nonzero_success(result)
+
 
 def get_delay():
 	value = ctypes.wintypes.DWORD()

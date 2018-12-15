@@ -3,6 +3,7 @@ from .api import errors
 from .api.user import GetUserName
 from .error import WindowsError, handle_nonzero_success
 
+
 def get_user_name():
 	size = ctypes.wintypes.DWORD()
 	try:

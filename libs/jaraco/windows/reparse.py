@@ -5,7 +5,9 @@ import ctypes.wintypes
 from .error import handle_nonzero_success
 from .api import filesystem
 
-def DeviceIoControl(device, io_control_code, in_buffer, out_buffer, overlapped=None):
+
+def DeviceIoControl(
+	device, io_control_code, in_buffer, out_buffer, overlapped=None):
 	if overlapped is not None:
 		raise NotImplementedError("overlapped handles not yet supported")
 
@@ -25,7 +27,7 @@ def DeviceIoControl(device, io_control_code, in_buffer, out_buffer, overlapped=N
 		out_buffer, out_buffer_size,
 		returned_bytes,
 		overlapped,
-		)
+	)
 
 	handle_nonzero_success(res)
 	handle_nonzero_success(returned_bytes)

@@ -6,7 +6,7 @@ SystemParametersInfo.argtypes = (
 	ctypes.wintypes.UINT,
 	ctypes.c_void_p,
 	ctypes.wintypes.UINT,
-	)
+)
 
 SPI_GETACTIVEWINDOWTRACKING = 0x1000
 SPI_SETACTIVEWINDOWTRACKING = 0x1001
