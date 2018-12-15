@@ -31,6 +31,7 @@ CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
 TEST_FILE = os.path.join(os.path.join(PROGRAM_DIR, 'tests'), 'test.mp4')
 MYAPP = None
 
+import six
 from six.moves import reload_module
 
 from core.autoProcess.autoProcessComics import autoProcessComics
@@ -269,21 +270,22 @@ def initialize(section=None):
     if not SYS_ENCODING or SYS_ENCODING in ('ANSI_X3.4-1968', 'US-ASCII', 'ASCII'):
         SYS_ENCODING = 'UTF-8'
 
-    if not hasattr(sys, "setdefaultencoding"):
-        reload_module(sys)
+    if six.PY2:
+        if not hasattr(sys, "setdefaultencoding"):
+            reload_module(sys)
 
-    try:
-        # pylint: disable=E1101
-        # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
-        sys.setdefaultencoding(SYS_ENCODING)
-    except:
-        print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
-              '\nor find another way to force Python to use {codec} for string encoding.'.format
-              (codec=SYS_ENCODING))
-        if 'NZBOP_SCRIPTDIR' in os.environ:
-            sys.exit(NZBGET_POSTPROCESS_ERROR)
-        else:
-            sys.exit(1)
+        try:
+            # pylint: disable=E1101
+            # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
+            sys.setdefaultencoding(SYS_ENCODING)
+        except:
+            print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
+                  '\nor find another way to force Python to use {codec} for string encoding.'.format
+                  (codec=SYS_ENCODING))
+            if 'NZBOP_SCRIPTDIR' in os.environ:
+                sys.exit(NZBGET_POSTPROCESS_ERROR)
+            else:
+                sys.exit(1)
 
     # init logging
     logger.ntm_log_instance.initLogging()
