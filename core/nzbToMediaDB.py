@@ -178,18 +178,19 @@ class DBConnection(object):
                 table=tableName,
                 params=", ".join(genParams(valueDict)),
                 conditions=" AND ".join(genParams(keyDict))),
-            valueDict.values() + keyDict.values()
+            list(valueDict.values()) + list(keyDict.values())
         )
 
         if self.connection.total_changes == changesBefore:
+            items = list(valueDict.values()) + list(keyDict.values())
             self.action(
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(
                     table=tableName,
-                    columns=", ".join(valueDict.keys() + keyDict.keys()),
-                    values=", ".join(["?"] * len(valueDict.keys() + keyDict.keys()))
-                )
-                , valueDict.values() + keyDict.values()
+                    columns=", ".join(items),
+                    values=", ".join(["?"] * len(items))
+                ),
+                items,
             )
 
     def tableInfo(self, tableName):

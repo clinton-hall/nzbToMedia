@@ -200,7 +200,7 @@ class autoProcessMovie(object):
         release_status_old = None
         if release:
             try:
-                release_id = release.keys()[0]
+                release_id = list(release.keys())[0]
                 media_id = release[release_id]['media_id']
                 download_id = release[release_id]['download_info']['id']
                 downloader = release[release_id]['download_info']['downloader']
@@ -418,7 +418,7 @@ class autoProcessMovie(object):
                 release = None
             if release:
                 try:
-                    release_id = release.keys()[0]
+                    release_id = list(release.keys())[0]
                     title = release[release_id]['title']
                     release_status_new = release[release_id]['status']
                     if release_status_old is None:  # we didn't have a release before, but now we do.
