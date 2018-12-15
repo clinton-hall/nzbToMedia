@@ -202,8 +202,10 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
 def getDirSize(inputPath):
     from functools import partial
     prepend = partial(os.path.join, inputPath)
-    return sum(
-        [(os.path.getsize(f) if os.path.isfile(f) else getDirSize(f)) for f in map(prepend, os.listdir(unicode(inputPath)))])
+    return sum([
+        (os.path.getsize(f) if os.path.isfile(f) else getDirSize(f))
+        for f in map(prepend, os.listdir(text_type(inputPath)))
+    ])
 
 
 def is_minSize(inputName, minSize):
@@ -330,7 +332,7 @@ def removeEmptyFolders(path, removeRoot=True):
 
     # remove empty subfolders
     logger.debug("Checking for empty folders in:{0}".format(path))
-    files = os.listdir(unicode(path))
+    files = os.listdir(text_type(path))
     if len(files):
         for f in files:
             fullpath = os.path.join(path, f)
@@ -338,7 +340,7 @@ def removeEmptyFolders(path, removeRoot=True):
                 removeEmptyFolders(fullpath)
 
     # if folder empty, delete it
-    files = os.listdir(unicode(path))
+    files = os.listdir(text_type(path))
     if len(files) == 0 and removeRoot:
         logger.debug("Removing empty folder:{}".format(path))
         os.rmdir(path)
@@ -417,7 +419,7 @@ def CharReplace(Name):
     # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
     encoded = False
     encoding = None
-    if isinstance(Name, unicode):
+    if isinstance(Name, text_type):
         return encoded, Name.encode(core.SYS_ENCODING)
     for Idx in range(len(Name)):
         # /!\ detection is done 2char by 2char for UTF-8 special character
@@ -644,9 +646,9 @@ def getDirs(section, subsection, link='hard'):
         folders = []
 
         logger.info("Searching {0} for mediafiles to post-process ...".format(path))
-        sync = [o for o in os.listdir(unicode(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+        sync = [o for o in os.listdir(text_type(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
         # search for single files and move them into their own folder for post-processing
-        for mediafile in [os.path.join(path, o) for o in os.listdir(unicode(path)) if
+        for mediafile in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
                           os.path.isfile(os.path.join(path, o))]:
             if len(sync) > 0:
                 break
@@ -710,11 +712,11 @@ def getDirs(section, subsection, link='hard'):
 
         # removeEmptyFolders(path, removeRoot=False)
 
-        if os.listdir(unicode(path)):
-            for dir in [os.path.join(path, o) for o in os.listdir(unicode(path)) if
+        if os.listdir(text_type(path)):
+            for dir in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
                         os.path.isdir(os.path.join(path, o))]:
-                sync = [o for o in os.listdir(unicode(dir)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-                if len(sync) > 0 or len(os.listdir(unicode(dir))) == 0:
+                sync = [o for o in os.listdir(text_type(dir)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+                if len(sync) > 0 or len(os.listdir(text_type(dir))) == 0:
                     continue
                 folders.extend([dir])
         return folders
@@ -765,7 +767,7 @@ def onerror(func, path, exc_info):
 def rmDir(dirName):
     logger.info("Deleting {0}".format(dirName))
     try:
-        shutil.rmtree(unicode(dirName), onerror=onerror)
+        shutil.rmtree(text_type(dirName), onerror=onerror)
     except:
         logger.error("Unable to delete folder {0}".format(dirName))
 
@@ -1050,7 +1052,7 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
 
         return files
 
-    for curFile in os.listdir(unicode(path)):
+    for curFile in os.listdir(text_type(path)):
         fullCurFile = os.path.join(path, curFile)
 
         # if it's a folder do it recursively
@@ -1087,7 +1089,7 @@ def find_imdbid(dirName, inputName, omdbApiKey):
         logger.info("Found imdbID [{0}]".format(imdbid))
         return imdbid
     if os.path.isdir(dirName):
-        for file in os.listdir(unicode(dirName)):
+        for file in os.listdir(text_type(dirName)):
             m = re.search('(tt\d{7})', file)
             if m:
                 imdbid = m.group(1)
