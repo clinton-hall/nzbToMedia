@@ -4,7 +4,7 @@ import ssl
 import struct
 import zlib
 
-from . import rencode
+import rencode
 
 __all__ = ["DelugeTransfer"]
 
