@@ -10,7 +10,8 @@ import stat
 import subprocess
 import tarfile
 import traceback
-import urllib
+
+from six.moves.urllib.request import urlretrieve
 
 import core
 from core import gh_api as github, logger
@@ -451,7 +452,7 @@ class SourceUpdateManager(UpdateManager):
             # retrieve file
             logger.log(u"Downloading update from {url!r}".format(url=tar_download_url))
             tar_download_path = os.path.join(sb_update_dir, u'nzbtomedia-update.tar')
-            urllib.urlretrieve(tar_download_url, tar_download_path)
+            urlretrieve(tar_download_url, tar_download_path)
 
             if not os.path.isfile(tar_download_path):
                 logger.log(u"Unable to retrieve new version from {url}, can't update".format

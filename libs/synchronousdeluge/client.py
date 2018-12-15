@@ -28,12 +28,14 @@ class DelugeClient(object):
         if platform.system() in ('Windows', 'Microsoft'):
             appDataPath = os.environ.get("APPDATA")
             if not appDataPath:
-                import _winreg
-                hkey = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,
-                                       "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders")
-                appDataReg = _winreg.QueryValueEx(hkey, "AppData")
+                from six.moves import winreg
+                hkey = winreg.OpenKey(
+                    winreg.HKEY_CURRENT_USER,
+                    "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
+                )
+                appDataReg = winreg.QueryValueEx(hkey, "AppData")
                 appDataPath = appDataReg[0]
-                _winreg.CloseKey(hkey)
+                winreg.CloseKey(hkey)
 
             auth_file = os.path.join(appDataPath, "deluge", "auth")
         else:
