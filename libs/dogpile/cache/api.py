@@ -1,5 +1,5 @@
 import operator
-from .compat import py3k
+from ..util.compat import py3k
 
 
 class NoValue(object):
@@ -13,16 +13,25 @@ class NoValue(object):
     def payload(self):
         return self
 
+    def __repr__(self):
+        """Ensure __repr__ is a consistent value in case NoValue is used to
+        fill another cache key.
+
+        """
+        return '<dogpile.cache.api.NoValue object>'
+
     if py3k:
-        def __bool__(self): #pragma NO COVERAGE
+        def __bool__(self):  # pragma NO COVERAGE
             return False
     else:
-        def __nonzero__(self): #pragma NO COVERAGE
+        def __nonzero__(self):  # pragma NO COVERAGE
             return False
+
 
 NO_VALUE = NoValue()
 """Value returned from ``get()`` that describes
 a  key not present."""
+
 
 class CachedValue(tuple):
     """Represent a value stored in the cache.
@@ -47,6 +56,7 @@ class CachedValue(tuple):
     def __reduce__(self):
         return CachedValue, (self.payload, self.metadata)
 
+
 class CacheBackend(object):
     """Base class for backend implementations."""
 
@@ -58,7 +68,7 @@ class CacheBackend(object):
 
     """
 
-    def __init__(self, arguments): #pragma NO COVERAGE
+    def __init__(self, arguments):  # pragma NO COVERAGE
         """Construct a new :class:`.CacheBackend`.
 
         Subclasses should override this to
@@ -74,12 +84,15 @@ class CacheBackend(object):
     def from_config_dict(cls, config_dict, prefix):
         prefix_len = len(prefix)
         return cls(
-                dict(
-                    (key[prefix_len:], config_dict[key])
-                    for key in config_dict
-                    if key.startswith(prefix)
-                )
+            dict(
+                (key[prefix_len:], config_dict[key])
+                for key in config_dict
+                if key.startswith(prefix)
             )
+        )
+
+    def has_lock_timeout(self):
+        return False
 
     def get_mutex(self, key):
         """Return an optional mutexing object for the given key.
@@ -114,7 +127,7 @@ class CacheBackend(object):
         """
         return None
 
-    def get(self, key): #pragma NO COVERAGE
+    def get(self, key):  # pragma NO COVERAGE
         """Retrieve a value from the cache.
 
         The returned value should be an instance of
@@ -124,7 +137,7 @@ class CacheBackend(object):
         """
         raise NotImplementedError()
 
-    def get_multi(self, keys): #pragma NO COVERAGE
+    def get_multi(self, keys):  # pragma NO COVERAGE
         """Retrieve multiple values from the cache.
 
         The returned value should be a list, corresponding
@@ -135,7 +148,7 @@ class CacheBackend(object):
         """
         raise NotImplementedError()
 
-    def set(self, key, value): #pragma NO COVERAGE
+    def set(self, key, value):  # pragma NO COVERAGE
         """Set a value in the cache.
 
         The key will be whatever was passed
@@ -147,21 +160,30 @@ class CacheBackend(object):
         """
         raise NotImplementedError()
 
-    def set_multi(self, mapping): #pragma NO COVERAGE
+    def set_multi(self, mapping):  # pragma NO COVERAGE
         """Set multiple values in the cache.
 
-        The key will be whatever was passed
+        ``mapping`` is a dict in which
+        the key will be whatever was passed
         to the registry, processed by the
         "key mangling" function, if any.
         The value will always be an instance
         of :class:`.CachedValue`.
+
+        When implementing a new :class:`.CacheBackend` or cutomizing via
+        :class:`.ProxyBackend`, be aware that when this method is invoked by
+        :meth:`.Region.get_or_create_multi`, the ``mapping`` values are the
+        same ones returned to the upstream caller. If the subclass alters the
+        values in any way, it must not do so 'in-place' on the ``mapping`` dict
+        -- that will have the undesirable effect of modifying the returned
+        values as well.
 
         .. versionadded:: 0.5.0
 
         """
         raise NotImplementedError()
 
-    def delete(self, key): #pragma NO COVERAGE
+    def delete(self, key):  # pragma NO COVERAGE
         """Delete a value from the cache.
 
         The key will be whatever was passed
@@ -175,7 +197,7 @@ class CacheBackend(object):
         """
         raise NotImplementedError()
 
-    def delete_multi(self, keys): #pragma NO COVERAGE
+    def delete_multi(self, keys):  # pragma NO COVERAGE
         """Delete multiple values from the cache.
 
         The key will be whatever was passed

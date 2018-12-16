@@ -21,14 +21,15 @@ http://www.crummy.com/software/BeautifulSoup/bs4/doc/
 # found in the LICENSE file.
 
 __author__ = "Leonard Richardson (leonardr@segfault.org)"
-__version__ = "4.5.1"
-__copyright__ = "Copyright (c) 2004-2016 Leonard Richardson"
+__version__ = "4.6.3"
+__copyright__ = "Copyright (c) 2004-2018 Leonard Richardson"
 __license__ = "MIT"
 
 __all__ = ['BeautifulSoup']
 
 import os
 import re
+import sys
 import traceback
 import warnings
 
@@ -50,7 +51,7 @@ from .element import (
 
 # The very first thing we do is give a useful error if someone is
 # running this code under Python 3 without converting it.
-'You are trying to run the Python 2 version of Beautiful Soup under Python 3. This will not work.'<>'You need to convert the code, either by installing it (`python setup.py install`) or by running 2to3 (`2to3 -w bs4`).'
+'You are trying to run the Python 2 version of Beautiful Soup under Python 3. This will not work.'!='You need to convert the code, either by installing it (`python setup.py install`) or by running 2to3 (`2to3 -w bs4`).'
 
 class BeautifulSoup(Tag):
     """
@@ -74,7 +75,7 @@ class BeautifulSoup(Tag):
     like HTML's <br> tag), call handle_starttag and then
     handle_endtag.
     """
-    ROOT_TAG_NAME = u'[document]'
+    ROOT_TAG_NAME = '[document]'
 
     # If the end-user gives no indication which tree builder they
     # want, look for one with these features.
@@ -82,14 +83,46 @@ class BeautifulSoup(Tag):
 
     ASCII_SPACES = '\x20\x0a\x09\x0c\x0d'
 
-    NO_PARSER_SPECIFIED_WARNING = "No parser was explicitly specified, so I'm using the best available %(markup_type)s parser for this system (\"%(parser)s\"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.\n\nThe code that caused this warning is on line %(line_number)s of the file %(filename)s. To get rid of this warning, change code that looks like this:\n\n BeautifulSoup([your markup])\n\nto this:\n\n BeautifulSoup([your markup], \"%(parser)s\")\n"
+    NO_PARSER_SPECIFIED_WARNING = "No parser was explicitly specified, so I'm using the best available %(markup_type)s parser for this system (\"%(parser)s\"). This usually isn't a problem, but if you run this code on another system, or in a different virtual environment, it may use a different parser and behave differently.\n\nThe code that caused this warning is on line %(line_number)s of the file %(filename)s. To get rid of this warning, pass the additional argument 'features=\"%(parser)s\"' to the BeautifulSoup constructor.\n"
 
     def __init__(self, markup="", features=None, builder=None,
                  parse_only=None, from_encoding=None, exclude_encodings=None,
                  **kwargs):
-        """The Soup object is initialized as the 'root tag', and the
-        provided markup (which can be a string or a file-like object)
-        is fed into the underlying parser."""
+        """Constructor.
+
+        :param markup: A string or a file-like object representing
+        markup to be parsed.
+
+        :param features: Desirable features of the parser to be used. This
+        may be the name of a specific parser ("lxml", "lxml-xml",
+        "html.parser", or "html5lib") or it may be the type of markup
+        to be used ("html", "html5", "xml"). It's recommended that you
+        name a specific parser, so that Beautiful Soup gives you the
+        same results across platforms and virtual environments.
+
+        :param builder: A specific TreeBuilder to use instead of looking one
+        up based on `features`. You shouldn't need to use this.
+
+        :param parse_only: A SoupStrainer. Only parts of the document
+        matching the SoupStrainer will be considered. This is useful
+        when parsing part of a document that would otherwise be too
+        large to fit into memory.
+
+        :param from_encoding: A string indicating the encoding of the
+        document to be parsed. Pass this in if Beautiful Soup is
+        guessing wrongly about the document's encoding.
+
+        :param exclude_encodings: A list of strings indicating
+        encodings known to be wrong. Pass this in if you don't know
+        the document's encoding but you know Beautiful Soup's guess is
+        wrong.
+
+        :param kwargs: For backwards compatibility purposes, the
+        constructor accepts certain keyword arguments used in
+        Beautiful Soup 3. None of these arguments do anything in
+        Beautiful Soup 4 and there's no need to actually pass keyword
+        arguments into the constructor.
+        """
 
         if 'convertEntities' in kwargs:
             warnings.warn(
@@ -142,18 +175,18 @@ class BeautifulSoup(Tag):
         from_encoding = from_encoding or deprecated_argument(
             "fromEncoding", "from_encoding")
 
-        if from_encoding and isinstance(markup, unicode):
+        if from_encoding and isinstance(markup, str):
             warnings.warn("You provided Unicode markup but also provided a value for from_encoding. Your from_encoding will be ignored.")
             from_encoding = None
 
         if len(kwargs) > 0:
-            arg = kwargs.keys().pop()
+            arg = list(kwargs.keys()).pop()
             raise TypeError(
                 "__init__() got an unexpected keyword argument '%s'" % arg)
 
         if builder is None:
             original_features = features
-            if isinstance(features, basestring):
+            if isinstance(features, str):
                 features = [features]
             if features is None or len(features) == 0:
                 features = self.DEFAULT_BUILDER_FEATURES
@@ -171,14 +204,35 @@ class BeautifulSoup(Tag):
                 else:
                     markup_type = "HTML"
 
-                caller = traceback.extract_stack()[0]
-                filename = caller[0]
-                line_number = caller[1]
-                warnings.warn(self.NO_PARSER_SPECIFIED_WARNING % dict(
-                    filename=filename,
-                    line_number=line_number,
-                    parser=builder.NAME,
-                    markup_type=markup_type))
+                # This code adapted from warnings.py so that we get the same line
+                # of code as our warnings.warn() call gets, even if the answer is wrong
+                # (as it may be in a multithreading situation).
+                caller = None
+                try:
+                    caller = sys._getframe(1)
+                except ValueError:
+                    pass
+                if caller:
+                    globals = caller.f_globals
+                    line_number = caller.f_lineno
+                else:
+                    globals = sys.__dict__
+                    line_number= 1                    
+                filename = globals.get('__file__')
+                if filename:
+                    fnl = filename.lower()
+                    if fnl.endswith((".pyc", ".pyo")):
+                        filename = filename[:-1]
+                if filename:
+                    # If there is no filename at all, the user is most likely in a REPL,
+                    # and the warning is not necessary.
+                    values = dict(
+                        filename=filename,
+                        line_number=line_number,
+                        parser=builder.NAME,
+                        markup_type=markup_type
+                    )
+                    warnings.warn(self.NO_PARSER_SPECIFIED_WARNING % values, stacklevel=2)
 
         self.builder = builder
         self.is_xml = builder.is_xml
@@ -191,13 +245,13 @@ class BeautifulSoup(Tag):
             markup = markup.read()
         elif len(markup) <= 256 and (
                 (isinstance(markup, bytes) and not b'<' in markup)
-                or (isinstance(markup, unicode) and not u'<' in markup)
+                or (isinstance(markup, str) and not '<' in markup)
         ):
             # Print out warnings for a couple beginner problems
             # involving passing non-markup to Beautiful Soup.
             # Beautiful Soup will still parse the input as markup,
             # just in case that's what the user really wants.
-            if (isinstance(markup, unicode)
+            if (isinstance(markup, str)
                 and not os.path.supports_unicode_filenames):
                 possible_filename = markup.encode("utf8")
             else:
@@ -205,18 +259,18 @@ class BeautifulSoup(Tag):
             is_file = False
             try:
                 is_file = os.path.exists(possible_filename)
-            except Exception, e:
+            except Exception as e:
                 # This is almost certainly a problem involving
                 # characters not valid in filenames on this
                 # system. Just let it go.
                 pass
             if is_file:
-                if isinstance(markup, unicode):
+                if isinstance(markup, str):
                     markup = markup.encode("utf8")
                 warnings.warn(
                     '"%s" looks like a filename, not markup. You should'
-                    'probably open this file and pass the filehandle into'
-                    'Beautiful Soup.' % markup)
+                    ' probably open this file and pass the filehandle into'
+                    ' Beautiful Soup.' % markup)
             self._check_markup_is_url(markup)
 
         for (self.markup, self.original_encoding, self.declared_html_encoding,
@@ -263,9 +317,9 @@ class BeautifulSoup(Tag):
         if isinstance(markup, bytes):
             space = b' '
             cant_start_with = (b"http:", b"https:")
-        elif isinstance(markup, unicode):
-            space = u' '
-            cant_start_with = (u"http:", u"https:")
+        elif isinstance(markup, str):
+            space = ' '
+            cant_start_with = ("http:", "https:")
         else:
             return
 
@@ -302,9 +356,10 @@ class BeautifulSoup(Tag):
         self.preserve_whitespace_tag_stack = []
         self.pushTag(self)
 
-    def new_tag(self, name, namespace=None, nsprefix=None, **attrs):
+    def new_tag(self, name, namespace=None, nsprefix=None, attrs={}, **kwattrs):
         """Create a new tag associated with this soup."""
-        return Tag(None, self.builder, name, namespace, nsprefix, attrs)
+        kwattrs.update(attrs)
+        return Tag(None, self.builder, name, namespace, nsprefix, kwattrs)
 
     def new_string(self, s, subclass=NavigableString):
         """Create a new NavigableString associated with this soup."""
@@ -336,7 +391,7 @@ class BeautifulSoup(Tag):
 
     def endData(self, containerClass=NavigableString):
         if self.current_data:
-            current_data = u''.join(self.current_data)
+            current_data = ''.join(self.current_data)
             # If whitespace is not preserved, and this string contains
             # nothing but ASCII spaces, replace it with a single space
             # or newline.
@@ -490,9 +545,9 @@ class BeautifulSoup(Tag):
             encoding_part = ''
             if eventual_encoding != None:
                 encoding_part = ' encoding="%s"' % eventual_encoding
-            prefix = u'<?xml version="1.0"%s?>\n' % encoding_part
+            prefix = '<?xml version="1.0"%s?>\n' % encoding_part
         else:
-            prefix = u''
+            prefix = ''
         if not pretty_print:
             indent_level = None
         else:
@@ -526,4 +581,4 @@ class FeatureNotFound(ValueError):
 if __name__ == '__main__':
     import sys
     soup = BeautifulSoup(sys.stdin)
-    print soup.prettify()
+    print(soup.prettify())

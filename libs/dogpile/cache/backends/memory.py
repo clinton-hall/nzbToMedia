@@ -10,8 +10,9 @@ places the value as given into the dictionary.
 
 """
 
-from dogpile.cache.api import CacheBackend, NO_VALUE
-from dogpile.cache.compat import pickle
+from ..api import CacheBackend, NO_VALUE
+from ...util.compat import pickle
+
 
 class MemoryBackend(CacheBackend):
     """A backend that uses a plain dictionary.
@@ -58,14 +59,15 @@ class MemoryBackend(CacheBackend):
         return value
 
     def get_multi(self, keys):
-        ret = [self._cache.get(key, NO_VALUE)
+        ret = [
+            self._cache.get(key, NO_VALUE)
             for key in keys]
         if self.pickle_values:
             ret = [
-                    pickle.loads(value)
-                    if value is not NO_VALUE else value
-                    for value in ret
-                ]
+                pickle.loads(value)
+                if value is not NO_VALUE else value
+                for value in ret
+            ]
         return ret
 
     def set(self, key, value):

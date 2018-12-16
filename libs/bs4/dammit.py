@@ -11,7 +11,7 @@ XML or HTML to reflect a new encoding; that's the tree builder's job.
 __license__ = "MIT"
 
 import codecs
-from htmlentitydefs import codepoint2name
+from html.entities import codepoint2name
 import re
 import logging
 import string
@@ -46,9 +46,9 @@ except ImportError:
     pass
 
 xml_encoding_re = re.compile(
-    '^<\?.*encoding=[\'"](.*?)[\'"].*\?>'.encode(), re.I)
+    '^<\\?.*encoding=[\'"](.*?)[\'"].*\\?>'.encode(), re.I)
 html_meta_re = re.compile(
-    '<\s*meta[^>]+charset\s*=\s*["\']?([^>]*?)[ /;\'">]'.encode(), re.I)
+    '<\\s*meta[^>]+charset\\s*=\\s*["\']?([^>]*?)[ /;\'">]'.encode(), re.I)
 
 class EntitySubstitution(object):
 
@@ -59,7 +59,7 @@ class EntitySubstitution(object):
         reverse_lookup = {}
         characters_for_re = []
         for codepoint, name in list(codepoint2name.items()):
-            character = unichr(codepoint)
+            character = chr(codepoint)
             if codepoint != 34:
                 # There's no point in turning the quotation mark into
                 # &quot;, unless it happens within an attribute value, which
@@ -82,7 +82,7 @@ class EntitySubstitution(object):
         }
 
     BARE_AMPERSAND_OR_BRACKET = re.compile("([<>]|"
-                                           "&(?!#\d+;|#x[0-9a-fA-F]+;|\w+;)"
+                                           "&(?!#\\d+;|#x[0-9a-fA-F]+;|\\w+;)"
                                            ")")
 
     AMPERSAND_OR_BRACKET = re.compile("([<>&])")
@@ -274,7 +274,7 @@ class EncodingDetector:
     def strip_byte_order_mark(cls, data):
         """If a byte-order mark is present, strip it and return the encoding it implies."""
         encoding = None
-        if isinstance(data, unicode):
+        if isinstance(data, str):
             # Unicode data cannot have a byte-order mark.
             return data, encoding
         if (len(data) >= 4) and (data[:2] == b'\xfe\xff') \
@@ -310,7 +310,7 @@ class EncodingDetector:
         else:
             xml_endpos = 1024
             html_endpos = max(2048, int(len(markup) * 0.05))
-            
+
         declared_encoding = None
         declared_encoding_match = xml_encoding_re.search(markup, endpos=xml_endpos)
         if not declared_encoding_match and is_html:
@@ -352,9 +352,9 @@ class UnicodeDammit:
             markup, override_encodings, is_html, exclude_encodings)
 
         # Short-circuit if the data is in Unicode to begin with.
-        if isinstance(markup, unicode) or markup == '':
+        if isinstance(markup, str) or markup == '':
             self.markup = markup
-            self.unicode_markup = unicode(markup)
+            self.unicode_markup = str(markup)
             self.original_encoding = None
             return
 
@@ -438,7 +438,7 @@ class UnicodeDammit:
     def _to_unicode(self, data, encoding, errors="strict"):
         '''Given a string and its encoding, decodes the string into Unicode.
         %encoding is a string recognized by encodings.aliases'''
-        return unicode(data, encoding, errors)
+        return str(data, encoding, errors)
 
     @property
     def declared_html_encoding(self):
@@ -736,7 +736,7 @@ class UnicodeDammit:
         0xde : b'\xc3\x9e',     # Þ
         0xdf : b'\xc3\x9f',     # ß
         0xe0 : b'\xc3\xa0',     # à
-        0xe1 : b'\xa1',     # á
+        0xe1 : b'\xa1',         # á
         0xe2 : b'\xc3\xa2',     # â
         0xe3 : b'\xc3\xa3',     # ã
         0xe4 : b'\xc3\xa4',     # ä
