@@ -34,9 +34,10 @@ in place of any single coroutine.
 
 from __future__ import division, absolute_import, print_function
 
-import Queue
+from six.moves import queue
 from threading import Thread, Lock
 import sys
+import six
 
 BUBBLE = '__PIPELINE_BUBBLE__'
 POISON = '__PIPELINE_POISON__'
@@ -63,7 +64,17 @@ def _invalidate_queue(q, val=None, sync=True):
         q.mutex.acquire()
 
     try:
-        q.maxsize = 0
+        # Originally, we set `maxsize` to 0 here, which is supposed to mean
+        # an unlimited queue size. However, there is a race condition since
+        # Python 3.2 when this attribute is changed while another thread is
+        # waiting in put()/get() due to a full/empty queue.
+        # Setting it to 2 is still hacky because Python does not give any
+        # guarantee what happens if Queue methods/attributes are overwritten
+        # when it is already in use. However, because of our dummy _put()
+        # and _get() methods, it provides a workaround to let the queue appear
+        # to be never empty or full.
+        # See issue https://github.com/beetbox/beets/issues/2078
+        q.maxsize = 2
         q._qsize = _qsize
         q._put = _put
         q._get = _get
@@ -75,13 +86,13 @@ def _invalidate_queue(q, val=None, sync=True):
             q.mutex.release()
 
 
-class CountedQueue(Queue.Queue):
+class CountedQueue(queue.Queue):
     """A queue that keeps track of the number of threads that are
     still feeding into it. The queue is poisoned when all threads are
     finished with the queue.
     """
     def __init__(self, maxsize=0):
-        Queue.Queue.__init__(self, maxsize)
+        queue.Queue.__init__(self, maxsize)
         self.nthreads = 0
         self.poisoned = False
 
@@ -259,7 +270,7 @@ class FirstPipelineThread(PipelineThread):
                             return
                     self.out_queue.put(msg)
 
-        except:
+        except BaseException:
             self.abort_all(sys.exc_info())
             return
 
@@ -307,7 +318,7 @@ class MiddlePipelineThread(PipelineThread):
                             return
                     self.out_queue.put(msg)
 
-        except:
+        except BaseException:
             self.abort_all(sys.exc_info())
             return
 
@@ -346,7 +357,7 @@ class LastPipelineThread(PipelineThread):
                 # Send to consumer.
                 self.coro.send(msg)
 
-        except:
+        except BaseException:
             self.abort_all(sys.exc_info())
             return
 
@@ -411,10 +422,10 @@ class Pipeline(object):
         try:
             # Using a timeout allows us to receive KeyboardInterrupt
             # exceptions during the join().
-            while threads[-1].isAlive():
+            while threads[-1].is_alive():
                 threads[-1].join(1)
 
-        except:
+        except BaseException:
             # Stop all the threads immediately.
             for thread in threads:
                 thread.abort()
@@ -431,7 +442,7 @@ class Pipeline(object):
             exc_info = thread.exc_info
             if exc_info:
                 # Make the exception appear as it was raised originally.
-                raise exc_info[0], exc_info[1], exc_info[2]
+                six.reraise(exc_info[0], exc_info[1], exc_info[2])
 
     def pull(self):
         """Yield elements from the end of the pipeline. Runs the stages

@@ -3,15 +3,16 @@
 # Copyright (C) 2006-2007  Lukas Lalinsky
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Read and write ASF (Window Media Audio) files."""
 
 __all__ = ["ASF", "Open"]
 
 from mutagen import FileType, Tags, StreamInfo
-from mutagen._util import resize_bytes, DictMixin
+from mutagen._util import resize_bytes, DictMixin, loadfile, convert_error
 from mutagen._compat import string_types, long_, PY3, izip
 
 from ._util import error, ASFError, ASFHeaderError
@@ -28,35 +29,31 @@ error, ASFError, ASFHeaderError, ASFValue
 
 
 class ASFInfo(StreamInfo):
-    """ASF stream information."""
+    """ASFInfo()
+
+    ASF stream information.
+
+    Attributes:
+        length (`float`): "Length in seconds
+        sample_rate (`int`): Sample rate in Hz
+        bitrate (`int`): Bitrate in bps
+        channels (`int`): Number of channels
+        codec_type (`mutagen.text`): Name of the codec type of the first
+            audio stream or an empty string if unknown. Example:
+            ``Windows Media Audio 9 Standard``
+        codec_name (`mutagen.text`): Name and maybe version of the codec used.
+            Example: ``Windows Media Audio 9.1``
+        codec_description (`mutagen.text`): Further information on the codec
+            used. Example: ``64 kbps, 48 kHz, stereo 2-pass CBR``
+    """
 
     length = 0.0
-    """Length in seconds (`float`)"""
-
     sample_rate = 0
-    """Sample rate in Hz (`int`)"""
-
     bitrate = 0
-    """Bitrate in bps (`int`)"""
-
     channels = 0
-    """Number of channels (`int`)"""
-
     codec_type = u""
-    """Name of the codec type of the first audio stream or
-    an empty string if unknown. Example: ``Windows Media Audio 9 Standard``
-    (:class:`mutagen.text`)
-    """
-
     codec_name = u""
-    """Name and maybe version of the codec used. Example:
-    ``Windows Media Audio 9.1`` (:class:`mutagen.text`)
-    """
-
     codec_description = u""
-    """Further information on the codec used.
-    Example: ``64 kbps, 48 kHz, stereo 2-pass CBR`` (:class:`mutagen.text`)
-    """
 
     def __init__(self):
         self.length = 0.0
@@ -68,9 +65,8 @@ class ASFInfo(StreamInfo):
         self.codec_description = u""
 
     def pprint(self):
-        """Returns a stream information text summary
-
-        :rtype: text
+        """Returns:
+            text: a stream information text summary
         """
 
         s = u"ASF (%s) %d bps, %s Hz, %d channels, %.2f seconds" % (
@@ -80,7 +76,10 @@ class ASFInfo(StreamInfo):
 
 
 class ASFTags(list, DictMixin, Tags):
-    """Dictionary containing ASF attributes."""
+    """ASFTags()
+
+    Dictionary containing ASF attributes.
+    """
 
     def __getitem__(self, key):
         """A list of values for the key.
@@ -206,49 +205,64 @@ GUID = ASFGUIDAttribute.TYPE
 
 
 class ASF(FileType):
-    """An ASF file, probably containing WMA or WMV.
+    """ASF(filething)
 
-    :param filename: a filename to load
-    :raises mutagen.asf.error: In case loading fails
+    An ASF file, probably containing WMA or WMV.
+
+    Arguments:
+        filething (filething)
+
+    Attributes:
+        info (`ASFInfo`)
+        tags (`ASFTags`)
     """
 
     _mimes = ["audio/x-ms-wma", "audio/x-ms-wmv", "video/x-ms-asf",
               "audio/x-wma", "video/x-wmv"]
 
     info = None
-    """A `ASFInfo` instance"""
-
     tags = None
-    """A `ASFTags` instance"""
 
-    def load(self, filename):
-        self.filename = filename
+    @convert_error(IOError, error)
+    @loadfile()
+    def load(self, filething):
+        """load(filething)
+
+        Args:
+            filething (filething)
+        Raises:
+            mutagen.MutagenError
+        """
+
+        fileobj = filething.fileobj
+
         self.info = ASFInfo()
         self.tags = ASFTags()
 
-        with open(filename, "rb") as fileobj:
-            self._tags = {}
+        self._tags = {}
+        self._header = HeaderObject.parse_full(self, fileobj)
 
-            self._header = HeaderObject.parse_full(self, fileobj)
+        for guid in [ContentDescriptionObject.GUID,
+                     ExtendedContentDescriptionObject.GUID,
+                     MetadataObject.GUID,
+                     MetadataLibraryObject.GUID]:
+            self.tags.extend(self._tags.pop(guid, []))
 
-            for guid in [ContentDescriptionObject.GUID,
-                    ExtendedContentDescriptionObject.GUID, MetadataObject.GUID,
-                    MetadataLibraryObject.GUID]:
-                self.tags.extend(self._tags.pop(guid, []))
+        assert not self._tags
 
-            assert not self._tags
+    @convert_error(IOError, error)
+    @loadfile(writable=True)
+    def save(self, filething, padding=None):
+        """save(filething=None, padding=None)
 
-    def save(self, filename=None, padding=None):
-        """Save tag changes back to the loaded file.
+        Save tag changes back to the loaded file.
 
-        :param padding: A callback which returns the amount of padding to use.
-            See :class:`mutagen.PaddingInfo`
-
-        :raises mutagen.asf.error: In case saving fails
+        Args:
+            filething (filething)
+            padding (:obj:`mutagen.PaddingFunction`)
+        Raises:
+            mutagen.MutagenError
         """
-
-        if filename is not None and filename != self.filename:
-            raise ValueError("saving to another file not supported atm")
 
         # Move attributes to the right objects
         self.to_content_description = {}
@@ -292,25 +306,30 @@ class ASF(FileType):
         if header_ext.get_child(MetadataLibraryObject.GUID) is None:
             header_ext.objects.append(MetadataLibraryObject())
 
+        fileobj = filething.fileobj
         # Render to file
-        with open(self.filename, "rb+") as fileobj:
-            old_size = header.parse_size(fileobj)[0]
-            data = header.render_full(self, fileobj, old_size, padding)
-            size = len(data)
-            resize_bytes(fileobj, old_size, size, 0)
-            fileobj.seek(0)
-            fileobj.write(data)
+        old_size = header.parse_size(fileobj)[0]
+        data = header.render_full(self, fileobj, old_size, padding)
+        size = len(data)
+        resize_bytes(fileobj, old_size, size, 0)
+        fileobj.seek(0)
+        fileobj.write(data)
 
     def add_tags(self):
         raise ASFError
 
-    def delete(self, filename=None):
+    @loadfile(writable=True)
+    def delete(self, filething):
+        """delete(filething=None)
 
-        if filename is not None and filename != self.filename:
-            raise ValueError("saving to another file not supported atm")
+        Args:
+            filething (filething)
+        Raises:
+            mutagen.MutagenError
+        """
 
         self.tags.clear()
-        self.save(padding=lambda x: 0)
+        self.save(filething, padding=lambda x: 0)
 
     @staticmethod
     def score(filename, fileobj, header):

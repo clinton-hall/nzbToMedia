@@ -18,6 +18,7 @@
 from __future__ import division, absolute_import, print_function
 
 import time
+from six.moves import input
 
 from beets import ui
 from beets.plugins import BeetsPlugin
@@ -31,7 +32,7 @@ def bpm(max_strokes):
     dt = []
     for i in range(max_strokes):
         # Press enter to the rhythm...
-        s = raw_input()
+        s = input()
         if s == '':
             t1 = time.time()
             # Only start measuring at the second stroke
@@ -64,7 +65,9 @@ class BPMPlugin(BeetsPlugin):
         return [cmd]
 
     def command(self, lib, opts, args):
-        self.get_bpm(lib.items(ui.decargs(args)))
+        items = lib.items(ui.decargs(args))
+        write = ui.should_write()
+        self.get_bpm(items, write)
 
     def get_bpm(self, items, write=False):
         overwrite = self.config['overwrite'].get(bool)

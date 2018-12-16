@@ -23,7 +23,7 @@ from beets import config
 from beets import plugins
 from beets.dbcore import types
 
-API_URL = 'http://ws.audioscrobbler.com/2.0/'
+API_URL = 'https://ws.audioscrobbler.com/2.0/'
 
 
 class LastImportPlugin(plugins.BeetsPlugin):
@@ -110,7 +110,7 @@ class CustomUser(pylast.User):
 
 
 def import_lastfm(lib, log):
-    user = config['lastfm']['user'].get(unicode)
+    user = config['lastfm']['user'].as_str()
     per_page = config['lastimport']['per_page'].get(int)
 
     if not user:
@@ -192,7 +192,7 @@ def process_tracks(lib, tracks, log):
     total_fails = 0
     log.info(u'Received {0} tracks in this page, processing...', total)
 
-    for num in xrange(0, total):
+    for num in range(0, total):
         song = None
         trackid = tracks[num]['mbid'].strip()
         artist = tracks[num]['artist'].get('name', '').strip()

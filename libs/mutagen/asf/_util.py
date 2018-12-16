@@ -3,15 +3,16 @@
 # Copyright (C) 2006-2007  Lukas Lalinsky
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 import struct
 
 from mutagen._util import MutagenError
 
 
-class error(IOError, MutagenError):
+class error(MutagenError):
     """Error raised by :mod:`mutagen.asf`"""
 
 
@@ -34,7 +35,7 @@ def guid2bytes(s):
         p("<IHH", int(s[:8], 16), int(s[9:13], 16), int(s[14:18], 16)),
         p(">H", int(s[19:23], 16)),
         p(">Q", int(s[24:], 16))[2:],
-        ])
+    ])
 
 
 def bytes2guid(s):

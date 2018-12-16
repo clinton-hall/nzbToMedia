@@ -30,12 +30,13 @@ class ImportAddedPlugin(BeetsPlugin):
         self.item_mtime = dict()
 
         register = self.register_listener
-        register('import_task_start', self.check_config)
-        register('import_task_start', self.record_if_inplace)
+        register('import_task_created', self.check_config)
+        register('import_task_created', self.record_if_inplace)
         register('import_task_files', self.record_reimported)
         register('before_item_moved', self.record_import_mtime)
         register('item_copied', self.record_import_mtime)
         register('item_linked', self.record_import_mtime)
+        register('item_hardlinked', self.record_import_mtime)
         register('album_imported', self.update_album_times)
         register('item_imported', self.update_item_times)
         register('after_write', self.update_after_write_time)
@@ -51,7 +52,7 @@ class ImportAddedPlugin(BeetsPlugin):
 
     def record_if_inplace(self, task, session):
         if not (session.config['copy'] or session.config['move'] or
-                session.config['link']):
+                session.config['link'] or session.config['hardlink']):
             self._log.debug(u"In place import detected, recording mtimes from "
                             u"source paths")
             items = [task.item] \
@@ -62,7 +63,7 @@ class ImportAddedPlugin(BeetsPlugin):
 
     def record_reimported(self, task, session):
         self.reimported_item_ids = set(item.id for item, replaced_items
-                                       in task.replaced_items.iteritems()
+                                       in task.replaced_items.items()
                                        if replaced_items)
         self.replaced_album_paths = set(task.replaced_albums.keys())
 

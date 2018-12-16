@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2006 Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Read and write Ogg Theora comments.
 
@@ -20,7 +20,7 @@ import struct
 
 from mutagen import StreamInfo
 from mutagen._vorbis import VCommentDict
-from mutagen._util import cdata, get_size
+from mutagen._util import cdata, get_size, loadfile, convert_error
 from mutagen._tags import PaddingInfo
 from mutagen.ogg import OggPage, OggFileType, error as OggError
 
@@ -34,16 +34,19 @@ class OggTheoraHeaderError(error):
 
 
 class OggTheoraInfo(StreamInfo):
-    """Ogg Theora stream information."""
+    """OggTheoraInfo()
+
+    Ogg Theora stream information.
+
+    Attributes:
+        length (`float`): File length in seconds, as a float
+        fps (`float`): Video frames per second, as a float
+        bitrate (`int`): Bitrate in bps (int)
+    """
 
     length = 0
-    """File length in seconds, as a float"""
-
     fps = 0
-    """Video frames per second, as a float"""
-
     bitrate = 0
-    """Bitrate in bps (int)"""
 
     def __init__(self, fileobj):
         page = OggPage(fileobj)
@@ -64,7 +67,9 @@ class OggTheoraInfo(StreamInfo):
         self.serial = page.serial
 
     def _post_tags(self, fileobj):
-        page = OggPage.find_last(fileobj, self.serial)
+        page = OggPage.find_last(fileobj, self.serial, finishing=True)
+        if page is None:
+            raise OggTheoraHeaderError
         position = page.position
         mask = (1 << self.granule_shift) - 1
         frames = (position >> self.granule_shift) + (position & mask)
@@ -120,7 +125,17 @@ class OggTheoraCommentDict(VCommentDict):
 
 
 class OggTheora(OggFileType):
-    """An Ogg Theora file."""
+    """OggTheora(filething)
+
+    An Ogg Theora file.
+
+    Arguments:
+        filething (filething)
+
+    Attributes:
+        info (`OggTheoraInfo`)
+        tags (`mutagen._vorbis.VCommentDict`)
+    """
 
     _Info = OggTheoraInfo
     _Tags = OggTheoraCommentDict
@@ -128,10 +143,7 @@ class OggTheora(OggFileType):
     _mimes = ["video/x-theora"]
 
     info = None
-    """A `OggTheoraInfo`"""
-
     tags = None
-    """A `VCommentDict`"""
 
     @staticmethod
     def score(filename, fileobj, header):
@@ -142,7 +154,19 @@ class OggTheora(OggFileType):
 Open = OggTheora
 
 
-def delete(filename):
-    """Remove tags from a file."""
+@convert_error(IOError, error)
+@loadfile(method=False, writable=True)
+def delete(filething):
+    """ delete(filething)
 
-    OggTheora(filename).delete()
+    Arguments:
+        filething (filething)
+    Raises:
+        mutagen.MutagenError
+
+    Remove tags from a file.
+    """
+
+    t = OggTheora(filething)
+    filething.fileobj.seek(0)
+    t.delete(filething)

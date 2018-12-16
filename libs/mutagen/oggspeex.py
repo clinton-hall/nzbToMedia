@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
-
 # Copyright 2006 Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License version 2 as
-# published by the Free Software Foundation.
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version.
 
 """Read and write Ogg Speex comments.
 
@@ -22,7 +22,7 @@ __all__ = ["OggSpeex", "Open", "delete"]
 from mutagen import StreamInfo
 from mutagen._vorbis import VCommentDict
 from mutagen.ogg import OggPage, OggFileType, error as OggError
-from mutagen._util import cdata, get_size
+from mutagen._util import cdata, get_size, loadfile, convert_error
 from mutagen._tags import PaddingInfo
 
 
@@ -35,20 +35,21 @@ class OggSpeexHeaderError(error):
 
 
 class OggSpeexInfo(StreamInfo):
-    """Ogg Speex stream information."""
+    """OggSpeexInfo()
+
+    Ogg Speex stream information.
+
+    Attributes:
+        length (`float`): file length in seconds, as a float
+        channels (`int`): number of channels
+        bitrate (`int`): nominal bitrate in bits per second. The reference
+            encoder does not set the bitrate; in this case, the bitrate will
+            be 0.
+    """
 
     length = 0
-    """file length in seconds, as a float"""
-
     channels = 0
-    """number of channels"""
-
     bitrate = 0
-    """nominal bitrate in bits per second.
-
-    The reference encoder does not set the bitrate; in this case,
-    the bitrate will be 0.
-    """
 
     def __init__(self, fileobj):
         page = OggPage(fileobj)
@@ -63,7 +64,9 @@ class OggSpeexInfo(StreamInfo):
         self.serial = page.serial
 
     def _post_tags(self, fileobj):
-        page = OggPage.find_last(fileobj, self.serial)
+        page = OggPage.find_last(fileobj, self.serial, finishing=True)
+        if page is None:
+            raise OggSpeexHeaderError
         self.length = page.position / float(self.sample_rate)
 
     def pprint(self):
@@ -127,7 +130,17 @@ class OggSpeexVComment(VCommentDict):
 
 
 class OggSpeex(OggFileType):
-    """An Ogg Speex file."""
+    """OggSpeex(filething)
+
+    An Ogg Speex file.
+
+    Arguments:
+        filething (filething)
+
+    Attributes:
+        info (`OggSpeexInfo`)
+        tags (`mutagen._vorbis.VCommentDict`)
+    """
 
     _Info = OggSpeexInfo
     _Tags = OggSpeexVComment
@@ -135,10 +148,7 @@ class OggSpeex(OggFileType):
     _mimes = ["audio/x-speex"]
 
     info = None
-    """A `OggSpeexInfo`"""
-
     tags = None
-    """A `VCommentDict`"""
 
     @staticmethod
     def score(filename, fileobj, header):
@@ -148,7 +158,19 @@ class OggSpeex(OggFileType):
 Open = OggSpeex
 
 
-def delete(filename):
-    """Remove tags from a file."""
+@convert_error(IOError, error)
+@loadfile(method=False, writable=True)
+def delete(filething):
+    """ delete(filething)
 
-    OggSpeex(filename).delete()
+    Arguments:
+        filething (filething)
+    Raises:
+        mutagen.MutagenError
+
+    Remove tags from a file.
+    """
+
+    t = OggSpeex(filething)
+    filething.fileobj.seek(0)
+    t.delete(filething)

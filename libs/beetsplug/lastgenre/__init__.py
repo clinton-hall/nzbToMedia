@@ -14,6 +14,7 @@
 # included in all copies or substantial portions of the Software.
 
 from __future__ import division, absolute_import, print_function
+import six
 
 """Gets genres for imported music based on Last.fm tags.
 
@@ -24,6 +25,7 @@ The scraper script used is available here:
 https://gist.github.com/1241307
 """
 import pylast
+import codecs
 import os
 import yaml
 import traceback
@@ -71,7 +73,7 @@ def flatten_tree(elem, path, branches):
         for sub in elem:
             flatten_tree(sub, path, branches)
     else:
-        branches.append(path + [unicode(elem)])
+        branches.append(path + [six.text_type(elem)])
 
 
 def find_parents(candidate, branches):
@@ -107,6 +109,7 @@ class LastGenrePlugin(plugins.BeetsPlugin):
             'force': True,
             'auto': True,
             'separator': u', ',
+            'prefer_specific': False,
         })
 
         self.setup()
@@ -126,9 +129,9 @@ class LastGenrePlugin(plugins.BeetsPlugin):
             wl_filename = WHITELIST
         if wl_filename:
             wl_filename = normpath(wl_filename)
-            with open(wl_filename, 'r') as f:
+            with open(wl_filename, 'rb') as f:
                 for line in f:
-                    line = line.decode('utf8').strip().lower()
+                    line = line.decode('utf-8').strip().lower()
                     if line and not line.startswith(u'#'):
                         self.whitelist.add(line)
 
@@ -139,7 +142,8 @@ class LastGenrePlugin(plugins.BeetsPlugin):
             c14n_filename = C14N_TREE
         if c14n_filename:
             c14n_filename = normpath(c14n_filename)
-            genres_tree = yaml.load(open(c14n_filename, 'r'))
+            with codecs.open(c14n_filename, 'r', encoding='utf-8') as f:
+                genres_tree = yaml.load(f)
             flatten_tree(genres_tree, [], self.c14n_branches)
 
     @property
@@ -154,6 +158,25 @@ class LastGenrePlugin(plugins.BeetsPlugin):
             return 'album', 'artist'
         elif source == 'artist':
             return 'artist',
+
+    def _get_depth(self, tag):
+        """Find the depth of a tag in the genres tree.
+        """
+        depth = None
+        for key, value in enumerate(self.c14n_branches):
+            if tag in value:
+                depth = value.index(tag)
+                break
+        return depth
+
+    def _sort_by_depth(self, tags):
+        """Given a list of tags, sort the tags by their depths in the
+        genre tree.
+        """
+        depth_tag_pairs = [(self._get_depth(t), t) for t in tags]
+        depth_tag_pairs = [e for e in depth_tag_pairs if e[0] is not None]
+        depth_tag_pairs.sort(reverse=True)
+        return [p[1] for p in depth_tag_pairs]
 
     def _resolve_genres(self, tags):
         """Given a list of strings, return a genre by joining them into a
@@ -176,17 +199,24 @@ class LastGenrePlugin(plugins.BeetsPlugin):
                     parents = [find_parents(tag, self.c14n_branches)[-1]]
 
                 tags_all += parents
-                if len(tags_all) >= count:
+                # Stop if we have enough tags already, unless we need to find
+                # the most specific tag (instead of the most popular).
+                if (not self.config['prefer_specific'] and
+                        len(tags_all) >= count):
                     break
             tags = tags_all
 
         tags = deduplicate(tags)
 
+        # Sort the tags by specificity.
+        if self.config['prefer_specific']:
+            tags = self._sort_by_depth(tags)
+
         # c14n only adds allowed genres but we may have had forbidden genres in
         # the original tags list
         tags = [x.title() for x in tags if self._is_allowed(x)]
 
-        return self.config['separator'].get(unicode).join(
+        return self.config['separator'].as_str().join(
             tags[:self.config['count'].get(int)]
         )
 
@@ -221,7 +251,8 @@ class LastGenrePlugin(plugins.BeetsPlugin):
         if any(not s for s in args):
             return None
 
-        key = u'{0}.{1}'.format(entity, u'-'.join(unicode(a) for a in args))
+        key = u'{0}.{1}'.format(entity,
+                                u'-'.join(six.text_type(a) for a in args))
         if key in self._genre_cache:
             return self._genre_cache[key]
         else:
@@ -297,7 +328,7 @@ class LastGenrePlugin(plugins.BeetsPlugin):
             result = None
             if isinstance(obj, library.Item):
                 result = self.fetch_artist_genre(obj)
-            elif obj.albumartist != config['va_name'].get(unicode):
+            elif obj.albumartist != config['va_name'].as_str():
                 result = self.fetch_album_artist_genre(obj)
             else:
                 # For "Various Artists", pick the most popular track genre.
@@ -400,7 +431,7 @@ class LastGenrePlugin(plugins.BeetsPlugin):
         """
         # Work around an inconsistency in pylast where
         # Album.get_top_tags() does not return TopItem instances.
-        # https://code.google.com/p/pylast/issues/detail?id=85
+        # https://github.com/pylast/pylast/issues/86
         if isinstance(obj, pylast.Album):
             obj = super(pylast.Album, obj)
 

@@ -51,7 +51,7 @@ class RewritePlugin(BeetsPlugin):
         # Gather all the rewrite rules for each field.
         rules = defaultdict(list)
         for key, view in self.config.items():
-            value = view.get(unicode)
+            value = view.as_str()
             try:
                 fieldname, pattern = key.split(None, 1)
             except ValueError:
@@ -68,7 +68,7 @@ class RewritePlugin(BeetsPlugin):
                 rules['albumartist'].append((pattern, value))
 
         # Replace each template field with the new rewriter function.
-        for fieldname, fieldrules in rules.iteritems():
+        for fieldname, fieldrules in rules.items():
             getter = rewriter(fieldname, fieldrules)
             self.template_fields[fieldname] = getter
             if fieldname in library.Album._fields:

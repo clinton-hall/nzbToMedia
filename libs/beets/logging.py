@@ -27,6 +27,7 @@ from copy import copy
 from logging import *  # noqa
 import subprocess
 import threading
+import six
 
 
 def logsafe(val):
@@ -42,7 +43,7 @@ def logsafe(val):
       example.
     """
     # Already Unicode.
-    if isinstance(val, unicode):
+    if isinstance(val, six.text_type):
         return val
 
     # Bytestring: needs decoding.
@@ -51,16 +52,16 @@ def logsafe(val):
         # (a) only do this for paths, if they can be given a distinct
         # type, and (b) warn the developer if they do this for other
         # bytestrings.
-        return val.decode('utf8', 'replace')
+        return val.decode('utf-8', 'replace')
 
     # A "problem" object: needs a workaround.
     elif isinstance(val, subprocess.CalledProcessError):
         try:
-            return unicode(val)
+            return six.text_type(val)
         except UnicodeDecodeError:
             # An object with a broken __unicode__ formatter. Use __str__
             # instead.
-            return str(val).decode('utf8', 'replace')
+            return str(val).decode('utf-8', 'replace')
 
     # Other objects are used as-is so field access, etc., still works in
     # the format string.
