@@ -21,6 +21,9 @@ sys.path.insert(0, LIBS_DIR)
 LIBS_DIR_COMMON = os.path.join(LIBS_DIR, 'common')
 sys.path.insert(0, LIBS_DIR_COMMON)
 
+LIBS_DIR_CUSTOM = os.path.join(LIBS_DIR, 'custom')
+sys.path.insert(0, LIBS_DIR_CUSTOM)
+
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
