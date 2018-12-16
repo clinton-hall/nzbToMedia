@@ -24,6 +24,10 @@ sys.path.insert(0, LIBS_DIR_COMMON)
 LIBS_DIR_CUSTOM = os.path.join(LIBS_DIR, 'custom')
 sys.path.insert(0, LIBS_DIR_CUSTOM)
 
+if sys.version_info[0] == 2:
+    LIBS_DIR_PY2 = os.path.join(LIBS_DIR, 'py2')
+    sys.path.insert(0, LIBS_DIR_PY2)
+
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
