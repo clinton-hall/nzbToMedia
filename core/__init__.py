@@ -28,6 +28,10 @@ if sys.version_info[0] == 2:
     LIBS_DIR_PY2 = os.path.join(LIBS_DIR, 'py2')
     sys.path.insert(0, LIBS_DIR_PY2)
 
+if sys.platform.startswith('win32') or (os.name == 'nt'):
+    LIBS_DIR_WIN = os.path.join(LIBS_DIR, 'win')
+    sys.path.insert(0, LIBS_DIR_WIN)
+
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
