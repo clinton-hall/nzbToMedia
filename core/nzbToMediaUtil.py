@@ -14,19 +14,19 @@ import time
 
 import beets
 import guessit
+import linktastic
 import requests
 import subliminal
 from babelfish import Language
+from qbittorrent import Client as qBittorrentClient
 from six import text_type
+from synchronousdeluge.client import DelugeClient
+from transmissionrpc.client import Client as TransmissionClient
+from utorrent.client import UTorrentClient
 
 import core
 from core import logger, nzbToMediaDB
 from core.extractor import extractor
-from core.linktastic import linktastic
-from core.qbittorrent.client import Client as qBittorrentClient
-from core.synchronousdeluge.client import DelugeClient
-from core.transmissionrpc.client import Client as TransmissionClient
-from core.utorrent.client import UTorrentClient
 
 requests.packages.urllib3.disable_warnings()
 

@@ -15,7 +15,7 @@ Example usage:
     download_location = client.core.get_config_value("download_location").get()
 """
 
-from core.synchronousdeluge.exceptions import DelugeRPCError
+from .exceptions import DelugeRPCError
 
 
 __title__ = "synchronous-deluge"

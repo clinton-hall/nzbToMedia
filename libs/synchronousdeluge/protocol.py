@@ -1,5 +1,4 @@
 # coding=utf-8
-__all__ = ["DelugeRPCRequest", "DelugeRPCResponse"]
 
 
 class DelugeRPCRequest(object):

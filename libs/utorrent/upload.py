@@ -2,11 +2,9 @@
 # code copied from http://www.doughellmann.com/PyMOTW/urllib2/
 
 import itertools
-import mimetools
 import mimetypes
-from cStringIO import StringIO
-import urllib
-import urllib2
+from email.generator import _make_boundary as choose_boundary
+
 
 class MultiPartForm(object):
     """Accumulate the data to be used when posting a form."""
@@ -14,7 +12,7 @@ class MultiPartForm(object):
     def __init__(self):
         self.form_fields = []
         self.files = []
-        self.boundary = mimetools.choose_boundary()
+        self.boundary = choose_boundary()
         return
 
     def get_content_type(self):

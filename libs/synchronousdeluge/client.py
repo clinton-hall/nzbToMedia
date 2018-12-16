@@ -1,9 +1,10 @@
 # coding=utf-8
 import os
 import platform
-
 from collections import defaultdict
-from itertools import imap
+
+from six.moves import map as imap
+
 from .exceptions import DelugeRPCError
 from .protocol import DelugeRPCRequest, DelugeRPCResponse
 from .transfer import DelugeTransfer

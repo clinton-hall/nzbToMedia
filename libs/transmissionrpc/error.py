@@ -2,7 +2,7 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-from six import string_types, integer_types
+from six import integer_types, string_types
 
 
 class TransmissionError(Exception):
