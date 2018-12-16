@@ -102,7 +102,7 @@ class IniFile:
                 raise ParsingError("[%s]-Header missing" % headers[0], filename)
 
     # start stuff to access the keys
-    def get(self, key, group=None, locale=False, type="string", list=False):
+    def get(self, key, group=None, locale=False, type="string", list=False, strict=False):
         # set default group
         if not group:
             group = self.defaultGroup
@@ -114,7 +114,7 @@ class IniFile:
             else:
                 value = self.content[group][key]
         else:
-            if debug:
+            if strict or debug:
                 if group not in self.content:
                     raise NoGroupError(group, self.filename)
                 elif key not in self.content[group]:
@@ -192,8 +192,8 @@ class IniFile:
 
     # start validation stuff
     def validate(self, report="All"):
-        """Validate the contents, raising ``ValidationError`` if there
-        is anything amiss.
+        """Validate the contents, raising :class:`~xdg.Exceptions.ValidationError`
+        if there is anything amiss.
         
         report can be 'All' / 'Warnings' / 'Errors'
         """

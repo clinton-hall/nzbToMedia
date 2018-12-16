@@ -2,10 +2,9 @@
 # Copyright (c) 2008-2013 Erik Svensson <erik.public@gmail.com>
 # Licensed under the MIT license.
 
-from six import integer_types, iteritems
+from transmissionrpc.utils import Field
 
-from .utils import Field
-
+from six import iteritems, integer_types
 
 class Session(object):
     """
@@ -27,12 +26,12 @@ class Session(object):
         try:
             return self._fields[name].value
         except KeyError:
-            raise AttributeError('No attribute {0}'.format(name))
+            raise AttributeError('No attribute %s' % name)
 
     def __str__(self):
         text = ''
         for key in sorted(self._fields.keys()):
-            text += "{0:32}: {1}\n".format(key[-32:], self._fields[key].value)
+            text += "% 32s: %s\n" % (key[-32:], self._fields[key].value)
         return text
 
     def _update_fields(self, other):

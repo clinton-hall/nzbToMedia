@@ -1,5 +1,5 @@
 """
-Implementation of the XDG Recent File Storage Specification Version 0.2
+Implementation of the XDG Recent File Storage Specification
 http://standards.freedesktop.org/recent-file-spec
 """
 

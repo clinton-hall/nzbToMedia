@@ -1,5 +1,5 @@
 """
-Complete implementation of the XDG Icon Spec Version 0.8
+Complete implementation of the XDG Icon Spec
 http://standards.freedesktop.org/icon-theme-spec/
 """
 
@@ -37,6 +37,8 @@ class IconTheme(IniFile):
         return self.get('Inherits', list=True)
     def getDirectories(self):
         return self.get('Directories', list=True)
+    def getScaledDirectories(self):
+        return self.get('ScaledDirectories', list=True)
     def getHidden(self):
         return self.get('Hidden', type="boolean")
     def getExample(self):
@@ -71,6 +73,10 @@ class IconTheme(IniFile):
             return value
         else:
             return 2
+
+    def getScale(self, directory):
+        value = self.get('Scale', type="integer", group=directory)
+        return value or 1
 
     # validation stuff
     def checkExtras(self):
@@ -125,7 +131,7 @@ class IconTheme(IniFile):
                 self.name = self.content[group]["Size"]
             except KeyError:
                 self.errors.append("Key 'Size' in Group '%s' is missing" % group)
-        elif not (re.match("^\[X-", group) and is_ascii(group)):
+        elif not (re.match(r"^\[X-", group) and is_ascii(group)):
             self.errors.append("Invalid Group name: %s" % group)
 
     def checkKey(self, key, value, group):
@@ -138,6 +144,8 @@ class IconTheme(IniFile):
             elif key == "Inherits":
                 self.checkValue(key, value, list=True)
             elif key == "Directories":
+                self.checkValue(key, value, list=True)
+            elif key == "ScaledDirectories":
                 self.checkValue(key, value, list=True)
             elif key == "Hidden":
                 self.checkValue(key, value, type="boolean")
@@ -168,6 +176,8 @@ class IconTheme(IniFile):
                 self.checkValue(key, value, type="integer")
                 if self.type != "Threshold":
                     self.errors.append("Key 'Threshold' give, but Type is %s" % self.type)
+            elif key == "Scale":
+                self.checkValue(key, value, type="integer")
             elif re.match("^X-[a-zA-Z0-9-]+", key):
                 pass
             else:
@@ -211,7 +221,7 @@ class IconData(IniFile):
     def checkGroup(self, group):
         # check if group header is valid
         if not (group == self.defaultGroup \
-        or (re.match("^\[X-", group) and is_ascii(group))):
+        or (re.match(r"^\[X-", group) and is_ascii(group))):
             self.errors.append("Invalid Group name: %s" % group.encode("ascii", "replace"))
 
     def checkKey(self, key, value, group):

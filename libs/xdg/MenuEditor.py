@@ -1,14 +1,14 @@
 """ CLass to edit XDG Menus """
-
-from xdg.Menu import *
-from xdg.BaseDirectory import *
-from xdg.Exceptions import *
-from xdg.DesktopEntry import *
-from xdg.Config import *
-
-import xml.dom.minidom
 import os
-import re
+try:
+    import xml.etree.cElementTree as etree
+except ImportError:
+    import xml.etree.ElementTree as etree
+
+from xdg.Menu import Menu, MenuEntry, Layout, Separator, XMLMenuBuilder
+from xdg.BaseDirectory import xdg_config_dirs, xdg_data_dirs
+from xdg.Exceptions import ParsingError 
+from xdg.Config import setRootMode
 
 # XML-Cleanups: Move / Exclude
 # FIXME: proper reverte/delete
@@ -20,28 +20,31 @@ import re
 # FIXME: Advanced MenuEditing Stuff: LegacyDir/MergeFile
 #        Complex Rules/Deleted/OnlyAllocated/AppDirs/DirectoryDirs
 
-class MenuEditor:
+
+class MenuEditor(object):
+
     def __init__(self, menu=None, filename=None, root=False):
         self.menu = None
         self.filename = None
-        self.doc = None
+        self.tree = None
+        self.parser = XMLMenuBuilder()
         self.parse(menu, filename, root)
 
         # fix for creating two menus with the same name on the fly
         self.filenames = []
 
     def parse(self, menu=None, filename=None, root=False):
-        if root == True:
+        if root:
             setRootMode(True)
 
         if isinstance(menu, Menu):
             self.menu = menu
         elif menu:
-            self.menu = parse(menu)
+            self.menu = self.parser.parse(menu)
         else:
-            self.menu = parse()
+            self.menu = self.parser.parse()
 
-        if root == True:
+        if root:
             self.filename = self.menu.Filename
         elif filename:
             self.filename = filename
@@ -49,13 +52,21 @@ class MenuEditor:
             self.filename = os.path.join(xdg_config_dirs[0], "menus", os.path.split(self.menu.Filename)[1])
 
         try:
-            self.doc = xml.dom.minidom.parse(self.filename)
+            self.tree = etree.parse(self.filename)
         except IOError:
-            self.doc = xml.dom.minidom.parseString('<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://standards.freedesktop.org/menu-spec/menu-1.0.dtd"><Menu><Name>Applications</Name><MergeFile type="parent">'+self.menu.Filename+'</MergeFile></Menu>')
-        except xml.parsers.expat.ExpatError:
+            root = etree.fromtring("""
+<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://standards.freedesktop.org/menu-spec/menu-1.0.dtd">
+    <Menu>
+        <Name>Applications</Name>
+        <MergeFile type="parent">%s</MergeFile>
+    </Menu>
+""" % self.menu.Filename)
+            self.tree = etree.ElementTree(root)
+        except ParsingError:
             raise ParsingError('Not a valid .menu file', self.filename)
 
-        self.__remove_whilespace_nodes(self.doc)
+        #FIXME: is this needed with etree ?
+        self.__remove_whitespace_nodes(self.tree)
 
     def save(self):
         self.__saveEntries(self.menu)
@@ -67,7 +78,7 @@ class MenuEditor:
 
         self.__addEntry(parent, menuentry, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return menuentry
 
@@ -83,7 +94,7 @@ class MenuEditor:
 
         self.__addEntry(parent, menu, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return menu
 
@@ -92,7 +103,7 @@ class MenuEditor:
 
         self.__addEntry(parent, separator, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return separator
 
@@ -100,7 +111,7 @@ class MenuEditor:
         self.__deleteEntry(oldparent, menuentry, after, before)
         self.__addEntry(newparent, menuentry, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return menuentry
 
@@ -112,7 +123,7 @@ class MenuEditor:
         if oldparent.getPath(True) != newparent.getPath(True):
             self.__addXmlMove(root_menu, os.path.join(oldparent.getPath(True), menu.Name), os.path.join(newparent.getPath(True), menu.Name))
 
-        sort(self.menu)
+        self.menu.sort()
 
         return menu
 
@@ -120,14 +131,14 @@ class MenuEditor:
         self.__deleteEntry(parent, separator, after, before)
         self.__addEntry(parent, separator, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return separator
 
     def copyMenuEntry(self, menuentry, oldparent, newparent, after=None, before=None):
         self.__addEntry(newparent, menuentry, after, before)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return menuentry
 
@@ -137,39 +148,39 @@ class MenuEditor:
         if name:
             if not deskentry.hasKey("Name"):
                 deskentry.set("Name", name)
-            deskentry.set("Name", name, locale = True)
+            deskentry.set("Name", name, locale=True)
         if comment:
             if not deskentry.hasKey("Comment"):
                 deskentry.set("Comment", comment)
-            deskentry.set("Comment", comment, locale = True)
+            deskentry.set("Comment", comment, locale=True)
         if genericname:
-            if not deskentry.hasKey("GnericNe"):
+            if not deskentry.hasKey("GenericName"):
                 deskentry.set("GenericName", genericname)
-            deskentry.set("GenericName", genericname, locale = True)
+            deskentry.set("GenericName", genericname, locale=True)
         if command:
             deskentry.set("Exec", command)
         if icon:
             deskentry.set("Icon", icon)
 
-        if terminal == True:
+        if terminal:
             deskentry.set("Terminal", "true")
-        elif terminal == False:
+        elif not terminal:
             deskentry.set("Terminal", "false")
 
-        if nodisplay == True:
+        if nodisplay is True:
             deskentry.set("NoDisplay", "true")
-        elif nodisplay == False:
+        elif nodisplay is False:
             deskentry.set("NoDisplay", "false")
 
-        if hidden == True:
+        if hidden is True:
             deskentry.set("Hidden", "true")
-        elif hidden == False:
+        elif hidden is False:
             deskentry.set("Hidden", "false")
 
         menuentry.updateAttributes()
 
         if len(menuentry.Parents) > 0:
-            sort(self.menu)
+            self.menu.sort()
 
         return menuentry
 
@@ -195,56 +206,58 @@ class MenuEditor:
         if name:
             if not deskentry.hasKey("Name"):
                 deskentry.set("Name", name)
-            deskentry.set("Name", name, locale = True)
+            deskentry.set("Name", name, locale=True)
         if genericname:
             if not deskentry.hasKey("GenericName"):
                 deskentry.set("GenericName", genericname)
-            deskentry.set("GenericName", genericname, locale = True)
+            deskentry.set("GenericName", genericname, locale=True)
         if comment:
             if not deskentry.hasKey("Comment"):
                 deskentry.set("Comment", comment)
-            deskentry.set("Comment", comment, locale = True)
+            deskentry.set("Comment", comment, locale=True)
         if icon:
             deskentry.set("Icon", icon)
 
-        if nodisplay == True:
+        if nodisplay is True:
             deskentry.set("NoDisplay", "true")
-        elif nodisplay == False:
+        elif nodisplay is False:
             deskentry.set("NoDisplay", "false")
 
-        if hidden == True:
+        if hidden is True:
             deskentry.set("Hidden", "true")
-        elif hidden == False:
+        elif hidden is False:
             deskentry.set("Hidden", "false")
 
         menu.Directory.updateAttributes()
 
         if isinstance(menu.Parent, Menu):
-            sort(self.menu)
+            self.menu.sort()
 
         return menu
 
     def hideMenuEntry(self, menuentry):
-        self.editMenuEntry(menuentry, nodisplay = True)
+        self.editMenuEntry(menuentry, nodisplay=True)
 
     def unhideMenuEntry(self, menuentry):
-        self.editMenuEntry(menuentry, nodisplay = False, hidden = False)
+        self.editMenuEntry(menuentry, nodisplay=False, hidden=False)
 
     def hideMenu(self, menu):
-        self.editMenu(menu, nodisplay = True)
+        self.editMenu(menu, nodisplay=True)
 
     def unhideMenu(self, menu):
-        self.editMenu(menu, nodisplay = False, hidden = False)
-        xml_menu = self.__getXmlMenu(menu.getPath(True,True), False)
-        for node in self.__getXmlNodesByName(["Deleted", "NotDeleted"], xml_menu):
-            node.parentNode.removeChild(node)
+        self.editMenu(menu, nodisplay=False, hidden=False)
+        xml_menu = self.__getXmlMenu(menu.getPath(True, True), False)
+        deleted = xml_menu.findall('Deleted')
+        not_deleted = xml_menu.findall('NotDeleted')
+        for node in deleted + not_deleted:
+            xml_menu.remove(node)
 
     def deleteMenuEntry(self, menuentry):
         if self.getAction(menuentry) == "delete":
             self.__deleteFile(menuentry.DesktopEntry.filename)
             for parent in menuentry.Parents:
                 self.__deleteEntry(parent, menuentry)
-            sort(self.menu)
+            self.menu.sort()
         return menuentry
 
     def revertMenuEntry(self, menuentry):
@@ -257,7 +270,7 @@ class MenuEditor:
                 index = parent.MenuEntries.index(menuentry)
                 parent.MenuEntries[index] = menuentry.Original
                 menuentry.Original.Parents.append(parent)
-            sort(self.menu)
+            self.menu.sort()
         return menuentry
 
     def deleteMenu(self, menu):
@@ -265,21 +278,22 @@ class MenuEditor:
             self.__deleteFile(menu.Directory.DesktopEntry.filename)
             self.__deleteEntry(menu.Parent, menu)
             xml_menu = self.__getXmlMenu(menu.getPath(True, True))
-            xml_menu.parentNode.removeChild(xml_menu)
-            sort(self.menu)
+            parent = self.__get_parent_node(xml_menu)
+            parent.remove(xml_menu)
+            self.menu.sort()
         return menu
 
     def revertMenu(self, menu):
         if self.getAction(menu) == "revert":
             self.__deleteFile(menu.Directory.DesktopEntry.filename)
             menu.Directory = menu.Directory.Original
-            sort(self.menu)
+            self.menu.sort()
         return menu
 
     def deleteSeparator(self, separator):
         self.__deleteEntry(separator.Parent, separator, after=True)
 
-        sort(self.menu)
+        self.menu.sort()
 
         return separator
 
@@ -290,8 +304,9 @@ class MenuEditor:
                 return "none"
             elif entry.Directory.getType() == "Both":
                 return "revert"
-            elif entry.Directory.getType() == "User" \
-            and (len(entry.Submenus) + len(entry.MenuEntries)) == 0:
+            elif entry.Directory.getType() == "User" and (
+                len(entry.Submenus) + len(entry.MenuEntries)
+            ) == 0:
                 return "delete"
 
         elif isinstance(entry, MenuEntry):
@@ -318,9 +333,7 @@ class MenuEditor:
     def __saveMenu(self):
         if not os.path.isdir(os.path.dirname(self.filename)):
             os.makedirs(os.path.dirname(self.filename))
-        fd = open(self.filename, 'w')
-        fd.write(re.sub("\n[\s]*([^\n<]*)\n[\s]*</", "\\1</", self.doc.toprettyxml().replace('<?xml version="1.0" ?>\n', '')))
-        fd.close()
+        self.tree.write(self.filename, encoding='utf-8')
 
     def __getFileName(self, name, extension):
         postfix = 0
@@ -333,8 +346,9 @@ class MenuEditor:
                 dir = "applications"
             elif extension == ".directory":
                 dir = "desktop-directories"
-            if not filename in self.filenames and not \
-                os.path.isfile(os.path.join(xdg_data_dirs[0], dir, filename)):
+            if not filename in self.filenames and not os.path.isfile(
+                os.path.join(xdg_data_dirs[0], dir, filename)
+            ):
                 self.filenames.append(filename)
                 break
             else:
@@ -343,8 +357,11 @@ class MenuEditor:
         return filename
 
     def __getXmlMenu(self, path, create=True, element=None):
+        # FIXME: we should also return the menu's parent,
+        # to avoid looking for it later on
+        # @see Element.getiterator()
         if not element:
-            element = self.doc
+            element = self.tree
 
         if "/" in path:
             (name, path) = path.split("/", 1)
@@ -353,17 +370,16 @@ class MenuEditor:
             path = ""
 
         found = None
-        for node in self.__getXmlNodesByName("Menu", element):
-            for child in self.__getXmlNodesByName("Name", node):
-                if child.childNodes[0].nodeValue == name:
-                    if path:
-                        found = self.__getXmlMenu(path, create, node)
-                    else:
-                        found = node
-                    break
+        for node in element.findall("Menu"):
+            name_node = node.find('Name')
+            if name_node.text == name:
+                if path:
+                    found = self.__getXmlMenu(path, create, node)
+                else:
+                    found = node
             if found:
                 break
-        if not found and create == True:
+        if not found and create:
             node = self.__addXmlMenuElement(element, name)
             if path:
                 found = self.__getXmlMenu(path, create, node)
@@ -373,58 +389,62 @@ class MenuEditor:
         return found
 
     def __addXmlMenuElement(self, element, name):
-        node = self.doc.createElement('Menu')
-        self.__addXmlTextElement(node, 'Name', name)
-        return element.appendChild(node)
+        menu_node = etree.SubElement('Menu', element)
+        name_node = etree.SubElement('Name', menu_node)
+        name_node.text = name
+        return menu_node
 
     def __addXmlTextElement(self, element, name, text):
-        node = self.doc.createElement(name)
-        text = self.doc.createTextNode(text)
-        node.appendChild(text)
-        return element.appendChild(node)
+        node = etree.SubElement(name, element)
+        node.text = text
+        return node
 
-    def __addXmlFilename(self, element, filename, type = "Include"):
+    def __addXmlFilename(self, element, filename, type_="Include"):
         # remove old filenames
-        for node in self.__getXmlNodesByName(["Include", "Exclude"], element):
-            if node.childNodes[0].nodeName == "Filename" and node.childNodes[0].childNodes[0].nodeValue == filename:
-                element.removeChild(node)
+        includes = element.findall('Include')
+        excludes = element.findall('Exclude')
+        rules = includes + excludes
+        for rule in rules:
+            #FIXME: this finds only Rules whose FIRST child is a Filename element
+            if rule[0].tag == "Filename" and rule[0].text == filename:
+                element.remove(rule)
+            # shouldn't it remove all occurences, like the following:
+            #filename_nodes = rule.findall('.//Filename'):
+                #for fn in filename_nodes:
+                    #if fn.text == filename:
+                        ##element.remove(rule)
+                        #parent = self.__get_parent_node(fn)
+                        #parent.remove(fn)
 
         # add new filename
-        node = self.doc.createElement(type)
-        node.appendChild(self.__addXmlTextElement(node, 'Filename', filename))
-        return element.appendChild(node)
+        node = etree.SubElement(type_, element)
+        self.__addXmlTextElement(node, 'Filename', filename)
+        return node
 
     def __addXmlMove(self, element, old, new):
-        node = self.doc.createElement("Move")
-        node.appendChild(self.__addXmlTextElement(node, 'Old', old))
-        node.appendChild(self.__addXmlTextElement(node, 'New', new))
-        return element.appendChild(node)
+        node = etree.SubElement("Move", element)
+        self.__addXmlTextElement(node, 'Old', old)
+        self.__addXmlTextElement(node, 'New', new)
+        return node
 
     def __addXmlLayout(self, element, layout):
         # remove old layout
-        for node in self.__getXmlNodesByName("Layout", element):
-            element.removeChild(node)
+        for node in element.findall("Layout"):
+            element.remove(node)
 
         # add new layout
-        node = self.doc.createElement("Layout")
+        node = etree.SubElement("Layout", element)
         for order in layout.order:
             if order[0] == "Separator":
-                child = self.doc.createElement("Separator")
-                node.appendChild(child)
+                child = etree.SubElement("Separator", node)
             elif order[0] == "Filename":
                 child = self.__addXmlTextElement(node, "Filename", order[1])
             elif order[0] == "Menuname":
                 child = self.__addXmlTextElement(node, "Menuname", order[1])
             elif order[0] == "Merge":
-                child = self.doc.createElement("Merge")
-                child.setAttribute("type", order[1])
-                node.appendChild(child)
-        return element.appendChild(node)
-
-    def __getXmlNodesByName(self, name, element):
-        for child in element.childNodes:
-            if child.nodeType == xml.dom.Node.ELEMENT_NODE and child.nodeName in name:
-                yield child
+                child = etree.SubElement("Merge", node)
+                child.attrib["type"] = order[1]
+        return node
 
     def __addLayout(self, parent):
         layout = Layout()
@@ -498,14 +518,24 @@ class MenuEditor:
         except ValueError:
             pass
 
-    def __remove_whilespace_nodes(self, node):
-        remove_list = []
-        for child in node.childNodes:
-            if child.nodeType == xml.dom.minidom.Node.TEXT_NODE:
-                child.data = child.data.strip()
-                if not child.data.strip():
-                    remove_list.append(child)
-            elif child.hasChildNodes():
+    def __remove_whitespace_nodes(self, node):
+        for child in node:
+            text = child.text.strip()
+            if not text:
+                child.text = ''
+            tail = child.tail.strip()
+            if not tail:
+                child.tail = ''
+            if len(child):
                 self.__remove_whilespace_nodes(child)
-        for node in remove_list:
-            node.parentNode.removeChild(node)
+
+    def __get_parent_node(self, node):
+        # elements in ElementTree doesn't hold a reference to their parent
+        for parent, child in self.__iter_parent():
+            if child is node:
+                return child
+
+    def __iter_parent(self):
+        for parent in self.tree.getiterator():
+            for child in parent:
+                yield parent, child
