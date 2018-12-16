@@ -11,26 +11,13 @@ import subprocess
 import sys
 import time
 
+import libs.autoload
+import libs.util
 
-# init libs
-PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
+if not libs.autoload.completed:
+    sys.exit('Could not load vendored libraries.')
 
-LIBS_DIR = os.path.join(PROGRAM_DIR, 'libs')
-sys.path.insert(0, LIBS_DIR)
-
-LIBS_DIR_COMMON = os.path.join(LIBS_DIR, 'common')
-sys.path.insert(0, LIBS_DIR_COMMON)
-
-LIBS_DIR_CUSTOM = os.path.join(LIBS_DIR, 'custom')
-sys.path.insert(0, LIBS_DIR_CUSTOM)
-
-if sys.version_info[0] == 2:
-    LIBS_DIR_PY2 = os.path.join(LIBS_DIR, 'py2')
-    sys.path.insert(0, LIBS_DIR_PY2)
-
-if sys.platform.startswith('win32') or (os.name == 'nt'):
-    LIBS_DIR_WIN = os.path.join(LIBS_DIR, 'win')
-    sys.path.insert(0, LIBS_DIR_WIN)
+PROGRAM_DIR = libs.util.module_root()
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
@@ -43,7 +30,7 @@ CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
 CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
 CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
 CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
-TEST_FILE = os.path.join(os.path.join(PROGRAM_DIR, 'tests'), 'test.mp4')
+TEST_FILE = os.path.join(PROGRAM_DIR, 'tests', 'test.mp4')
 MYAPP = None
 
 import six
