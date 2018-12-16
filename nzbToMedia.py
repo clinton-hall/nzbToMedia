@@ -636,7 +636,11 @@ from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
 from core.nzbToMediaUserScript import external_script
 from core.nzbToMediaUtil import CharReplace, cleanDir, convert_to_ascii, extractFiles, getDirs, get_downloadInfo, get_nzoid, plex_update, update_downloadInfoStatus
-from libs.six import text_type
+
+try:
+    text_type = unicode
+except NameError:
+    text_type = str
 
 
 # post-processing
