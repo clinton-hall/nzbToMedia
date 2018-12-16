@@ -6,6 +6,8 @@ import re
 import sqlite3
 import time
 
+from six import text_type
+
 import core
 from core import logger
 
@@ -187,7 +189,7 @@ class DBConnection(object):
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(
                     table=tableName,
-                    columns=", ".join(items),
+                    columns=", ".join(map(text_type, items)),
                     values=", ".join(["?"] * len(items))
                 ),
                 items,
