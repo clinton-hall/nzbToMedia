@@ -9,7 +9,7 @@ http://cvs.sourceforge.net/viewcvs.py/rox/ROX-Lib2/python/rox/i18n.py?rev=1.3&vi
 import os
 from locale import normalize
 
-regex = "(\[([a-zA-Z]+)(_[a-zA-Z]+)?(\.[a-zA-Z\-0-9]+)?(@[a-zA-Z]+)?\])?"
+regex = r"(\[([a-zA-Z]+)(_[a-zA-Z]+)?(\.[a-zA-Z0-9-]+)?(@[a-zA-Z]+)?\])?"
 
 def _expand_lang(locale):
     locale = normalize(locale)

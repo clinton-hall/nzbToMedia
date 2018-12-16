@@ -1,5 +1,5 @@
 """
-Complete implementation of the XDG Desktop Entry Specification Version 0.9.4
+Complete implementation of the XDG Desktop Entry Specification
 http://standards.freedesktop.org/desktop-entry-spec/
 
 Not supported:
@@ -13,6 +13,7 @@ Not supported:
 from xdg.IniFile import IniFile, is_ascii
 import xdg.Locale
 from xdg.Exceptions import ParsingError
+from xdg.util import which
 import os.path
 import re
 import warnings
@@ -23,7 +24,7 @@ class DesktopEntry(IniFile):
     defaultGroup = 'Desktop Entry'
 
     def __init__(self, filename=None):
-        """Create a new DesktopEntry
+        """Create a new DesktopEntry.
         
         If filename exists, it will be parsed as a desktop entry file. If not,
         or if filename is None, a blank DesktopEntry is created.
@@ -38,8 +39,22 @@ class DesktopEntry(IniFile):
         return self.getName()
 
     def parse(self, file):
-        """Parse a desktop entry file."""
+        """Parse a desktop entry file.
+        
+        This can raise :class:`~xdg.Exceptions.ParsingError`,
+        :class:`~xdg.Exceptions.DuplicateGroupError` or
+        :class:`~xdg.Exceptions.DuplicateKeyError`.
+        """
         IniFile.parse(self, file, ["Desktop Entry", "KDE Desktop Entry"])
+    
+    def findTryExec(self):
+        """Looks in the PATH for the executable given in the TryExec field.
+        
+        Returns the full path to the executable if it is found, None if not.
+        Raises :class:`~xdg.Exceptions.NoKeyError` if TryExec is not present.
+        """
+        tryexec = self.get('TryExec', strict=True)
+        return which(tryexec)
 
     # start standard keys
     def getType(self):
@@ -140,10 +155,11 @@ class DesktopEntry(IniFile):
 
     # desktop entry edit stuff
     def new(self, filename):
-        """Make this instance into a new desktop entry.
+        """Make this instance into a new, blank desktop entry.
         
         If filename has a .desktop extension, Type is set to Application. If it
-        has a .directory extension, Type is Directory.
+        has a .directory extension, Type is Directory. Other extensions will
+        cause :class:`~xdg.Exceptions.ParsingError` to be raised.
         """
         if os.path.splitext(filename)[1] == ".desktop":
             type = "Application"
@@ -185,7 +201,7 @@ class DesktopEntry(IniFile):
     def checkGroup(self, group):
         # check if group header is valid
         if not (group == self.defaultGroup \
-        or re.match("^Desktop Action [a-zA-Z0-9\-]+$", group) \
+        or re.match("^Desktop Action [a-zA-Z0-9-]+$", group) \
         or (re.match("^X-", group) and is_ascii(group))):
             self.errors.append("Invalid Group name: %s" % group)
         else:
