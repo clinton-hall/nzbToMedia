@@ -1,7 +1,6 @@
 # coding=utf-8
 
 import requests
-from six import iteritems
 
 
 class GitHub(object):
@@ -19,20 +18,9 @@ class GitHub(object):
         """
         Access the API at the path given and with the optional params given.
         """
-
         url = 'https://api.github.com/{path}'.format(path='/'.join(path))
-
-        if params and type(params) is dict:
-            url += '?{params}'.format(params='&'.join(['{key}={value}'.format(key=k, value=v)
-                                                       for k, v in iteritems(params)]))
-
-        data = requests.get(url, verify=False)
-
-        if data.ok:
-            json_data = data.json()
-            return json_data
-        else:
-            return []
+        data = requests.get(url, params=params, verify=False)
+        return data.json() if data.ok else []
 
     def commits(self):
         """
@@ -44,9 +32,10 @@ class GitHub(object):
 
         Returns a deserialized json object containing the commit info. See http://developer.github.com/v3/repos/commits/
         """
-        access_API = self._access_API(['repos', self.github_repo_user, self.github_repo, 'commits'],
-                                      params={'per_page': 100, 'sha': self.branch})
-        return access_API
+        return self._access_API(
+            ['repos', self.github_repo_user, self.github_repo, 'commits'],
+            params={'per_page': 100, 'sha': self.branch},
+        )
 
     def compare(self, base, head, per_page=1):
         """
@@ -60,7 +49,8 @@ class GitHub(object):
 
         Returns a deserialized json object containing the compare info. See http://developer.github.com/v3/repos/commits/
         """
-        access_API = self._access_API(
-            ['repos', self.github_repo_user, self.github_repo, 'compare', '{base}...{head}'.format(base=base, head=head)],
-            params={'per_page': per_page})
-        return access_API
+        return self._access_API(
+            ['repos', self.github_repo_user, self.github_repo, 'compare',
+             '{base}...{head}'.format(base=base, head=head)],
+            params={'per_page': per_page},
+        )

@@ -180,9 +180,10 @@ class GitUpdateManager(UpdateManager):
             output, err = p.communicate()
             exit_status = p.returncode
 
+            output = output.decode('utf-8')
+
             if output:
                 output = output.strip()
-                output = output.decode('utf-8')
             if core.LOG_GIT:
                 logger.log(u"git output: {output}".format(output=output), logger.DEBUG)
 
