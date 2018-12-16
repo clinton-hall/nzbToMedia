@@ -1,8 +1,7 @@
 # coding=utf8
 import re
-import urllib
 
-from six import StringIO
+from six import StringIO, iteritems
 from six.moves.http_cookiejar import CookieJar
 from six.moves.urllib.request import (
     HTTPBasicAuthHandler,
@@ -11,7 +10,7 @@ from six.moves.urllib.request import (
     build_opener,
     install_opener,
 )
-from six.moves.urllib_parse import urljoin
+from six.moves.urllib_parse import urlencode, urljoin
 
 from .upload import MultiPartForm
 
@@ -94,7 +93,7 @@ class UTorrentClient(object):
 
     def setprops(self, hash, **kvpairs):
         params = [('action', 'setprops'), ('hash', hash)]
-        for k, v in kvpairs.iteritems():
+        for k, v in iteritems(kvpairs):
             params.append( ("s", k) )
             params.append( ("v", v) )
 
@@ -114,7 +113,7 @@ class UTorrentClient(object):
         if filepath is not None:
             file_handler = open(filepath,'rb')
         else:
-            file_handler = StringIO.StringIO(bytes)
+            file_handler = StringIO(bytes)
 
         form.add_file('torrent_file', filename.encode('utf-8'), file_handler)
 
@@ -138,11 +137,11 @@ class UTorrentClient(object):
 
     def _action(self, params, body=None, content_type=None):
         #about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
-        url = self.base_url + '?token=' + self.token + '&' + urllib.urlencode(params)
+        url = self.base_url + '?token=' + self.token + '&' + urlencode(params)
         request = Request(url)
 
         if body:
-            request.add_data(body)
+            request.data = body
             request.add_header('Content-length', len(body))
         if content_type:
             request.add_header('Content-type', content_type)

@@ -9,7 +9,7 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import iteritems
+from six import iteritems, text_type, string_types
 
 import core
 from core import logger
@@ -117,7 +117,7 @@ def getVideoDetails(videofile, img=None, bitbucket=None):
 
 
 def buildCommands(file, newDir, movieName, bitbucket):
-    if isinstance(file, basestring):
+    if isinstance(file, string_types):
         inputFile = file
         if 'concat:' in file:
             file = file.split('|')[0].replace('concat:', '')
@@ -134,7 +134,7 @@ def buildCommands(file, newDir, movieName, bitbucket):
         if ext == core.VEXTENSION and newDir == dir:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
     else:
-        img, data = iteritems(file).next()
+        img, data = next(iteritems(file))
         name = data['name']
         video_details, result = getVideoDetails(data['files'][0], img, bitbucket)
         inputFile = '-'
@@ -480,13 +480,15 @@ def buildCommands(file, newDir, movieName, bitbucket):
                     continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
+            lan = text_type(lan)
             metlan = None
             try:
                 if len(lan) == 3:
                     metlan = Language(lan)
                 if len(lan) == 2:
                     metlan = Language.fromalpha2(lan)
-            except: pass
+            except:
+                pass
             if metlan:
                 meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
                                  'language={lang}'.format(lang=metlan.alpha3)])
@@ -616,7 +618,7 @@ def processList(List, newDir, bitbucket):
     if combine:
         newList.extend(combineCD(combine))
     for file in newList:
-        if isinstance(file, basestring) and 'concat:' not in file and not os.path.isfile(file):
+        if isinstance(file, string_types) and 'concat:' not in file and not os.path.isfile(file):
             success = False
             break
     if success and newList:
@@ -751,13 +753,13 @@ def Transcode_directory(dirName):
         return 1, dirName
 
     for file in List:
-        if isinstance(file, basestring) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
+        if isinstance(file, string_types) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
             continue
         command = buildCommands(file, newDir, movieName, bitbucket)
         newfilePath = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
-        if core.SEXTRACT and isinstance(file, basestring):
+        if core.SEXTRACT and isinstance(file, string_types):
             extract_subs(file, newfilePath, bitbucket)
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
@@ -772,10 +774,10 @@ def Transcode_directory(dirName):
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
-            if isinstance(file, basestring):
+            if isinstance(file, string_types):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             else:
-                img, data = iteritems(file).next()
+                img, data = next(iteritems(file))
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket, stdin=subprocess.PIPE)
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
@@ -787,7 +789,7 @@ def Transcode_directory(dirName):
         except:
             logger.error("Transcoding of video {0} has failed".format(newfilePath))
 
-        if core.SUBSDIR and result == 0 and isinstance(file, basestring):
+        if core.SUBSDIR and result == 0 and isinstance(file, string_types):
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]
@@ -817,7 +819,7 @@ def Transcode_directory(dirName):
                 os.unlink(file)
             except:
                 pass
-    if not os.listdir(unicode(newDir)):  # this is an empty directory and we didn't transcode into it.
+    if not os.listdir(text_type(newDir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(newDir)
         newDir = dirName
     if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB 

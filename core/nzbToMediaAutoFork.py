@@ -23,8 +23,8 @@ def autoFork(section, inputCategory):
     replace = {'sickrage':'SickRage', 'sickchill':'SickChill', 'sickgear':'SickGear', 'medusa':'Medusa', 'sickbeard-api':'SickBeard-api'}
     f1 = replace[cfg.get("fork", "auto")] if cfg.get("fork", "auto") in replace else cfg.get("fork", "auto")
     try:
-        fork = core.FORKS.items()[core.FORKS.keys().index(f1)]
-    except:
+        fork = f1, core.FORKS[f1]
+    except KeyError:
         fork = "auto"
     protocol = "https://" if ssl else "http://"
 

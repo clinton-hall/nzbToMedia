@@ -316,6 +316,7 @@ class autoProcessTV(object):
             else:
                 for line in r.iter_lines():
                     if line:
+                        line = line.decode('utf-8')
                         logger.postprocess("{0}".format(line), section)
                         if "Moving file from" in line:
                             inputName = os.path.split(line)[1]

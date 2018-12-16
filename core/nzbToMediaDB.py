@@ -6,6 +6,8 @@ import re
 import sqlite3
 import time
 
+from six import text_type
+
 import core
 from core import logger
 
@@ -171,14 +173,16 @@ class DBConnection(object):
 
         genParams = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
 
+        items = list(valueDict.values()) + list(keyDict.values())
         self.action(
             "UPDATE {table} "
             "SET {params} "
             "WHERE {conditions}".format(
                 table=tableName,
                 params=", ".join(genParams(valueDict)),
-                conditions=" AND ".join(genParams(keyDict))),
-            valueDict.values() + keyDict.values()
+                conditions=" AND ".join(genParams(keyDict))
+            ),
+            items
         )
 
         if self.connection.total_changes == changesBefore:
@@ -186,10 +190,10 @@ class DBConnection(object):
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(
                     table=tableName,
-                    columns=", ".join(valueDict.keys() + keyDict.keys()),
-                    values=", ".join(["?"] * len(valueDict.keys() + keyDict.keys()))
-                )
-                , valueDict.values() + keyDict.values()
+                    columns=", ".join(map(text_type, valueDict.keys())),
+                    values=", ".join(["?"] * len(valueDict.values()))
+                ),
+                list(valueDict.values())
             )
 
     def tableInfo(self, tableName):
