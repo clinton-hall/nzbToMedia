@@ -173,26 +173,27 @@ class DBConnection(object):
 
         genParams = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
 
+        items = list(valueDict.values()) + list(keyDict.values())
         self.action(
             "UPDATE {table} "
             "SET {params} "
             "WHERE {conditions}".format(
                 table=tableName,
                 params=", ".join(genParams(valueDict)),
-                conditions=" AND ".join(genParams(keyDict))),
-            list(valueDict.values()) + list(keyDict.values())
+                conditions=" AND ".join(genParams(keyDict))
+            ),
+            items
         )
 
         if self.connection.total_changes == changesBefore:
-            items = list(valueDict.values()) + list(keyDict.values())
             self.action(
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(
                     table=tableName,
-                    columns=", ".join(map(text_type, items)),
-                    values=", ".join(["?"] * len(items))
+                    columns=", ".join(map(text_type, valueDict.keys())),
+                    values=", ".join(["?"] * len(valueDict.values()))
                 ),
-                items,
+                list(valueDict.values())
             )
 
     def tableInfo(self, tableName):
