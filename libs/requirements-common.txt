@@ -11,6 +11,3 @@ setuptools
 six
 subliminal
 transmissionrpc
-
-# synchronousdeluge
-# utorrent

@@ -1,4 +1,4 @@
-#!h:\src\env\nzbtomedia\scripts\python.exe
+#!C:\Python\3.7\python.exe
 # -*- coding: utf-8 -*-
 # Copyright 2016 Christoph Reiter
 #
@@ -9,7 +9,7 @@
 
 import sys
 
-from mutagen._tools.mid3iconv import entry_point
+from mutagen._tools.moggsplit import entry_point
 
 
 if __name__ == "__main__":

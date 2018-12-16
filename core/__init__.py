@@ -14,8 +14,12 @@ import time
 
 # init libs
 PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
+
 LIBS_DIR = os.path.join(PROGRAM_DIR, 'libs')
 sys.path.insert(0, LIBS_DIR)
+
+LIBS_DIR_COMMON = os.path.join(LIBS_DIR, 'common')
+sys.path.insert(0, LIBS_DIR_COMMON)
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
