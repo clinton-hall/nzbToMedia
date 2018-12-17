@@ -34,8 +34,8 @@ def process_all_exceptions(name, dirname):
     rename_script(dirname)
     for filename in listMediaFiles(dirname):
         newfilename = None
-        parentDir = os.path.dirname(filename)
-        head, fileExtension = os.path.splitext(os.path.basename(filename))
+        parent_dir = os.path.dirname(filename)
+        head, file_extension = os.path.splitext(os.path.basename(filename))
         if reverse_pattern.search(head) is not None:
             exception = reverse_filename
         elif garbage_name.search(head) is not None:
@@ -44,7 +44,7 @@ def process_all_exceptions(name, dirname):
             exception = None
             newfilename = filename
         if not newfilename:
-            newfilename = exception(filename, parentDir, name)
+            newfilename = exception(filename, parent_dir, name)
         if core.GROUPS:
             newfilename = strip_groups(newfilename)
         if newfilename != filename:
@@ -55,29 +55,30 @@ def strip_groups(filename):
     if not core.GROUPS:
         return filename
     dirname, file = os.path.split(filename)
-    head, fileExtension = os.path.splitext(file)
+    head, file_extension = os.path.splitext(file)
     newname = head.replace(' ', '.')
     for group in core.GROUPS:
         newname = newname.replace(group, '')
         newname = newname.replace('[]', '')
-    newfile = newname + fileExtension
-    newfilePath = os.path.join(dirname, newfile)
-    return newfilePath
+    newfile = newname + file_extension
+    newfile_path = os.path.join(dirname, newfile)
+    return newfile_path
 
 
 def rename_file(filename, newfilePath):
-    if os.path.isfile(newfilePath):
-        newfilePath = os.path.splitext(newfilePath)[0] + ".NTM" + os.path.splitext(newfilePath)[1]
+    newfile_path = newfilePath
+    if os.path.isfile(newfile_path):
+        newfile_path = os.path.splitext(newfile_path)[0] + ".NTM" + os.path.splitext(newfile_path)[1]
     logger.debug("Replacing file name {old} with download name {new}".format
-                 (old=filename, new=newfilePath), "EXCEPTION")
+                 (old=filename, new=newfile_path), "EXCEPTION")
     try:
-        os.rename(filename, newfilePath)
+        os.rename(filename, newfile_path)
     except Exception as error:
         logger.error("Unable to rename file due to: {error}".format(error=error), "EXCEPTION")
 
 
 def replace_filename(filename, dirname, name):
-    head, fileExtension = os.path.splitext(os.path.basename(filename))
+    head, file_extension = os.path.splitext(os.path.basename(filename))
     if media_pattern.search(os.path.basename(dirname).replace(' ', '.')) is not None:
         newname = os.path.basename(dirname).replace(' ', '.')
         logger.debug("Replacing file name {old} with directory name {new}".format(old=head, new=newname), "EXCEPTION")
@@ -88,13 +89,13 @@ def replace_filename(filename, dirname, name):
     else:
         logger.warning("No name replacement determined for {name}".format(name=head), "EXCEPTION")
         newname = name
-    newfile = newname + fileExtension
-    newfilePath = os.path.join(dirname, newfile)
-    return newfilePath
+    newfile = newname + file_extension
+    newfile_path = os.path.join(dirname, newfile)
+    return newfile_path
 
 
 def reverse_filename(filename, dirname, name):
-    head, fileExtension = os.path.splitext(os.path.basename(filename))
+    head, file_extension = os.path.splitext(os.path.basename(filename))
     na_parts = season_pattern.search(head)
     if na_parts is not None:
         word_p = word_pattern.findall(na_parts.group(2))
@@ -114,9 +115,9 @@ def reverse_filename(filename, dirname, name):
     newname = newname.replace(' ', '.')
     logger.debug("Reversing filename {old} to {new}".format
                  (old=head, new=newname), "EXCEPTION")
-    newfile = newname + fileExtension
-    newfilePath = os.path.join(dirname, newfile)
-    return newfilePath
+    newfile = newname + file_extension
+    newfile_path = os.path.join(dirname, newfile)
+    return newfile_path
 
 
 def rename_script(dirname):

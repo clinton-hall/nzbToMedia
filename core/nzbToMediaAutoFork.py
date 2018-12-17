@@ -79,13 +79,13 @@ def autoFork(section, inputCategory):
             r = []
         if r and r.ok:
             if apikey:
-                optionalParameters = []
+                optional_parameters = []
                 try:
-                    optionalParameters = r.json()['data']['optionalParameters'].keys()
+                    optional_parameters = r.json()['data']['optionalParameters'].keys()
                 except:
-                    optionalParameters = r.json()['data']['data']['optionalParameters'].keys()
+                    optional_parameters = r.json()['data']['data']['optionalParameters'].keys()
                 for param in params:
-                    if param not in optionalParameters:
+                    if param not in optional_parameters:
                         rem_params.append(param)
             else:
                 for param in params:

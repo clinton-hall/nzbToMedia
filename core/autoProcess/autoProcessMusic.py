@@ -97,6 +97,9 @@ class autoProcessMusic(object):
         return [2, "no change"]
 
     def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
+        dir_name = dirName
+        input_name = inputName
+
         status = int(status)
 
         cfg = dict(core.CFG[section][inputCategory])
@@ -124,25 +127,25 @@ class autoProcessMusic(object):
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
-            dirName = os.path.split(os.path.normpath(dirName))[0]
+        if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
+            dir_name = os.path.split(os.path.normpath(dir_name))[0]
 
-        SpecificPath = os.path.join(dirName, str(inputName))
-        cleanName = os.path.splitext(SpecificPath)
-        if cleanName[1] == ".nzb":
-            SpecificPath = cleanName[0]
-        if os.path.isdir(SpecificPath):
-            dirName = SpecificPath
+        specific_path = os.path.join(dir_name, str(input_name))
+        clean_name = os.path.splitext(specific_path)
+        if clean_name[1] == ".nzb":
+            specific_path = clean_name[0]
+        if os.path.isdir(specific_path):
+            dir_name = specific_path
 
-        process_all_exceptions(inputName, dirName)
-        inputName, dirName = convert_to_ascii(inputName, dirName)
+        process_all_exceptions(input_name, dir_name)
+        input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        if not listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
-            logger.debug('Checking for archives to extract in directory: {0}'.format(dirName))
-            core.extractFiles(dirName)
-            inputName, dirName = convert_to_ascii(inputName, dirName)
+        if not listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
+            logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
+            core.extractFiles(dir_name)
+            input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        #if listMediaFiles(dirName, media=False, audio=True, meta=False, archives=False) and status:
+        #if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
         #    logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
         #    status = 0
 
@@ -151,20 +154,20 @@ class autoProcessMusic(object):
             params = {
                 'apikey': apikey,
                 'cmd': "forceProcess",
-                'dir': remoteDir(dirName) if remote_path else dirName
+                'dir': remoteDir(dir_name) if remote_path else dir_name
             }
 
-            res = self.forceProcess(params, url, apikey, inputName, dirName, section, wait_for)
+            res = self.forceProcess(params, url, apikey, input_name, dir_name, section, wait_for)
             if res[0] in [0, 1]:
                 return res
 
             params = {
                 'apikey': apikey,
                 'cmd': "forceProcess",
-                'dir': os.path.split(remoteDir(dirName))[0] if remote_path else os.path.split(dirName)[0]
+                'dir': os.path.split(remoteDir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]
             }
 
-            res = self.forceProcess(params, url, apikey, inputName, dirName, section, wait_for)
+            res = self.forceProcess(params, url, apikey, input_name, dir_name, section, wait_for)
             if res[0] in [0, 1]:
                 return res
 
@@ -176,11 +179,11 @@ class autoProcessMusic(object):
             url = "{0}{1}:{2}{3}/api/v1/command".format(protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             if remote_path:
-                logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
-                data = {"name": "Rename", "path": remoteDir(dirName)}
+                logger.debug("remote_path: {0}".format(remoteDir(dir_name)), section)
+                data = {"name": "Rename", "path": remoteDir(dir_name)}
             else:
-                logger.debug("path: {0}".format(dirName), section)
-                data = {"name": "Rename", "path": dirName}
+                logger.debug("path: {0}".format(dir_name), section)
+                data = {"name": "Rename", "path": dir_name}
             data = json.dumps(data)
             try:
                 logger.debug("Opening URL: {0} with data: {1}".format(url, data), section)
@@ -189,18 +192,18 @@ class autoProcessMusic(object):
                 logger.error("Unable to open URL: {0}".format(url), section)
                 return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
 
-            Success = False
-            Queued = False
-            Started = False
+            success = False
+            queued = False
+            started = False
             try:
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
                 logger.debug("Scan started with id: {0}".format(scan_id), section)
-                Started = True
+                started = True
             except Exception as e:
                 logger.warning("No scan id was returned due to: {0}".format(e), section)
                 scan_id = None
-                Started = False
+                started = False
                 return [1, "{0}: Failed to post-process - Unable to start scan".format(section)]
 
             n = 0
@@ -214,15 +217,15 @@ class autoProcessMusic(object):
                 n += 1
             if command_status:
                 logger.debug("The Scan command return status: {0}".format(command_status), section)
-            if not os.path.exists(dirName):
-                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dirName), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            if not os.path.exists(dir_name):
+                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dir_name), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             elif command_status and command_status in ['completed']:
                 logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
-                # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+                # return [1, "%s: Failed to post-process %s" % (section, input_name) ]
             else:
                 logger.debug("The Scan command did not return status completed. Passing back to {0} to attempt complete download handling.".format(section), section)
                 return [status, "{0}: Passing back to {1} to attempt Complete Download Handling".format(section, section)]
@@ -233,7 +236,7 @@ class autoProcessMusic(object):
                 return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
             else:
                 logger.warning("FAILED DOWNLOAD DETECTED", section)
-                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
-                    logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
-                    rmDir(dirName)
+                if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
+                    logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
+                    rmDir(dir_name)
                 return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.

@@ -76,7 +76,7 @@ class autoProcessTV(object):
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
         delete_failed = int(cfg.get("delete_failed", 0))
-        nzbExtractionBy = cfg.get("nzbExtractionBy", "Downloader")
+        nzb_extraction_by = cfg.get("nzbExtractionBy", "Downloader")
         process_method = cfg.get("process_method")
         if  clientAgent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
             process_method = "symlink"
@@ -91,47 +91,47 @@ class autoProcessTV(object):
         else:
             extract = int(cfg.get("extract", 0))
         #get importmode, default to "Move" for consistency with legacy
-        importMode = cfg.get("importMode","Move")
+        import_mode = cfg.get("importMode","Move")
 
-        if not os.path.isdir(dirName) and os.path.isfile(dirName):  # If the input directory is a file, assume single file download and split dir/name.
-            dirName = os.path.split(os.path.normpath(dirName))[0]
+        if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
+            dir_name = os.path.split(os.path.normpath(dir_name))[0]
 
-        SpecificPath = os.path.join(dirName, str(inputName))
-        cleanName = os.path.splitext(SpecificPath)
-        if cleanName[1] == ".nzb":
-            SpecificPath = cleanName[0]
-        if os.path.isdir(SpecificPath):
-            dirName = SpecificPath
+        specific_path = os.path.join(dir_name, str(input_name))
+        clean_name = os.path.splitext(specific_path)
+        if clean_name[1] == ".nzb":
+            specific_path = clean_name[0]
+        if os.path.isdir(specific_path):
+            dir_name = specific_path
 
         # Attempt to create the directory if it doesn't exist and ignore any
         # error stating that it already exists. This fixes a bug where SickRage
         # won't process the directory because it doesn't exist.
         try:
-            os.makedirs(dirName)  # Attempt to create the directory
+            os.makedirs(dir_name)  # Attempt to create the directory
         except OSError as e:
             # Re-raise the error if it wasn't about the directory not existing
             if e.errno != errno.EEXIST:
                 raise
 
-        if 'process_method' not in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzbExtractionBy != "Destination"):
-            if inputName:
-                process_all_exceptions(inputName, dirName)
-                inputName, dirName = convert_to_ascii(inputName, dirName)
+        if 'process_method' not in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzb_extraction_by != "Destination"):
+            if input_name:
+                process_all_exceptions(input_name, dir_name)
+                input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
             # Now check if tv files exist in destination. 
-            if not listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
-                if listMediaFiles(dirName, media=False, audio=False, meta=False, archives=True) and extract:
-                    logger.debug('Checking for archives to extract in directory: {0}'.format(dirName))
-                    core.extractFiles(dirName)
-                    inputName, dirName = convert_to_ascii(inputName, dirName)
+            if not listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
+                if listMediaFiles(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
+                    logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
+                    core.extractFiles(dir_name)
+                    input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-            if listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
-                flatten(dirName)
+            if listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
+                flatten(dir_name)
 
         # Check video files for corruption
         good_files = 0
         num_files = 0
-        for video in listMediaFiles(dirName, media=True, audio=False, meta=False, archives=False):
+        for video in listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
             num_files += 1
             if transcoder.isVideoGood(video, status):
                 good_files += 1
@@ -150,9 +150,9 @@ class autoProcessTV(object):
                 if failureLink:
                     failureLink += '&corrupt=true'
         elif clientAgent == "manual":
-            logger.warning("No media files found in directory {0} to manually process.".format(dirName), section)
+            logger.warning("No media files found in directory {0} to manually process.".format(dir_name), section)
             return [0, ""]  # Success (as far as this script is concerned)
-        elif nzbExtractionBy == "Destination":
+        elif nzb_extraction_by == "Destination":
             logger.info("Check for media files ignored because nzbExtractionBy is set to Destination.")
             if int(failed) == 0:
                 logger.info("Setting Status Success.")
@@ -163,32 +163,32 @@ class autoProcessTV(object):
                 status = 1
                 failed = 1
         else:
-            logger.warning("No media files found in directory {0}. Processing this as a failed download".format(dirName), section)
+            logger.warning("No media files found in directory {0}. Processing this as a failed download".format(dir_name), section)
             status = 1
             failed = 1
             if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
 
         if status == 0 and core.TRANSCODE == 1:  # only transcode successful downloads
-            result, newDirName = transcoder.Transcode_directory(dirName)
+            result, new_dir_name = transcoder.Transcode_directory(dir_name)
             if result == 0:
-                logger.debug("SUCCESS: Transcoding succeeded for files in {0}".format(dirName), section)
-                dirName = newDirName
+                logger.debug("SUCCESS: Transcoding succeeded for files in {0}".format(dir_name), section)
+                dir_name = new_dir_name
 
                 chmod_directory = int(str(cfg.get("chmodDirectory", "0")), 8)
                 logger.debug("Config setting 'chmodDirectory' currently set to {0}".format(oct(chmod_directory)), section)
                 if chmod_directory:
-                    logger.info("Attempting to set the octal permission of '{0}' on directory '{1}'".format(oct(chmod_directory), dirName), section)
-                    core.rchmod(dirName, chmod_directory)
+                    logger.info("Attempting to set the octal permission of '{0}' on directory '{1}'".format(oct(chmod_directory), dir_name), section)
+                    core.rchmod(dir_name, chmod_directory)
             else:
-                logger.error("FAILED: Transcoding failed for files in {0}".format(dirName), section)
+                logger.error("FAILED: Transcoding failed for files in {0}".format(dir_name), section)
                 return [1, "{0}: Failed to post-process - Transcoding failed".format(section)]
 
         # configure SB params to pass
         fork_params['quiet'] = 1
         fork_params['proc_type'] = 'manual'
-        if inputName is not None:
-            fork_params['nzbName'] = inputName
+        if input_name is not None:
+            fork_params['nzbName'] = input_name
 
         for param in copy.copy(fork_params):
             if param == "failed":
@@ -206,10 +206,10 @@ class autoProcessTV(object):
                 if "proc_type" in fork_params:
                     del fork_params['proc_type']
 
-            if param in ["dirName", "dir", "proc_dir", "process_directory", "path"]:
-                fork_params[param] = dirName
+            if param in ["dir_name", "dir", "proc_dir", "process_directory", "path"]:
+                fork_params[param] = dir_name
                 if remote_path:
-                    fork_params[param] = remoteDir(dirName)
+                    fork_params[param] = remoteDir(dir_name)
 
             if param == "process_method":
                 if process_method:
@@ -244,7 +244,7 @@ class autoProcessTV(object):
         if status == 0:
             if section == "NzbDrone" and not apikey:
                 logger.info('No Sonarr apikey entered. Processing completed.')
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
             core.FAILED = True
@@ -257,9 +257,9 @@ class autoProcessTV(object):
                 return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
             else:
                 logger.postprocess("FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process".format(fork), section)
-                if delete_failed and os.path.isdir(dirName) and not os.path.dirname(dirName) == dirName:
-                    logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
-                    rmDir(dirName)
+                if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
+                    logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
+                    rmDir(dir_name)
                 return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
 
         url = None
@@ -274,11 +274,11 @@ class autoProcessTV(object):
             headers = {"X-Api-Key": apikey}
             # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                logger.debug("remote_path: {0}".format(remoteDir(dirName)), section)
-                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dirName), "downloadClientId": download_id, "importMode": importMode}
+                logger.debug("remote_path: {0}".format(remoteDir(dir_name)), section)
+                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dir_name), "downloadClientId": download_id, "importMode": import_mode}
             else:
-                logger.debug("path: {0}".format(dirName), section)
-                data = {"name": "DownloadedEpisodesScan", "path": dirName, "downloadClientId": download_id, "importMode": importMode}
+                logger.debug("path: {0}".format(dir_name), section)
+                data = {"name": "DownloadedEpisodesScan", "path": dir_name, "downloadClientId": download_id, "importMode": import_mode}
             if not download_id:
                 data.pop("downloadClientId")
             data = json.dumps(data)
@@ -306,45 +306,45 @@ class autoProcessTV(object):
             logger.error("Server returned status {0}".format(r.status_code), section)
             return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
 
-        Success = False
-        Queued = False
-        Started = False
+        success = False
+        queued = False
+        started = False
         if section == "SickBeard":
             if apikey:
                 if r.json()['result'] == 'success':
-                    Success = True
+                    success = True
             else:
                 for line in r.iter_lines():
                     if line:
                         line = line.decode('utf-8')
                         logger.postprocess("{0}".format(line), section)
                         if "Moving file from" in line:
-                            inputName = os.path.split(line)[1]
+                            input_name = os.path.split(line)[1]
                         if "added to the queue" in line:
-                            Queued = True
+                            queued = True
                         if "Processing succeeded" in line or "Successfully processed" in line:
-                            Success = True
+                            success = True
 
-            if Queued:
+            if queued:
                 time.sleep(60)
         elif section == "NzbDrone":
             try:
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
                 logger.debug("Scan started with id: {0}".format(scan_id), section)
-                Started = True
+                started = True
             except Exception as e:
                 logger.warning("No scan id was returned due to: {0}".format(e), section)
                 scan_id = None
-                Started = False
+                started = False
 
-        if status != 0 and delete_failed and not os.path.dirname(dirName) == dirName:
-            logger.postprocess("Deleting failed files and folder {0}".format(dirName), section)
-            rmDir(dirName)
+        if status != 0 and delete_failed and not os.path.dirname(dir_name) == dir_name:
+            logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
+            rmDir(dir_name)
 
-        if Success:
-            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
-        elif section == "NzbDrone" and Started:
+        if success:
+            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+        elif section == "NzbDrone" and started:
             n = 0
             params = {}
             url = "{0}/{1}".format(url, scan_id)
@@ -356,20 +356,20 @@ class autoProcessTV(object):
                 n += 1
             if command_status:
                 logger.debug("The Scan command return status: {0}".format(command_status), section)
-            if not os.path.exists(dirName):
-                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dirName), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            if not os.path.exists(dir_name):
+                logger.debug("The directory {0} has been removed. Renaming was successful.".format(dir_name), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             elif command_status and command_status in ['completed']:
                 logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
-                # return [1, "%s: Failed to post-process %s" % (section, inputName) ]
+                # return [1, "%s: Failed to post-process %s" % (section, input_name) ]
             if self.CDH(url2, headers, section=section):
                 logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
                 return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
             else:
                 logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
-                return [1, "{0}: Failed to post-process {1}".format(section, inputName)]
+                return [1, "{0}: Failed to post-process {1}".format(section, input_name)]
         else:
             return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]  # We did not receive Success confirmation.

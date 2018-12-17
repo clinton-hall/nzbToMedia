@@ -52,7 +52,7 @@ class DBConnection(object):
         if query is None:
             return
 
-        sqlResult = None
+        sql_result = None
         attempt = 0
 
         while attempt < 5:
@@ -61,13 +61,13 @@ class DBConnection(object):
                     logger.log("{name}: {query}".format(name=self.filename, query=query), logger.DB)
                     cursor = self.connection.cursor()
                     cursor.execute(query)
-                    sqlResult = cursor.fetchone()[0]
+                    sql_result = cursor.fetchone()[0]
                 else:
                     logger.log("{name}: {query} with args {args}".format
                                (name=self.filename, query=query, args=args), logger.DB)
                     cursor = self.connection.cursor()
                     cursor.execute(query, args)
-                    sqlResult = cursor.fetchone()[0]
+                    sql_result = cursor.fetchone()[0]
 
                 # get out of the connection attempt loop since we were successful
                 break
@@ -83,13 +83,13 @@ class DBConnection(object):
                 logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
-        return sqlResult
+        return sql_result
 
     def mass_action(self, querylist, logTransaction=False):
         if querylist is None:
             return
 
-        sqlResult = []
+        sql_result = []
         attempt = 0
 
         while attempt < 5:
@@ -98,16 +98,16 @@ class DBConnection(object):
                     if len(qu) == 1:
                         if logTransaction:
                             logger.log(qu[0], logger.DEBUG)
-                        sqlResult.append(self.connection.execute(qu[0]))
+                        sql_result.append(self.connection.execute(qu[0]))
                     elif len(qu) > 1:
                         if logTransaction:
                             logger.log(u"{query} with args {args}".format(query=qu[0], args=qu[1]), logger.DEBUG)
-                        sqlResult.append(self.connection.execute(qu[0], qu[1]))
+                        sql_result.append(self.connection.execute(qu[0], qu[1]))
                 self.connection.commit()
                 logger.log(u"Transaction with {x} query's executed".format(x=len(querylist)), logger.DEBUG)
-                return sqlResult
+                return sql_result
             except sqlite3.OperationalError as error:
-                sqlResult = []
+                sql_result = []
                 if self.connection:
                     self.connection.rollback()
                 if "unable to open database file" in error.args[0] or "database is locked" in error.args[0]:
@@ -123,24 +123,24 @@ class DBConnection(object):
                 logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
-        return sqlResult
+        return sql_result
 
     def action(self, query, args=None):
         if query is None:
             return
 
-        sqlResult = None
+        sql_result = None
         attempt = 0
 
         while attempt < 5:
             try:
                 if args is None:
                     logger.log(u"{name}: {query}".format(name=self.filename, query=query), logger.DB)
-                    sqlResult = self.connection.execute(query)
+                    sql_result = self.connection.execute(query)
                 else:
                     logger.log(u"{name}: {query} with args {args}".format
                                (name=self.filename, query=query, args=args), logger.DB)
-                    sqlResult = self.connection.execute(query, args)
+                    sql_result = self.connection.execute(query, args)
                 self.connection.commit()
                 # get out of the connection attempt loop since we were successful
                 break
@@ -156,22 +156,22 @@ class DBConnection(object):
                 logger.log(u"Fatal error executing query: {msg}".format(msg=error), logger.ERROR)
                 raise
 
-        return sqlResult
+        return sql_result
 
     def select(self, query, args=None):
 
-        sqlResults = self.action(query, args).fetchall()
+        sql_results = self.action(query, args).fetchall()
 
-        if sqlResults is None:
+        if sql_results is None:
             return []
 
-        return sqlResults
+        return sql_results
 
     def upsert(self, tableName, valueDict, keyDict):
 
-        changesBefore = self.connection.total_changes
+        changes_before = self.connection.total_changes
 
-        genParams = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
+        gen_params = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
 
         items = list(valueDict.values()) + list(keyDict.values())
         self.action(
@@ -179,13 +179,13 @@ class DBConnection(object):
             "SET {params} "
             "WHERE {conditions}".format(
                 table=tableName,
-                params=", ".join(genParams(valueDict)),
-                conditions=" AND ".join(genParams(keyDict))
+                params=", ".join(gen_params(valueDict)),
+                conditions=" AND ".join(gen_params(keyDict))
             ),
             items
         )
 
-        if self.connection.total_changes == changesBefore:
+        if self.connection.total_changes == changes_before:
             self.action(
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(

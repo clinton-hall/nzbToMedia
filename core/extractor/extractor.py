@@ -22,7 +22,7 @@ def extract(filePath, outputDestination):
         invislocation = os.path.join(core.PROGRAM_DIR, 'core', 'extractor', 'bin', 'invisible.vbs')
         cmd_7zip = [wscriptlocation, invislocation, str(core.SHOWEXTRACT), core.SEVENZIP, "x", "-y"]
         ext_7zip = [".rar", ".zip", ".tar.gz", "tgz", ".tar.bz2", ".tbz", ".tar.lzma", ".tlz", ".7z", ".xz"]
-        EXTRACT_COMMANDS = dict.fromkeys(ext_7zip, cmd_7zip)
+        extract_commands = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
     else:
         required_cmds = ["unrar", "unzip", "tar", "unxz", "unlzma", "7zr", "bunzip2"]
@@ -33,7 +33,7 @@ def extract(filePath, outputDestination):
         # ".lzma": ["xz", "-d --format=lzma --keep"],
         # ".bz2": ["bzip2", "-d --keep"],
 
-        EXTRACT_COMMANDS = {
+        extract_commands = {
             ".rar": ["unrar", "x", "-o+", "-y"],
             ".tar": ["tar", "-xf"],
             ".zip": ["unzip"],
@@ -49,24 +49,24 @@ def extract(filePath, outputDestination):
             for cmd in required_cmds:
                 if call(['which', cmd], stdout=devnull,
                         stderr=devnull):  # note, returns 0 if exists, or 1 if doesn't exist.
-                    for k, v in EXTRACT_COMMANDS.items():
+                    for k, v in extract_commands.items():
                         if cmd in v[0]:
                             if not call(["which", "7zr"], stdout=devnull, stderr=devnull):  # we do have "7zr"
-                                EXTRACT_COMMANDS[k] = ["7zr", "x", "-y"]
+                                extract_commands[k] = ["7zr", "x", "-y"]
                             elif not call(["which", "7z"], stdout=devnull, stderr=devnull):  # we do have "7z"
-                                EXTRACT_COMMANDS[k] = ["7z", "x", "-y"]
+                                extract_commands[k] = ["7z", "x", "-y"]
                             elif not call(["which", "7za"], stdout=devnull, stderr=devnull):  # we do have "7za"
-                                EXTRACT_COMMANDS[k] = ["7za", "x", "-y"]
+                                extract_commands[k] = ["7za", "x", "-y"]
                             else:
                                 core.logger.error("EXTRACTOR: {cmd} not found, "
                                                   "disabling support for {feature}".format
                                                   (cmd=cmd, feature=k))
-                                del EXTRACT_COMMANDS[k]
+                                del extract_commands[k]
             devnull.close()
         else:
             core.logger.warning("EXTRACTOR: Cannot determine which tool to use when called from Transmission")
 
-        if not EXTRACT_COMMANDS:
+        if not extract_commands:
             core.logger.warning("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
     ext = os.path.splitext(filePath)
@@ -74,14 +74,14 @@ def extract(filePath, outputDestination):
     if ext[1] in (".gz", ".bz2", ".lzma"):
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == ".tar":
-            cmd = EXTRACT_COMMANDS[".tar{ext}".format(ext=ext[1])]
+            cmd = extract_commands[".tar{ext}".format(ext=ext[1])]
     elif ext[1] in (".1", ".01", ".001") and os.path.splitext(ext[0])[1] in (".rar", ".zip", ".7z"):
-        cmd = EXTRACT_COMMANDS[os.path.splitext(ext[0])[1]]
+        cmd = extract_commands[os.path.splitext(ext[0])[1]]
     elif ext[1] in (".cb7", ".cba", ".cbr", ".cbt", ".cbz"):  # don't extract these comic book archives.
         return False
     else:
-        if ext[1] in EXTRACT_COMMANDS:
-            cmd = EXTRACT_COMMANDS[ext[1]]
+        if ext[1] in extract_commands:
+            cmd = extract_commands[ext[1]]
         else:
             core.logger.debug("EXTRACTOR: Unknown file type: {ext}".format
                               (ext=ext[1]))
@@ -100,13 +100,13 @@ def extract(filePath, outputDestination):
     core.logger.debug("Extracting {cmd} {file} {destination}".format
                       (cmd=cmd, file=filePath, destination=outputDestination))
 
-    origFiles = []
-    origDirs = []
+    orig_files = []
+    orig_dirs = []
     for dir, subdirs, files in os.walk(outputDestination):
         for subdir in subdirs:
-            origDirs.append(os.path.join(dir, subdir))
+            orig_dirs.append(os.path.join(dir, subdir))
         for file in files:
-            origFiles.append(os.path.join(dir, file))
+            orig_files.append(os.path.join(dir, file))
 
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
@@ -162,13 +162,13 @@ def extract(filePath, outputDestination):
         perms = stat.S_IMODE(os.lstat(os.path.split(filePath)[0]).st_mode)
         for dir, subdirs, files in os.walk(outputDestination):
             for subdir in subdirs:
-                if not os.path.join(dir, subdir) in origFiles:
+                if not os.path.join(dir, subdir) in orig_files:
                     try:
                         os.chmod(os.path.join(dir, subdir), perms)
                     except:
                         pass
             for file in files:
-                if not os.path.join(dir, file) in origFiles:
+                if not os.path.join(dir, file) in orig_files:
                     try:
                         shutil.copymode(filePath, os.path.join(dir, file))
                     except:

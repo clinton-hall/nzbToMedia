@@ -14,6 +14,8 @@ requests.packages.urllib3.disable_warnings()
 
 class autoProcessGames(object):
     def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
+        dir_name = dirName
+        input_name = inputName
         status = int(status)
 
         cfg = dict(core.CFG[section][inputCategory])
@@ -31,19 +33,19 @@ class autoProcessGames(object):
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
-        inputName, dirName = convert_to_ascii(inputName, dirName)
+        input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        fields = inputName.split("-")
+        fields = input_name.split("-")
 
-        gamezID = fields[0].replace("[", "").replace("]", "").replace(" ", "")
+        gamez_id = fields[0].replace("[", "").replace("]", "").replace(" ", "")
 
-        downloadStatus = 'Downloaded' if status == 0 else 'Wanted'
+        download_status = 'Downloaded' if status == 0 else 'Wanted'
 
         params = {
             'api_key': apikey,
             'mode': 'UPDATEREQUESTEDSTATUS',
-            'db_id': gamezID,
-            'status': downloadStatus
+            'db_id': gamez_id,
+            'status': download_status
         }
 
         logger.debug("Opening URL: {0}".format(url), section)
@@ -59,9 +61,9 @@ class autoProcessGames(object):
         if library:
             logger.postprocess("moving files to library: {0}".format(library), section)
             try:
-                shutil.move(dirName, os.path.join(library, inputName))
+                shutil.move(dir_name, os.path.join(library, input_name))
             except:
-                logger.error("Unable to move {0} to {1}".format(dirName, os.path.join(library, inputName)), section)
+                logger.error("Unable to move {0} to {1}".format(dir_name, os.path.join(library, input_name)), section)
                 return [1, "{0}: Failed to post-process - Unable to move files".format(section)]
         else:
             logger.error("No library specified to move files to. Please edit your configuration.", section)
@@ -71,8 +73,8 @@ class autoProcessGames(object):
             logger.error("Server returned status {0}".format(r.status_code), section)
             return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
         elif result['success']:
-            logger.postprocess("SUCCESS: Status for {0} has been set to {1} in Gamez".format(gamezID, downloadStatus), section)
-            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            logger.postprocess("SUCCESS: Status for {0} has been set to {1} in Gamez".format(gamez_id, download_status), section)
+            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
         else:
-            logger.error("FAILED: Status for {0} has NOT been updated in Gamez".format(gamezID), section)
+            logger.error("FAILED: Status for {0} has NOT been updated in Gamez".format(gamez_id), section)
             return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]

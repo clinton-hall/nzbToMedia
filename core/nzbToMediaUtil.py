@@ -106,86 +106,89 @@ def remoteDir(path):
 
 
 def category_search(inputDirectory, inputName, inputCategory, root, categories):
+    input_directory = inputDirectory
+    input_category = inputCategory
+    input_name = inputName
     tordir = False
 
     try:
-        inputName = inputName.encode(core.SYS_ENCODING)
+        input_name = input_name.encode(core.SYS_ENCODING)
     except:
         pass
     try:
-        inputDirectory = inputDirectory.encode(core.SYS_ENCODING)
+        input_directory = input_directory.encode(core.SYS_ENCODING)
     except:
         pass
 
-    if inputDirectory is None:  # =Nothing to process here.
-        return inputDirectory, inputName, inputCategory, root
+    if input_directory is None:  # =Nothing to process here.
+        return input_directory, input_name, input_category, root
 
-    pathlist = os.path.normpath(inputDirectory).split(os.sep)
+    pathlist = os.path.normpath(input_directory).split(os.sep)
 
-    if inputCategory and inputCategory in pathlist:
-        logger.debug("SEARCH: Found the Category: {0} in directory structure".format(inputCategory))
-    elif inputCategory:
-        logger.debug("SEARCH: Could not find the category: {0} in the directory structure".format(inputCategory))
+    if input_category and input_category in pathlist:
+        logger.debug("SEARCH: Found the Category: {0} in directory structure".format(input_category))
+    elif input_category:
+        logger.debug("SEARCH: Could not find the category: {0} in the directory structure".format(input_category))
     else:
         try:
-            inputCategory = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
-            logger.debug("SEARCH: Found Category: {0} in directory structure".format(inputCategory))
+            input_category = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
+            logger.debug("SEARCH: Found Category: {0} in directory structure".format(input_category))
         except IndexError:
-            inputCategory = ""
+            input_category = ""
             logger.debug("SEARCH: Could not find a category in the directory structure")
-    if not os.path.isdir(inputDirectory) and os.path.isfile(inputDirectory):  # If the input directory is a file
-        if not inputName:
-            inputName = os.path.split(os.path.normpath(inputDirectory))[1]
-        return inputDirectory, inputName, inputCategory, root
+    if not os.path.isdir(input_directory) and os.path.isfile(input_directory):  # If the input directory is a file
+        if not input_name:
+            input_name = os.path.split(os.path.normpath(input_directory))[1]
+        return input_directory, input_name, input_category, root
 
-    if inputCategory and os.path.isdir(os.path.join(inputDirectory, inputCategory)):
+    if input_category and os.path.isdir(os.path.join(input_directory, input_category)):
         logger.info(
-            "SEARCH: Found category directory {0} in input directory directory {1}".format(inputCategory, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputCategory)
-        logger.info("SEARCH: Setting inputDirectory to {0}".format(inputDirectory))
-    if inputName and os.path.isdir(os.path.join(inputDirectory, inputName)):
-        logger.info("SEARCH: Found torrent directory {0} in input directory directory {1}".format(inputName, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputName)
-        logger.info("SEARCH: Setting inputDirectory to {0}".format(inputDirectory))
+            "SEARCH: Found category directory {0} in input directory directory {1}".format(input_category, input_directory))
+        input_directory = os.path.join(input_directory, input_category)
+        logger.info("SEARCH: Setting input_directory to {0}".format(input_directory))
+    if input_name and os.path.isdir(os.path.join(input_directory, input_name)):
+        logger.info("SEARCH: Found torrent directory {0} in input directory directory {1}".format(input_name, input_directory))
+        input_directory = os.path.join(input_directory, input_name)
+        logger.info("SEARCH: Setting input_directory to {0}".format(input_directory))
         tordir = True
-    elif inputName and os.path.isdir(os.path.join(inputDirectory, sanitizeName(inputName))):
+    elif input_name and os.path.isdir(os.path.join(input_directory, sanitizeName(input_name))):
         logger.info("SEARCH: Found torrent directory {0} in input directory directory {1}".format(
-            sanitizeName(inputName), inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, sanitizeName(inputName))
-        logger.info("SEARCH: Setting inputDirectory to {0}".format(inputDirectory))
+            sanitizeName(input_name), input_directory))
+        input_directory = os.path.join(input_directory, sanitizeName(input_name))
+        logger.info("SEARCH: Setting input_directory to {0}".format(input_directory))
         tordir = True
-    elif inputName and os.path.isfile(os.path.join(inputDirectory, inputName)):
-        logger.info("SEARCH: Found torrent file {0} in input directory directory {1}".format(inputName, inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, inputName)
-        logger.info("SEARCH: Setting inputDirectory to {0}".format(inputDirectory))
+    elif input_name and os.path.isfile(os.path.join(input_directory, input_name)):
+        logger.info("SEARCH: Found torrent file {0} in input directory directory {1}".format(input_name, input_directory))
+        input_directory = os.path.join(input_directory, input_name)
+        logger.info("SEARCH: Setting input_directory to {0}".format(input_directory))
         tordir = True
-    elif inputName and os.path.isfile(os.path.join(inputDirectory, sanitizeName(inputName))):
+    elif input_name and os.path.isfile(os.path.join(input_directory, sanitizeName(input_name))):
         logger.info("SEARCH: Found torrent file {0} in input directory directory {1}".format(
-            sanitizeName(inputName), inputDirectory))
-        inputDirectory = os.path.join(inputDirectory, sanitizeName(inputName))
-        logger.info("SEARCH: Setting inputDirectory to {0}".format(inputDirectory))
+            sanitizeName(input_name), input_directory))
+        input_directory = os.path.join(input_directory, sanitizeName(input_name))
+        logger.info("SEARCH: Setting input_directory to {0}".format(input_directory))
         tordir = True
 
     imdbid = [item for item in pathlist if '.cp(tt' in item]  # This looks for the .cp(tt imdb id in the path.
-    if imdbid and '.cp(tt' not in inputName:
-        inputName = imdbid[0]  # This ensures the imdb id is preserved and passed to CP
+    if imdbid and '.cp(tt' not in input_name:
+        input_name = imdbid[0]  # This ensures the imdb id is preserved and passed to CP
         tordir = True
 
-    if inputCategory and not tordir:
+    if input_category and not tordir:
         try:
-            index = pathlist.index(inputCategory)
+            index = pathlist.index(input_category)
             if index + 1 < len(pathlist):
                 tordir = True
                 logger.info("SEARCH: Found a unique directory {0} in the category directory".format
                             (pathlist[index + 1]))
-                if not inputName:
-                    inputName = pathlist[index + 1]
+                if not input_name:
+                    input_name = pathlist[index + 1]
         except ValueError:
             pass
 
-    if inputName and not tordir:
-        if inputName in pathlist or sanitizeName(inputName) in pathlist:
-            logger.info("SEARCH: Found torrent directory {0} in the directory structure".format(inputName))
+    if input_name and not tordir:
+        if input_name in pathlist or sanitizeName(input_name) in pathlist:
+            logger.info("SEARCH: Found torrent directory {0} in the directory structure".format(input_name))
             tordir = True
         else:
             root = 1
@@ -196,7 +199,7 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
         logger.info("SEARCH: Could not find a unique directory for this download. Assume a common directory.")
         logger.info("SEARCH: We will try and determine which files to process, individually")
 
-    return inputDirectory, inputName, inputCategory, root
+    return input_directory, input_name, input_category, root
 
 
 def getDirSize(inputPath):
@@ -209,19 +212,19 @@ def getDirSize(inputPath):
 
 
 def is_minSize(inputName, minSize):
-    fileName, fileExt = os.path.splitext(os.path.basename(inputName))
+    file_name, file_ext = os.path.splitext(os.path.basename(inputName))
 
     # audio files we need to check directory size not file size
-    inputSize = os.path.getsize(inputName)
-    if fileExt in core.AUDIOCONTAINER:
+    input_size = os.path.getsize(inputName)
+    if file_ext in core.AUDIOCONTAINER:
         try:
-            inputSize = getDirSize(os.path.dirname(inputName))
+            input_size = getDirSize(os.path.dirname(inputName))
         except:
             logger.error("Failed to get file size for {0}".format(inputName), 'MINSIZE')
             return True
 
     # Ignore files under a certain size
-    if inputSize > minSize * 1048576:
+    if input_size > minSize * 1048576:
         return True
 
 
@@ -309,13 +312,13 @@ def replace_links(link):
 def flatten(outputDestination):
     logger.info("FLATTEN: Flattening directory: {0}".format(outputDestination))
     for outputFile in listMediaFiles(outputDestination):
-        dirPath = os.path.dirname(outputFile)
-        fileName = os.path.basename(outputFile)
+        dir_path = os.path.dirname(outputFile)
+        file_name = os.path.basename(outputFile)
 
-        if dirPath == outputDestination:
+        if dir_path == outputDestination:
             continue
 
-        target = os.path.join(outputDestination, fileName)
+        target = os.path.join(outputDestination, file_name)
 
         try:
             shutil.move(outputFile, target)
@@ -411,6 +414,7 @@ def WakeUp():
 
 
 def CharReplace(Name):
+    name = Name
     # Special character hex range:
     # CP850: 0x80-0xA5 (fortunately not used in ISO-8859-15)
     # UTF-8: 1st hex code 0xC2-0xC3 followed by a 2nd hex code 0xA1-0xFF
@@ -419,73 +423,76 @@ def CharReplace(Name):
     # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
     encoded = False
     encoding = None
-    if isinstance(Name, text_type):
-        return encoded, Name.encode(core.SYS_ENCODING)
-    for Idx in range(len(Name)):
+    if isinstance(name, text_type):
+        return encoded, name.encode(core.SYS_ENCODING)
+    for Idx in range(len(name)):
         # /!\ detection is done 2char by 2char for UTF-8 special character
-        if (len(Name) != 1) & (Idx < (len(Name) - 1)):
+        if (len(name) != 1) & (Idx < (len(name) - 1)):
             # Detect UTF-8
-            if ((Name[Idx] == '\xC2') | (Name[Idx] == '\xC3')) & (
-                        (Name[Idx + 1] >= '\xA0') & (Name[Idx + 1] <= '\xFF')):
+            if ((name[Idx] == '\xC2') | (name[Idx] == '\xC3')) & (
+                    (name[Idx + 1] >= '\xA0') & (name[Idx + 1] <= '\xFF')):
                 encoding = 'utf-8'
                 break
             # Detect CP850
-            elif (Name[Idx] >= '\x80') & (Name[Idx] <= '\xA5'):
+            elif (name[Idx] >= '\x80') & (name[Idx] <= '\xA5'):
                 encoding = 'cp850'
                 break
             # Detect ISO-8859-15
-            elif (Name[Idx] >= '\xA6') & (Name[Idx] <= '\xFF'):
+            elif (name[Idx] >= '\xA6') & (name[Idx] <= '\xFF'):
                 encoding = 'iso-8859-15'
                 break
         else:
             # Detect CP850
-            if (Name[Idx] >= '\x80') & (Name[Idx] <= '\xA5'):
+            if (name[Idx] >= '\x80') & (name[Idx] <= '\xA5'):
                 encoding = 'cp850'
                 break
             # Detect ISO-8859-15
-            elif (Name[Idx] >= '\xA6') & (Name[Idx] <= '\xFF'):
+            elif (name[Idx] >= '\xA6') & (name[Idx] <= '\xFF'):
                 encoding = 'iso-8859-15'
                 break
     if encoding and not encoding == core.SYS_ENCODING:
         encoded = True
-        Name = Name.decode(encoding).encode(core.SYS_ENCODING)
-    return encoded, Name
+        name = name.decode(encoding).encode(core.SYS_ENCODING)
+    return encoded, name
 
 
 def convert_to_ascii(inputName, dirName):
+    input_name = inputName
+    dir_name = dirName
+
     ascii_convert = int(core.CFG["ASCII"]["convert"])
     if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and "\" is replaced!.
-        return inputName, dirName
+        return input_name, dir_name
 
-    encoded, inputName = CharReplace(inputName)
+    encoded, input_name = CharReplace(input_name)
 
-    dir, base = os.path.split(dirName)
+    dir, base = os.path.split(dir_name)
     if not base:  # ended with "/"
         dir, base = os.path.split(dir)
 
     encoded, base2 = CharReplace(base)
     if encoded:
-        dirName = os.path.join(dir, base2)
+        dir_name = os.path.join(dir, base2)
         logger.info("Renaming directory to: {0}.".format(base2), 'ENCODER')
-        os.rename(os.path.join(dir, base), dirName)
+        os.rename(os.path.join(dir, base), dir_name)
         if 'NZBOP_SCRIPTDIR' in os.environ:
-            print("[NZB] DIRECTORY={0}".format(dirName))
+            print("[NZB] DIRECTORY={0}".format(dir_name))
 
-    for dirname, dirnames, filenames in os.walk(dirName, topdown=False):
+    for dirname, dirnames, filenames in os.walk(dir_name, topdown=False):
         for subdirname in dirnames:
             encoded, subdirname2 = CharReplace(subdirname)
             if encoded:
                 logger.info("Renaming directory to: {0}.".format(subdirname2), 'ENCODER')
                 os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
 
-    for dirname, dirnames, filenames in os.walk(dirName):
+    for dirname, dirnames, filenames in os.walk(dir_name):
         for filename in filenames:
             encoded, filename2 = CharReplace(filename)
             if encoded:
                 logger.info("Renaming file to: {0}.".format(filename2), 'ENCODER')
                 os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
 
-    return inputName, dirName
+    return input_name, dir_name
 
 
 def parse_other(args):
@@ -495,68 +502,68 @@ def parse_other(args):
 def parse_rtorrent(args):
     # rtorrent usage: system.method.set_key = event.download.finished,TorrentToMedia,
     # "execute={/path/to/nzbToMedia/TorrentToMedia.py,\"$d.get_base_path=\",\"$d.get_name=\",\"$d.get_custom1=\",\"$d.get_hash=\"}"
-    inputDirectory = os.path.normpath(args[1])
+    input_directory = os.path.normpath(args[1])
     try:
-        inputName = args[2]
+        input_name = args[2]
     except:
-        inputName = ''
+        input_name = ''
     try:
-        inputCategory = args[3]
+        input_category = args[3]
     except:
-        inputCategory = ''
+        input_category = ''
     try:
-        inputHash = args[4]
+        input_hash = args[4]
     except:
-        inputHash = ''
+        input_hash = ''
     try:
-        inputID = args[4]
+        input_id = args[4]
     except:
-        inputID = ''
+        input_id = ''
 
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+    return input_directory, input_name, input_category, input_hash, input_id
 
 
 def parse_utorrent(args):
     # uTorrent usage: call TorrentToMedia.py "%D" "%N" "%L" "%I"
-    inputDirectory = os.path.normpath(args[1])
-    inputName = args[2]
+    input_directory = os.path.normpath(args[1])
+    input_name = args[2]
     try:
-        inputCategory = args[3]
+        input_category = args[3]
     except:
-        inputCategory = ''
+        input_category = ''
     try:
-        inputHash = args[4]
+        input_hash = args[4]
     except:
-        inputHash = ''
+        input_hash = ''
     try:
-        inputID = args[4]
+        input_id = args[4]
     except:
-        inputID = ''
+        input_id = ''
 
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+    return input_directory, input_name, input_category, input_hash, input_id
 
 
 def parse_deluge(args):
     # Deluge usage: call TorrentToMedia.py TORRENT_ID TORRENT_NAME TORRENT_DIR
-    inputDirectory = os.path.normpath(args[3])
-    inputName = args[2]
-    inputHash = args[1]
-    inputID = args[1]
+    input_directory = os.path.normpath(args[3])
+    input_name = args[2]
+    input_hash = args[1]
+    input_id = args[1]
     try:
-        inputCategory = core.TORRENT_CLASS.core.get_torrent_status(inputID, ['label']).get()['label']
+        input_category = core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get()['label']
     except:
-        inputCategory = ''
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+        input_category = ''
+    return input_directory, input_name, input_category, input_hash, input_id
 
 
 def parse_transmission(args):
     # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
-    inputDirectory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
-    inputName = os.getenv('TR_TORRENT_NAME')
-    inputCategory = ''  # We dont have a category yet
-    inputHash = os.getenv('TR_TORRENT_HASH')
-    inputID = os.getenv('TR_TORRENT_ID')
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+    input_directory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
+    input_name = os.getenv('TR_TORRENT_NAME')
+    input_category = ''  # We dont have a category yet
+    input_hash = os.getenv('TR_TORRENT_HASH')
+    input_id = os.getenv('TR_TORRENT_ID')
+    return input_directory, input_name, input_category, input_hash, input_id
 
 
 def parse_vuze(args):
@@ -566,32 +573,32 @@ def parse_vuze(args):
     except:
         input = []
     try:
-        inputDirectory = os.path.normpath(input[0])
+        input_directory = os.path.normpath(input[0])
     except:
-        inputDirectory = ''
+        input_directory = ''
     try:
-        inputName = input[1]
+        input_name = input[1]
     except:
-        inputName = ''
+        input_name = ''
     try:
-        inputCategory = input[2]
+        input_category = input[2]
     except:
-        inputCategory = ''
+        input_category = ''
     try:
-        inputHash = input[3]
+        input_hash = input[3]
     except:
-        inputHash = ''
+        input_hash = ''
     try:
-        inputID = input[3]
+        input_id = input[3]
     except:
-        inputID = ''
+        input_id = ''
     try:
         if input[4] == 'single':
-            inputName = input[5]
+            input_name = input[5]
     except:
         pass
 
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+    return input_directory, input_name, input_category, input_hash, input_id
 
 def parse_qbittorrent(args):
     # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
@@ -600,27 +607,27 @@ def parse_qbittorrent(args):
     except:
         input = []
     try:
-        inputDirectory = os.path.normpath(input[0].replace('"',''))
+        input_directory = os.path.normpath(input[0].replace('"',''))
     except:
-        inputDirectory = ''
+        input_directory = ''
     try:
-        inputName = input[1].replace('"','')
+        input_name = input[1].replace('"','')
     except:
-        inputName = ''
+        input_name = ''
     try:
-        inputCategory = input[2].replace('"','')
+        input_category = input[2].replace('"','')
     except:
-        inputCategory = ''
+        input_category = ''
     try:
-        inputHash = input[3].replace('"','')
+        input_hash = input[3].replace('"','')
     except:
-        inputHash = ''
+        input_hash = ''
     try:
-        inputID = input[3].replace('"','')
+        input_id = input[3].replace('"','')
     except:
-        inputID = ''
+        input_id = ''
 
-    return inputDirectory, inputName, inputCategory, inputHash, inputID
+    return input_directory, input_name, input_category, input_hash, input_id
 
 def parse_args(clientAgent, args):
     clients = {
@@ -656,10 +663,10 @@ def getDirs(section, subsection, link='hard'):
                 continue
             try:
                 logger.debug("Found file {0} in root directory {1}.".format(os.path.split(mediafile)[1], path))
-                newPath = None
-                fileExt = os.path.splitext(mediafile)[1]
+                new_path = None
+                file_ext = os.path.splitext(mediafile)[1]
                 try:
-                    if fileExt in core.AUDIOCONTAINER:
+                    if file_ext in core.AUDIOCONTAINER:
                         f = beets.mediafile.MediaFile(mediafile)
 
                         # get artist and album info
@@ -667,8 +674,8 @@ def getDirs(section, subsection, link='hard'):
                         album = f.album
 
                         # create new path
-                        newPath = os.path.join(path, "{0} - {1}".format(sanitizeName(artist), sanitizeName(album)))
-                    elif fileExt in core.MEDIACONTAINER:
+                        new_path = os.path.join(path, "{0} - {1}".format(sanitizeName(artist), sanitizeName(album)))
+                    elif file_ext in core.MEDIACONTAINER:
                         f = guessit.guessit(mediafile)
 
                         # get title
@@ -677,29 +684,29 @@ def getDirs(section, subsection, link='hard'):
                         if not title:
                             title = os.path.splitext(os.path.basename(mediafile))[0]
 
-                        newPath = os.path.join(path, sanitizeName(title))
+                        new_path = os.path.join(path, sanitizeName(title))
                 except Exception as e:
                     logger.error("Exception parsing name for media file: {0}: {1}".format(os.path.split(mediafile)[1], e))
 
-                if not newPath:
+                if not new_path:
                     title = os.path.splitext(os.path.basename(mediafile))[0]
-                    newPath = os.path.join(path, sanitizeName(title))
+                    new_path = os.path.join(path, sanitizeName(title))
 
                 try:
-                    newPath = newPath.encode(core.SYS_ENCODING)
+                    new_path = new_path.encode(core.SYS_ENCODING)
                 except:
                     pass
 
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
-                if os.path.isfile(newPath):
-                    newPath2 = os.path.join(os.path.join(os.path.split(newPath)[0], 'new'), os.path.split(newPath)[1])
-                    newPath = newPath2
+                if os.path.isfile(new_path):
+                    new_path2 = os.path.join(os.path.join(os.path.split(new_path)[0], 'new'), os.path.split(new_path)[1])
+                    new_path = new_path2
 
                 # create new path if it does not exist
-                if not os.path.exists(newPath):
-                    makeDir(newPath)
+                if not os.path.exists(new_path):
+                    makeDir(new_path)
 
-                newfile = os.path.join(newPath, sanitizeName(os.path.split(mediafile)[1]))
+                newfile = os.path.join(new_path, sanitizeName(os.path.split(mediafile)[1]))
                 try:
                     newfile = newfile.encode(core.SYS_ENCODING)
                 except:
@@ -733,9 +740,9 @@ def getDirs(section, subsection, link='hard'):
 
     if core.USELINK == 'move':
         try:
-            outputDirectory = os.path.join(core.OUTPUTDIRECTORY, subsection)
-            if os.path.exists(outputDirectory):
-                to_return.extend(processDir(outputDirectory))
+            output_directory = os.path.join(core.OUTPUTDIRECTORY, subsection)
+            if os.path.exists(output_directory):
+                to_return.extend(processDir(output_directory))
         except Exception as e:
             logger.error("Failed to add directories from {0} for post-processing: {1}".format(core.OUTPUTDIRECTORY, e))
 
@@ -781,10 +788,10 @@ def cleanDir(path, section, subsection):
         logger.info('Doing Forceful Clean of {0}'.format(path), 'CLEANDIR')
         rmDir(path)
         return
-    minSize = int(cfg.get('minSize', 0))
+    min_size = int(cfg.get('minSize', 0))
     delete_ignored = int(cfg.get('delete_ignored', 0))
     try:
-        num_files = len(listMediaFiles(path, minSize=minSize, delete_ignored=delete_ignored))
+        num_files = len(listMediaFiles(path, minSize=min_size, delete_ignored=delete_ignored))
     except:
         num_files = 'unknown'
     if num_files > 0:
@@ -917,10 +924,10 @@ def find_download(clientAgent, download_id):
                 return True
     if clientAgent == 'sabnzbd':
         if "http" in core.SABNZBDHOST:
-            baseURL = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
+            base_url = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
         else:
-            baseURL = "http://{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
-        url = baseURL
+            base_url = "http://{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
+        url = base_url
         params = {
             'apikey': core.SABNZBDAPIKEY,
             'mode': "get_files",
@@ -944,10 +951,10 @@ def get_nzoid(inputName):
     slots = []
     logger.debug("Searching for nzoid from SAbnzbd ...")
     if "http" in core.SABNZBDHOST:
-        baseURL = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
+        base_url = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
     else:
-        baseURL = "http://{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
-    url = baseURL
+        base_url = "http://{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
+    url = base_url
     params = {
         'apikey': core.SABNZBDAPIKEY,
         'mode': "queue",
@@ -960,7 +967,7 @@ def get_nzoid(inputName):
         return nzoid  # failure
     try:
         result = r.json()
-        cleanName = os.path.splitext(os.path.split(inputName)[1])[0]
+        clean_name = os.path.splitext(os.path.split(inputName)[1])[0]
         slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
     except:
         logger.warning("Data from SABnzbd queue could not be parsed")
@@ -972,13 +979,13 @@ def get_nzoid(inputName):
         return nzoid  # failure
     try:
         result = r.json()
-        cleanName = os.path.splitext(os.path.split(inputName)[1])[0]
+        clean_name = os.path.splitext(os.path.split(inputName)[1])[0]
         slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
     except:
         logger.warning("Data from SABnzbd history could not be parsed")
     try:
         for nzo_id, name in slots:
-            if name in [inputName, cleanName]:
+            if name in [inputName, clean_name]:
                 nzoid = nzo_id
                 logger.debug("Found nzoid: {0}".format(nzoid))
                 break
@@ -1014,19 +1021,19 @@ def is_archive_file(filename):
 
 
 def isMediaFile(mediafile, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
-    fileName, fileExt = os.path.splitext(mediafile)
+    file_name, file_ext = os.path.splitext(mediafile)
 
     try:
         # ignore MAC OS's "resource fork" files
-        if fileName.startswith('._'):
+        if file_name.startswith('._'):
             return False
     except:
         pass
-    if (media and fileExt.lower() in core.MEDIACONTAINER) \
-            or (audio and fileExt.lower() in core.AUDIOCONTAINER) \
-            or (meta and fileExt.lower() in core.METACONTAINER) \
+    if (media and file_ext.lower() in core.MEDIACONTAINER) \
+            or (audio and file_ext.lower() in core.AUDIOCONTAINER) \
+            or (meta and file_ext.lower() in core.METACONTAINER) \
             or (archives and is_archive_file(mediafile)) \
-            or (other and (fileExt.lower() in otherext or 'all' in otherext)):
+            or (other and (file_ext.lower() in otherext or 'all' in otherext)):
         return True
     else:
         return False
@@ -1036,15 +1043,15 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
     files = []
     if not os.path.isdir(path):
         if os.path.isfile(path):  # Single file downloads.
-            curFile = os.path.split(path)[1]
-            if isMediaFile(curFile, media, audio, meta, archives, other, otherext):
+            cur_file = os.path.split(path)[1]
+            if isMediaFile(cur_file, media, audio, meta, archives, other, otherext):
                 # Optionally ignore sample files
                 if is_sample(path) or not is_minSize(path, minSize):
                     if delete_ignored == 1:
                         try:
                             os.unlink(path)
                             logger.debug('Ignored file {0} has been removed ...'.format
-                                         (curFile))
+                                         (cur_file))
                         except:
                             pass
                 else:
@@ -1052,26 +1059,26 @@ def listMediaFiles(path, minSize=0, delete_ignored=0, media=True, audio=True, me
 
         return files
 
-    for curFile in os.listdir(text_type(path)):
-        fullCurFile = os.path.join(path, curFile)
+    for cur_file in os.listdir(text_type(path)):
+        full_cur_file = os.path.join(path, cur_file)
 
         # if it's a folder do it recursively
-        if os.path.isdir(fullCurFile) and not curFile.startswith('.'):
-            files += listMediaFiles(fullCurFile, minSize, delete_ignored, media, audio, meta, archives, other, otherext)
+        if os.path.isdir(full_cur_file) and not cur_file.startswith('.'):
+            files += listMediaFiles(full_cur_file, minSize, delete_ignored, media, audio, meta, archives, other, otherext)
 
-        elif isMediaFile(curFile, media, audio, meta, archives, other, otherext):
+        elif isMediaFile(cur_file, media, audio, meta, archives, other, otherext):
             # Optionally ignore sample files
-            if is_sample(fullCurFile) or not is_minSize(fullCurFile, minSize):
+            if is_sample(full_cur_file) or not is_minSize(full_cur_file, minSize):
                 if delete_ignored == 1:
                     try:
-                        os.unlink(fullCurFile)
+                        os.unlink(full_cur_file)
                         logger.debug('Ignored file {0} has been removed ...'.format
-                                     (curFile))
+                                     (cur_file))
                     except:
                         pass
                 continue
 
-            files.append(fullCurFile)
+            files.append(full_cur_file)
 
     return sorted(files, key=len)
 
@@ -1158,29 +1165,29 @@ def extractFiles(src, dst=None, keep_archive=None):
     extracted_archive = []
 
     for inputFile in listMediaFiles(src, media=False, audio=False, meta=False, archives=True):
-        dirPath = os.path.dirname(inputFile)
-        fullFileName = os.path.basename(inputFile)
-        archiveName = os.path.splitext(fullFileName)[0]
-        archiveName = re.sub(r"part[0-9]+", "", archiveName)
+        dir_path = os.path.dirname(inputFile)
+        full_file_name = os.path.basename(inputFile)
+        archive_name = os.path.splitext(full_file_name)[0]
+        archive_name = re.sub(r"part[0-9]+", "", archive_name)
 
-        if dirPath in extracted_folder and archiveName in extracted_archive:
+        if dir_path in extracted_folder and archive_name in extracted_archive:
             continue  # no need to extract this, but keep going to look for other archives and sub directories.
 
         try:
-            if extractor.extract(inputFile, dst or dirPath):
-                extracted_folder.append(dirPath)
-                extracted_archive.append(archiveName)
+            if extractor.extract(inputFile, dst or dir_path):
+                extracted_folder.append(dir_path)
+                extracted_archive.append(archive_name)
         except Exception:
-            logger.error("Extraction failed for: {0}".format(fullFileName))
+            logger.error("Extraction failed for: {0}".format(full_file_name))
 
     for folder in extracted_folder:
         for inputFile in listMediaFiles(folder, media=False, audio=False, meta=False, archives=True):
-            fullFileName = os.path.basename(inputFile)
-            archiveName = os.path.splitext(fullFileName)[0]
-            archiveName = re.sub(r"part[0-9]+", "", archiveName)
-            if archiveName not in extracted_archive or keep_archive:
+            full_file_name = os.path.basename(inputFile)
+            archive_name = os.path.splitext(full_file_name)[0]
+            archive_name = re.sub(r"part[0-9]+", "", archive_name)
+            if archive_name not in extracted_archive or keep_archive:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
-            logger.info("Removing extracted archive {0} from folder {1} ...".format(fullFileName, folder))
+            logger.info("Removing extracted archive {0} from folder {1} ...".format(full_file_name, folder))
             try:
                 if not os.access(inputFile, os.W_OK):
                     os.chmod(inputFile, stat.S_IWUSR)
@@ -1252,7 +1259,7 @@ def plex_update(category):
 
 
 def backupVersionedFile(old_file, version):
-    numTries = 0
+    num_tries = 0
 
     new_file = '{old}.v{version}'.format(old=old_file, version=version)
 
@@ -1269,11 +1276,11 @@ def backupVersionedFile(old_file, version):
         except Exception as error:
             logger.log(u"Error while trying to back up {old} to {new} : {msg}".format
                        (old=old_file, new=new_file, msg=error), logger.WARNING)
-            numTries += 1
+            num_tries += 1
             time.sleep(1)
             logger.log(u"Trying again.", logger.DEBUG)
 
-        if numTries >= 10:
+        if num_tries >= 10:
             logger.log(u"Unable to back up {old} to {new} please do it manually.".format(old=old_file, new=new_file), logger.ERROR)
             return False
 
@@ -1283,19 +1290,19 @@ def backupVersionedFile(old_file, version):
 def update_downloadInfoStatus(inputName, status):
     logger.db("Updating status of our download {0} in the DB to {1}".format(inputName, status))
 
-    myDB = nzbToMediaDB.DBConnection()
-    myDB.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
+    my_db = nzbToMediaDB.DBConnection()
+    my_db.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
                 [status, datetime.date.today().toordinal(), text_type(inputName)])
 
 
 def get_downloadInfo(inputName, status):
     logger.db("Getting download info for {0} from the DB".format(inputName))
 
-    myDB = nzbToMediaDB.DBConnection()
-    sqlResults = myDB.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
+    my_db = nzbToMediaDB.DBConnection()
+    sql_results = my_db.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
                              [text_type(inputName), status])
 
-    return sqlResults
+    return sql_results
 
 
 class RunningProcess(object):

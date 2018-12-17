@@ -13,6 +13,8 @@ requests.packages.urllib3.disable_warnings()
 
 class autoProcessComics(object):
     def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
+        dir_name = dirName
+        input_name = inputName
 
         apc_version = "2.04"
         comicrn_version = "1.01"
@@ -32,19 +34,19 @@ class autoProcessComics(object):
             logger.error("Server did not respond. Exiting", section)
             return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
 
-        inputName, dirName = convert_to_ascii(inputName, dirName)
-        clean_name, ext = os.path.splitext(inputName)
+        input_name, dir_name = convert_to_ascii(input_name, dir_name)
+        clean_name, ext = os.path.splitext(input_name)
         if len(ext) == 4:  # we assume this was a standard extension.
-            inputName = clean_name
+            input_name = clean_name
 
         params = {
             'cmd': 'forceProcess',
             'apikey': apikey,
-            'nzb_folder': remoteDir(dirName) if remote_path else dirName,
+            'nzb_folder': remoteDir(dir_name) if remote_path else dir_name,
         }
 
-        if inputName is not None:
-            params['nzb_name'] = inputName
+        if input_name is not None:
+            params['nzb_name'] = input_name
         params['failed'] = int(status)
         params['apc_version'] = apc_version
         params['comicrn_version'] = comicrn_version
@@ -72,7 +74,7 @@ class autoProcessComics(object):
 
         if success:
             logger.postprocess("SUCCESS: This issue has been processed successfully", section)
-            return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
         else:
             logger.warning("The issue does not appear to have successfully processed. Please check your Logs", section)
             return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]

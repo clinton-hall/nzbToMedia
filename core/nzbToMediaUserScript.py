@@ -50,10 +50,10 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
 
-            filePath = core.os.path.join(dirpath, file)
-            fileName, fileExtension = os.path.splitext(file)
+            file_path = core.os.path.join(dirpath, file)
+            file_name, file_extension = os.path.splitext(file)
 
-            if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or "all" in core.USER_SCRIPT_MEDIAEXTENSIONS:
+            if file_extension in core.USER_SCRIPT_MEDIAEXTENSIONS or "all" in core.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files += 1
                 if core.USER_SCRIPT_RUNONCE == 1 and num_files > 1:  # we have already run once, so just continue to get number of files.
                     continue
@@ -63,7 +63,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                         command.append('{0}'.format(file))
                         continue
                     elif param == "FP":
-                        command.append('{0}'.format(filePath))
+                        command.append('{0}'.format(file_path))
                         continue
                     elif param == "TN":
                         command.append('{0}'.format(torrentName))
@@ -83,7 +83,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 cmd = ""
                 for item in command:
                     cmd = "{cmd} {item}".format(cmd=cmd, item=item)
-                logger.info("Running script {cmd} on file {path}.".format(cmd=cmd, path=filePath), "USERSCRIPT")
+                logger.info("Running script {cmd} on file {path}.".format(cmd=cmd, path=file_path), "USERSCRIPT")
                 try:
                     p = Popen(command)
                     res = p.wait()
@@ -104,9 +104,9 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     num_files_new = 0
     for dirpath, dirnames, filenames in os.walk(outputDestination):
         for file in filenames:
-            fileName, fileExtension = os.path.splitext(file)
+            file_name, file_extension = os.path.splitext(file)
 
-            if fileExtension in core.USER_SCRIPT_MEDIAEXTENSIONS or core.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
+            if file_extension in core.USER_SCRIPT_MEDIAEXTENSIONS or core.USER_SCRIPT_MEDIAEXTENSIONS == "ALL":
                 num_files_new += 1
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
