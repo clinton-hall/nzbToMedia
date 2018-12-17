@@ -11,11 +11,13 @@ import subprocess
 import sys
 import time
 
+import libs.autoload
+import libs.util
 
-# init libs
-PROGRAM_DIR = os.path.dirname(os.path.normpath(os.path.abspath(os.path.join(__file__, os.pardir))))
-LIBS_DIR = os.path.join(PROGRAM_DIR, 'libs')
-sys.path.insert(0, LIBS_DIR)
+if not libs.autoload.completed:
+    sys.exit('Could not load vendored libraries.')
+
+PROGRAM_DIR = libs.util.module_root()
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
@@ -28,7 +30,7 @@ CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
 CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
 CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
 CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
-TEST_FILE = os.path.join(os.path.join(PROGRAM_DIR, 'tests'), 'test.mp4')
+TEST_FILE = os.path.join(PROGRAM_DIR, 'tests', 'test.mp4')
 MYAPP = None
 
 import six
