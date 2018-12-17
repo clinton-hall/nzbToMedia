@@ -9,5 +9,5 @@
 /userscripts/
 /logs/
 /.idea/
-/libs*/*.dist-info
-/libs*/*.egg-info
+*.dist-info
+*.egg-info
