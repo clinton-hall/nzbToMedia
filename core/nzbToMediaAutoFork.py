@@ -7,11 +7,11 @@ import core
 from core import logger
 
 
-def autoFork(section, inputCategory):
+def auto_fork(section, input_category):
     # auto-detect correct section
     # config settings
 
-    cfg = dict(core.CFG[section][inputCategory])
+    cfg = dict(core.CFG[section][input_category])
 
     host = cfg.get("host")
     port = cfg.get("port")
@@ -31,26 +31,26 @@ def autoFork(section, inputCategory):
     detected = False
     if section == "NzbDrone":
         logger.info("Attempting to verify {category} fork".format
-                    (category=inputCategory))
+                    (category=input_category))
         url = "{protocol}{host}:{port}{root}/api/rootfolder".format(
                     protocol=protocol, host=host, port=port, root=web_root)
         headers = {"X-Api-Key": apikey}
         try:
             r = requests.get(url, headers=headers, stream=True, verify=False)
         except requests.ConnectionError:
-            logger.warning("Could not connect to {0}:{1} to verify fork!".format(section, inputCategory))
+            logger.warning("Could not connect to {0}:{1} to verify fork!".format(section, input_category))
 
         if not r.ok:
             logger.warning("Connection to {section}:{category} failed! "
                            "Check your configuration".format
-                           (section=section, category=inputCategory))
+                           (section=section, category=input_category))
 
         fork = ['default', {}]
 
     elif fork == "auto":
         params = core.ALL_FORKS
         rem_params = []
-        logger.info("Attempting to auto-detect {category} fork".format(category=inputCategory))
+        logger.info("Attempting to auto-detect {category} fork".format(category=input_category))
         # define the order to test. Default must be first since the default fork doesn't reject parameters.
         # then in order of most unique parameters.
 
@@ -75,17 +75,17 @@ def autoFork(section, inputCategory):
             r = s.get(url, auth=(username, password), verify=False)
         except requests.ConnectionError:
             logger.info("Could not connect to {section}:{category} to perform auto-fork detection!".format
-                        (section=section, category=inputCategory))
+                        (section=section, category=input_category))
             r = []
         if r and r.ok:
             if apikey:
-                optionalParameters = []
+                optional_parameters = []
                 try:
-                    optionalParameters = r.json()['data']['optionalParameters'].keys()
+                    optional_parameters = r.json()['data']['optionalParameters'].keys()
                 except:
-                    optionalParameters = r.json()['data']['data']['optionalParameters'].keys()
+                    optional_parameters = r.json()['data']['data']['optionalParameters'].keys()
                 for param in params:
-                    if param not in optionalParameters:
+                    if param not in optional_parameters:
                         rem_params.append(param)
             else:
                 for param in params:
@@ -99,16 +99,16 @@ def autoFork(section, inputCategory):
                     break
         if detected:
             logger.info("{section}:{category} fork auto-detection successful ...".format
-                        (section=section, category=inputCategory))
+                        (section=section, category=input_category))
         elif rem_params:
             logger.info("{section}:{category} fork auto-detection found custom params {params}".format
-                        (section=section, category=inputCategory, params=params))
+                        (section=section, category=input_category, params=params))
             fork = ['custom', params]
         else:
             logger.info("{section}:{category} fork auto-detection failed".format
-                        (section=section, category=inputCategory))
+                        (section=section, category=input_category))
             fork = core.FORKS.items()[core.FORKS.keys().index(core.FORK_DEFAULT)]
 
     logger.info("{section}:{category} fork set to {fork}".format
-                (section=section, category=inputCategory, fork=fork[0]))
+                (section=section, category=input_category, fork=fork[0]))
     return fork[0], fork[1]

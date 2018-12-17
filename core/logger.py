@@ -58,10 +58,10 @@ class NTMRotatingLogHandler(object):
             handler.flush()
             handler.close()
 
-    def initLogging(self, consoleLogging=True):
+    def init_logging(self, console_logging=True):
 
-        if consoleLogging:
-            self.console_logging = consoleLogging
+        if console_logging:
+            self.console_logging = console_logging
 
         old_handler = None
 
@@ -180,7 +180,7 @@ class NTMRotatingLogHandler(object):
         pp_logger.addHandler(new_file_handler)
         db_logger.addHandler(new_file_handler)
 
-    def log(self, toLog, logLevel=MESSAGE, section='MAIN'):
+    def log(self, to_log, log_level=MESSAGE, section='MAIN'):
 
         with self.log_lock:
 
@@ -193,7 +193,7 @@ class NTMRotatingLogHandler(object):
                 self.writes_since_check += 1
 
             try:
-                message = u"{0}: {1}".format(section.upper(), toLog)
+                message = u"{0}: {1}".format(section.upper(), to_log)
             except UnicodeError:
                 message = u"{0}: Message contains non-utf-8 string".format(section.upper())
 
@@ -206,22 +206,22 @@ class NTMRotatingLogHandler(object):
             setattr(db_logger, 'db', lambda *args: db_logger.log(DB, *args))
 
             try:
-                if logLevel == DEBUG:
+                if log_level == DEBUG:
                     if core.LOG_DEBUG == 1:
                         ntm_logger.debug(out_line)
-                elif logLevel == MESSAGE:
+                elif log_level == MESSAGE:
                     ntm_logger.info(out_line)
-                elif logLevel == WARNING:
+                elif log_level == WARNING:
                     ntm_logger.warning(out_line)
-                elif logLevel == ERROR:
+                elif log_level == ERROR:
                     ntm_logger.error(out_line)
-                elif logLevel == POSTPROCESS:
+                elif log_level == POSTPROCESS:
                     pp_logger.postprocess(out_line)
-                elif logLevel == DB:
+                elif log_level == DB:
                     if core.LOG_DB == 1:
                         db_logger.db(out_line)
                 else:
-                    ntm_logger.info(logLevel, out_line)
+                    ntm_logger.info(log_level, out_line)
             except ValueError:
                 pass
 
@@ -249,32 +249,32 @@ class DispatchingFormatter(object):
 ntm_log_instance = NTMRotatingLogHandler(core.LOG_FILE, NUM_LOGS, LOG_SIZE)
 
 
-def log(toLog, logLevel=MESSAGE, section='MAIN'):
-    ntm_log_instance.log(toLog, logLevel, section)
+def log(to_log, log_level=MESSAGE, section='MAIN'):
+    ntm_log_instance.log(to_log, log_level, section)
 
 
-def info(toLog, section='MAIN'):
-    log(toLog, MESSAGE, section)
+def info(to_log, section='MAIN'):
+    log(to_log, MESSAGE, section)
 
 
-def error(toLog, section='MAIN'):
-    log(toLog, ERROR, section)
+def error(to_log, section='MAIN'):
+    log(to_log, ERROR, section)
 
 
-def warning(toLog, section='MAIN'):
-    log(toLog, WARNING, section)
+def warning(to_log, section='MAIN'):
+    log(to_log, WARNING, section)
 
 
-def debug(toLog, section='MAIN'):
-    log(toLog, DEBUG, section)
+def debug(to_log, section='MAIN'):
+    log(to_log, DEBUG, section)
 
 
-def postprocess(toLog, section='POSTPROCESS'):
-    log(toLog, POSTPROCESS, section)
+def postprocess(to_log, section='POSTPROCESS'):
+    log(to_log, POSTPROCESS, section)
 
 
-def db(toLog, section='DB'):
-    log(toLog, DB, section)
+def db(to_log, section='DB'):
+    log(to_log, DB, section)
 
 
 def log_error_and_exit(error_msg):
