@@ -37,11 +37,11 @@ import six
 from six.moves import reload_module
 
 from core import logger, nzbToMediaDB, versionCheck
-from core.autoProcess.autoProcessComics import autoProcessComics
-from core.autoProcess.autoProcessGames import autoProcessGames
-from core.autoProcess.autoProcessMovie import autoProcessMovie
-from core.autoProcess.autoProcessMusic import autoProcessMusic
-from core.autoProcess.autoProcessTV import autoProcessTV
+from core.autoProcess.autoProcessComics import Comic
+from core.autoProcess.autoProcessGames import Game
+from core.autoProcess.autoProcessMovie import Movie
+from core.autoProcess.autoProcessMusic import Music
+from core.autoProcess.autoProcessTV import TV
 from core.databases import mainDB
 from core.nzbToMediaConfig import config
 from core.nzbToMediaUtil import (

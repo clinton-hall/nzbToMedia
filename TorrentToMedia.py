@@ -236,22 +236,22 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
         result = external_script(output_destination, input_name, input_category, section)
 
     elif section_name in ['CouchPotato', 'Radarr']:
-        result = core.autoProcessMovie().process(section_name, output_destination, input_name,
-                                                 status, clientAgent, input_hash, input_category)
+        result = core.Movie().process(section_name, output_destination, input_name,
+                                      status, clientAgent, input_hash, input_category)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
-        result = core.autoProcessTV().process_episode(section_name, output_destination, input_name,
-                                                      status, clientAgent, input_hash, input_category)
+        result = core.TV().process_episode(section_name, output_destination, input_name,
+                                           status, clientAgent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
-        result = core.autoProcessMusic().process(section_name, output_destination, input_name,
-                                                 status, clientAgent, input_category)
+        result = core.Music().process(section_name, output_destination, input_name,
+                                      status, clientAgent, input_category)
     elif section_name == 'Mylar':
-        result = core.autoProcessComics().process_episode(section_name, output_destination, input_name,
-                                                          status, clientAgent, input_category)
+        result = core.Comic().process_episode(section_name, output_destination, input_name,
+                                              status, clientAgent, input_category)
     elif section_name == 'Gamez':
-        result = core.autoProcessGames().process(section_name, output_destination, input_name,
-                                                 status, clientAgent, input_category)
+        result = core.Game().process(section_name, output_destination, input_name,
+                                     status, clientAgent, input_category)
 
     plex_update(input_category)
 

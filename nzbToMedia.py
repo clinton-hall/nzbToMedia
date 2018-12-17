@@ -629,11 +629,11 @@ import sys
 
 import core
 from core import logger, nzbToMediaDB
-from core.autoProcess.autoProcessComics import autoProcessComics
-from core.autoProcess.autoProcessGames import autoProcessGames
-from core.autoProcess.autoProcessMovie import autoProcessMovie
-from core.autoProcess.autoProcessMusic import autoProcessMusic
-from core.autoProcess.autoProcessTV import autoProcessTV
+from core.autoProcess.autoProcessComics import Comic
+from core.autoProcess.autoProcessGames import Game
+from core.autoProcess.autoProcessMovie import Movie
+from core.autoProcess.autoProcessMusic import Music
+from core.autoProcess.autoProcessTV import TV
 from core.nzbToMediaUserScript import external_script
 from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
@@ -732,18 +732,18 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, input_category, input_name))
 
     if section_name in ["CouchPotato", "Radarr"]:
-        result = autoProcessMovie().process(section_name, input_directory, input_name, status, clientAgent, download_id,
-                                            input_category, failureLink)
+        result = Movie().process(section_name, input_directory, input_name, status, clientAgent, download_id,
+                                 input_category, failureLink)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = autoProcessTV().process_episode(section_name, input_directory, input_name, status, clientAgent,
-                                                 download_id, input_category, failureLink)
+        result = TV().process_episode(section_name, input_directory, input_name, status, clientAgent,
+                                      download_id, input_category, failureLink)
     elif section_name in ["HeadPhones", "Lidarr"]:
-        result = autoProcessMusic().process(section_name, input_directory, input_name, status, clientAgent, input_category)
+        result = Music().process(section_name, input_directory, input_name, status, clientAgent, input_category)
     elif section_name == "Mylar":
-        result = autoProcessComics().process_episode(section_name, input_directory, input_name, status, clientAgent,
-                                                     input_category)
+        result = Comic().process_episode(section_name, input_directory, input_name, status, clientAgent,
+                                         input_category)
     elif section_name == "Gamez":
-        result = autoProcessGames().process(section_name, input_directory, input_name, status, clientAgent, input_category)
+        result = Game().process(section_name, input_directory, input_name, status, clientAgent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:

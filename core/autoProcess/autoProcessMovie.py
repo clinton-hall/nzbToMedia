@@ -15,7 +15,7 @@ from core.transcoder import transcoder
 requests.packages.urllib3.disable_warnings()
 
 
-class autoProcessMovie(object):
+class Movie(object):
     def get_release(self, baseURL, imdbid=None, download_id=None, release_id=None):
         results = {}
         params = {}

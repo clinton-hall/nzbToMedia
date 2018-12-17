@@ -11,7 +11,7 @@ from core.nzbToMediaUtil import convert_to_ascii, remote_dir, server_responding
 requests.packages.urllib3.disable_warnings()
 
 
-class autoProcessComics(object):
+class Comic(object):
     def process_episode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         dir_name = dirName
         input_name = inputName

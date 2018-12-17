@@ -12,7 +12,7 @@ from core.nzbToMediaUtil import convert_to_ascii, server_responding
 requests.packages.urllib3.disable_warnings()
 
 
-class autoProcessGames(object):
+class Game(object):
     def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         dir_name = dirName
         input_name = inputName
