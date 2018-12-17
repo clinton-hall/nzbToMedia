@@ -88,7 +88,7 @@ def extract(filePath, outputDestination):
             return False
 
         # Create outputDestination folder
-        core.makeDir(outputDestination)
+        core.make_dir(outputDestination)
 
     if core.PASSWORDSFILE and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
         passwords = [line.strip() for line in open(os.path.normpath(core.PASSWORDSFILE))]

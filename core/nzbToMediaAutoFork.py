@@ -7,7 +7,7 @@ import core
 from core import logger
 
 
-def autoFork(section, inputCategory):
+def auto_fork(section, inputCategory):
     # auto-detect correct section
     # config settings
 

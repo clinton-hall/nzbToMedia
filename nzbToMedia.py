@@ -635,7 +635,7 @@ from core.autoProcess.autoProcessMovie import autoProcessMovie
 from core.autoProcess.autoProcessMusic import autoProcessMusic
 from core.autoProcess.autoProcessTV import autoProcessTV
 from core.nzbToMediaUserScript import external_script
-from core.nzbToMediaUtil import CharReplace, cleanDir, convert_to_ascii, extractFiles, getDirs, get_downloadInfo, get_nzoid, plex_update, update_downloadInfoStatus
+from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
 try:
     text_type = unicode
@@ -666,8 +666,8 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         input_name1 = input_name
 
         try:
-            encoded, input_directory1 = CharReplace(input_directory)
-            encoded, input_name1 = CharReplace(input_name)
+            encoded, input_directory1 = char_replace(input_directory)
+            encoded, input_name1 = char_replace(input_name)
         except:
             pass
 
@@ -727,7 +727,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
 
     if extract == 1:
         logger.debug('Checking for archives to extract in directory: {0}'.format(input_directory))
-        extractFiles(input_directory)
+        extract_files(input_directory)
 
     logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, input_category, input_name))
 
@@ -735,13 +735,13 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         result = autoProcessMovie().process(section_name, input_directory, input_name, status, clientAgent, download_id,
                                             input_category, failureLink)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = autoProcessTV().processEpisode(section_name, input_directory, input_name, status, clientAgent,
-                                                download_id, input_category, failureLink)
+        result = autoProcessTV().process_episode(section_name, input_directory, input_name, status, clientAgent,
+                                                 download_id, input_category, failureLink)
     elif section_name in ["HeadPhones", "Lidarr"]:
         result = autoProcessMusic().process(section_name, input_directory, input_name, status, clientAgent, input_category)
     elif section_name == "Mylar":
-        result = autoProcessComics().processEpisode(section_name, input_directory, input_name, status, clientAgent,
-                                                    input_category)
+        result = autoProcessComics().process_episode(section_name, input_directory, input_name, status, clientAgent,
+                                                     input_category)
     elif section_name == "Gamez":
         result = autoProcessGames().process(section_name, input_directory, input_name, status, clientAgent, input_category)
     elif section_name == 'UserScript':
@@ -754,10 +754,10 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     if result[0] == 0:
         if clientAgent != 'manual':
             # update download status in our DB
-            update_downloadInfoStatus(input_name, 1)
+            update_download_info_status(input_name, 1)
         if section_name not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr', 'Lidarr']:
             # cleanup our processing folders of any misc unwanted files and empty directories
-            cleanDir(input_directory, section_name, input_category)
+            clean_dir(input_directory, section_name, input_category)
 
     return result
 
@@ -879,11 +879,11 @@ def main(args, section=None):
             for subsection in subsections:
                 if not core.CFG[section][subsection].isenabled():
                     continue
-                for dir_name in getDirs(section, subsection, link='move'):
+                for dir_name in get_dirs(section, subsection, link='move'):
                     logger.info("Starting manual run for {0}:{1} - Folder: {2}".format(section, subsection, dir_name))
                     logger.info("Checking database for download info for {0} ...".format(os.path.basename(dir_name)))
 
-                    core.DOWNLOADINFO = get_downloadInfo(os.path.basename(dir_name), 0)
+                    core.DOWNLOADINFO = get_download_info(os.path.basename(dir_name), 0)
                     if core.DOWNLOADINFO:
                         logger.info("Found download info for {0}, "
                                     "setting variables now ...".format

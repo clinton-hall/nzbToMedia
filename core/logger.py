@@ -58,7 +58,7 @@ class NTMRotatingLogHandler(object):
             handler.flush()
             handler.close()
 
-    def initLogging(self, consoleLogging=True):
+    def init_logging(self, consoleLogging=True):
 
         if consoleLogging:
             self.console_logging = consoleLogging

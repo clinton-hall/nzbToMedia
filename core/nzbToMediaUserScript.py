@@ -5,7 +5,7 @@ from subprocess import Popen
 
 import core
 from core import logger
-from core.nzbToMediaUtil import import_subs, listMediaFiles, rmDir
+from core.nzbToMediaUtil import import_subs, list_media_files, remove_dir
 from core.transcoder import transcoder
 
 
@@ -40,8 +40,8 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     core.USER_SCRIPT_RUNONCE = int(settings.get("user_script_runOnce", 1))
 
     if core.CHECK_MEDIA:
-        for video in listMediaFiles(outputDestination, media=True, audio=False, meta=False, archives=False):
-            if transcoder.isVideoGood(video, 0):
+        for video in list_media_files(outputDestination, media=True, audio=False, meta=False, archives=False):
+            if transcoder.is_video_good(video, 0):
                 import_subs(video)
             else:
                 logger.info("Corrupt video file found {0}. Deleting.".format(video), "USERSCRIPT")
@@ -111,7 +111,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
         logger.info("All files have been processed. Cleaning outputDirectory {0}".format(outputDestination))
-        rmDir(outputDestination)
+        remove_dir(outputDestination)
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info("{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.".format(
             num_files, num_files_new))

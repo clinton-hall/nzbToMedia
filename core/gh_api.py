@@ -14,7 +14,7 @@ class GitHub(object):
         self.github_repo = github_repo
         self.branch = branch
 
-    def _access_API(self, path, params=None):
+    def _access_api(self, path, params=None):
         """
         Access the API at the path given and with the optional params given.
         """
@@ -32,7 +32,7 @@ class GitHub(object):
 
         Returns a deserialized json object containing the commit info. See http://developer.github.com/v3/repos/commits/
         """
-        return self._access_API(
+        return self._access_api(
             ['repos', self.github_repo_user, self.github_repo, 'commits'],
             params={'per_page': 100, 'sha': self.branch},
         )
@@ -49,7 +49,7 @@ class GitHub(object):
 
         Returns a deserialized json object containing the compare info. See http://developer.github.com/v3/repos/commits/
         """
-        return self._access_API(
+        return self._access_api(
             ['repos', self.github_repo_user, self.github_repo, 'compare',
              '{base}...{head}'.format(base=base, head=head)],
             params={'per_page': per_page},

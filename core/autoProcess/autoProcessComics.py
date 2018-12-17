@@ -6,13 +6,13 @@ import requests
 
 import core
 from core import logger
-from core.nzbToMediaUtil import convert_to_ascii, remoteDir, server_responding
+from core.nzbToMediaUtil import convert_to_ascii, remote_dir, server_responding
 
 requests.packages.urllib3.disable_warnings()
 
 
 class autoProcessComics(object):
-    def processEpisode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
+    def process_episode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
         dir_name = dirName
         input_name = inputName
 
@@ -42,7 +42,7 @@ class autoProcessComics(object):
         params = {
             'cmd': 'forceProcess',
             'apikey': apikey,
-            'nzb_folder': remoteDir(dir_name) if remote_path else dir_name,
+            'nzb_folder': remote_dir(dir_name) if remote_path else dir_name,
         }
 
         if input_name is not None:

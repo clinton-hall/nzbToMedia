@@ -1,15 +1,15 @@
 # coding=utf-8
 
 from core import logger, nzbToMediaDB
-from core.nzbToMediaUtil import backupVersionedFile
+from core.nzbToMediaUtil import backup_versioned_file
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from
 MAX_DB_VERSION = 2
 
 
-def backupDatabase(version):
+def backup_database(version):
     logger.info("Backing up database before upgrade")
-    if not backupVersionedFile(nzbToMediaDB.dbFilename(), version):
+    if not backup_versioned_file(nzbToMediaDB.db_filename(), version):
         logger.log_error_and_exit("Database backup failed, abort upgrading database")
     else:
         logger.info("Proceeding with upgrade")
@@ -23,13 +23,13 @@ def backupDatabase(version):
 class InitialSchema(nzbToMediaDB.SchemaUpgrade):
     def test(self):
         no_update = False
-        if self.hasTable("db_version"):
-            cur_db_version = self.checkDBVersion()
+        if self.has_table("db_version"):
+            cur_db_version = self.check_db_version()
             no_update = not cur_db_version < MAX_DB_VERSION
         return no_update
 
     def execute(self):
-        if not self.hasTable("downloads") and not self.hasTable("db_version"):
+        if not self.has_table("downloads") and not self.has_table("db_version"):
             queries = [
                 "CREATE TABLE db_version (db_version INTEGER);",
                 "CREATE TABLE downloads (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));",
@@ -39,7 +39,7 @@ class InitialSchema(nzbToMediaDB.SchemaUpgrade):
                 self.connection.action(query)
 
         else:
-            cur_db_version = self.checkDBVersion()
+            cur_db_version = self.check_db_version()
 
             if cur_db_version < MIN_DB_VERSION:
                 logger.log_error_and_exit(u"Your database version ({current}) is too old to migrate "

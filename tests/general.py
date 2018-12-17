@@ -5,7 +5,7 @@ import guessit
 import requests
 
 import core
-from core.nzbToMediaAutoFork import autoFork
+from core.nzbToMediaAutoFork import auto_fork
 from core.nzbToMediaUtil import server_responding
 from core.transcoder import transcoder
 
@@ -15,7 +15,7 @@ core.initialize()
 #label = core.TORRENT_CLASS.core.get_torrent_status("f33a9c4b15cbd9170722d700069af86746817ade", ["label"]).get()['label']
 #print label
 
-if transcoder.isVideoGood(core.TEST_FILE, 0):
+if transcoder.is_video_good(core.TEST_FILE, 0):
     print("FFPROBE Works")
 else:
     print("FFPROBE FAILED")
@@ -25,7 +25,7 @@ print(test)
 section = core.CFG.findsection('tv').isenabled()
 print(section)
 print(len(section))
-fork, fork_params = autoFork('SickBeard', 'tv')
+fork, fork_params = auto_fork('SickBeard', 'tv')
 
 if server_responding("http://127.0.0.1:5050"):
     print("CouchPotato Running")

@@ -45,10 +45,10 @@ from core.autoProcess.autoProcessTV import autoProcessTV
 from core.databases import mainDB
 from core.nzbToMediaConfig import config
 from core.nzbToMediaUtil import (
-    RunningProcess, WakeUp, category_search, cleanDir, cleanDir, copy_link,
-    create_torrent_class, extractFiles, flatten, getDirs, get_downloadInfo,
-    listMediaFiles, makeDir, parse_args, pause_torrent, remove_torrent,
-    resume_torrent, rmDir, rmReadOnly, sanitizeName, update_downloadInfoStatus,
+    RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
+    create_torrent_class, extract_files, flatten, get_dirs, get_download_info,
+    list_media_files, make_dir, parse_args, pause_torrent, remove_torrent,
+    resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
 from core.transcoder import transcoder
 
@@ -255,7 +255,7 @@ def initialize(section=None):
         LOG_FILE = os.environ['NTM_LOGFILE']
         LOG_DIR = os.path.split(LOG_FILE)[0]
 
-    if not makeDir(LOG_DIR):
+    if not make_dir(LOG_DIR):
         print("No log folder, logging to screen only")
 
     MYAPP = RunningProcess()
@@ -291,7 +291,7 @@ def initialize(section=None):
                 sys.exit(1)
 
     # init logging
-    logger.ntm_log_instance.initLogging()
+    logger.ntm_log_instance.init_logging()
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
@@ -320,7 +320,7 @@ def initialize(section=None):
             logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
-    nzbToMediaDB.upgradeDatabase(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
+    nzbToMediaDB.upgrade_database(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
 
     # Set Version and GIT variables
     NZBTOMEDIA_VERSION = '11.06'
@@ -357,7 +357,7 @@ def initialize(section=None):
                  system=platform.system(), release=platform.release()))
 
     if int(CFG["WakeOnLan"]["wake"]) == 1:
-        WakeUp()
+        wake_up()
 
     NZB_CLIENTAGENT = CFG["Nzb"]["clientAgent"]  # sabnzbd
     SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]

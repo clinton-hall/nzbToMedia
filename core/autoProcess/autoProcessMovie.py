@@ -9,7 +9,7 @@ import requests
 import core
 from core import logger
 from core.nzbToMediaSceneExceptions import process_all_exceptions
-from core.nzbToMediaUtil import convert_to_ascii, find_download, find_imdbid, import_subs, listMediaFiles, remoteDir, reportNzb, rmDir, server_responding
+from core.nzbToMediaUtil import convert_to_ascii, find_download, find_imdbid, import_subs, list_media_files, remote_dir, report_nzb, remove_dir, server_responding
 from core.transcoder import transcoder
 
 requests.packages.urllib3.disable_warnings()
@@ -129,7 +129,7 @@ class autoProcessMovie(object):
                 logger.error("{0} did not return expected json data.".format(section), section)
                 return None
 
-    def CDH(self, url2, headers, section="MAIN"):
+    def completed_download_handling(self, url2, headers, section="MAIN"):
         try:
             r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
@@ -223,17 +223,17 @@ class autoProcessMovie(object):
         process_all_exceptions(input_name, dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        if not listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False) and listMediaFiles(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
+        if not list_media_files(dir_name, media=True, audio=False, meta=False, archives=False) and list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
             logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
-            core.extractFiles(dir_name)
+            core.extract_files(dir_name)
             input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
         good_files = 0
         num_files = 0
         # Check video files for corruption
-        for video in listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
+        for video in list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
             num_files += 1
-            if transcoder.isVideoGood(video, status):
+            if transcoder.is_video_good(video, status):
                 import_subs(video)
                 good_files += 1
         if num_files and good_files == num_files:
@@ -258,7 +258,7 @@ class autoProcessMovie(object):
 
         if status == 0:
             if core.TRANSCODE == 1:
-                result, new_dir_name = transcoder.Transcode_directory(dir_name)
+                result, new_dir_name = transcoder.transcode_directory(dir_name)
                 if result == 0:
                     logger.debug("Transcoding succeeded for files in {0}".format(dir_name), section)
                     dir_name = new_dir_name
@@ -271,7 +271,7 @@ class autoProcessMovie(object):
                 else:
                     logger.error("Transcoding failed for files in {0}".format(dir_name), section)
                     return [1, "{0}: Failed to post-process - Transcoding failed".format(section)]
-            for video in listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
+            for video in list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
                 if not release and ".cp(tt" not in video and imdbid:
                     video_name, video_ext = os.path.splitext(video)
                     video2 = "{0}.cp({1}){2}".format(video_name, imdbid, video_ext)
@@ -288,7 +288,7 @@ class autoProcessMovie(object):
                 params['downloader'] = downloader or clientAgent
                 params['download_id'] = download_id
 
-            params['media_folder'] = remoteDir(dir_name) if remote_path else dir_name
+            params['media_folder'] = remote_dir(dir_name) if remote_path else dir_name
 
             if section == "CouchPotato": 
                 if method == "manage":
@@ -344,7 +344,7 @@ class autoProcessMovie(object):
             core.FAILED = True
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR {0}".format(input_name), section)
             if failureLink:
-                reportNzb(failureLink, clientAgent)
+                report_nzb(failureLink, clientAgent)
 
             if section == "Radarr":
                 logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(section), section)
@@ -352,7 +352,7 @@ class autoProcessMovie(object):
 
             if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
                 logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
-                rmDir(dir_name)
+                remove_dir(dir_name)
 
             if not release_id and not media_id:
                 logger.error("Could not find a downloaded movie in the database matching {0}, exiting!".format(input_name),
@@ -451,7 +451,7 @@ class autoProcessMovie(object):
                     dir_name), section)
                 return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
 
-            elif not listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=True):
+            elif not list_media_files(dir_name, media=True, audio=False, meta=False, archives=True):
                 logger.postprocess("SUCCESS: Input Directory [{0}] has no remaining media files. This has been fully processed.".format(
                     dir_name), section)
                 return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
@@ -460,7 +460,7 @@ class autoProcessMovie(object):
             time.sleep(10 * wait_for)
 
         # The status hasn't changed. we have waited wait_for minutes which is more than enough. uTorrent can resume seeding now.
-        if section == "Radarr" and self.CDH(url2, headers, section=section):
+        if section == "Radarr" and self.completed_download_handling(url2, headers, section=section):
             logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
             return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
         logger.warning(

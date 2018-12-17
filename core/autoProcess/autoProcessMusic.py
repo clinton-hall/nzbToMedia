@@ -9,7 +9,7 @@ import requests
 import core
 from core import logger
 from core.nzbToMediaSceneExceptions import process_all_exceptions
-from core.nzbToMediaUtil import convert_to_ascii, listMediaFiles, remoteDir, rmDir, server_responding
+from core.nzbToMediaUtil import convert_to_ascii, list_media_files, remote_dir, remove_dir, server_responding
 
 requests.packages.urllib3.disable_warnings()
 
@@ -58,7 +58,7 @@ class autoProcessMusic(object):
             if os.path.basename(dirName) == album['FolderName']:
                 return album["Status"].lower()
 
-    def forceProcess(self, params, url, apikey, inputName, dirName, section, wait_for):
+    def force_process(self, params, url, apikey, inputName, dirName, section, wait_for):
         release_status = self.get_status(url, apikey, dirName)
         if not release_status:
             logger.error("Could not find a status for {0}, is it in the wanted list ?".format(inputName), section)
@@ -140,9 +140,9 @@ class autoProcessMusic(object):
         process_all_exceptions(input_name, dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        if not listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and listMediaFiles(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
+        if not list_media_files(dir_name, media=False, audio=True, meta=False, archives=False) and list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
             logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
-            core.extractFiles(dir_name)
+            core.extract_files(dir_name)
             input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
         #if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
@@ -154,20 +154,20 @@ class autoProcessMusic(object):
             params = {
                 'apikey': apikey,
                 'cmd': "forceProcess",
-                'dir': remoteDir(dir_name) if remote_path else dir_name
+                'dir': remote_dir(dir_name) if remote_path else dir_name
             }
 
-            res = self.forceProcess(params, url, apikey, input_name, dir_name, section, wait_for)
+            res = self.force_process(params, url, apikey, input_name, dir_name, section, wait_for)
             if res[0] in [0, 1]:
                 return res
 
             params = {
                 'apikey': apikey,
                 'cmd': "forceProcess",
-                'dir': os.path.split(remoteDir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]
+                'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]
             }
 
-            res = self.forceProcess(params, url, apikey, input_name, dir_name, section, wait_for)
+            res = self.force_process(params, url, apikey, input_name, dir_name, section, wait_for)
             if res[0] in [0, 1]:
                 return res
 
@@ -179,8 +179,8 @@ class autoProcessMusic(object):
             url = "{0}{1}:{2}{3}/api/v1/command".format(protocol, host, port, web_root)
             headers = {"X-Api-Key": apikey}
             if remote_path:
-                logger.debug("remote_path: {0}".format(remoteDir(dir_name)), section)
-                data = {"name": "Rename", "path": remoteDir(dir_name)}
+                logger.debug("remote_path: {0}".format(remote_dir(dir_name)), section)
+                data = {"name": "Rename", "path": remote_dir(dir_name)}
             else:
                 logger.debug("path: {0}".format(dir_name), section)
                 data = {"name": "Rename", "path": dir_name}
@@ -238,5 +238,5 @@ class autoProcessMusic(object):
                 logger.warning("FAILED DOWNLOAD DETECTED", section)
                 if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
                     logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
-                    rmDir(dir_name)
+                    remove_dir(dir_name)
                 return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.

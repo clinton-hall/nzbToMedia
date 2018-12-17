@@ -8,7 +8,7 @@ import subprocess
 
 import core
 from core import logger
-from core.nzbToMediaUtil import listMediaFiles
+from core.nzbToMediaUtil import list_media_files
 
 reverse_list = [r"\.\d{2}e\d{2}s\.", r"\.[pi]0801\.", r"\.p027\.", r"\.[pi]675\.", r"\.[pi]084\.", r"\.p063\.",
                 r"\b[45]62[xh]\.", r"\.yarulb\.", r"\.vtd[hp]\.",
@@ -32,7 +32,7 @@ char_replace = [[r"(\w)1\.(\w)", r"\1i\2"]
 def process_all_exceptions(name, dirname):
     par2(dirname)
     rename_script(dirname)
-    for filename in listMediaFiles(dirname):
+    for filename in list_media_files(dirname):
         newfilename = None
         parent_dir = os.path.dirname(filename)
         head, file_extension = os.path.splitext(os.path.basename(filename))

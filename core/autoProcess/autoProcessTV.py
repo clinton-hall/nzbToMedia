@@ -10,9 +10,9 @@ import requests
 
 import core
 from core import logger
-from core.nzbToMediaAutoFork import autoFork
+from core.nzbToMediaAutoFork import auto_fork
 from core.nzbToMediaSceneExceptions import process_all_exceptions
-from core.nzbToMediaUtil import convert_to_ascii, flatten, import_subs, listMediaFiles, remoteDir, reportNzb, rmDir, server_responding
+from core.nzbToMediaUtil import convert_to_ascii, flatten, import_subs, list_media_files, remote_dir, report_nzb, remove_dir, server_responding
 from core.transcoder import transcoder
 
 requests.packages.urllib3.disable_warnings()
@@ -36,7 +36,7 @@ class autoProcessTV(object):
                 logger.error("{0} did not return expected json data.".format(section), section)
                 return None
 
-    def CDH(self, url2, headers, section="MAIN"):
+    def completed_download_handling(self, url2, headers, section="MAIN"):
         try:
             r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
         except requests.ConnectionError:
@@ -52,7 +52,7 @@ class autoProcessTV(object):
                 # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
-    def processEpisode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
+    def process_episode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
 
         cfg = dict(core.CFG[section][inputCategory])
 
@@ -67,7 +67,7 @@ class autoProcessTV(object):
 
         if server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
             # auto-detect correct fork
-            fork, fork_params = autoFork(section, inputCategory)
+            fork, fork_params = auto_fork(section, inputCategory)
         elif not username and not apikey:
             logger.info('No SickBeard username or Sonarr apikey entered. Performing transcoder functions only')
             fork, fork_params = "None", {}
@@ -119,21 +119,21 @@ class autoProcessTV(object):
                 input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
             # Now check if tv files exist in destination. 
-            if not listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
-                if listMediaFiles(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
+            if not list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
+                if list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
                     logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
-                    core.extractFiles(dir_name)
+                    core.extract_files(dir_name)
                     input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-            if listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
+            if list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):  # Check that a video exists. if not, assume failed.
                 flatten(dir_name)
 
         # Check video files for corruption
         good_files = 0
         num_files = 0
-        for video in listMediaFiles(dir_name, media=True, audio=False, meta=False, archives=False):
+        for video in list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
             num_files += 1
-            if transcoder.isVideoGood(video, status):
+            if transcoder.is_video_good(video, status):
                 good_files += 1
                 import_subs(video)
         if num_files > 0:
@@ -170,7 +170,7 @@ class autoProcessTV(object):
                 print('[NZB] MARK=BAD')
 
         if status == 0 and core.TRANSCODE == 1:  # only transcode successful downloads
-            result, new_dir_name = transcoder.Transcode_directory(dir_name)
+            result, new_dir_name = transcoder.transcode_directory(dir_name)
             if result == 0:
                 logger.debug("SUCCESS: Transcoding succeeded for files in {0}".format(dir_name), section)
                 dir_name = new_dir_name
@@ -209,7 +209,7 @@ class autoProcessTV(object):
             if param in ["dir_name", "dir", "proc_dir", "process_directory", "path"]:
                 fork_params[param] = dir_name
                 if remote_path:
-                    fork_params[param] = remoteDir(dir_name)
+                    fork_params[param] = remote_dir(dir_name)
 
             if param == "process_method":
                 if process_method:
@@ -249,7 +249,7 @@ class autoProcessTV(object):
         else:
             core.FAILED = True
             if failureLink:
-                reportNzb(failureLink, clientAgent)
+                report_nzb(failureLink, clientAgent)
             if 'failed' in fork_params:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to {0} branch".format(fork), section)
             elif section == "NzbDrone":
@@ -259,7 +259,7 @@ class autoProcessTV(object):
                 logger.postprocess("FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process".format(fork), section)
                 if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
                     logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
-                    rmDir(dir_name)
+                    remove_dir(dir_name)
                 return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
 
         url = None
@@ -274,8 +274,8 @@ class autoProcessTV(object):
             headers = {"X-Api-Key": apikey}
             # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
             if remote_path:
-                logger.debug("remote_path: {0}".format(remoteDir(dir_name)), section)
-                data = {"name": "DownloadedEpisodesScan", "path": remoteDir(dir_name), "downloadClientId": download_id, "importMode": import_mode}
+                logger.debug("remote_path: {0}".format(remote_dir(dir_name)), section)
+                data = {"name": "DownloadedEpisodesScan", "path": remote_dir(dir_name), "downloadClientId": download_id, "importMode": import_mode}
             else:
                 logger.debug("path: {0}".format(dir_name), section)
                 data = {"name": "DownloadedEpisodesScan", "path": dir_name, "downloadClientId": download_id, "importMode": import_mode}
@@ -340,7 +340,7 @@ class autoProcessTV(object):
 
         if status != 0 and delete_failed and not os.path.dirname(dir_name) == dir_name:
             logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
-            rmDir(dir_name)
+            remove_dir(dir_name)
 
         if success:
             return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
@@ -365,7 +365,7 @@ class autoProcessTV(object):
             elif command_status and command_status in ['failed']:
                 logger.debug("The Scan command has failed. Renaming was not successful.", section)
                 # return [1, "%s: Failed to post-process %s" % (section, input_name) ]
-            if self.CDH(url2, headers, section=section):
+            if self.completed_download_handling(url2, headers, section=section):
                 logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
                 return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
             else:

@@ -12,7 +12,7 @@ import core
 from core import logger
 
 
-def dbFilename(filename="nzbtomedia.db", suffix=None):
+def db_filename(filename="nzbtomedia.db", suffix=None):
     """
     @param filename: The sqlite database filename to use. If not specified,
                      will be made to be nzbtomedia.db
@@ -29,13 +29,13 @@ class DBConnection(object):
     def __init__(self, filename="nzbtomedia.db", suffix=None, row_type=None):
 
         self.filename = filename
-        self.connection = sqlite3.connect(dbFilename(filename), 20)
+        self.connection = sqlite3.connect(db_filename(filename), 20)
         if row_type == "dict":
             self.connection.row_factory = self._dict_factory
         else:
             self.connection.row_factory = sqlite3.Row
 
-    def checkDBVersion(self):
+    def check_db_version(self):
         result = None
         try:
             result = self.select("SELECT db_version FROM db_version")
@@ -196,7 +196,7 @@ class DBConnection(object):
                 list(valueDict.values())
             )
 
-    def tableInfo(self, tableName):
+    def table_info(self, tableName):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually
         cursor = self.connection.execute("PRAGMA table_info({0})".format(tableName))
         columns = {}
@@ -212,7 +212,7 @@ class DBConnection(object):
         return d
 
 
-def sanityCheckDatabase(connection, sanity_check):
+def sanity_check_database(connection, sanity_check):
     sanity_check(connection).check()
 
 
@@ -228,22 +228,22 @@ class DBSanityCheck(object):
 # = Upgrade API =
 # ===============
 
-def upgradeDatabase(connection, schema):
+def upgrade_database(connection, schema):
     logger.log(u"Checking database structure...", logger.MESSAGE)
-    _processUpgrade(connection, schema)
+    _process_upgrade(connection, schema)
 
 
-def prettyName(class_name):
+def pretty_name(class_name):
     return ' '.join([x.group() for x in re.finditer("([A-Z])([a-z0-9]+)", class_name)])
 
 
-def _processUpgrade(connection, upgradeClass):
+def _process_upgrade(connection, upgradeClass):
     instance = upgradeClass(connection)
     logger.log(u"Checking {name} database upgrade".format
-               (name=prettyName(upgradeClass.__name__)), logger.DEBUG)
+               (name=pretty_name(upgradeClass.__name__)), logger.DEBUG)
     if not instance.test():
         logger.log(u"Database upgrade required: {name}".format
-                   (name=prettyName(upgradeClass.__name__)), logger.MESSAGE)
+                   (name=pretty_name(upgradeClass.__name__)), logger.MESSAGE)
         try:
             instance.execute()
         except sqlite3.DatabaseError as error:
@@ -257,7 +257,7 @@ def _processUpgrade(connection, upgradeClass):
                    (name=upgradeClass.__name__), logger.DEBUG)
 
     for upgradeSubClass in upgradeClass.__subclasses__():
-        _processUpgrade(connection, upgradeSubClass)
+        _process_upgrade(connection, upgradeSubClass)
 
 
 # Base migration class. All future DB changes should be subclassed from this class
@@ -265,24 +265,24 @@ class SchemaUpgrade(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def hasTable(self, tableName):
+    def has_table(self, tableName):
         return len(self.connection.action("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName,)).fetchall()) > 0
 
-    def hasColumn(self, tableName, column):
-        return column in self.connection.tableInfo(tableName)
+    def has_column(self, tableName, column):
+        return column in self.connection.table_info(tableName)
 
-    def addColumn(self, table, column, type="NUMERIC", default=0):
+    def add_column(self, table, column, type="NUMERIC", default=0):
         self.connection.action("ALTER TABLE {0} ADD {1} {2}".format(table, column, type))
         self.connection.action("UPDATE {0} SET {1} = ?".format(table, column), (default,))
 
-    def checkDBVersion(self):
+    def check_db_version(self):
         result = self.connection.select("SELECT db_version FROM db_version")
         if result:
             return int(result[-1]["db_version"])
         else:
             return 0
 
-    def incDBVersion(self):
-        new_version = self.checkDBVersion() + 1
+    def inc_db_version(self):
+        new_version = self.check_db_version() + 1
         self.connection.action("UPDATE db_version SET db_version = ?", [new_version])
         return new_version
