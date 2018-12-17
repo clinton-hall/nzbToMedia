@@ -11,6 +11,7 @@ import socket
 import stat
 import struct
 import time
+from functools import partial
 
 import beets
 import guessit
@@ -36,12 +37,12 @@ def copyfileobj_fast(fsrc, fdst, length=512 * 1024):
     shutil.copyfileobjOrig(fsrc, fdst, length=length)
 shutil.copyfileobj = copyfileobj_fast
 
-def report_nzb(failure_link, clientAgent):
+def report_nzb(failure_link, client_agent):
     # Contact indexer site
     logger.info("Sending failure notification to indexer site")
-    if clientAgent == 'nzbget':
+    if client_agent == 'nzbget':
         headers = {'User-Agent': 'NZBGet / nzbToMedia.py'}
-    elif clientAgent == 'sabnzbd':
+    elif client_agent == 'sabnzbd':
         headers = {'User-Agent': 'SABnzbd / nzbToMedia.py'}
     else:
         return
@@ -105,10 +106,7 @@ def remote_dir(path):
     return path
 
 
-def category_search(inputDirectory, inputName, inputCategory, root, categories):
-    input_directory = inputDirectory
-    input_category = inputCategory
-    input_name = inputName
+def category_search(input_directory, input_name, input_category, root, categories):
     tordir = False
 
     try:
@@ -202,85 +200,84 @@ def category_search(inputDirectory, inputName, inputCategory, root, categories):
     return input_directory, input_name, input_category, root
 
 
-def get_dir_size(inputPath):
-    from functools import partial
-    prepend = partial(os.path.join, inputPath)
+def get_dir_size(input_path):
+    prepend = partial(os.path.join, input_path)
     return sum([
         (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
-        for f in map(prepend, os.listdir(text_type(inputPath)))
+        for f in map(prepend, os.listdir(text_type(input_path)))
     ])
 
 
-def is_min_size(inputName, minSize):
-    file_name, file_ext = os.path.splitext(os.path.basename(inputName))
+def is_min_size(input_name, min_size):
+    file_name, file_ext = os.path.splitext(os.path.basename(input_name))
 
     # audio files we need to check directory size not file size
-    input_size = os.path.getsize(inputName)
+    input_size = os.path.getsize(input_name)
     if file_ext in core.AUDIOCONTAINER:
         try:
-            input_size = get_dir_size(os.path.dirname(inputName))
+            input_size = get_dir_size(os.path.dirname(input_name))
         except:
-            logger.error("Failed to get file size for {0}".format(inputName), 'MINSIZE')
+            logger.error("Failed to get file size for {0}".format(input_name), 'MINSIZE')
             return True
 
     # Ignore files under a certain size
-    if input_size > minSize * 1048576:
+    if input_size > min_size * 1048576:
         return True
 
 
-def is_sample(inputName):
+def is_sample(input_name):
     # Ignore 'sample' in files
-    if re.search('(^|[\W_])sample\d*[\W_]', inputName.lower()):
+    if re.search('(^|[\W_])sample\d*[\W_]', input_name.lower()):
         return True
 
 
-def copy_link(src, targetLink, useLink):
-    logger.info("MEDIAFILE: [{0}]".format(os.path.basename(targetLink)), 'COPYLINK')
+def copy_link(src, target_link, use_link):
+    logger.info("MEDIAFILE: [{0}]".format(os.path.basename(target_link)), 'COPYLINK')
     logger.info("SOURCE FOLDER: [{0}]".format(os.path.dirname(src)), 'COPYLINK')
-    logger.info("TARGET FOLDER: [{0}]".format(os.path.dirname(targetLink)), 'COPYLINK')
+    logger.info("TARGET FOLDER: [{0}]".format(os.path.dirname(target_link)), 'COPYLINK')
 
-    if src != targetLink and os.path.exists(targetLink):
+    if src != target_link and os.path.exists(target_link):
         logger.info("MEDIAFILE already exists in the TARGET folder, skipping ...", 'COPYLINK')
         return True
-    elif src == targetLink and os.path.isfile(targetLink) and os.path.isfile(src):
+    elif src == target_link and os.path.isfile(target_link) and os.path.isfile(src):
         logger.info("SOURCE AND TARGET files are the same, skipping ...", 'COPYLINK')
         return True
-    elif src == os.path.dirname(targetLink):
+    elif src == os.path.dirname(target_link):
         logger.info("SOURCE AND TARGET folders are the same, skipping ...", 'COPYLINK')
         return True
 
-    make_dir(os.path.dirname(targetLink))
+    make_dir(os.path.dirname(target_link))
     try:
-        if useLink == 'dir':
+        if use_link == 'dir':
             logger.info("Directory linking SOURCE FOLDER -> TARGET FOLDER", 'COPYLINK')
-            linktastic.dirlink(src, targetLink)
+            linktastic.dirlink(src, target_link)
             return True
-        if useLink == 'junction':
+        if use_link == 'junction':
             logger.info("Directory junction linking SOURCE FOLDER -> TARGET FOLDER", 'COPYLINK')
-            linktastic.dirlink(src, targetLink)
+            linktastic.dirlink(src, target_link)
             return True
-        elif useLink == "hard":
+        elif use_link == "hard":
             logger.info("Hard linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            linktastic.link(src, targetLink)
+            linktastic.link(src, target_link)
             return True
-        elif useLink == "sym":
+        elif use_link == "sym":
             logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            linktastic.symlink(src, targetLink)
+            linktastic.symlink(src, target_link)
             return True
-        elif useLink == "move-sym":
+        elif use_link == "move-sym":
             logger.info("Sym linking SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            shutil.move(src, targetLink)
-            linktastic.symlink(targetLink, src)
+            shutil.move(src, target_link)
+            linktastic.symlink(target_link, src)
             return True
-        elif useLink == "move":
+        elif use_link == "move":
             logger.info("Moving SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-            shutil.move(src, targetLink)
+            shutil.move(src, target_link)
             return True
     except Exception as e:
         logger.warning("Error: {0}, copying instead ... ".format(e), 'COPYLINK')
 
     logger.info("Copying SOURCE MEDIAFILE -> TARGET FOLDER", 'COPYLINK')
-    shutil.copy(src, targetLink)
+    shutil.copy(src, target_link)
 
     return True
 
@@ -309,26 +306,26 @@ def replace_links(link):
         linktastic.symlink(target, link)
 
 
-def flatten(outputDestination):
-    logger.info("FLATTEN: Flattening directory: {0}".format(outputDestination))
-    for outputFile in list_media_files(outputDestination):
+def flatten(output_destination):
+    logger.info("FLATTEN: Flattening directory: {0}".format(output_destination))
+    for outputFile in list_media_files(output_destination):
         dir_path = os.path.dirname(outputFile)
         file_name = os.path.basename(outputFile)
 
-        if dir_path == outputDestination:
+        if dir_path == output_destination:
             continue
 
-        target = os.path.join(outputDestination, file_name)
+        target = os.path.join(output_destination, file_name)
 
         try:
             shutil.move(outputFile, target)
         except:
             logger.error("Could not flatten {0}".format(outputFile), 'FLATTEN')
 
-    remove_empty_folders(outputDestination)  # Cleanup empty directories
+    remove_empty_folders(output_destination)  # Cleanup empty directories
 
 
-def remove_empty_folders(path, removeRoot=True):
+def remove_empty_folders(path, remove_root=True):
     """Function to remove empty folders"""
     if not os.path.isdir(path):
         return
@@ -344,7 +341,7 @@ def remove_empty_folders(path, removeRoot=True):
 
     # if folder empty, delete it
     files = os.listdir(text_type(path))
-    if len(files) == 0 and removeRoot:
+    if len(files) == 0 and remove_root:
         logger.debug("Removing empty folder:{}".format(path))
         os.rmdir(path)
 
@@ -413,8 +410,7 @@ def wake_up():
         logger.info("System with mac: {0} has been woken. Continuing with the rest of the script.".format(mac))
 
 
-def char_replace(Name):
-    name = Name
+def char_replace(name):
     # Special character hex range:
     # CP850: 0x80-0xA5 (fortunately not used in ISO-8859-15)
     # UTF-8: 1st hex code 0xC2-0xC3 followed by a 2nd hex code 0xA1-0xFF
@@ -456,9 +452,7 @@ def char_replace(Name):
     return encoded, name
 
 
-def convert_to_ascii(inputName, dirName):
-    input_name = inputName
-    dir_name = dirName
+def convert_to_ascii(input_name, dir_name):
 
     ascii_convert = int(core.CFG["ASCII"]["convert"])
     if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and "\" is replaced!.
@@ -629,7 +623,7 @@ def parse_qbittorrent(args):
 
     return input_directory, input_name, input_category, input_hash, input_id
 
-def parse_args(clientAgent, args):
+def parse_args(client_agent, args):
     clients = {
         'other': parse_other,
         'rtorrent': parse_rtorrent,
@@ -641,7 +635,7 @@ def parse_args(clientAgent, args):
     }
 
     try:
-        return clients[clientAgent](args)
+        return clients[client_agent](args)
     except:
         return None, None, None, None, None
 
@@ -771,12 +765,12 @@ def onerror(func, path, exc_info):
         raise Exception
 
 
-def remove_dir(dirName):
-    logger.info("Deleting {0}".format(dirName))
+def remove_dir(dir_name):
+    logger.info("Deleting {0}".format(dir_name))
     try:
-        shutil.rmtree(text_type(dirName), onerror=onerror)
+        shutil.rmtree(text_type(dir_name), onerror=onerror)
     except:
-        logger.error("Unable to delete folder {0}".format(dirName))
+        logger.error("Unable to delete folder {0}".format(dir_name))
 
 
 def clean_dir(path, section, subsection):
@@ -791,7 +785,7 @@ def clean_dir(path, section, subsection):
     min_size = int(cfg.get('minSize', 0))
     delete_ignored = int(cfg.get('delete_ignored', 0))
     try:
-        num_files = len(list_media_files(path, minSize=min_size, delete_ignored=delete_ignored))
+        num_files = len(list_media_files(path, min_size=min_size, delete_ignored=delete_ignored))
     except:
         num_files = 'unknown'
     if num_files > 0:
@@ -807,39 +801,39 @@ def clean_dir(path, section, subsection):
         logger.error("Unable to delete directory {0}".format(path))
 
 
-def create_torrent_class(clientAgent):
+def create_torrent_class(client_agent):
     # Hardlink solution for Torrents
     tc = None
 
-    if clientAgent == 'utorrent':
+    if client_agent == 'utorrent':
         try:
-            logger.debug("Connecting to {0}: {1}".format(clientAgent, core.UTORRENTWEBUI))
+            logger.debug("Connecting to {0}: {1}".format(client_agent, core.UTORRENTWEBUI))
             tc = UTorrentClient(core.UTORRENTWEBUI, core.UTORRENTUSR, core.UTORRENTPWD)
         except:
             logger.error("Failed to connect to uTorrent")
 
-    if clientAgent == 'transmission':
+    if client_agent == 'transmission':
         try:
             logger.debug("Connecting to {0}: http://{1}:{2}".format(
-                clientAgent, core.TRANSMISSIONHOST, core.TRANSMISSIONPORT))
+                client_agent, core.TRANSMISSIONHOST, core.TRANSMISSIONPORT))
             tc = TransmissionClient(core.TRANSMISSIONHOST, core.TRANSMISSIONPORT,
                                     core.TRANSMISSIONUSR,
                                     core.TRANSMISSIONPWD)
         except:
             logger.error("Failed to connect to Transmission")
 
-    if clientAgent == 'deluge':
+    if client_agent == 'deluge':
         try:
-            logger.debug("Connecting to {0}: http://{1}:{2}".format(clientAgent, core.DELUGEHOST, core.DELUGEPORT))
+            logger.debug("Connecting to {0}: http://{1}:{2}".format(client_agent, core.DELUGEHOST, core.DELUGEPORT))
             tc = DelugeClient()
             tc.connect(host=core.DELUGEHOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
                        password=core.DELUGEPWD)
         except:
             logger.error("Failed to connect to Deluge")
 
-    if clientAgent == 'qbittorrent':
+    if client_agent == 'qbittorrent':
         try:
-            logger.debug("Connecting to {0}: http://{1}:{2}".format(clientAgent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
+            logger.debug("Connecting to {0}: http://{1}:{2}".format(client_agent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
             tc = qBittorrentClient("http://{0}:{1}/".format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
             tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
         except:
@@ -848,81 +842,81 @@ def create_torrent_class(clientAgent):
     return tc
 
 
-def pause_torrent(clientAgent, inputHash, inputID, inputName):
-    logger.debug("Stopping torrent {0} in {1} while processing".format(inputName, clientAgent))
+def pause_torrent(client_agent, input_hash, input_id, input_name):
+    logger.debug("Stopping torrent {0} in {1} while processing".format(input_name, client_agent))
     try:
-        if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.stop(inputHash)
-        if clientAgent == 'transmission' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.stop_torrent(inputID)
-        if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.core.pause_torrent([inputID])
-        if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.pause(inputHash)
+        if client_agent == 'utorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.stop(input_hash)
+        if client_agent == 'transmission' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.stop_torrent(input_id)
+        if client_agent == 'deluge' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.core.pause_torrent([input_id])
+        if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.pause(input_hash)
         time.sleep(5)
     except:
-        logger.warning("Failed to stop torrent {0} in {1}".format(inputName, clientAgent))
+        logger.warning("Failed to stop torrent {0} in {1}".format(input_name, client_agent))
 
 
-def resume_torrent(clientAgent, inputHash, inputID, inputName):
+def resume_torrent(client_agent, input_hash, input_id, input_name):
     if not core.TORRENT_RESUME == 1:
         return
-    logger.debug("Starting torrent {0} in {1}".format(inputName, clientAgent))
+    logger.debug("Starting torrent {0} in {1}".format(input_name, client_agent))
     try:
-        if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.start(inputHash)
-        if clientAgent == 'transmission' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.start_torrent(inputID)
-        if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.core.resume_torrent([inputID])
-        if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
-            core.TORRENT_CLASS.resume(inputHash)
+        if client_agent == 'utorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.start(input_hash)
+        if client_agent == 'transmission' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.start_torrent(input_id)
+        if client_agent == 'deluge' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.core.resume_torrent([input_id])
+        if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
+            core.TORRENT_CLASS.resume(input_hash)
         time.sleep(5)
     except:
-        logger.warning("Failed to start torrent {0} in {1}".format(inputName, clientAgent))
+        logger.warning("Failed to start torrent {0} in {1}".format(input_name, client_agent))
 
 
-def remove_torrent(clientAgent, inputHash, inputID, inputName):
+def remove_torrent(client_agent, input_hash, input_id, input_name):
     if core.DELETE_ORIGINAL == 1 or core.USELINK == 'move':
-        logger.debug("Deleting torrent {0} from {1}".format(inputName, clientAgent))
+        logger.debug("Deleting torrent {0} from {1}".format(input_name, client_agent))
         try:
-            if clientAgent == 'utorrent' and core.TORRENT_CLASS != "":
-                core.TORRENT_CLASS.removedata(inputHash)
-                core.TORRENT_CLASS.remove(inputHash)
-            if clientAgent == 'transmission' and core.TORRENT_CLASS != "":
-                core.TORRENT_CLASS.remove_torrent(inputID, True)
-            if clientAgent == 'deluge' and core.TORRENT_CLASS != "":
-                core.TORRENT_CLASS.core.remove_torrent(inputID, True)
-            if clientAgent == 'qbittorrent' and core.TORRENT_CLASS != "":
-                core.TORRENT_CLASS.delete_permanently(inputHash)
+            if client_agent == 'utorrent' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.removedata(input_hash)
+                core.TORRENT_CLASS.remove(input_hash)
+            if client_agent == 'transmission' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.remove_torrent(input_id, True)
+            if client_agent == 'deluge' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.core.remove_torrent(input_id, True)
+            if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
+                core.TORRENT_CLASS.delete_permanently(input_hash)
             time.sleep(5)
         except:
-            logger.warning("Failed to delete torrent {0} in {1}".format(inputName, clientAgent))
+            logger.warning("Failed to delete torrent {0} in {1}".format(input_name, client_agent))
     else:
-        resume_torrent(clientAgent, inputHash, inputID, inputName)
+        resume_torrent(client_agent, input_hash, input_id, input_name)
 
 
-def find_download(clientAgent, download_id):
-    logger.debug("Searching for Download on {0} ...".format(clientAgent))
-    if clientAgent == 'utorrent':
+def find_download(client_agent, download_id):
+    logger.debug("Searching for Download on {0} ...".format(client_agent))
+    if client_agent == 'utorrent':
         torrents = core.TORRENT_CLASS.list()[1]['torrents']
         for torrent in torrents:
             if download_id in torrent:
                 return True
-    if clientAgent == 'transmission':
+    if client_agent == 'transmission':
         torrents = core.TORRENT_CLASS.get_torrents()
         for torrent in torrents:
             hash = torrent.hashString
             if hash == download_id:
                 return True
-    if clientAgent == 'deluge':
+    if client_agent == 'deluge':
         return False
-    if clientAgent == 'qbittorrent':
+    if client_agent == 'qbittorrent':
         torrents = core.TORRENT_CLASS.torrents()
         for torrent in torrents:
             if torrent['hash'] == download_id:
                 return True
-    if clientAgent == 'sabnzbd':
+    if client_agent == 'sabnzbd':
         if "http" in core.SABNZBDHOST:
             base_url = "{0}:{1}/api".format(core.SABNZBDHOST, core.SABNZBDPORT)
         else:
@@ -946,7 +940,7 @@ def find_download(clientAgent, download_id):
     return False
 
 
-def get_nzoid(inputName):
+def get_nzoid(input_name):
     nzoid = None
     slots = []
     logger.debug("Searching for nzoid from SAbnzbd ...")
@@ -967,7 +961,7 @@ def get_nzoid(inputName):
         return nzoid  # failure
     try:
         result = r.json()
-        clean_name = os.path.splitext(os.path.split(inputName)[1])[0]
+        clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
     except:
         logger.warning("Data from SABnzbd queue could not be parsed")
@@ -979,13 +973,13 @@ def get_nzoid(inputName):
         return nzoid  # failure
     try:
         result = r.json()
-        clean_name = os.path.splitext(os.path.split(inputName)[1])[0]
+        clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
     except:
         logger.warning("Data from SABnzbd history could not be parsed")
     try:
         for nzo_id, name in slots:
-            if name in [inputName, clean_name]:
+            if name in [input_name, clean_name]:
                 nzoid = nzo_id
                 logger.debug("Found nzoid: {0}".format(nzoid))
                 break
@@ -1039,14 +1033,14 @@ def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, o
         return False
 
 
-def list_media_files(path, minSize=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
+def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
     files = []
     if not os.path.isdir(path):
         if os.path.isfile(path):  # Single file downloads.
             cur_file = os.path.split(path)[1]
             if is_media_file(cur_file, media, audio, meta, archives, other, otherext):
                 # Optionally ignore sample files
-                if is_sample(path) or not is_min_size(path, minSize):
+                if is_sample(path) or not is_min_size(path, min_size):
                     if delete_ignored == 1:
                         try:
                             os.unlink(path)
@@ -1064,11 +1058,11 @@ def list_media_files(path, minSize=0, delete_ignored=0, media=True, audio=True, 
 
         # if it's a folder do it recursively
         if os.path.isdir(full_cur_file) and not cur_file.startswith('.'):
-            files += list_media_files(full_cur_file, minSize, delete_ignored, media, audio, meta, archives, other, otherext)
+            files += list_media_files(full_cur_file, min_size, delete_ignored, media, audio, meta, archives, other, otherext)
 
         elif is_media_file(cur_file, media, audio, meta, archives, other, otherext):
             # Optionally ignore sample files
-            if is_sample(full_cur_file) or not is_min_size(full_cur_file, minSize):
+            if is_sample(full_cur_file) or not is_min_size(full_cur_file, min_size):
                 if delete_ignored == 1:
                     try:
                         os.unlink(full_cur_file)
@@ -1083,20 +1077,20 @@ def list_media_files(path, minSize=0, delete_ignored=0, media=True, audio=True, 
     return sorted(files, key=len)
 
 
-def find_imdbid(dirName, inputName, omdbApiKey):
+def find_imdbid(dir_name, input_name, omdb_api_key):
     imdbid = None
 
-    logger.info('Attemping imdbID lookup for {0}'.format(inputName))
+    logger.info('Attemping imdbID lookup for {0}'.format(input_name))
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search('(tt\d{7})', dirName + inputName)
+    m = re.search('(tt\d{7})', dir_name + input_name)
     if m:
         imdbid = m.group(1)
         logger.info("Found imdbID [{0}]".format(imdbid))
         return imdbid
-    if os.path.isdir(dirName):
-        for file in os.listdir(text_type(dirName)):
+    if os.path.isdir(dir_name):
+        for file in os.listdir(text_type(dir_name)):
             m = re.search('(tt\d{7})', file)
             if m:
                 imdbid = m.group(1)
@@ -1113,7 +1107,7 @@ def find_imdbid(dirName, inputName, omdbApiKey):
                 return imdbid
     logger.info('Searching IMDB for imdbID ...')
     try:
-        guess = guessit.guessit(inputName)
+        guess = guessit.guessit(input_name)
     except:
         guess = None
     if guess:
@@ -1129,15 +1123,15 @@ def find_imdbid(dirName, inputName, omdbApiKey):
 
         url = "http://www.omdbapi.com"
 
-        if not omdbApiKey:
+        if not omdb_api_key:
             logger.info("Unable to determine imdbID: No api key provided for ombdapi.com.")
             return
 
         logger.debug("Opening URL: {0}".format(url))
 
         try:
-            r = requests.get(url, params={'apikey': omdbApiKey, 'y': year, 't': title},
-            verify=False, timeout=(60, 300))
+            r = requests.get(url, params={'apikey': omdb_api_key, 'y': year, 't': title},
+                             verify=False, timeout=(60, 300))
         except requests.ConnectionError:
             logger.error("Unable to open URL {0}".format(url))
             return
@@ -1156,7 +1150,7 @@ def find_imdbid(dirName, inputName, omdbApiKey):
             logger.info("Found imdbID [{0}]".format(imdbid))
             return imdbid
 
-    logger.warning('Unable to find a imdbID for {0}'.format(inputName))
+    logger.warning('Unable to find a imdbID for {0}'.format(input_name))
     return imdbid
 
 
@@ -1223,14 +1217,14 @@ def import_subs(filename):
         logger.error("Failed to download subtitles for {0} due to: {1}".format(filename, e), 'SUBTITLES')
 
 
-def server_responding(baseURL):
-    logger.debug("Attempting to connect to server at {0}".format(baseURL), 'SERVER')
+def server_responding(base_url):
+    logger.debug("Attempting to connect to server at {0}".format(base_url), 'SERVER')
     try:
-        requests.get(baseURL, timeout=(60, 120), verify=False)
-        logger.debug("Server responded at {0}".format(baseURL), 'SERVER')
+        requests.get(base_url, timeout=(60, 120), verify=False)
+        logger.debug("Server responded at {0}".format(base_url), 'SERVER')
         return True
     except (requests.ConnectionError, requests.exceptions.Timeout):
-        logger.error("Server failed to respond at {0}".format(baseURL), 'SERVER')
+        logger.error("Server failed to respond at {0}".format(base_url), 'SERVER')
         return False
 
 
@@ -1287,20 +1281,20 @@ def backup_versioned_file(old_file, version):
     return True
 
 
-def update_download_info_status(inputName, status):
-    logger.db("Updating status of our download {0} in the DB to {1}".format(inputName, status))
+def update_download_info_status(input_name, status):
+    logger.db("Updating status of our download {0} in the DB to {1}".format(input_name, status))
 
     my_db = nzbToMediaDB.DBConnection()
     my_db.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
-                [status, datetime.date.today().toordinal(), text_type(inputName)])
+                 [status, datetime.date.today().toordinal(), text_type(input_name)])
 
 
-def get_download_info(inputName, status):
-    logger.db("Getting download info for {0} from the DB".format(inputName))
+def get_download_info(input_name, status):
+    logger.db("Getting download info for {0} from the DB".format(input_name))
 
     my_db = nzbToMediaDB.DBConnection()
     sql_results = my_db.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
-                             [text_type(inputName), status])
+                               [text_type(input_name), status])
 
     return sql_results
 

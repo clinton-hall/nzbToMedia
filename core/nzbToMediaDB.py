@@ -85,7 +85,7 @@ class DBConnection(object):
 
         return sql_result
 
-    def mass_action(self, querylist, logTransaction=False):
+    def mass_action(self, querylist, log_transaction=False):
         if querylist is None:
             return
 
@@ -96,11 +96,11 @@ class DBConnection(object):
             try:
                 for qu in querylist:
                     if len(qu) == 1:
-                        if logTransaction:
+                        if log_transaction:
                             logger.log(qu[0], logger.DEBUG)
                         sql_result.append(self.connection.execute(qu[0]))
                     elif len(qu) > 1:
-                        if logTransaction:
+                        if log_transaction:
                             logger.log(u"{query} with args {args}".format(query=qu[0], args=qu[1]), logger.DEBUG)
                         sql_result.append(self.connection.execute(qu[0], qu[1]))
                 self.connection.commit()
@@ -167,20 +167,20 @@ class DBConnection(object):
 
         return sql_results
 
-    def upsert(self, tableName, valueDict, keyDict):
+    def upsert(self, table_name, value_dict, key_dict):
 
         changes_before = self.connection.total_changes
 
-        gen_params = lambda myDict: ["{key} = ?".format(key=k) for k in myDict.keys()]
+        gen_params = lambda my_dict: ["{key} = ?".format(key=k) for k in my_dict.keys()]
 
-        items = list(valueDict.values()) + list(keyDict.values())
+        items = list(value_dict.values()) + list(key_dict.values())
         self.action(
             "UPDATE {table} "
             "SET {params} "
             "WHERE {conditions}".format(
-                table=tableName,
-                params=", ".join(gen_params(valueDict)),
-                conditions=" AND ".join(gen_params(keyDict))
+                table=table_name,
+                params=", ".join(gen_params(value_dict)),
+                conditions=" AND ".join(gen_params(key_dict))
             ),
             items
         )
@@ -189,16 +189,16 @@ class DBConnection(object):
             self.action(
                 "INSERT OR IGNORE INTO {table} ({columns}) "
                 "VALUES ({values})".format(
-                    table=tableName,
-                    columns=", ".join(map(text_type, valueDict.keys())),
-                    values=", ".join(["?"] * len(valueDict.values()))
+                    table=table_name,
+                    columns=", ".join(map(text_type, value_dict.keys())),
+                    values=", ".join(["?"] * len(value_dict.values()))
                 ),
-                list(valueDict.values())
+                list(value_dict.values())
             )
 
-    def table_info(self, tableName):
+    def table_info(self, table_name):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually
-        cursor = self.connection.execute("PRAGMA table_info({0})".format(tableName))
+        cursor = self.connection.execute("PRAGMA table_info({0})".format(table_name))
         columns = {}
         for column in cursor:
             columns[column['name']] = {'type': column['type']}
@@ -237,26 +237,26 @@ def pretty_name(class_name):
     return ' '.join([x.group() for x in re.finditer("([A-Z])([a-z0-9]+)", class_name)])
 
 
-def _process_upgrade(connection, upgradeClass):
-    instance = upgradeClass(connection)
+def _process_upgrade(connection, upgrade_class):
+    instance = upgrade_class(connection)
     logger.log(u"Checking {name} database upgrade".format
-               (name=pretty_name(upgradeClass.__name__)), logger.DEBUG)
+               (name=pretty_name(upgrade_class.__name__)), logger.DEBUG)
     if not instance.test():
         logger.log(u"Database upgrade required: {name}".format
-                   (name=pretty_name(upgradeClass.__name__)), logger.MESSAGE)
+                   (name=pretty_name(upgrade_class.__name__)), logger.MESSAGE)
         try:
             instance.execute()
         except sqlite3.DatabaseError as error:
             print(u"Error in {name}: {msg}".format
-                  (name=upgradeClass.__name__, msg=error))
+                  (name=upgrade_class.__name__, msg=error))
             raise
         logger.log(u"{name} upgrade completed".format
-                   (name=upgradeClass.__name__), logger.DEBUG)
+                   (name=upgrade_class.__name__), logger.DEBUG)
     else:
         logger.log(u"{name} upgrade not required".format
-                   (name=upgradeClass.__name__), logger.DEBUG)
+                   (name=upgrade_class.__name__), logger.DEBUG)
 
-    for upgradeSubClass in upgradeClass.__subclasses__():
+    for upgradeSubClass in upgrade_class.__subclasses__():
         _process_upgrade(connection, upgradeSubClass)
 
 
@@ -265,11 +265,11 @@ class SchemaUpgrade(object):
     def __init__(self, connection):
         self.connection = connection
 
-    def has_table(self, tableName):
-        return len(self.connection.action("SELECT 1 FROM sqlite_master WHERE name = ?;", (tableName,)).fetchall()) > 0
+    def has_table(self, table_name):
+        return len(self.connection.action("SELECT 1 FROM sqlite_master WHERE name = ?;", (table_name,)).fetchall()) > 0
 
-    def has_column(self, tableName, column):
-        return column in self.connection.table_info(tableName)
+    def has_column(self, table_name, column):
+        return column in self.connection.table_info(table_name)
 
     def add_column(self, table, column, type="NUMERIC", default=0):
         self.connection.action("ALTER TABLE {0} ADD {1} {2}".format(table, column, type))

@@ -116,7 +116,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
     return video_details, result
 
 
-def build_commands(file, newDir, movieName, bitbucket):
+def build_commands(file, new_dir, movie_name, bitbucket):
     if isinstance(file, string_types):
         input_file = file
         if 'concat:' in file:
@@ -126,12 +126,12 @@ def build_commands(file, newDir, movieName, bitbucket):
         name, ext = os.path.splitext(name)
         check = re.match("VTS_([0-9][0-9])_[0-9]+", name)
         if check and core.CONCAT:
-            name = movieName
+            name = movie_name
         elif check:
-            name = ('{0}.cd{1}'.format(movieName, check.groups()[0]))
+            name = ('{0}.cd{1}'.format(movie_name, check.groups()[0]))
         elif core.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
             name = re.sub("([\ \.\-\_\=\:]+[cC][dD][0-9])", "", name)
-        if ext == core.VEXTENSION and newDir == dir:  # we need to change the name to prevent overwriting itself.
+        if ext == core.VEXTENSION and new_dir == dir:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
     else:
         img, data = next(iteritems(file))
@@ -140,7 +140,7 @@ def build_commands(file, newDir, movieName, bitbucket):
         input_file = '-'
         file = '-'
 
-    newfile_path = os.path.normpath(os.path.join(newDir, name) + core.VEXTENSION)
+    newfile_path = os.path.normpath(os.path.join(new_dir, name) + core.VEXTENSION)
 
     map_cmd = []
     video_cmd = []
@@ -527,7 +527,7 @@ def get_subs(file):
     return subfiles
 
 
-def extract_subs(file, newfilePath, bitbucket):
+def extract_subs(file, newfile_path, bitbucket):
     video_details, result = get_video_details(file)
     if not video_details:
         return
@@ -535,8 +535,8 @@ def extract_subs(file, newfilePath, bitbucket):
     if core.SUBSDIR:
         subdir = core.SUBSDIR
     else:
-        subdir = os.path.split(newfilePath)[0]
-    name = os.path.splitext(os.path.split(newfilePath)[1])[0]
+        subdir = os.path.split(newfile_path)[0]
+    name = os.path.splitext(os.path.split(newfile_path)[1])[0]
 
     try:
         sub_streams = [item for item in video_details["streams"] if
@@ -586,17 +586,17 @@ def extract_subs(file, newfilePath, bitbucket):
             logger.error("Extracting subtitles has failed")
 
 
-def process_list(List, newDir, bitbucket):
+def process_list(it, new_dir, bitbucket):
     rem_list = []
     new_list = []
     combine = []
     vts_path = None
     success = True
-    for item in List:
+    for item in it:
         ext = os.path.splitext(item)[1].lower()
         if ext in ['.iso', '.bin', '.img'] and ext not in core.IGNOREEXTENSIONS:
             logger.debug("Attempting to rip disk image: {0}".format(item), "TRANSCODER")
-            new_list.extend(rip_iso(item, newDir, bitbucket))
+            new_list.extend(rip_iso(item, new_dir, bitbucket))
             rem_list.append(item)
         elif re.match(".+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", item) and '.vob' not in core.IGNOREEXTENSIONS:
             logger.debug("Found VIDEO_TS image file: {0}".format(item), "TRANSCODER")
@@ -622,18 +622,18 @@ def process_list(List, newDir, bitbucket):
             success = False
             break
     if success and new_list:
-        List.extend(new_list)
+        it.extend(new_list)
         for item in rem_list:
-            List.remove(item)
+            it.remove(item)
         logger.debug("Successfully extracted .vob file {0} from disk image".format(new_list[0]), "TRANSCODER")
     elif new_list and not success:
         new_list = []
         rem_list = []
         logger.error("Failed extracting .vob files from disk image. Stopping transcoding.", "TRANSCODER")
-    return List, rem_list, new_list, success
+    return it, rem_list, new_list, success
 
 
-def rip_iso(item, newDir, bitbucket):
+def rip_iso(item, new_dir, bitbucket):
     new_files = []
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
@@ -681,7 +681,7 @@ def rip_iso(item, newDir, bitbucket):
     return new_files
 
 
-def combine_vts(vtsPath):
+def combine_vts(vts_path):
     new_files = []
     combined = ''
     for n in range(99):
@@ -689,8 +689,8 @@ def combine_vts(vtsPath):
         m = 1
         while True:
             vts_name = 'VTS_{0:02d}_{1:d}.VOB'.format(n + 1, m)
-            if os.path.isfile(os.path.join(vtsPath, vts_name)):
-                concat += '{file}|'.format(file=os.path.join(vtsPath, vts_name))
+            if os.path.isfile(os.path.join(vts_path, vts_name)):
+                concat += '{file}|'.format(file=os.path.join(vts_path, vts_name))
                 m += 1
             else:
                 break
@@ -728,29 +728,29 @@ def print_cmd(command):
     logger.debug("calling command:{0}".format(cmd))
 
 
-def transcode_directory(dirName):
+def transcode_directory(dir_name):
     if not core.FFMPEG:
-        return 1, dirName
+        return 1, dir_name
     logger.info("Checking for files to be transcoded")
     final_result = 0  # initialize as successful
     if core.OUTPUTVIDEOPATH:
         new_dir = core.OUTPUTVIDEOPATH
         make_dir(new_dir)
-        name = os.path.splitext(os.path.split(dirName)[1])[0]
+        name = os.path.splitext(os.path.split(dir_name)[1])[0]
         new_dir = os.path.join(new_dir, name)
         make_dir(new_dir)
     else:
-        new_dir = dirName
+        new_dir = dir_name
     if platform.system() == 'Windows':
         bitbucket = open('NUL')
     else:
         bitbucket = open('/dev/null')
-    movie_name = os.path.splitext(os.path.split(dirName)[1])[0]
-    file_list = core.list_media_files(dirName, media=True, audio=False, meta=False, archives=False)
+    movie_name = os.path.splitext(os.path.split(dir_name)[1])[0]
+    file_list = core.list_media_files(dir_name, media=True, audio=False, meta=False, archives=False)
     file_list, rem_list, new_list, success = process_list(file_list, new_dir, bitbucket)
     if not success:
         bitbucket.close()
-        return 1, dirName
+        return 1, dir_name
 
     for file in file_list:
         if isinstance(file, string_types) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
@@ -821,8 +821,8 @@ def transcode_directory(dirName):
                 pass
     if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
-        new_dir = dirName
+        new_dir = dir_name
     if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB 
-        new_dir = dirName
+        new_dir = dir_name
     bitbucket.close()
     return final_result, new_dir

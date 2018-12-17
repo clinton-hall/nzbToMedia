@@ -644,20 +644,17 @@ except NameError:
 
 
 # post-processing
-def process(inputDirectory, inputName=None, status=0, clientAgent='manual', download_id=None, inputCategory=None, failureLink=None):
-    input_directory = inputDirectory
-    input_name = inputName
-    input_category = inputCategory
+def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
     if core.SAFE_MODE and input_directory == core.NZB_DEFAULTDIR:
         logger.error(
             'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
                 input_directory))
         return [-1, ""]
 
-    if not download_id and clientAgent == 'sabnzbd':
+    if not download_id and client_agent == 'sabnzbd':
         download_id = get_nzoid(input_name)
 
-    if clientAgent != 'manual' and not core.DOWNLOADINFO:
+    if client_agent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory {0} to database'.format(input_directory))
 
         my_db = nzbToMediaDB.DBConnection()
@@ -675,7 +672,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
         new_value_dict = {"input_name": text_type(input_name1),
                         "input_hash": text_type(download_id),
                         "input_id": text_type(download_id),
-                        "client_agent": text_type(clientAgent),
+                        "client_agent": text_type(client_agent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
                         }
@@ -732,18 +729,18 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, input_category, input_name))
 
     if section_name in ["CouchPotato", "Radarr"]:
-        result = Movie().process(section_name, input_directory, input_name, status, clientAgent, download_id,
-                                 input_category, failureLink)
+        result = Movie().process(section_name, input_directory, input_name, status, client_agent, download_id,
+                                 input_category, failure_link)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = TV().process_episode(section_name, input_directory, input_name, status, clientAgent,
-                                      download_id, input_category, failureLink)
+        result = TV().process_episode(section_name, input_directory, input_name, status, client_agent,
+                                      download_id, input_category, failure_link)
     elif section_name in ["HeadPhones", "Lidarr"]:
-        result = Music().process(section_name, input_directory, input_name, status, clientAgent, input_category)
+        result = Music().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Mylar":
-        result = Comic().process_episode(section_name, input_directory, input_name, status, clientAgent,
+        result = Comic().process_episode(section_name, input_directory, input_name, status, client_agent,
                                          input_category)
     elif section_name == "Gamez":
-        result = Game().process(section_name, input_directory, input_name, status, clientAgent, input_category)
+        result = Game().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:
@@ -752,7 +749,7 @@ def process(inputDirectory, inputName=None, status=0, clientAgent='manual', down
     plex_update(input_category)
 
     if result[0] == 0:
-        if clientAgent != 'manual':
+        if client_agent != 'manual':
             # update download status in our DB
             update_download_info_status(input_name, 1)
         if section_name not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr', 'Lidarr']:
@@ -836,8 +833,8 @@ def main(args, section=None):
         # All checks done, now launching the script.
         client_agent = 'nzbget'
         result = process(os.environ['NZBPP_DIRECTORY'], input_name=os.environ['NZBPP_NZBNAME'], status=status,
-                         clientAgent=client_agent, download_id=download_id, input_category=os.environ['NZBPP_CATEGORY'],
-                         failureLink=failure_link)
+                         client_agent=client_agent, download_id=download_id, input_category=os.environ['NZBPP_CATEGORY'],
+                         failure_link=failure_link)
     # SABnzbd Pre 0.7.17
     elif len(args) == core.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
@@ -850,7 +847,7 @@ def main(args, section=None):
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         client_agent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd")
-        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], clientAgent=client_agent,
+        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], client_agent=client_agent,
                          download_id='')
     # SABnzbd 0.7.17+
     elif len(args) >= core.SABNZB_0717_NO_OF_ARGUMENTS:
@@ -865,8 +862,8 @@ def main(args, section=None):
         # 8 Failure URL
         client_agent = 'sabnzbd'
         logger.info("Script triggered from SABnzbd 0.7.17+")
-        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], clientAgent=client_agent,
-                         download_id='', failureLink=''.join(args[8:]))
+        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], client_agent=client_agent,
+                         download_id='', failure_link=''.join(args[8:]))
     # Generic program
     elif len(args) > 5 and args[5] == 'generic':
         logger.info("Script triggered from generic program")
@@ -910,7 +907,7 @@ def main(args, section=None):
                     except UnicodeError:
                         pass
 
-                    results = process(dir_name, input_name, 0, clientAgent=client_agent,
+                    results = process(dir_name, input_name, 0, client_agent=client_agent,
                                       download_id=download_id or None, input_category=subsection)
                     if results[0] != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format

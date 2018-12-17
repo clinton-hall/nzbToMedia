@@ -9,7 +9,7 @@ from core.nzbToMediaUtil import import_subs, list_media_files, remove_dir
 from core.transcoder import transcoder
 
 
-def external_script(outputDestination, torrentName, torrentLabel, settings):
+def external_script(output_destination, torrent_name, torrent_label, settings):
     final_result = 0  # start at 0.
     num_files = 0
     try:
@@ -40,14 +40,14 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
     core.USER_SCRIPT_RUNONCE = int(settings.get("user_script_runOnce", 1))
 
     if core.CHECK_MEDIA:
-        for video in list_media_files(outputDestination, media=True, audio=False, meta=False, archives=False):
+        for video in list_media_files(output_destination, media=True, audio=False, meta=False, archives=False):
             if transcoder.is_video_good(video, 0):
                 import_subs(video)
             else:
                 logger.info("Corrupt video file found {0}. Deleting.".format(video), "USERSCRIPT")
                 os.unlink(video)
 
-    for dirpath, dirnames, filenames in os.walk(outputDestination):
+    for dirpath, dirnames, filenames in os.walk(output_destination):
         for file in filenames:
 
             file_path = core.os.path.join(dirpath, file)
@@ -66,14 +66,14 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                         command.append('{0}'.format(file_path))
                         continue
                     elif param == "TN":
-                        command.append('{0}'.format(torrentName))
+                        command.append('{0}'.format(torrent_name))
                         continue
                     elif param == "TL":
-                        command.append('{0}'.format(torrentLabel))
+                        command.append('{0}'.format(torrent_label))
                         continue
                     elif param == "DN":
                         if core.USER_SCRIPT_RUNONCE == 1:
-                            command.append('{0}'.format(outputDestination))
+                            command.append('{0}'.format(output_destination))
                         else:
                             command.append('{0}'.format(dirpath))
                         continue
@@ -102,7 +102,7 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 final_result += result
 
     num_files_new = 0
-    for dirpath, dirnames, filenames in os.walk(outputDestination):
+    for dirpath, dirnames, filenames in os.walk(output_destination):
         for file in filenames:
             file_name, file_extension = os.path.splitext(file)
 
@@ -110,8 +110,8 @@ def external_script(outputDestination, torrentName, torrentLabel, settings):
                 num_files_new += 1
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
-        logger.info("All files have been processed. Cleaning outputDirectory {0}".format(outputDestination))
-        remove_dir(outputDestination)
+        logger.info("All files have been processed. Cleaning outputDirectory {0}".format(output_destination))
+        remove_dir(output_destination)
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info("{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.".format(
             num_files, num_files_new))

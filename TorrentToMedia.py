@@ -11,16 +11,12 @@ from core.nzbToMediaUtil import char_replace, convert_to_ascii, plex_update, rep
 from libs.six import text_type
 
 
-def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID, clientAgent):
-    input_directory = inputDirectory
-    input_name = inputName
-    input_category = inputCategory
-    input_hash = inputHash
+def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):
     status = 1  # 1 = failed | 0 = success
     root = 0
     found_file = 0
 
-    if clientAgent != 'manual' and not core.DOWNLOADINFO:
+    if client_agent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory {0} to database'.format(input_directory))
 
         my_db = nzbToMediaDB.DBConnection()
@@ -37,8 +33,8 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
         control_value_dict = {"input_directory": text_type(input_directory1)}
         new_value_dict = {"input_name": text_type(input_name1),
                         "input_hash": text_type(input_hash),
-                        "input_id": text_type(inputID),
-                        "client_agent": text_type(clientAgent),
+                        "input_id": text_type(input_id),
+                        "client_agent": text_type(client_agent),
                         "status": 0,
                         "last_update": datetime.date.today().toordinal()
                         }
@@ -102,8 +98,8 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
     extensions = section.get('user_script_mediaExtensions', "").lower().split(',')
     unique_path = int(section.get("unique_path", 1))
 
-    if clientAgent != 'manual':
-        core.pause_torrent(clientAgent, input_hash, inputID, input_name)
+    if client_agent != 'manual':
+        core.pause_torrent(client_agent, input_hash, input_id, input_name)
 
     # In case input is not directory, make sure to create one.
     # This way Processing is isolated.
@@ -237,21 +233,21 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
 
     elif section_name in ['CouchPotato', 'Radarr']:
         result = core.Movie().process(section_name, output_destination, input_name,
-                                      status, clientAgent, input_hash, input_category)
+                                      status, client_agent, input_hash, input_category)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
         result = core.TV().process_episode(section_name, output_destination, input_name,
-                                           status, clientAgent, input_hash, input_category)
+                                           status, client_agent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
         result = core.Music().process(section_name, output_destination, input_name,
-                                      status, clientAgent, input_category)
+                                      status, client_agent, input_category)
     elif section_name == 'Mylar':
         result = core.Comic().process_episode(section_name, output_destination, input_name,
-                                              status, clientAgent, input_category)
+                                              status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = core.Game().process(section_name, output_destination, input_name,
-                                     status, clientAgent, input_category)
+                                     status, client_agent, input_category)
 
     plex_update(input_category)
 
@@ -259,13 +255,13 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
         if not core.TORRENT_RESUME_ON_FAILURE:
             logger.error("A problem was reported in the autoProcess* script. "
                          "Torrent won't resume seeding (settings)")
-        elif clientAgent != 'manual':
+        elif client_agent != 'manual':
             logger.error("A problem was reported in the autoProcess* script. "
                          "If torrent was paused we will resume seeding")
-            core.resume_torrent(clientAgent, input_hash, inputID, input_name)
+            core.resume_torrent(client_agent, input_hash, input_id, input_name)
 
     else:
-        if clientAgent != 'manual':
+        if client_agent != 'manual':
             # update download status in our DB
             core.update_download_info_status(input_name, 1)
 
@@ -276,7 +272,7 @@ def process_torrent(inputDirectory, inputName, inputCategory, inputHash, inputID
                     for file in files:
                         logger.debug('Checking symlink: {0}'.format(os.path.join(dirpath, file)))
                         replace_links(os.path.join(dirpath, file))
-            core.remove_torrent(clientAgent, input_hash, inputID, input_name)
+            core.remove_torrent(client_agent, input_hash, input_id, input_name)
 
         if not section_name == 'UserScript':
             # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN

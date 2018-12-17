@@ -13,12 +13,10 @@ requests.packages.urllib3.disable_warnings()
 
 
 class Game(object):
-    def process(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
-        dir_name = dirName
-        input_name = inputName
+    def process(self, section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
         status = int(status)
 
-        cfg = dict(core.CFG[section][inputCategory])
+        cfg = dict(core.CFG[section][input_category])
 
         host = cfg["host"]
         port = cfg["port"]

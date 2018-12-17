@@ -12,14 +12,11 @@ requests.packages.urllib3.disable_warnings()
 
 
 class Comic(object):
-    def process_episode(self, section, dirName, inputName=None, status=0, clientAgent='manual', inputCategory=None):
-        dir_name = dirName
-        input_name = inputName
-
+    def process_episode(self, section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
         apc_version = "2.04"
         comicrn_version = "1.01"
 
-        cfg = dict(core.CFG[section][inputCategory])
+        cfg = dict(core.CFG[section][input_category])
 
         host = cfg["host"]
         port = cfg["port"]

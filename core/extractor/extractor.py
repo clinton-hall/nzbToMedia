@@ -11,7 +11,7 @@ from time import sleep
 import core
 
 
-def extract(filePath, outputDestination):
+def extract(file_path, output_destination):
     success = 0
     # Using Windows
     if platform.system() == 'Windows':
@@ -69,7 +69,7 @@ def extract(filePath, outputDestination):
         if not extract_commands:
             core.logger.warning("EXTRACTOR: No archive extracting programs found, plugin will be disabled")
 
-    ext = os.path.splitext(filePath)
+    ext = os.path.splitext(file_path)
     cmd = []
     if ext[1] in (".gz", ".bz2", ".lzma"):
         # Check if this is a tar
@@ -88,7 +88,7 @@ def extract(filePath, outputDestination):
             return False
 
         # Create outputDestination folder
-        core.make_dir(outputDestination)
+        core.make_dir(output_destination)
 
     if core.PASSWORDSFILE and os.path.isfile(os.path.normpath(core.PASSWORDSFILE)):
         passwords = [line.strip() for line in open(os.path.normpath(core.PASSWORDSFILE))]
@@ -96,25 +96,25 @@ def extract(filePath, outputDestination):
         passwords = []
 
     core.logger.info("Extracting {file} to {destination}".format
-                     (file=filePath, destination=outputDestination))
+                     (file=file_path, destination=output_destination))
     core.logger.debug("Extracting {cmd} {file} {destination}".format
-                      (cmd=cmd, file=filePath, destination=outputDestination))
+                      (cmd=cmd, file=file_path, destination=output_destination))
 
     orig_files = []
     orig_dirs = []
-    for dir, subdirs, files in os.walk(outputDestination):
+    for dir, subdirs, files in os.walk(output_destination):
         for subdir in subdirs:
             orig_dirs.append(os.path.join(dir, subdir))
         for file in files:
             orig_files.append(os.path.join(dir, file))
 
     pwd = os.getcwd()  # Get our Present Working Directory
-    os.chdir(outputDestination)  # Not all unpack commands accept full paths, so just extract into this directory
+    os.chdir(output_destination)  # Not all unpack commands accept full paths, so just extract into this directory
     devnull = open(os.devnull, 'w')
 
     try:  # now works same for nt and *nix
         info = None
-        cmd.append(filePath)  # add filePath to final cmd arg.
+        cmd.append(file_path)  # add filePath to final cmd arg.
         if platform.system() == 'Windows':
             info = subprocess.STARTUPINFO()
             info.dwFlags |= subprocess.STARTF_USESHOWWINDOW
@@ -126,7 +126,7 @@ def extract(filePath, outputDestination):
         res = p.wait()
         if res == 0:  # Both Linux and Windows return 0 for successful.
             core.logger.info("EXTRACTOR: Extraction was successful for {file} to {destination}".format
-                             (file=filePath, destination=outputDestination))
+                             (file=file_path, destination=output_destination))
             success = 1
         elif len(passwords) > 0:
             core.logger.info("EXTRACTOR: Attempting to extract with passwords")
@@ -142,7 +142,7 @@ def extract(filePath, outputDestination):
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     core.logger.info("EXTRACTOR: Extraction was successful "
                                      "for {file} to {destination} using password: {pwd}".format
-                                     (file=filePath, destination=outputDestination, pwd=password))
+                                     (file=file_path, destination=output_destination, pwd=password))
                     success = 1
                     break
                 else:
@@ -150,7 +150,7 @@ def extract(filePath, outputDestination):
     except:
         core.logger.error("EXTRACTOR: Extraction failed for {file}. "
                           "Could not call command {cmd}".format
-                          (file=filePath, cmd=cmd))
+                          (file=file_path, cmd=cmd))
         os.chdir(pwd)
         return False
 
@@ -159,8 +159,8 @@ def extract(filePath, outputDestination):
     if success:
         # sleep to let files finish writing to disk
         sleep(3)
-        perms = stat.S_IMODE(os.lstat(os.path.split(filePath)[0]).st_mode)
-        for dir, subdirs, files in os.walk(outputDestination):
+        perms = stat.S_IMODE(os.lstat(os.path.split(file_path)[0]).st_mode)
+        for dir, subdirs, files in os.walk(output_destination):
             for subdir in subdirs:
                 if not os.path.join(dir, subdir) in orig_files:
                     try:
@@ -170,12 +170,12 @@ def extract(filePath, outputDestination):
             for file in files:
                 if not os.path.join(dir, file) in orig_files:
                     try:
-                        shutil.copymode(filePath, os.path.join(dir, file))
+                        shutil.copymode(file_path, os.path.join(dir, file))
                     except:
                         pass
         return True
     else:
         core.logger.error("EXTRACTOR: Extraction failed for {file}. "
                           "Result was {result}".format
-                          (file=filePath, result=res))
+                          (file=file_path, result=res))
         return False

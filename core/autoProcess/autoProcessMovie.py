@@ -16,23 +16,23 @@ requests.packages.urllib3.disable_warnings()
 
 
 class Movie(object):
-    def get_release(self, baseURL, imdbid=None, download_id=None, release_id=None):
+    def get_release(self, base_url, imdb_id=None, download_id=None, release_id=None):
         results = {}
         params = {}
 
         # determine cmd and params to send to CouchPotato to get our results
         section = 'movies'
         cmd = "media.list"
-        if release_id or imdbid:
+        if release_id or imdb_id:
             section = 'media'
             cmd = "media.get"
-            params['id'] = release_id or imdbid
+            params['id'] = release_id or imdb_id
 
-        if not (release_id or imdbid or download_id):
+        if not (release_id or imdb_id or download_id):
             logger.debug("No information available to filter CP results")
             return results
 
-        url = "{0}{1}".format(baseURL, cmd)
+        url = "{0}{1}".format(base_url, cmd)
         logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
 
         try:
@@ -145,11 +145,9 @@ class Movie(object):
                 # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
-    def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", download_id="", inputCategory=None, failureLink=None):
-        dir_name = dirName
-        input_name = inputName
+    def process(self, section, dir_name, input_name=None, status=0, client_agent="manual", download_id="", input_category=None, failure_link=None):
 
-        cfg = dict(core.CFG[section][inputCategory])
+        cfg = dict(core.CFG[section][input_category])
 
         host = cfg["host"]
         port = cfg["port"]
@@ -244,10 +242,10 @@ class Movie(object):
             logger.info("Status shown as success from Downloader, but corrupt video files found. Setting as failed.", section)
             if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
-            if failureLink:
-                failureLink += '&corrupt=true'
+            if failure_link:
+                failure_link += '&corrupt=true'
             status = 1
-        elif clientAgent == "manual":
+        elif client_agent == "manual":
             logger.warning("No media files found in directory {0} to manually process.".format(dir_name), section)
             return [0, ""]  # Success (as far as this script is concerned)
         else:
@@ -275,7 +273,7 @@ class Movie(object):
                 if not release and ".cp(tt" not in video and imdbid:
                     video_name, video_ext = os.path.splitext(video)
                     video2 = "{0}.cp({1}){2}".format(video_name, imdbid, video_ext)
-                    if not (clientAgent in [core.TORRENT_CLIENTAGENT, 'manual'] and core.USELINK == 'move-sym'):
+                    if not (client_agent in [core.TORRENT_CLIENTAGENT, 'manual'] and core.USELINK == 'move-sym'):
                         logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                         os.rename(video, video2)
 
@@ -285,7 +283,7 @@ class Movie(object):
 
             params = {}
             if download_id and release_id:
-                params['downloader'] = downloader or clientAgent
+                params['downloader'] = downloader or client_agent
                 params['download_id'] = download_id
 
             params['media_folder'] = remote_dir(dir_name) if remote_path else dir_name
@@ -343,8 +341,8 @@ class Movie(object):
         else:
             core.FAILED = True
             logger.postprocess("FAILED DOWNLOAD DETECTED FOR {0}".format(input_name), section)
-            if failureLink:
-                report_nzb(failureLink, clientAgent)
+            if failure_link:
+                report_nzb(failure_link, client_agent)
 
             if section == "Radarr":
                 logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(section), section)

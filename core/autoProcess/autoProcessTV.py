@@ -52,9 +52,9 @@ class TV(object):
                 # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
-    def process_episode(self, section, dirName, inputName=None, failed=False, clientAgent="manual", download_id=None, inputCategory=None, failureLink=None):
+    def process_episode(self, section, dir_name, input_name=None, failed=False, client_agent="manual", download_id=None, input_category=None, failure_link=None):
 
-        cfg = dict(core.CFG[section][inputCategory])
+        cfg = dict(core.CFG[section][input_category])
 
         host = cfg["host"]
         port = cfg["port"]
@@ -67,7 +67,7 @@ class TV(object):
 
         if server_responding("{0}{1}:{2}{3}".format(protocol, host, port, web_root)):
             # auto-detect correct fork
-            fork, fork_params = auto_fork(section, inputCategory)
+            fork, fork_params = auto_fork(section, input_category)
         elif not username and not apikey:
             logger.info('No SickBeard username or Sonarr apikey entered. Performing transcoder functions only')
             fork, fork_params = "None", {}
@@ -78,7 +78,7 @@ class TV(object):
         delete_failed = int(cfg.get("delete_failed", 0))
         nzb_extraction_by = cfg.get("nzbExtractionBy", "Downloader")
         process_method = cfg.get("process_method")
-        if  clientAgent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
+        if  client_agent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
             process_method = "symlink"
         remote_path = int(cfg.get("remote_path", 0))
         wait_for = int(cfg.get("wait_for", 2))
@@ -113,7 +113,7 @@ class TV(object):
             if e.errno != errno.EEXIST:
                 raise
 
-        if 'process_method' not in fork_params or (clientAgent in ['nzbget', 'sabnzbd'] and nzb_extraction_by != "Destination"):
+        if 'process_method' not in fork_params or (client_agent in ['nzbget', 'sabnzbd'] and nzb_extraction_by != "Destination"):
             if input_name:
                 process_all_exceptions(input_name, dir_name)
                 input_name, dir_name = convert_to_ascii(input_name, dir_name)
@@ -147,9 +147,9 @@ class TV(object):
                 failed = 1
                 if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                     print('[NZB] MARK=BAD')
-                if failureLink:
-                    failureLink += '&corrupt=true'
-        elif clientAgent == "manual":
+                if failure_link:
+                    failure_link += '&corrupt=true'
+        elif client_agent == "manual":
             logger.warning("No media files found in directory {0} to manually process.".format(dir_name), section)
             return [0, ""]  # Success (as far as this script is concerned)
         elif nzb_extraction_by == "Destination":
@@ -248,8 +248,8 @@ class TV(object):
             logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
         else:
             core.FAILED = True
-            if failureLink:
-                report_nzb(failureLink, clientAgent)
+            if failure_link:
+                report_nzb(failure_link, client_agent)
             if 'failed' in fork_params:
                 logger.postprocess("FAILED: The download failed. Sending 'failed' process request to {0} branch".format(fork), section)
             elif section == "NzbDrone":

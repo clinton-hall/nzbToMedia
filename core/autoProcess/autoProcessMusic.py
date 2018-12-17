@@ -32,8 +32,8 @@ class Music(object):
                 logger.error("{0} did not return expected json data.".format(section), section)
                 return None
 
-    def get_status(self, url, apikey, dirName):
-        logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dirName)))
+    def get_status(self, url, apikey, dir_name):
+        logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dir_name)))
 
         params = {
             'apikey': apikey,
@@ -55,13 +55,13 @@ class Music(object):
             return None
 
         for album in result:
-            if os.path.basename(dirName) == album['FolderName']:
+            if os.path.basename(dir_name) == album['FolderName']:
                 return album["Status"].lower()
 
-    def force_process(self, params, url, apikey, inputName, dirName, section, wait_for):
-        release_status = self.get_status(url, apikey, dirName)
+    def force_process(self, params, url, apikey, input_name, dir_name, section, wait_for):
+        release_status = self.get_status(url, apikey, dir_name)
         if not release_status:
-            logger.error("Could not find a status for {0}, is it in the wanted list ?".format(inputName), section)
+            logger.error("Could not find a status for {0}, is it in the wanted list ?".format(input_name), section)
 
         logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
 
@@ -77,32 +77,29 @@ class Music(object):
             logger.error("Server returned status {0}".format(r.status_code), section)
             return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
         elif r.text == "OK":
-            logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(inputName, dirName), section)
+            logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(input_name, dir_name), section)
         else:
-            logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(inputName, dirName), section)
+            logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(input_name, dir_name), section)
             return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
 
         # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
         timeout = time.time() + 60 * wait_for
         while time.time() < timeout:
-            current_status = self.get_status(url, apikey, dirName)
+            current_status = self.get_status(url, apikey, dir_name)
             if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
                 logger.postprocess("SUCCESS: This release is now marked as status [{0}]".format(current_status), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
-            if not os.path.isdir(dirName):
-                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dirName), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, inputName)]
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            if not os.path.isdir(dir_name):
+                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dir_name), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
             time.sleep(10 * wait_for)
         # The status hasn't changed.
         return [2, "no change"]
 
-    def process(self, section, dirName, inputName=None, status=0, clientAgent="manual", inputCategory=None):
-        dir_name = dirName
-        input_name = inputName
-
+    def process(self, section, dir_name, input_name=None, status=0, client_agent="manual", input_category=None):
         status = int(status)
 
-        cfg = dict(core.CFG[section][inputCategory])
+        cfg = dict(core.CFG[section][input_category])
 
         host = cfg["host"]
         port = cfg["port"]
