@@ -1,3 +1,5 @@
 backports.functools-lru-cache
+beautifulsoup4
 enum34
 futures
+pyyaml
