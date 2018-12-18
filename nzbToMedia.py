@@ -629,11 +629,11 @@ import sys
 
 import core
 from core import logger, nzbToMediaDB
-from core.autoProcess.autoProcessComics import Comic
-from core.autoProcess.autoProcessGames import Game
-from core.autoProcess.autoProcessMovie import Movie
-from core.autoProcess.autoProcessMusic import Music
-from core.autoProcess.autoProcessTV import TV
+from core.auto_process.autoProcessComics import Comic
+from core.auto_process.autoProcessGames import Game
+from core.auto_process.autoProcessMovie import Movie
+from core.auto_process.autoProcessMusic import Music
+from core.auto_process.autoProcessTV import TV
 from core.nzbToMediaUserScript import external_script
 from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
