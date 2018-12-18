@@ -15,6 +15,8 @@ import core
 from core import logger
 from core.nzbToMediaUtil import make_dir
 
+__author__ = 'Justin'
+
 
 def is_video_good(videofile, status):
     file_name_ext = os.path.basename(videofile)

@@ -42,7 +42,7 @@ MYAPP = None
 import six
 from six.moves import reload_module
 
-from core import logger, nzbToMediaDB, versionCheck, databases
+from core import logger, nzbToMediaDB, versionCheck, databases, transcoder
 from core.auto_process import Comic, Game, Movie, Music, TV
 from core.nzbToMediaConfig import config
 from core.nzbToMediaUtil import (
@@ -51,8 +51,6 @@ from core.nzbToMediaUtil import (
     list_media_files, make_dir, parse_args, pause_torrent, remove_torrent,
     resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
-from core.transcoder import transcoder
-
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']

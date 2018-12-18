@@ -5,9 +5,9 @@ import guessit
 import requests
 
 import core
+from core import transcoder
 from core.nzbToMediaAutoFork import auto_fork
 from core.nzbToMediaUtil import server_responding
-from core.transcoder import transcoder
 
 # Initialize the config
 core.initialize()
