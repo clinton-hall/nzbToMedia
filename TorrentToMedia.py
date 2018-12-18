@@ -8,7 +8,7 @@ import core
 from core import logger, nzbToMediaDB
 from core.nzbToMediaUserScript import external_script
 from core.nzbToMediaUtil import char_replace, convert_to_ascii, plex_update, replace_links
-from libs.six import text_type
+from six import text_type
 
 
 def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):
