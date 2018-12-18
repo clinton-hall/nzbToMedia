@@ -46,7 +46,7 @@ from core import logger, nzbToMediaDB, versionCheck
 from core.auto_process.comics import Comic
 from core.auto_process.autoProcessGames import Game
 from core.auto_process.autoProcessMovie import Movie
-from core.auto_process.autoProcessMusic import Music
+from core.auto_process.music import Music
 from core.auto_process.tv import TV
 from core.databases import mainDB
 from core.nzbToMediaConfig import config
