@@ -42,9 +42,8 @@ MYAPP = None
 import six
 from six.moves import reload_module
 
-from core import logger, nzbToMediaDB, versionCheck
+from core import logger, nzbToMediaDB, versionCheck, databases
 from core.auto_process import Comic, Game, Movie, Music, TV
-from core.databases import mainDB
 from core.nzbToMediaConfig import config
 from core.nzbToMediaUtil import (
     RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
@@ -322,7 +321,7 @@ def initialize(section=None):
             logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
-    nzbToMediaDB.upgrade_database(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
+    nzbToMediaDB.upgrade_database(nzbToMediaDB.DBConnection(), databases.InitialSchema)
 
     # Set Version and GIT variables
     NZBTOMEDIA_VERSION = '11.06'
