@@ -38,7 +38,9 @@ def add_libs(name):
 
 
 def add_all_libs():
-    for lib in MANDATORY:
+    for lib in [COMMON, CUSTOM, PY2, WIN]:
+        if lib not in MANDATORY:
+            continue
         add_libs(lib)
     return is_finished()
 
