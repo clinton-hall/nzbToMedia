@@ -44,7 +44,7 @@ from six.moves import reload_module
 
 from core import logger, nzbToMediaDB, versionCheck, databases, transcoder
 from core.auto_process import Comic, Game, Movie, Music, TV
-from core.nzbToMediaConfig import config
+from core.configuration import config
 from core.nzbToMediaUtil import (
     RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
     create_torrent_class, extract_files, flatten, get_dirs, get_download_info,
