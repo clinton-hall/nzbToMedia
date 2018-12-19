@@ -1309,23 +1309,6 @@ def get_download_info(input_name, status):
 
     return sql_results
 
-
-class RunningProcess(object):
-    """ Limits application to single instance """
-
-    def __init__(self):
-        if os.name == 'nt':
-            self.process = WindowsProcess()
-        else:
-            self.process = PosixProcess()
-
-    def alreadyrunning(self):
-        return self.process.alreadyrunning()
-
-        # def __del__(self):
-        #    self.process.__del__()
-
-
 class WindowsProcess(object):
     def __init__(self):
         self.mutex = None
@@ -1401,3 +1384,8 @@ class PosixProcess(object):
                 self.lock_socket.close()
             if os.path.isfile(self.pidpath):
                 os.unlink(self.pidpath)
+
+if os.name == 'nt':
+    RunningProcess = WindowsProcess
+else:
+    RunningProcess = PosixProcess
