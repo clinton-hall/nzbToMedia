@@ -10,7 +10,7 @@ import requests
 
 import core
 from core import logger, transcoder
-from core.nzbToMediaAutoFork import auto_fork
+from core.forks import auto_fork
 from core.nzbToMediaSceneExceptions import process_all_exceptions
 from core.nzbToMediaUtil import convert_to_ascii, flatten, import_subs, list_media_files, remote_dir, report_nzb, remove_dir, server_responding
 
