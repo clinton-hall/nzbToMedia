@@ -26,8 +26,7 @@ from transmissionrpc.client import Client as TransmissionClient
 from utorrent.client import UTorrentClient
 
 import core
-from core import logger, main_db
-from core.extractor import extractor
+from core import extractor, logger, main_db
 
 requests.packages.urllib3.disable_warnings()
 
