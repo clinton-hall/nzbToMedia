@@ -17,6 +17,12 @@ import libs.util
 if not libs.autoload.completed:
     sys.exit('Could not load vendored libraries.')
 
+try:
+    import win32event
+except ImportError:
+    if sys.platform == 'win32':
+        sys.ext('Please install pywin32')
+
 PROGRAM_DIR = libs.util.module_root()
 
 # init preliminaries

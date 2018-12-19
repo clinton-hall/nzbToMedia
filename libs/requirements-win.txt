@@ -1,2 +1,1 @@
 jaraco-windows
-pywin32
