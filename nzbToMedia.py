@@ -628,7 +628,7 @@ import os
 import sys
 
 import core
-from core import logger, nzbToMediaDB
+from core import logger, main_db
 from core.auto_process import Comic, Game, Movie, Music, TV
 from core.nzbToMediaUserScript import external_script
 from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
@@ -653,7 +653,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     if client_agent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory {0} to database'.format(input_directory))
 
-        my_db = nzbToMediaDB.DBConnection()
+        my_db = main_db.DBConnection()
 
         input_directory1 = input_directory
         input_name1 = input_name
