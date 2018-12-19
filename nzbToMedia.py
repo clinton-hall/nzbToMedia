@@ -630,7 +630,7 @@ import sys
 import core
 from core import logger, main_db
 from core.auto_process import Comic, Game, Movie, Music, TV
-from core.nzbToMediaUserScript import external_script
+from core.user_scripts import external_script
 from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
 try:
