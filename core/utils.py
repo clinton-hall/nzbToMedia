@@ -3,30 +3,43 @@
 from __future__ import print_function, unicode_literals
 
 import datetime
+from functools import partial
 import os
-import platform
 import re
 import shutil
 import socket
 import stat
 import struct
 import time
-from functools import partial
 
+from babelfish import Language
 import beets
 import guessit
 import linktastic
-import requests
-import subliminal
-from babelfish import Language
 from qbittorrent import Client as qBittorrentClient
+import requests
 from six import text_type
+import subliminal
 from synchronousdeluge.client import DelugeClient
 from transmissionrpc.client import Client as TransmissionClient
 from utorrent.client import UTorrentClient
 
 import core
 from core import extractor, logger, main_db
+
+try:
+    from win32event import CreateMutex
+    from win32api import CloseHandle, GetLastError
+    from winerror import ERROR_ALREADY_EXISTS
+except ImportError:
+    if os.name == 'nt':
+        raise
+
+try:
+    import jaraco
+except ImportError:
+    if os.name == 'nt':
+        raise
 
 requests.packages.urllib3.disable_warnings()
 
@@ -285,7 +298,6 @@ def replace_links(link):
     n = 0
     target = link
     if os.name == 'nt':
-        import jaraco
         if not jaraco.windows.filesystem.islink(link):
             logger.debug('{0} is not a link'.format(link))
             return
@@ -1302,7 +1314,7 @@ class RunningProcess(object):
     """ Limits application to single instance """
 
     def __init__(self):
-        if platform.system() == 'Windows':
+        if os.name == 'nt':
             self.process = WindowsProcess()
         else:
             self.process = PosixProcess()
@@ -1318,20 +1330,10 @@ class WindowsProcess(object):
     def __init__(self):
         self.mutex = None
         self.mutexname = "nzbtomedia_{pid}".format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
-        if platform.system() == 'Windows':
-            try:
-                from win32.win32event import CreateMutex
-                from win32.win32api import CloseHandle, GetLastError
-                from win32.lib.winerror import ERROR_ALREADY_EXISTS
-            except ImportError:
-                from win32event import CreateMutex
-                from win32api import CloseHandle, GetLastError
-                from winerror import ERROR_ALREADY_EXISTS
-
-            self.CreateMutex = CreateMutex
-            self.CloseHandle = CloseHandle
-            self.GetLastError = GetLastError
-            self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
+        self.CreateMutex = CreateMutex
+        self.CloseHandle = CloseHandle
+        self.GetLastError = GetLastError
+        self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
 
     def alreadyrunning(self):
         self.mutex = self.CreateMutex(None, 0, self.mutexname)
