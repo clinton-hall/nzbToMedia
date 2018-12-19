@@ -728,13 +728,13 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         result = Movie().process(section_name, input_directory, input_name, status, client_agent, download_id,
                                  input_category, failure_link)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = TV().process_episode(section_name, input_directory, input_name, status, client_agent,
-                                      download_id, input_category, failure_link)
+        result = TV().process(section_name, input_directory, input_name, status, client_agent,
+                              download_id, input_category, failure_link)
     elif section_name in ["HeadPhones", "Lidarr"]:
         result = Music().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Mylar":
-        result = Comic().process_episode(section_name, input_directory, input_name, status, client_agent,
-                                         input_category)
+        result = Comic().process(section_name, input_directory, input_name, status, client_agent,
+                                 input_category)
     elif section_name == "Gamez":
         result = Game().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':

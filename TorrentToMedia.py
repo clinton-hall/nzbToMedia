@@ -237,14 +237,14 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
-        result = core.TV().process_episode(section_name, output_destination, input_name,
-                                           status, client_agent, input_hash, input_category)
+        result = core.TV().process(section_name, output_destination, input_name,
+                                   status, client_agent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
         result = core.Music().process(section_name, output_destination, input_name,
                                       status, client_agent, input_category)
     elif section_name == 'Mylar':
-        result = core.Comic().process_episode(section_name, output_destination, input_name,
-                                              status, client_agent, input_category)
+        result = core.Comic().process(section_name, output_destination, input_name,
+                                      status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = core.Game().process(section_name, output_destination, input_name,
                                      status, client_agent, input_category)

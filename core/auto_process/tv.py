@@ -51,7 +51,7 @@ class TV(object):
                 # ValueError catches simplejson's JSONDecodeError and json's ValueError
                 return False
 
-    def process_episode(self, section, dir_name, input_name=None, failed=False, client_agent="manual", download_id=None, input_category=None, failure_link=None):
+    def process(self, section, dir_name, input_name=None, failed=False, client_agent="manual", download_id=None, input_category=None, failure_link=None):
 
         cfg = dict(core.CFG[section][input_category])
 

@@ -12,7 +12,7 @@ requests.packages.urllib3.disable_warnings()
 
 
 class Comic(object):
-    def process_episode(self, section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
+    def process(self, section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
         apc_version = "2.04"
         comicrn_version = "1.01"
 
