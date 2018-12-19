@@ -42,7 +42,7 @@ MYAPP = None
 import six
 from six.moves import reload_module
 
-from core import logger, main_db, versionCheck, databases, transcoder
+from core import logger, main_db, version_check, databases, transcoder
 from core.auto_process import Comic, Game, Movie, Music, TV
 from core.configuration import config
 from core.nzbToMediaUtil import (
@@ -336,10 +336,10 @@ def initialize(section=None):
     NOEXTRACTFAILED = int(CFG["General"]["no_extract_failed"])
 
     # Check for updates via GitHUB
-    if versionCheck.CheckVersion().check_for_new_version():
+    if version_check.CheckVersion().check_for_new_version():
         if AUTO_UPDATE == 1:
             logger.info("Auto-Updating nzbToMedia, Please wait ...")
-            updated = versionCheck.CheckVersion().update()
+            updated = version_check.CheckVersion().update()
             if updated:
                 # restart nzbToMedia
                 try:
@@ -845,7 +845,7 @@ def initialize(section=None):
 
 
 def restart():
-    install_type = versionCheck.CheckVersion().install_type
+    install_type = version_check.CheckVersion().install_type
 
     status = 0
     popen_list = []
