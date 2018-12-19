@@ -18,39 +18,6 @@ requests.packages.urllib3.disable_warnings()
 
 
 class TV(object):
-    def command_complete(self, url, params, headers, section):
-        try:
-            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url), section)
-            return None
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return None
-        else:
-            try:
-                return r.json()['state']
-            except (ValueError, KeyError):
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                logger.error("{0} did not return expected json data.".format(section), section)
-                return None
-
-    def completed_download_handling(self, url2, headers, section="MAIN"):
-        try:
-            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url2), section)
-            return False
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return False
-        else:
-            try:
-                return r.json().get("enableCompletedDownloadHandling", False)
-            except ValueError:
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                return False
-
     def process(self, section, dir_name, input_name=None, failed=False, client_agent="manual", download_id=None, input_category=None, failure_link=None):
 
         cfg = dict(core.CFG[section][input_category])
@@ -372,3 +339,36 @@ class TV(object):
                 return [1, "{0}: Failed to post-process {1}".format(section, input_name)]
         else:
             return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]  # We did not receive Success confirmation.
+
+    def command_complete(self, url, params, headers, section):
+        try:
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return None
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return None
+        else:
+            try:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
+                return None
+
+    def completed_download_handling(self, url2, headers, section="MAIN"):
+        try:
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url2), section)
+            return False
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return False
+        else:
+            try:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                return False

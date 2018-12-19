@@ -15,87 +15,6 @@ requests.packages.urllib3.disable_warnings()
 
 
 class Music(object):
-    def command_complete(self, url, params, headers, section):
-        try:
-            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url), section)
-            return None
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return None
-        else:
-            try:
-                return r.json()['state']
-            except (ValueError, KeyError):
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                logger.error("{0} did not return expected json data.".format(section), section)
-                return None
-
-    def get_status(self, url, apikey, dir_name):
-        logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dir_name)))
-
-        params = {
-            'apikey': apikey,
-            'cmd': "getHistory"
-        }
-
-        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
-
-        try:
-            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
-        except requests.RequestException:
-            logger.error("Unable to open URL")
-            return None
-
-        try:
-            result = r.json()
-        except ValueError:
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            return None
-
-        for album in result:
-            if os.path.basename(dir_name) == album['FolderName']:
-                return album["Status"].lower()
-
-    def force_process(self, params, url, apikey, input_name, dir_name, section, wait_for):
-        release_status = self.get_status(url, apikey, dir_name)
-        if not release_status:
-            logger.error("Could not find a status for {0}, is it in the wanted list ?".format(input_name), section)
-
-        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
-
-        try:
-            r = requests.get(url, params=params, verify=False, timeout=(30, 300))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL {0}".format(url), section)
-            return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
-
-        logger.debug("Result: {0}".format(r.text), section)
-
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
-        elif r.text == "OK":
-            logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(input_name, dir_name), section)
-        else:
-            logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(input_name, dir_name), section)
-            return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
-
-        # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
-        timeout = time.time() + 60 * wait_for
-        while time.time() < timeout:
-            current_status = self.get_status(url, apikey, dir_name)
-            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-                logger.postprocess("SUCCESS: This release is now marked as status [{0}]".format(current_status), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
-            if not os.path.isdir(dir_name):
-                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dir_name), section)
-                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
-            time.sleep(10 * wait_for)
-        # The status hasn't changed.
-        return [2, "no change"]
-
     def process(self, section, dir_name, input_name=None, status=0, client_agent="manual", input_category=None):
         status = int(status)
 
@@ -237,3 +156,84 @@ class Music(object):
                     logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
                     remove_dir(dir_name)
                 return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
+
+    def command_complete(self, url, params, headers, section):
+        try:
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return None
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return None
+        else:
+            try:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
+                return None
+
+    def get_status(self, url, apikey, dir_name):
+        logger.debug("Attempting to get current status for release:{0}".format(os.path.basename(dir_name)))
+
+        params = {
+            'apikey': apikey,
+            'cmd': "getHistory"
+        }
+
+        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
+
+        try:
+            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+        except requests.RequestException:
+            logger.error("Unable to open URL")
+            return None
+
+        try:
+            result = r.json()
+        except ValueError:
+            # ValueError catches simplejson's JSONDecodeError and json's ValueError
+            return None
+
+        for album in result:
+            if os.path.basename(dir_name) == album['FolderName']:
+                return album["Status"].lower()
+
+    def force_process(self, params, url, apikey, input_name, dir_name, section, wait_for):
+        release_status = self.get_status(url, apikey, dir_name)
+        if not release_status:
+            logger.error("Could not find a status for {0}, is it in the wanted list ?".format(input_name), section)
+
+        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params), section)
+
+        try:
+            r = requests.get(url, params=params, verify=False, timeout=(30, 300))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL {0}".format(url), section)
+            return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
+
+        logger.debug("Result: {0}".format(r.text), section)
+
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
+        elif r.text == "OK":
+            logger.postprocess("SUCCESS: Post-Processing started for {0} in folder {1} ...".format(input_name, dir_name), section)
+        else:
+            logger.error("FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!".format(input_name, dir_name), section)
+            return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]
+
+        # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
+        timeout = time.time() + 60 * wait_for
+        while time.time() < timeout:
+            current_status = self.get_status(url, apikey, dir_name)
+            if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
+                logger.postprocess("SUCCESS: This release is now marked as status [{0}]".format(current_status), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            if not os.path.isdir(dir_name):
+                logger.postprocess("SUCCESS: The input directory {0} has been removed Processing must have finished.".format(dir_name), section)
+                return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            time.sleep(10 * wait_for)
+        # The status hasn't changed.
+        return [2, "no change"]
