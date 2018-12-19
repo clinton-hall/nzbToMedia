@@ -7,144 +7,14 @@ import time
 import requests
 
 import core
-from core import logger
-from core.nzbToMediaSceneExceptions import process_all_exceptions
-from core.nzbToMediaUtil import convert_to_ascii, find_download, find_imdbid, import_subs, list_media_files, remote_dir, report_nzb, remove_dir, server_responding
-from core.transcoder import transcoder
+from core import logger, transcoder
+from core.scene_exceptions import process_all_exceptions
+from core.utils import convert_to_ascii, find_download, find_imdbid, import_subs, list_media_files, remote_dir, remove_dir, report_nzb, server_responding
 
 requests.packages.urllib3.disable_warnings()
 
 
 class Movie(object):
-    def get_release(self, base_url, imdb_id=None, download_id=None, release_id=None):
-        results = {}
-        params = {}
-
-        # determine cmd and params to send to CouchPotato to get our results
-        section = 'movies'
-        cmd = "media.list"
-        if release_id or imdb_id:
-            section = 'media'
-            cmd = "media.get"
-            params['id'] = release_id or imdb_id
-
-        if not (release_id or imdb_id or download_id):
-            logger.debug("No information available to filter CP results")
-            return results
-
-        url = "{0}{1}".format(base_url, cmd)
-        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
-
-        try:
-            r = requests.get(url, params=params, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL {0}".format(url))
-            return results
-
-        try:
-            result = r.json()
-        except ValueError:
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            logger.error("CouchPotato returned the following non-json data")
-            for line in r.iter_lines():
-                logger.error("{0}".format(line))
-            return results
-
-        if not result['success']:
-            if 'error' in result:
-                logger.error('{0}'.format(result['error']))
-            else:
-                logger.error("no media found for id {0}".format(params['id']))
-            return results
-
-        # Gather release info and return it back, no need to narrow results
-        if release_id:
-            try:
-                id = result[section]['_id']
-                results[id] = result[section]
-                return results
-            except:
-                pass
-
-        # Gather release info and proceed with trying to narrow results to one release choice
-
-        movies = result[section]
-        if not isinstance(movies, list):
-            movies = [movies]
-        for movie in movies:
-            if movie['status'] not in ['active', 'done']:
-                continue
-            releases = movie['releases']
-            if not releases:
-                continue
-            for release in releases:
-                try:
-                    if release['status'] not in ['snatched', 'downloaded', 'done']:
-                        continue
-                    if download_id:
-                        if download_id.lower() != release['download_info']['id'].lower():
-                            continue
-
-                    id = release['_id']
-                    results[id] = release
-                    results[id]['title'] = movie['title']
-                except:
-                    continue
-
-        # Narrow results by removing old releases by comparing their last_edit field
-        if len(results) > 1:
-            for id1, x1 in results.items():
-                for id2, x2 in results.items():
-                    try:
-                        if x2["last_edit"] > x1["last_edit"]:
-                            results.pop(id1)
-                    except:
-                        continue
-
-        # Search downloads on clients for a match to try and narrow our results down to 1
-        if len(results) > 1:
-            for id, x in results.items():
-                try:
-                    if not find_download(str(x['download_info']['downloader']).lower(), x['download_info']['id']):
-                        results.pop(id)
-                except:
-                    continue
-
-        return results
-
-    def command_complete(self, url, params, headers, section):
-        try:
-            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url), section)
-            return None
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return None
-        else:
-            try:
-                return r.json()['state']
-            except (ValueError, KeyError):
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                logger.error("{0} did not return expected json data.".format(section), section)
-                return None
-
-    def completed_download_handling(self, url2, headers, section="MAIN"):
-        try:
-            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
-        except requests.ConnectionError:
-            logger.error("Unable to open URL: {0}".format(url2), section)
-            return False
-        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error("Server returned status {0}".format(r.status_code), section)
-            return False
-        else:
-            try:
-                return r.json().get("enableCompletedDownloadHandling", False)
-            except ValueError:
-                # ValueError catches simplejson's JSONDecodeError and json's ValueError
-                return False
-
     def process(self, section, dir_name, input_name=None, status=0, client_agent="manual", download_id="", input_category=None, failure_link=None):
 
         cfg = dict(core.CFG[section][input_category])
@@ -465,3 +335,132 @@ class Movie(object):
             "{0} does not appear to have changed status after {1} minutes, Please check your logs.".format(input_name, wait_for),
             section)
         return [1, "{0}: Failed to post-process - No change in status".format(section)]
+
+    def command_complete(self, url, params, headers, section):
+        try:
+            r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url), section)
+            return None
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return None
+        else:
+            try:
+                return r.json()['state']
+            except (ValueError, KeyError):
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                logger.error("{0} did not return expected json data.".format(section), section)
+                return None
+
+    def completed_download_handling(self, url2, headers, section="MAIN"):
+        try:
+            r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL: {0}".format(url2), section)
+            return False
+        if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error("Server returned status {0}".format(r.status_code), section)
+            return False
+        else:
+            try:
+                return r.json().get("enableCompletedDownloadHandling", False)
+            except ValueError:
+                # ValueError catches simplejson's JSONDecodeError and json's ValueError
+                return False
+
+    def get_release(self, base_url, imdb_id=None, download_id=None, release_id=None):
+        results = {}
+        params = {}
+
+        # determine cmd and params to send to CouchPotato to get our results
+        section = 'movies'
+        cmd = "media.list"
+        if release_id or imdb_id:
+            section = 'media'
+            cmd = "media.get"
+            params['id'] = release_id or imdb_id
+
+        if not (release_id or imdb_id or download_id):
+            logger.debug("No information available to filter CP results")
+            return results
+
+        url = "{0}{1}".format(base_url, cmd)
+        logger.debug("Opening URL: {0} with PARAMS: {1}".format(url, params))
+
+        try:
+            r = requests.get(url, params=params, verify=False, timeout=(30, 60))
+        except requests.ConnectionError:
+            logger.error("Unable to open URL {0}".format(url))
+            return results
+
+        try:
+            result = r.json()
+        except ValueError:
+            # ValueError catches simplejson's JSONDecodeError and json's ValueError
+            logger.error("CouchPotato returned the following non-json data")
+            for line in r.iter_lines():
+                logger.error("{0}".format(line))
+            return results
+
+        if not result['success']:
+            if 'error' in result:
+                logger.error('{0}'.format(result['error']))
+            else:
+                logger.error("no media found for id {0}".format(params['id']))
+            return results
+
+        # Gather release info and return it back, no need to narrow results
+        if release_id:
+            try:
+                id = result[section]['_id']
+                results[id] = result[section]
+                return results
+            except:
+                pass
+
+        # Gather release info and proceed with trying to narrow results to one release choice
+
+        movies = result[section]
+        if not isinstance(movies, list):
+            movies = [movies]
+        for movie in movies:
+            if movie['status'] not in ['active', 'done']:
+                continue
+            releases = movie['releases']
+            if not releases:
+                continue
+            for release in releases:
+                try:
+                    if release['status'] not in ['snatched', 'downloaded', 'done']:
+                        continue
+                    if download_id:
+                        if download_id.lower() != release['download_info']['id'].lower():
+                            continue
+
+                    id = release['_id']
+                    results[id] = release
+                    results[id]['title'] = movie['title']
+                except:
+                    continue
+
+        # Narrow results by removing old releases by comparing their last_edit field
+        if len(results) > 1:
+            for id1, x1 in results.items():
+                for id2, x2 in results.items():
+                    try:
+                        if x2["last_edit"] > x1["last_edit"]:
+                            results.pop(id1)
+                    except:
+                        continue
+
+        # Search downloads on clients for a match to try and narrow our results down to 1
+        if len(results) > 1:
+            for id, x in results.items():
+                try:
+                    if not find_download(str(x['download_info']['downloader']).lower(), x['download_info']['id']):
+                        results.pop(id)
+                except:
+                    continue
+
+        return results

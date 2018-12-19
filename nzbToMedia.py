@@ -628,14 +628,10 @@ import os
 import sys
 
 import core
-from core import logger, nzbToMediaDB
-from core.autoProcess.autoProcessComics import Comic
-from core.autoProcess.autoProcessGames import Game
-from core.autoProcess.autoProcessMovie import Movie
-from core.autoProcess.autoProcessMusic import Music
-from core.autoProcess.autoProcessTV import TV
-from core.nzbToMediaUserScript import external_script
-from core.nzbToMediaUtil import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
+from core import logger, main_db
+from core.auto_process import Comic, Game, Movie, Music, TV
+from core.user_scripts import external_script
+from core.utils import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
 try:
     text_type = unicode
@@ -657,7 +653,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     if client_agent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding NZB download info for directory {0} to database'.format(input_directory))
 
-        my_db = nzbToMediaDB.DBConnection()
+        my_db = main_db.DBConnection()
 
         input_directory1 = input_directory
         input_name1 = input_name
@@ -732,13 +728,13 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         result = Movie().process(section_name, input_directory, input_name, status, client_agent, download_id,
                                  input_category, failure_link)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = TV().process_episode(section_name, input_directory, input_name, status, client_agent,
-                                      download_id, input_category, failure_link)
+        result = TV().process(section_name, input_directory, input_name, status, client_agent,
+                              download_id, input_category, failure_link)
     elif section_name in ["HeadPhones", "Lidarr"]:
         result = Music().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Mylar":
-        result = Comic().process_episode(section_name, input_directory, input_name, status, client_agent,
-                                         input_category)
+        result = Comic().process(section_name, input_directory, input_name, status, client_agent,
+                                 input_category)
     elif section_name == "Gamez":
         result = Game().process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':

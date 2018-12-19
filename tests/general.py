@@ -1,13 +1,15 @@
 #! /usr/bin/env python2
 from __future__ import print_function
 
+from babelfish import Language
 import guessit
 import requests
+import subliminal
 
 import core
-from core.nzbToMediaAutoFork import auto_fork
-from core.nzbToMediaUtil import server_responding
-from core.transcoder import transcoder
+from core import transcoder
+from core.forks import auto_fork
+from core.utils import server_responding
 
 # Initialize the config
 core.initialize()
@@ -38,7 +40,6 @@ if server_responding("http://127.0.0.1:8085"):
 if server_responding("http://127.0.0.1:8090"):
     print("Mylar Running")
 
-from babelfish import Language
 lan = 'pt'
 lan = Language.fromalpha2(lan)
 print(lan.alpha3)
@@ -59,7 +60,6 @@ if guess:
     results = r.json()
     print(results)
 
-import subliminal
 subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
 languages = set()
 languages.add(lan)

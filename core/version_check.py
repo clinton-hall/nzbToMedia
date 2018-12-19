@@ -14,7 +14,7 @@ import traceback
 from six.moves.urllib.request import urlretrieve
 
 import core
-from core import gh_api as github, logger
+from core import github_api as github, logger
 
 
 class CheckVersion(object):

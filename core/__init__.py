@@ -42,22 +42,15 @@ MYAPP = None
 import six
 from six.moves import reload_module
 
-from core import logger, nzbToMediaDB, versionCheck
-from core.autoProcess.autoProcessComics import Comic
-from core.autoProcess.autoProcessGames import Game
-from core.autoProcess.autoProcessMovie import Movie
-from core.autoProcess.autoProcessMusic import Music
-from core.autoProcess.autoProcessTV import TV
-from core.databases import mainDB
-from core.nzbToMediaConfig import config
-from core.nzbToMediaUtil import (
+from core import logger, main_db, version_check, databases, transcoder
+from core.auto_process import Comic, Game, Movie, Music, TV
+from core.configuration import config
+from core.utils import (
     RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
     create_torrent_class, extract_files, flatten, get_dirs, get_download_info,
     list_media_files, make_dir, parse_args, pause_torrent, remove_torrent,
     resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
-from core.transcoder import transcoder
-
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -326,7 +319,7 @@ def initialize(section=None):
             logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
 
     # initialize the main SB database
-    nzbToMediaDB.upgrade_database(nzbToMediaDB.DBConnection(), mainDB.InitialSchema)
+    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
 
     # Set Version and GIT variables
     NZBTOMEDIA_VERSION = '11.06'
@@ -343,10 +336,10 @@ def initialize(section=None):
     NOEXTRACTFAILED = int(CFG["General"]["no_extract_failed"])
 
     # Check for updates via GitHUB
-    if versionCheck.CheckVersion().check_for_new_version():
+    if version_check.CheckVersion().check_for_new_version():
         if AUTO_UPDATE == 1:
             logger.info("Auto-Updating nzbToMedia, Please wait ...")
-            updated = versionCheck.CheckVersion().update()
+            updated = version_check.CheckVersion().update()
             if updated:
                 # restart nzbToMedia
                 try:
@@ -852,7 +845,7 @@ def initialize(section=None):
 
 
 def restart():
-    install_type = versionCheck.CheckVersion().install_type
+    install_type = version_check.CheckVersion().install_type
 
     status = 0
     popen_list = []

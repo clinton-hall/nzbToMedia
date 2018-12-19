@@ -5,9 +5,9 @@ import os
 import sys
 
 import core
-from core import logger, nzbToMediaDB
-from core.nzbToMediaUserScript import external_script
-from core.nzbToMediaUtil import char_replace, convert_to_ascii, plex_update, replace_links
+from core import logger, main_db
+from core.user_scripts import external_script
+from core.utils import char_replace, convert_to_ascii, plex_update, replace_links
 from six import text_type
 
 
@@ -19,7 +19,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if client_agent != 'manual' and not core.DOWNLOADINFO:
         logger.debug('Adding TORRENT download info for directory {0} to database'.format(input_directory))
 
-        my_db = nzbToMediaDB.DBConnection()
+        my_db = main_db.DBConnection()
 
         input_directory1 = input_directory
         input_name1 = input_name
@@ -237,14 +237,14 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
-        result = core.TV().process_episode(section_name, output_destination, input_name,
-                                           status, client_agent, input_hash, input_category)
+        result = core.TV().process(section_name, output_destination, input_name,
+                                   status, client_agent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
         result = core.Music().process(section_name, output_destination, input_name,
                                       status, client_agent, input_category)
     elif section_name == 'Mylar':
-        result = core.Comic().process_episode(section_name, output_destination, input_name,
-                                              status, client_agent, input_category)
+        result = core.Comic().process(section_name, output_destination, input_name,
+                                      status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = core.Game().process(section_name, output_destination, input_name,
                                      status, client_agent, input_category)

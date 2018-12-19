@@ -1,7 +1,7 @@
 # coding=utf-8
 
-from core import logger, nzbToMediaDB
-from core.nzbToMediaUtil import backup_versioned_file
+from core import logger, main_db
+from core.utils import backup_versioned_file
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from
 MAX_DB_VERSION = 2
@@ -9,7 +9,7 @@ MAX_DB_VERSION = 2
 
 def backup_database(version):
     logger.info("Backing up database before upgrade")
-    if not backup_versioned_file(nzbToMediaDB.db_filename(), version):
+    if not backup_versioned_file(main_db.db_filename(), version):
         logger.log_error_and_exit("Database backup failed, abort upgrading database")
     else:
         logger.info("Proceeding with upgrade")
@@ -20,7 +20,7 @@ def backup_database(version):
 # ======================
 # Add new migrations at the bottom of the list; subclass the previous migration.
 
-class InitialSchema(nzbToMediaDB.SchemaUpgrade):
+class InitialSchema(main_db.SchemaUpgrade):
     def test(self):
         no_update = False
         if self.has_table("db_version"):

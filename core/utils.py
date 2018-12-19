@@ -3,31 +3,43 @@
 from __future__ import print_function, unicode_literals
 
 import datetime
+from functools import partial
 import os
-import platform
 import re
 import shutil
 import socket
 import stat
 import struct
 import time
-from functools import partial
 
+from babelfish import Language
 import beets
 import guessit
 import linktastic
-import requests
-import subliminal
-from babelfish import Language
 from qbittorrent import Client as qBittorrentClient
+import requests
 from six import text_type
+import subliminal
 from synchronousdeluge.client import DelugeClient
 from transmissionrpc.client import Client as TransmissionClient
 from utorrent.client import UTorrentClient
 
 import core
-from core import logger, nzbToMediaDB
-from core.extractor import extractor
+from core import extractor, logger, main_db
+
+try:
+    from win32event import CreateMutex
+    from win32api import CloseHandle, GetLastError
+    from winerror import ERROR_ALREADY_EXISTS
+except ImportError:
+    if os.name == 'nt':
+        raise
+
+try:
+    import jaraco
+except ImportError:
+    if os.name == 'nt':
+        raise
 
 requests.packages.urllib3.disable_warnings()
 
@@ -286,7 +298,6 @@ def replace_links(link):
     n = 0
     target = link
     if os.name == 'nt':
-        import jaraco
         if not jaraco.windows.filesystem.islink(link):
             logger.debug('{0} is not a link'.format(link))
             return
@@ -1284,7 +1295,7 @@ def backup_versioned_file(old_file, version):
 def update_download_info_status(input_name, status):
     logger.db("Updating status of our download {0} in the DB to {1}".format(input_name, status))
 
-    my_db = nzbToMediaDB.DBConnection()
+    my_db = main_db.DBConnection()
     my_db.action("UPDATE downloads SET status=?, last_update=? WHERE input_name=?",
                  [status, datetime.date.today().toordinal(), text_type(input_name)])
 
@@ -1292,47 +1303,20 @@ def update_download_info_status(input_name, status):
 def get_download_info(input_name, status):
     logger.db("Getting download info for {0} from the DB".format(input_name))
 
-    my_db = nzbToMediaDB.DBConnection()
+    my_db = main_db.DBConnection()
     sql_results = my_db.select("SELECT * FROM downloads WHERE input_name=? AND status=?",
                                [text_type(input_name), status])
 
     return sql_results
 
-
-class RunningProcess(object):
-    """ Limits application to single instance """
-
-    def __init__(self):
-        if platform.system() == 'Windows':
-            self.process = WindowsProcess()
-        else:
-            self.process = PosixProcess()
-
-    def alreadyrunning(self):
-        return self.process.alreadyrunning()
-
-        # def __del__(self):
-        #    self.process.__del__()
-
-
 class WindowsProcess(object):
     def __init__(self):
         self.mutex = None
         self.mutexname = "nzbtomedia_{pid}".format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}"
-        if platform.system() == 'Windows':
-            try:
-                from win32.win32event import CreateMutex
-                from win32.win32api import CloseHandle, GetLastError
-                from win32.lib.winerror import ERROR_ALREADY_EXISTS
-            except ImportError:
-                from win32event import CreateMutex
-                from win32api import CloseHandle, GetLastError
-                from winerror import ERROR_ALREADY_EXISTS
-
-            self.CreateMutex = CreateMutex
-            self.CloseHandle = CloseHandle
-            self.GetLastError = GetLastError
-            self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
+        self.CreateMutex = CreateMutex
+        self.CloseHandle = CloseHandle
+        self.GetLastError = GetLastError
+        self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
 
     def alreadyrunning(self):
         self.mutex = self.CreateMutex(None, 0, self.mutexname)
@@ -1400,3 +1384,8 @@ class PosixProcess(object):
                 self.lock_socket.close()
             if os.path.isfile(self.pidpath):
                 os.unlink(self.pidpath)
+
+if os.name == 'nt':
+    RunningProcess = WindowsProcess
+else:
+    RunningProcess = PosixProcess
