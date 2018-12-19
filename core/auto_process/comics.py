@@ -6,7 +6,7 @@ import requests
 
 import core
 from core import logger
-from core.nzbToMediaUtil import convert_to_ascii, remote_dir, server_responding
+from core.utils import convert_to_ascii, remote_dir, server_responding
 
 requests.packages.urllib3.disable_warnings()
 

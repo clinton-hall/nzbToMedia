@@ -9,11 +9,11 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import iteritems, text_type, string_types
+from six import iteritems, string_types, text_type
 
 import core
 from core import logger
-from core.nzbToMediaUtil import make_dir
+from core.utils import make_dir
 
 __author__ = 'Justin'
 

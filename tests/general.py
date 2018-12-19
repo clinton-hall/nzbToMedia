@@ -7,7 +7,7 @@ import requests
 import core
 from core import transcoder
 from core.forks import auto_fork
-from core.nzbToMediaUtil import server_responding
+from core.utils import server_responding
 
 # Initialize the config
 core.initialize()

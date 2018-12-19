@@ -7,7 +7,7 @@ import sys
 import core
 from core import logger, main_db
 from core.user_scripts import external_script
-from core.nzbToMediaUtil import char_replace, convert_to_ascii, plex_update, replace_links
+from core.utils import char_replace, convert_to_ascii, plex_update, replace_links
 from six import text_type
 
 

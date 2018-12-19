@@ -1,7 +1,7 @@
 # coding=utf-8
 
 from core import logger, main_db
-from core.nzbToMediaUtil import backup_versioned_file
+from core.utils import backup_versioned_file
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from
 MAX_DB_VERSION = 2

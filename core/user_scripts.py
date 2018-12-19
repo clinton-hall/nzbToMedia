@@ -5,7 +5,7 @@ from subprocess import Popen
 
 import core
 from core import logger, transcoder
-from core.nzbToMediaUtil import import_subs, list_media_files, remove_dir
+from core.utils import import_subs, list_media_files, remove_dir
 
 
 def external_script(output_destination, torrent_name, torrent_label, settings):
