@@ -15,6 +15,7 @@ from six.moves.urllib.request import urlretrieve
 
 import core
 from core import github_api as github, logger
+import libs.util
 
 
 class CheckVersion(object):
@@ -79,7 +80,22 @@ class CheckVersion(object):
 
     def update(self):
         if self.updater.need_update():
-            return self.updater.update()
+            result = self.updater.update()
+            self.clean()
+            return result
+
+    @staticmethod
+    def clean():
+        # Clean libs
+        libs.util.git_clean(
+            remove_directories=True,
+            force=True,
+            ignore_rules=True,
+            paths=[
+                libs.LIB_ROOT,
+                core.SOURCE_ROOT,
+            ],
+        )
 
 
 class UpdateManager(object):

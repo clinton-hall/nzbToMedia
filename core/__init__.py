@@ -24,6 +24,7 @@ except ImportError:
         sys.ext('Please install pywin32')
 
 APP_ROOT = libs.util.module_path(parent=True)
+SOURCE_ROOT = libs.util.module_path()
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
