@@ -23,20 +23,21 @@ except ImportError:
     if sys.platform == 'win32':
         sys.ext('Please install pywin32')
 
-PROGRAM_DIR = libs.util.module_root()
+APP_ROOT = libs.util.module_path(parent=True)
+SOURCE_ROOT = libs.util.module_path()
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
 APP_FILENAME = sys.argv[0]
 APP_NAME = os.path.basename(APP_FILENAME)
-LOG_DIR = os.path.join(PROGRAM_DIR, 'logs')
+LOG_DIR = os.path.join(APP_ROOT, 'logs')
 LOG_FILE = os.path.join(LOG_DIR, 'nzbtomedia.log')
 PID_FILE = os.path.join(LOG_DIR, 'nzbtomedia.pid')
-CONFIG_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg')
-CONFIG_SPEC_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMedia.cfg.spec')
-CONFIG_MOVIE_FILE = os.path.join(PROGRAM_DIR, 'autoProcessMovie.cfg')
-CONFIG_TV_FILE = os.path.join(PROGRAM_DIR, 'autoProcessTv.cfg')
-TEST_FILE = os.path.join(PROGRAM_DIR, 'tests', 'test.mp4')
+CONFIG_FILE = os.path.join(APP_ROOT, 'autoProcessMedia.cfg')
+CONFIG_SPEC_FILE = os.path.join(APP_ROOT, 'autoProcessMedia.cfg.spec')
+CONFIG_MOVIE_FILE = os.path.join(APP_ROOT, 'autoProcessMovie.cfg')
+CONFIG_TV_FILE = os.path.join(APP_ROOT, 'autoProcessTv.cfg')
+TEST_FILE = os.path.join(APP_ROOT, 'tests', 'test.mp4')
 MYAPP = None
 
 import six
@@ -747,7 +748,7 @@ def initialize(section=None):
     if platform.system() == 'Windows':
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
-        SEVENZIP = os.path.join(PROGRAM_DIR, 'core', 'extractor', 'bin', platform.machine(), '7z.exe')
+        SEVENZIP = os.path.join(APP_ROOT, 'core', 'extractor', 'bin', platform.machine(), '7z.exe')
         SHOWEXTRACT = int(str(CFG["Windows"]["show_extraction"]), 0)
 
         if not (os.path.isfile(FFMPEG)):  # problem
