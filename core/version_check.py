@@ -48,7 +48,7 @@ class CheckVersion(object):
         """
 
         # check if we're a windows build
-        if os.path.isdir(os.path.join(core.PROGRAM_DIR, u'.git')):
+        if os.path.isdir(os.path.join(core.APP_ROOT, u'.git')):
             install_type = 'git'
         else:
             install_type = 'source'
@@ -174,9 +174,9 @@ class GitUpdateManager(UpdateManager):
 
         try:
             logger.log(u"Executing {cmd} with your shell in {directory}".format
-                       (cmd=cmd, directory=core.PROGRAM_DIR), logger.DEBUG)
+                       (cmd=cmd, directory=core.APP_ROOT), logger.DEBUG)
             p = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                                 shell=True, cwd=core.PROGRAM_DIR)
+                                 shell=True, cwd=core.APP_ROOT)
             output, err = p.communicate()
             exit_status = p.returncode
 
@@ -345,7 +345,7 @@ class SourceUpdateManager(UpdateManager):
 
     def _find_installed_version(self):
 
-        version_file = os.path.join(core.PROGRAM_DIR, u'version.txt')
+        version_file = os.path.join(core.APP_ROOT, u'version.txt')
 
         if not os.path.isfile(version_file):
             self._cur_commit_hash = None
@@ -437,11 +437,11 @@ class SourceUpdateManager(UpdateManager):
         """
         tar_download_url = 'https://github.com/{org}/{repo}/tarball/{branch}'.format(
             org=self.github_repo_user, repo=self.github_repo, branch=self.branch)
-        version_path = os.path.join(core.PROGRAM_DIR, u'version.txt')
+        version_path = os.path.join(core.APP_ROOT, u'version.txt')
 
         try:
             # prepare the update dir
-            sb_update_dir = os.path.join(core.PROGRAM_DIR, u'sb-update')
+            sb_update_dir = os.path.join(core.APP_ROOT, u'sb-update')
 
             if os.path.isdir(sb_update_dir):
                 logger.log(u"Clearing out update folder {dir} before extracting".format(dir=sb_update_dir))
@@ -485,12 +485,12 @@ class SourceUpdateManager(UpdateManager):
 
             # walk temp folder and move files to main folder
             logger.log(u"Moving files from {source} to {destination}".format
-                       (source=content_dir, destination=core.PROGRAM_DIR))
+                       (source=content_dir, destination=core.APP_ROOT))
             for dirname, dirnames, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
                     old_path = os.path.join(content_dir, dirname, curfile)
-                    new_path = os.path.join(core.PROGRAM_DIR, dirname, curfile)
+                    new_path = os.path.join(core.APP_ROOT, dirname, curfile)
 
                     # Avoid DLL access problem on WIN32/64
                     # These files needing to be updated manually
