@@ -4,8 +4,7 @@ import sys
 
 import libs.util
 
-ROOT_DIR = libs.util.module_path()
-LIB_DIR = os.path.join(ROOT_DIR, 'libs')
+LIB_ROOT = libs.util.module_path()
 
 COMMON = 'common'
 CUSTOM = 'custom'
@@ -18,7 +17,7 @@ MANDATORY = {
     CUSTOM,
 }
 DIRECTORY = {
-    lib: os.path.join(LIB_DIR, lib)
+    lib: os.path.join(LIB_ROOT, lib)
     for lib in [COMMON, CUSTOM, PY2, WIN]
 }
 
