@@ -9,14 +9,15 @@ __all__ = [
 ]
 
 
-def module_path(module=__file__):
+def module_path(module=__file__, parent=False):
     try:
         path = module.__file__
     except AttributeError:
         path = module
     directory = os.path.dirname(path)
-    parent = os.path.join(directory, os.pardir)
-    absolute = os.path.abspath(parent)
+    if parent:
+        directory = os.path.join(directory, os.pardir)
+    absolute = os.path.abspath(directory)
     normalized = os.path.normpath(absolute)
     return normalized
 
