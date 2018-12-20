@@ -23,7 +23,7 @@ except ImportError:
     if sys.platform == 'win32':
         sys.ext('Please install pywin32')
 
-PROGRAM_DIR = libs.util.module_root()
+PROGRAM_DIR = libs.util.module_path()
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]

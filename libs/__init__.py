@@ -4,7 +4,7 @@ import sys
 
 import libs.util
 
-ROOT_DIR = libs.util.module_root()
+ROOT_DIR = libs.util.module_path()
 LIB_DIR = os.path.join(ROOT_DIR, 'libs')
 
 COMMON = 'common'

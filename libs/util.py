@@ -4,12 +4,12 @@ import sys
 import os
 
 __all__ = [
-    'module_root',
+    'module_path',
     'add_path',
 ]
 
 
-def module_root(module=__file__):
+def module_path(module=__file__):
     try:
         path = module.__file__
     except AttributeError:
