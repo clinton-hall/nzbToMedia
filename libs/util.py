@@ -86,4 +86,4 @@ def git_clean(remove_directories=False, force=False, dry_run=False, interactive=
         except AttributeError:
             pass
         command.extend(paths)
-    subprocess.call(command)
+    return subprocess.check_output(command)

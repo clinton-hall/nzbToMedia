@@ -87,7 +87,7 @@ class CheckVersion(object):
     @staticmethod
     def clean():
         # Clean libs
-        libs.util.git_clean(
+        result = libs.util.git_clean(
             remove_directories=True,
             force=True,
             ignore_rules=True,
@@ -96,6 +96,7 @@ class CheckVersion(object):
                 core.SOURCE_ROOT,
             ],
         )
+        logger.debug(result)
 
 
 class UpdateManager(object):
