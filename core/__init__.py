@@ -21,7 +21,7 @@ try:
     import win32event
 except ImportError:
     if sys.platform == 'win32':
-        sys.ext('Please install pywin32')
+        sys.exit('Please install pywin32')
 
 APP_ROOT = libs.util.module_path(parent=True)
 SOURCE_ROOT = libs.util.module_path()
