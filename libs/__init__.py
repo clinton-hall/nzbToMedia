@@ -1,5 +1,6 @@
 
 import os
+import site
 import sys
 
 import libs.util
@@ -32,6 +33,7 @@ def add_libs(name):
     if name in MANDATORY and name not in LOADED:
         path = libs.util.add_path(DIRECTORY[name])
         if path:
+            site.addsitedir(path)
             LOADED[name] = path
             return path
 
