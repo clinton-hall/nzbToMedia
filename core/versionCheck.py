@@ -13,6 +13,7 @@ import stat
 import traceback
 import gh_api as github
 
+import cleanup
 import core
 from core import logger
 
@@ -79,7 +80,9 @@ class CheckVersion(object):
 
     def update(self):
         if self.updater.need_update():
-            return self.updater.update()
+            result = self.updater.update()
+            cleanup.clean('libs', 'core')
+            return result
 
 
 class UpdateManager(object):
