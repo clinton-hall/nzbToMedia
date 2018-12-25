@@ -1,5 +1,10 @@
 #!/usr/bin/env python2
 # coding=utf-8
+
+import cleanup
+cleanup.clean('core', 'libs')
+
+
 import datetime
 import os
 import sys

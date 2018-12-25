@@ -1,5 +1,14 @@
 Change_LOG / History
 
+V11.7 12/25/2018
+
+Merry Christmas and Happy Holidays!
+
+Add cleanup script to clean up bytecode
+Add automatic cleanup on update
+
+NOTE: Cleanup will force-run every time during a transitional period to minimize issues with upcoming refactoring
+
 V11.06 11/03/2018
 
 updates to incorporate importMode for NzbDrone/Sonarr and Radarr.
