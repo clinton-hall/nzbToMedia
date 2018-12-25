@@ -623,6 +623,9 @@
 
 from __future__ import print_function
 
+import cleanup
+cleanup.clean('core', 'libs')
+
 import datetime
 import os
 import sys

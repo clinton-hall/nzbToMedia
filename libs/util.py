@@ -59,31 +59,3 @@ def install_requirements(
         args.append(path)
 
     subprocess.call(args)
-
-
-def git_clean(remove_directories=False, force=False, dry_run=False, interactive=False, quiet=False, exclude=None,
-              ignore_rules=False, clean_ignored=False, paths=None):
-    command = ['git', 'clean']
-    if remove_directories:
-        command.append('-d')
-    if force:
-        command.append('--force')
-    if interactive:
-        command.append('--interactive')
-    if quiet:
-        command.append('--quiet')
-    if dry_run:
-        command.append('--dry-run')
-    if exclude:
-        command.append('--exclude={pattern}'.format(pattern=exclude))
-    if ignore_rules:
-        command.append('-x')
-    if clean_ignored:
-        command.append('-X')
-    if paths:
-        try:
-            paths = paths.split(' ')
-        except AttributeError:
-            pass
-        command.extend(paths)
-    return subprocess.check_output(command)

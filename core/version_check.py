@@ -13,6 +13,7 @@ import traceback
 
 from six.moves.urllib.request import urlretrieve
 
+import cleanup
 import core
 from core import github_api as github, logger
 import libs.util
@@ -81,22 +82,8 @@ class CheckVersion(object):
     def update(self):
         if self.updater.need_update():
             result = self.updater.update()
-            self.clean()
+            cleanup.clean('core', 'libs')
             return result
-
-    @staticmethod
-    def clean():
-        # Clean libs
-        result = libs.util.git_clean(
-            remove_directories=True,
-            force=True,
-            ignore_rules=True,
-            paths=[
-                libs.LIB_ROOT,
-                core.SOURCE_ROOT,
-            ],
-        )
-        logger.debug(result)
 
 
 class UpdateManager(object):
