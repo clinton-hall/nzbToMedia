@@ -146,6 +146,7 @@ def rename_script(dirname):
                 except Exception as error:
                     logger.error("Unable to rename file due to: {error}".format(error=error), "EXCEPTION")
 
+
 def par2(dirname):
     newlist = []
     sofar = 0

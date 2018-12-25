@@ -14,15 +14,15 @@ from core.utils import server_responding
 # Initialize the config
 core.initialize()
 
-#label = core.TORRENT_CLASS.core.get_torrent_status("f33a9c4b15cbd9170722d700069af86746817ade", ["label"]).get()['label']
-#print label
+# label = core.TORRENT_CLASS.core.get_torrent_status("f33a9c4b15cbd9170722d700069af86746817ade", ["label"]).get()['label']
+# print label
 
 if transcoder.is_video_good(core.TEST_FILE, 0):
     print("FFPROBE Works")
 else:
     print("FFPROBE FAILED")
 
-test = core.CFG['SickBeard','NzbDrone']['tv'].isenabled()
+test = core.CFG['SickBeard', 'NzbDrone']['tv'].isenabled()
 print(test)
 section = core.CFG.findsection('tv').isenabled()
 print(section)

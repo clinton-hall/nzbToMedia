@@ -61,9 +61,9 @@ class Music(object):
             core.extract_files(dir_name)
             input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-        #if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
-        #    logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
-        #    status = 0
+        # if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
+        #     logger.info("Status shown as failed from Downloader, but valid video files found. Setting as successful.", section)
+        #     status = 0
 
         if status == 0 and section == "HeadPhones":
 

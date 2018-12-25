@@ -239,7 +239,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 process_section(section, subsection)
 
         # create a backup of our old config
-        CFG_OLD.filename ="{config}.old".format(config=core.CONFIG_FILE)
+        CFG_OLD.filename = "{config}.old".format(config=core.CONFIG_FILE)
         CFG_OLD.write()
 
         # write our new config to autoProcessMedia.cfg
@@ -299,9 +299,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "CouchPotato"
             env_cat_key = 'NZBPO_CPSCATEGORY'
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
-                       'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
+                        'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
-                       'wait_for', 'watch_dir', 'omdbapikey']
+                        'wait_for', 'watch_dir', 'omdbapikey']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_CPS{index}'.format(index=env_keys[index])
@@ -318,9 +318,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "SickBeard"
             env_cat_key = 'NZBPO_SBCATEGORY'
             env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
-                       'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
+                        'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
             cfg_keys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork',
-                       'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
+                        'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_SB{index}'.format(index=env_keys[index])
@@ -354,9 +354,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "Mylar"
             env_cat_key = 'NZBPO_MYCATEGORY'
             env_keys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'APIKEY', 'SSL', 'WEB_ROOT', 'WATCH_DIR',
-                       'REMOTE_PATH']
+                        'REMOTE_PATH']
             cfg_keys = ['enabled', 'host', 'port', 'username', 'password', 'apikey', 'ssl', 'web_root', 'watch_dir',
-                       'remote_path']
+                        'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_MY{index}'.format(index=env_keys[index])
@@ -386,10 +386,10 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "NzbDrone"
             env_cat_key = 'NZBPO_NDCATEGORY'
             env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'IMPORTMODE']
-            #new cfgKey added for importMode
+                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'IMPORTMODE']
+            # new cfgKey added for importMode
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path','importMode']
+                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'importMode']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_ND{index}'.format(index=env_keys[index])
@@ -406,10 +406,10 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "Radarr"
             env_cat_key = 'NZBPO_RACATEGORY'
             env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY', 'IMPORTMODE']
-            #new cfgKey added for importMode
+                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY', 'IMPORTMODE']
+            # new cfgKey added for importMode
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey','importMode']
+                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey', 'importMode']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_RA{index}'.format(index=env_keys[index])
@@ -426,9 +426,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "Lidarr"
             env_cat_key = 'NZBPO_LICATEGORY'
             env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                       'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
+                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                       'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
+                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_LI{index}'.format(index=env_keys[index])
@@ -464,25 +464,25 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = "Transcoder"
             env_keys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH',
-                       'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES',
-                       'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR',
-                       'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW',
-                       'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC',
-                       'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS',
-                       'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE',
-                       'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE',
-                       'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS',
-                       'OUTPUTAUDIOOTHERCHANNELS','OUTPUTVIDEORESOLUTION']
+                        'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES',
+                        'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR',
+                        'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW',
+                        'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC',
+                        'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS',
+                        'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE',
+                        'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE',
+                        'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS',
+                        'OUTPUTAUDIOOTHERCHANNELS', 'OUTPUTVIDEORESOLUTION']
             cfg_keys = ['transcode', 'duplicate', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath',
-                       'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages',
-                       'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir',
-                       'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow',
-                       'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec',
-                       'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs',
-                       'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate',
-                       'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate',
-                       'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels',
-                       'outputAudioOtherChannels', 'outputVideoResolution']
+                        'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages',
+                        'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir',
+                        'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow',
+                        'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec',
+                        'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs',
+                        'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate',
+                        'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate',
+                        'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels',
+                        'outputAudioOtherChannels', 'outputVideoResolution']
             for index in range(len(env_keys)):
                 key = 'NZBPO_{index}'.format(index=env_keys[index])
                 if key in os.environ:
@@ -503,9 +503,9 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = "UserScript"
             env_cat_key = 'NZBPO_USCATEGORY'
             env_keys = ['USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE',
-                       'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH']
+                        'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH']
             cfg_keys = ['user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce',
-                       'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
+                        'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_{index}'.format(index=env_keys[index])

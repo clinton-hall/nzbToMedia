@@ -45,9 +45,14 @@ requests.packages.urllib3.disable_warnings()
 
 # Monkey Patch shutil.copyfileobj() to adjust the buffer length to 512KB rather than 4KB
 shutil.copyfileobjOrig = shutil.copyfileobj
+
+
 def copyfileobj_fast(fsrc, fdst, length=512 * 1024):
     shutil.copyfileobjOrig(fsrc, fdst, length=length)
+
+
 shutil.copyfileobj = copyfileobj_fast
+
 
 def report_nzb(failure_link, client_agent):
     # Contact indexer site
@@ -605,6 +610,7 @@ def parse_vuze(args):
 
     return input_directory, input_name, input_category, input_hash, input_id
 
+
 def parse_qbittorrent(args):
     # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
     try:
@@ -612,27 +618,28 @@ def parse_qbittorrent(args):
     except:
         input = []
     try:
-        input_directory = os.path.normpath(input[0].replace('"',''))
+        input_directory = os.path.normpath(input[0].replace('"', ''))
     except:
         input_directory = ''
     try:
-        input_name = input[1].replace('"','')
+        input_name = input[1].replace('"', '')
     except:
         input_name = ''
     try:
-        input_category = input[2].replace('"','')
+        input_category = input[2].replace('"', '')
     except:
         input_category = ''
     try:
-        input_hash = input[3].replace('"','')
+        input_hash = input[3].replace('"', '')
     except:
         input_hash = ''
     try:
-        input_id = input[3].replace('"','')
+        input_id = input[3].replace('"', '')
     except:
         input_id = ''
 
     return input_directory, input_name, input_category, input_hash, input_id
+
 
 def parse_args(client_agent, args):
     clients = {
@@ -1309,6 +1316,7 @@ def get_download_info(input_name, status):
 
     return sql_results
 
+
 class WindowsProcess(object):
     def __init__(self):
         self.mutex = None
@@ -1384,6 +1392,7 @@ class PosixProcess(object):
                 self.lock_socket.close()
             if os.path.isfile(self.pidpath):
                 os.unlink(self.pidpath)
+
 
 if os.name == 'nt':
     RunningProcess = WindowsProcess

@@ -20,7 +20,7 @@ def auto_fork(section, input_category):
     apikey = cfg.get("apikey")
     ssl = int(cfg.get("ssl", 0))
     web_root = cfg.get("web_root", "")
-    replace = {'sickrage':'SickRage', 'sickchill':'SickChill', 'sickgear':'SickGear', 'medusa':'Medusa', 'sickbeard-api':'SickBeard-api'}
+    replace = {'sickrage': 'SickRage', 'sickchill': 'SickChill', 'sickgear': 'SickGear', 'medusa': 'Medusa', 'sickbeard-api': 'SickBeard-api'}
     f1 = replace[cfg.get("fork", "auto")] if cfg.get("fork", "auto") in replace else cfg.get("fork", "auto")
     try:
         fork = f1, core.FORKS[f1]
@@ -68,7 +68,7 @@ def auto_fork(section, input_category):
                 login = "{protocol}{host}:{port}{root}/login".format(
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
-                r = s.get(login, verify=False, timeout=(30,60))
+                r = s.get(login, verify=False, timeout=(30, 60))
                 if r.status_code == 401 and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)

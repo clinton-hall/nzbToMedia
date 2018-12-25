@@ -35,13 +35,14 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             pass
 
         control_value_dict = {"input_directory": text_type(input_directory1)}
-        new_value_dict = {"input_name": text_type(input_name1),
-                        "input_hash": text_type(input_hash),
-                        "input_id": text_type(input_id),
-                        "client_agent": text_type(client_agent),
-                        "status": 0,
-                        "last_update": datetime.date.today().toordinal()
-                        }
+        new_value_dict = {
+            "input_name": text_type(input_name1),
+            "input_hash": text_type(input_hash),
+            "input_id": text_type(input_id),
+            "client_agent": text_type(client_agent),
+            "status": 0,
+            "last_update": datetime.date.today().toordinal(),
+        }
         my_db.upsert("downloads", new_value_dict, control_value_dict)
 
     logger.debug("Received Directory: {0} | Name: {1} | Category: {2}".format(input_directory, input_name, input_category))

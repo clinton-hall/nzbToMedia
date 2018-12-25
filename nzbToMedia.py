@@ -668,13 +668,14 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
             pass
 
         control_value_dict = {"input_directory": text_type(input_directory1)}
-        new_value_dict = {"input_name": text_type(input_name1),
-                        "input_hash": text_type(download_id),
-                        "input_id": text_type(download_id),
-                        "client_agent": text_type(client_agent),
-                        "status": 0,
-                        "last_update": datetime.date.today().toordinal()
-                        }
+        new_value_dict = {
+            "input_name": text_type(input_name1),
+            "input_hash": text_type(download_id),
+            "input_id": text_type(download_id),
+            "client_agent": text_type(client_agent),
+            "status": 0,
+            "last_update": datetime.date.today().toordinal(),
+        }
         my_db.upsert("downloads", new_value_dict, control_value_dict)
 
     # auto-detect section

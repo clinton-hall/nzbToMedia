@@ -208,8 +208,8 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         sub_streams = [item for item in video_details["streams"] if item["codec_type"] == "subtitle"]
         if core.VEXTENSION not in ['.mkv', '.mpegts']:
             sub_streams = [item for item in video_details["streams"] if
-                          item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item[
-                              "codec_name"] != "pgssub"]
+                           item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item[
+                               "codec_name"] != "pgssub"]
 
     for video in video_streams:
         codec = video["codec_name"]
@@ -262,7 +262,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
     if audio_streams:
         for i, val in reversed(list(enumerate(audio_streams))):
             try:
-                if "Commentary" in val.get("tags").get("title"): # Split out commentry tracks.
+                if "Commentary" in val.get("tags").get("title"):  # Split out commentry tracks.
                     commentary.append(val)
                     del audio_streams[i]
             except:
@@ -380,13 +380,13 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             if audio_cmd2[1] in ['aac', 'dts']:
                 audio_cmd2[2:2] = ['-strict', '-2']
 
-            if a_mapped[1] == a_mapped[0] and audio_cmd2[1:] == audio_cmd[1:]: #check for duplicate output track.
+            if a_mapped[1] == a_mapped[0] and audio_cmd2[1:] == audio_cmd[1:]:  # check for duplicate output track.
                 del map_cmd[-2:]
             else:
                 audio_cmd.extend(audio_cmd2)
 
         if core.AINCLUDE and core.ACODEC3:
-            audio_streams.extend(commentary) #add commentry tracks back here.
+            audio_streams.extend(commentary)  # add commentry tracks back here.
             for audio in audio_streams:
                 if audio["index"] in a_mapped:
                     continue
@@ -443,7 +443,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 burnt = 1
             if not core.ALLOWSUBS:
                 break
-            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text": # We can't convert these.
+            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text":  # We can't convert these.
                 continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
@@ -454,7 +454,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 break
             if sub["index"] in s_mapped:
                 continue
-            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text": # We can't convert these.
+            if sub["codec_name"] in ["dvd_subtitle", "VobSub"] and core.SCODEC == "mov_text":  # We can't convert these.
                 continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub["index"])])
             s_mapped.extend([sub["index"]])
@@ -478,7 +478,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 continue
             if core.SCODEC == "mov_text":
                 subcode = [stream["codec_name"] for stream in sub_details["streams"]]
-                if set(subcode).intersection(["dvd_subtitle", "VobSub"]): # We can't convert these.
+                if set(subcode).intersection(["dvd_subtitle", "VobSub"]):  # We can't convert these.
                     continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
@@ -542,12 +542,12 @@ def extract_subs(file, newfile_path, bitbucket):
 
     try:
         sub_streams = [item for item in video_details["streams"] if
-                      item["codec_type"] == "subtitle" and item["tags"]["language"] in core.SLANGUAGES and item[
-                          "codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
+                       item["codec_type"] == "subtitle" and item["tags"]["language"] in core.SLANGUAGES and item[
+                           "codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
     except:
         sub_streams = [item for item in video_details["streams"] if
-                      item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item[
-                          "codec_name"] != "pgssub"]
+                       item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item[
+                           "codec_name"] != "pgssub"]
     num = len(sub_streams)
     for n in range(num):
         sub = sub_streams[n]
@@ -650,7 +650,7 @@ def rip_iso(item, new_dir, bitbucket):
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
         file_list = [re.match(".+(VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in
-                    out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line)]
+                     out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line)]
         combined = []
         for n in range(99):
             concat = []

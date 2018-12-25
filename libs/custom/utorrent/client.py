@@ -19,6 +19,7 @@ try:
 except ImportError:
     import simplejson as json
 
+
 class UTorrentClient(object):
 
     def __init__(self, base_url, username, password):
@@ -27,7 +28,7 @@ class UTorrentClient(object):
         self.password = password
         self.opener = self._make_opener('uTorrent', base_url, username, password)
         self.token = self._get_token()
-        #TODO refresh token, when necessary
+        # TODO refresh token, when necessary
 
     def _make_opener(self, realm, base_url, username, password):
         '''uTorrent API need HTTP Basic Auth and cookie support for token verify.'''
@@ -60,25 +61,25 @@ class UTorrentClient(object):
         return self._action(params)
 
     def start(self, *hashes):
-        params = [('action', 'start'),]
+        params = [('action', 'start'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
     def stop(self, *hashes):
-        params = [('action', 'stop'),]
+        params = [('action', 'stop'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
     def pause(self, *hashes):
-        params = [('action', 'pause'),]
+        params = [('action', 'pause'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
     def forcestart(self, *hashes):
-        params = [('action', 'forcestart'),]
+        params = [('action', 'forcestart'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
@@ -94,8 +95,8 @@ class UTorrentClient(object):
     def setprops(self, hash, **kvpairs):
         params = [('action', 'setprops'), ('hash', hash)]
         for k, v in iteritems(kvpairs):
-            params.append( ("s", k) )
-            params.append( ("v", v) )
+            params.append(("s", k))
+            params.append(("v", v))
 
         return self._action(params)
 
@@ -111,7 +112,7 @@ class UTorrentClient(object):
 
         form = MultiPartForm()
         if filepath is not None:
-            file_handler = open(filepath,'rb')
+            file_handler = open(filepath, 'rb')
         else:
             file_handler = StringIO(bytes)
 
@@ -124,19 +125,19 @@ class UTorrentClient(object):
         self._action(params)
 
     def remove(self, *hashes):
-        params = [('action', 'remove'),]
+        params = [('action', 'remove'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
     def removedata(self, *hashes):
-        params = [('action', 'removedata'),]
+        params = [('action', 'removedata'), ]
         for hash in hashes:
             params.append(('hash', hash))
         return self._action(params)
 
     def _action(self, params, body=None, content_type=None):
-        #about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
+        # about token, see https://github.com/bittorrent/webui/wiki/TokenSystem
         url = self.base_url + '?token=' + self.token + '&' + urlencode(params)
         request = Request(url)
 

@@ -26,9 +26,9 @@ class Movie(object):
             method = cfg["method"]
         else:
             method = None
-        #added importMode for Radarr config
+        # added importMode for Radarr config
         if section == "Radarr":
-            import_mode = cfg.get("importMode","Move")
+            import_mode = cfg.get("importMode", "Move")
         else:
             import_mode = None
         delete_failed = int(cfg["delete_failed"])
@@ -147,7 +147,7 @@ class Movie(object):
                         logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                         os.rename(video, video2)
 
-            if not apikey: #If only using Transcoder functions, exit here.
+            if not apikey:  # If only using Transcoder functions, exit here.
                 logger.info('No CouchPotato or Radarr apikey entered. Processing completed.')
                 return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
 
@@ -170,7 +170,7 @@ class Movie(object):
                 logger.postprocess("Starting {0} scan for {1}".format(method, input_name), section)
 
             if section == "Radarr":
-                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id,'importMode' : import_mode}
+                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id, 'importMode': import_mode}
                 if not download_id:
                     payload.pop("downloadClientId")
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(base_url, payload), section)
