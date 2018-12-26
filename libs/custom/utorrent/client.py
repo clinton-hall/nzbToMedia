@@ -62,59 +62,59 @@ class UTorrentClient(object):
 
     def start(self, *hashes):
         params = [('action', 'start'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
     def stop(self, *hashes):
         params = [('action', 'stop'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
     def pause(self, *hashes):
         params = [('action', 'pause'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
     def forcestart(self, *hashes):
         params = [('action', 'forcestart'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
-    def getfiles(self, hash):
-        params = [('action', 'getfiles'), ('hash', hash)]
+    def getfiles(self, cur_hash):
+        params = [('action', 'getfiles'), ('hash', cur_hash)]
         return self._action(params)
 
-    def getprops(self, hash):
-        params = [('action', 'getprops'), ('hash', hash)]
+    def getprops(self, cur_hash):
+        params = [('action', 'getprops'), ('hash', cur_hash)]
         return self._action(params)
 
-    def setprops(self, hash, **kvpairs):
-        params = [('action', 'setprops'), ('hash', hash)]
+    def setprops(self, cur_hash, **kvpairs):
+        params = [('action', 'setprops'), ('hash', cur_hash)]
         for k, v in iteritems(kvpairs):
             params.append(("s", k))
             params.append(("v", v))
 
         return self._action(params)
 
-    def setprio(self, hash, priority, *files):
-        params = [('action', 'setprio'), ('hash', hash), ('p', str(priority))]
+    def setprio(self, cur_hash, priority, *files):
+        params = [('action', 'setprio'), ('hash', cur_hash), ('p', str(priority))]
         for file_index in files:
             params.append(('f', str(file_index)))
 
         return self._action(params)
 
-    def addfile(self, filename, filepath=None, bytes=None):
+    def addfile(self, filename, filepath=None, data=None):
         params = [('action', 'add-file')]
 
         form = MultiPartForm()
         if filepath is not None:
             file_handler = open(filepath, 'rb')
         else:
-            file_handler = StringIO(bytes)
+            file_handler = StringIO(data)
 
         form.add_file('torrent_file', filename.encode('utf-8'), file_handler)
 
@@ -126,14 +126,14 @@ class UTorrentClient(object):
 
     def remove(self, *hashes):
         params = [('action', 'remove'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
     def removedata(self, *hashes):
         params = [('action', 'removedata'), ]
-        for hash in hashes:
-            params.append(('hash', hash))
+        for cur_hash in hashes:
+            params.append(('hash', cur_hash))
         return self._action(params)
 
     def _action(self, params, body=None, content_type=None):

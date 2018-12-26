@@ -413,8 +413,8 @@ class Movie(object):
         # Gather release info and return it back, no need to narrow results
         if release_id:
             try:
-                id = result[section]['_id']
-                results[id] = result[section]
+                cur_id = result[section]['_id']
+                results[cur_id] = result[section]
                 return results
             except Exception:
                 pass
@@ -438,9 +438,9 @@ class Movie(object):
                         if download_id.lower() != release['download_info']['id'].lower():
                             continue
 
-                    id = release['_id']
-                    results[id] = release
-                    results[id]['title'] = movie['title']
+                    cur_id = release['_id']
+                    results[cur_id] = release
+                    results[cur_id]['title'] = movie['title']
                 except Exception:
                     continue
 
@@ -456,10 +456,10 @@ class Movie(object):
 
         # Search downloads on clients for a match to try and narrow our results down to 1
         if len(results) > 1:
-            for id, x in results.items():
+            for cur_id, x in results.items():
                 try:
                     if not find_download(str(x['download_info']['downloader']).lower(), x['download_info']['id']):
-                        results.pop(id)
+                        results.pop(cur_id)
                 except Exception:
                     continue
 

@@ -476,15 +476,15 @@ def convert_to_ascii(input_name, dir_name):
 
     encoded, input_name = char_replace(input_name)
 
-    dir, base = os.path.split(dir_name)
+    directory, base = os.path.split(dir_name)
     if not base:  # ended with "/"
-        dir, base = os.path.split(dir)
+        directory, base = os.path.split(directory)
 
     encoded, base2 = char_replace(base)
     if encoded:
-        dir_name = os.path.join(dir, base2)
+        dir_name = os.path.join(directory, base2)
         logger.info("Renaming directory to: {0}.".format(base2), 'ENCODER')
-        os.rename(os.path.join(dir, base), dir_name)
+        os.rename(os.path.join(directory, base), dir_name)
         if 'NZBOP_SCRIPTDIR' in os.environ:
             print("[NZB] DIRECTORY={0}".format(dir_name))
 
@@ -579,32 +579,32 @@ def parse_transmission(args):
 def parse_vuze(args):
     # vuze usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D%N%L%I%K%F"
     try:
-        input = args[1].split(',')
+        cur_input = args[1].split(',')
     except Exception:
-        input = []
+        cur_input = []
     try:
-        input_directory = os.path.normpath(input[0])
+        input_directory = os.path.normpath(cur_input[0])
     except Exception:
         input_directory = ''
     try:
-        input_name = input[1]
+        input_name = cur_input[1]
     except Exception:
         input_name = ''
     try:
-        input_category = input[2]
+        input_category = cur_input[2]
     except Exception:
         input_category = ''
     try:
-        input_hash = input[3]
+        input_hash = cur_input[3]
     except Exception:
         input_hash = ''
     try:
-        input_id = input[3]
+        input_id = cur_input[3]
     except Exception:
         input_id = ''
     try:
-        if input[4] == 'single':
-            input_name = input[5]
+        if cur_input[4] == 'single':
+            input_name = cur_input[5]
     except Exception:
         pass
 
@@ -614,27 +614,27 @@ def parse_vuze(args):
 def parse_qbittorrent(args):
     # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
     try:
-        input = args[1].split('|')
+        cur_input = args[1].split('|')
     except Exception:
-        input = []
+        cur_input = []
     try:
-        input_directory = os.path.normpath(input[0].replace('"', ''))
+        input_directory = os.path.normpath(cur_input[0].replace('"', ''))
     except Exception:
         input_directory = ''
     try:
-        input_name = input[1].replace('"', '')
+        input_name = cur_input[1].replace('"', '')
     except Exception:
         input_name = ''
     try:
-        input_category = input[2].replace('"', '')
+        input_category = cur_input[2].replace('"', '')
     except Exception:
         input_category = ''
     try:
-        input_hash = input[3].replace('"', '')
+        input_hash = cur_input[3].replace('"', '')
     except Exception:
         input_hash = ''
     try:
-        input_id = input[3].replace('"', '')
+        input_id = cur_input[3].replace('"', '')
     except Exception:
         input_id = ''
 
@@ -732,12 +732,12 @@ def get_dirs(section, subsection, link='hard'):
         # removeEmptyFolders(path, removeRoot=False)
 
         if os.listdir(text_type(path)):
-            for dir in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
-                        os.path.isdir(os.path.join(path, o))]:
-                sync = [o for o in os.listdir(text_type(dir)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-                if len(sync) > 0 or len(os.listdir(text_type(dir))) == 0:
+            for directory in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
+                              os.path.isdir(os.path.join(path, o))]:
+                sync = [o for o in os.listdir(text_type(directory)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+                if len(sync) > 0 or len(os.listdir(text_type(directory))) == 0:
                     continue
-                folders.extend([dir])
+                folders.extend([directory])
         return folders
 
     try:
@@ -924,8 +924,8 @@ def find_download(client_agent, download_id):
     if client_agent == 'transmission':
         torrents = core.TORRENT_CLASS.get_torrents()
         for torrent in torrents:
-            hash = torrent.hashString
-            if hash == download_id:
+            torrent_hash = torrent.hashString
+            if torrent_hash == download_id:
                 return True
     if client_agent == 'deluge':
         return False
