@@ -169,10 +169,13 @@ class DBConnection(object):
 
     def upsert(self, table_name, value_dict, key_dict):
 
+        def gen_params(my_dict):
+            return [
+                "{key} = ?".format(key=k)
+                for k in my_dict.keys()
+            ]
+
         changes_before = self.connection.total_changes
-
-        gen_params = lambda my_dict: ["{key} = ?".format(key=k) for k in my_dict.keys()]
-
         items = list(value_dict.values()) + list(key_dict.values())
         self.action(
             "UPDATE {table} "
