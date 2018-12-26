@@ -50,8 +50,9 @@ def clean_bytecode():
                 '!**/__pycache__/',  # and __pycache__ folders
             ],
         )
+        print(result)
     except subprocess.CalledProcessError as error:
-        sys.exit(error.returncode)
+        sys.exit('Error Code: {}'.format(error.returncode))
     else:
         return result
 
@@ -66,7 +67,7 @@ def clean_folders(*paths):
             paths=paths,
         )
     except subprocess.CalledProcessError as error:
-        sys.exit(error.returncode)
+        sys.exit('Error Code: {}'.format(error.returncode))
     else:
         return result
 
@@ -74,12 +75,20 @@ def clean_folders(*paths):
 def clean(*paths):
     """Clean up bytecode and obsolete folders."""
     print('-- Cleaning bytecode --')
-    result = clean_bytecode()
-    print(result or 'No bytecode to clean\n')
+    try:
+        result = clean_bytecode()
+    except SystemExit as error:
+        print(error)
+    else:
+        print(result or 'No bytecode to clean\n')
     if paths:
         print('-- Cleaning folders: {} --'.format(paths))
-        result = clean_folders(*paths)
-        print(result or 'No folders to clean\n')
+        try:
+            result = clean_folders(*paths)
+        except SystemExit as error:
+            print(error)
+        else:
+            print(result or 'No folders to clean\n')
 
 
 if __name__ == '__main__':
