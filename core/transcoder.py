@@ -132,7 +132,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         elif check:
             name = ('{0}.cd{1}'.format(movie_name, check.groups()[0]))
         elif core.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
-            name = re.sub("([\ \.\-\_\=\:]+[cC][dD][0-9])", "", name)
+            name = re.sub('([ ._=:-]+[cC][dD][0-9])', "", name)
         if ext == core.VEXTENSION and new_dir == dir:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
     else:
@@ -649,8 +649,8 @@ def rip_iso(item, new_dir, bitbucket):
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
-        file_list = [re.match(".+(VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in
-                     out.splitlines() if re.match(".+VIDEO_TS[\\\/]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line)]
+        file_list = [re.match(r".+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])", line).groups()[0] for line in
+                     out.splitlines() if re.match(r".+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]", line)]
         combined = []
         for n in range(99):
             concat = []

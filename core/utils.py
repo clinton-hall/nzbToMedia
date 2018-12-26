@@ -244,7 +244,7 @@ def is_min_size(input_name, min_size):
 
 def is_sample(input_name):
     # Ignore 'sample' in files
-    if re.search('(^|[\W_])sample\d*[\W_]', input_name.lower()):
+    if re.search('(^|[\\W_])sample\\d*[\\W_]', input_name.lower()):
         return True
 
 
@@ -1014,13 +1014,13 @@ def clean_file_name(filename):
     space, but handles decimal numbers in string, for example:
     """
 
-    filename = re.sub("(\D)\.(?!\s)(\D)", "\\1 \\2", filename)
-    filename = re.sub("(\d)\.(\d{4})", "\\1 \\2", filename)  # if it ends in a year then don't keep the dot
-    filename = re.sub("(\D)\.(?!\s)", "\\1 ", filename)
-    filename = re.sub("\.(?!\s)(\D)", " \\1", filename)
+    filename = re.sub(r"(\D)\.(?!\s)(\D)", r"\1 \2", filename)
+    filename = re.sub(r"(\d)\.(\d{4})", r"\1 \2", filename)  # if it ends in a year then don't keep the dot
+    filename = re.sub(r"(\D)\.(?!\s)", r"\1 ", filename)
+    filename = re.sub(r"\.(?!\s)(\D)", r" \1", filename)
     filename = filename.replace("_", " ")
     filename = re.sub("-$", "", filename)
-    filename = re.sub("^\[.*\]", "", filename)
+    filename = re.sub(r"^\[.*]", "", filename)
     return filename.strip()
 
 
@@ -1102,14 +1102,14 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search('(tt\d{7})', dir_name + input_name)
+    m = re.search(r'(tt\d{7})', dir_name + input_name)
     if m:
         imdbid = m.group(1)
         logger.info("Found imdbID [{0}]".format(imdbid))
         return imdbid
     if os.path.isdir(dir_name):
         for file in os.listdir(text_type(dir_name)):
-            m = re.search('(tt\d{7})', file)
+            m = re.search(r'(tt\d{7})', file)
             if m:
                 imdbid = m.group(1)
                 logger.info("Found imdbID [{0}] via file name".format(imdbid))

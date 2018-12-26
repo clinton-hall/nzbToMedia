@@ -445,8 +445,8 @@ def initialize(section=None):
         pass
     devnull.close()
 
-    COMPRESSEDCONTAINER = [re.compile('.r\d{2}$', re.I),
-                           re.compile('.part\d+.rar$', re.I),
+    COMPRESSEDCONTAINER = [re.compile(r'.r\d{2}$', re.I),
+                           re.compile(r'.part\d+.rar$', re.I),
                            re.compile('.rar$', re.I)]
     COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
     MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
