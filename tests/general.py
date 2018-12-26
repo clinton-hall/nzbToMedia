@@ -15,7 +15,7 @@ from core.utils import server_responding
 core.initialize()
 
 # label = core.TORRENT_CLASS.core.get_torrent_status("f33a9c4b15cbd9170722d700069af86746817ade", ["label"]).get()['label']
-# print label
+# print(label)
 
 if transcoder.is_video_good(core.TEST_FILE, 0):
     print("FFPROBE Works")
