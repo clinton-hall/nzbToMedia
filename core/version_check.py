@@ -16,7 +16,6 @@ from six.moves.urllib.request import urlretrieve
 import cleanup
 import core
 from core import github_api as github, logger
-import libs.util
 
 
 class CheckVersion(object):
