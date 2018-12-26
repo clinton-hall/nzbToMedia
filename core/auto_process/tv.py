@@ -44,7 +44,7 @@ class TV(object):
         delete_failed = int(cfg.get("delete_failed", 0))
         nzb_extraction_by = cfg.get("nzbExtractionBy", "Downloader")
         process_method = cfg.get("process_method")
-        if  client_agent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
+        if client_agent == core.TORRENT_CLIENTAGENT and core.USELINK == "move-sym":
             process_method = "symlink"
         remote_path = int(cfg.get("remote_path", 0))
         wait_for = int(cfg.get("wait_for", 2))
@@ -56,8 +56,8 @@ class TV(object):
             extract = 0
         else:
             extract = int(cfg.get("extract", 0))
-        #get importmode, default to "Move" for consistency with legacy
-        import_mode = cfg.get("importMode","Move")
+        # get importmode, default to "Move" for consistency with legacy
+        import_mode = cfg.get("importMode", "Move")
 
         if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
             dir_name = os.path.split(os.path.normpath(dir_name))[0]
@@ -256,7 +256,7 @@ class TV(object):
                 if not apikey and username and password:
                     login = "{0}{1}:{2}{3}/login".format(protocol, host, port, web_root)
                     login_params = {'username': username, 'password': password}
-                    r = s.get(login, verify=False, timeout=(30,60))
+                    r = s.get(login, verify=False, timeout=(30, 60))
                     if r.status_code == 401 and r.cookies.get('_xsrf'):
                         login_params['_xsrf'] = r.cookies.get('_xsrf')
                     s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))

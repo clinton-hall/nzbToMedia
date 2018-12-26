@@ -16,7 +16,6 @@ from six.moves.urllib.request import urlretrieve
 import cleanup
 import core
 from core import github_api as github, logger
-import libs.util
 
 
 class CheckVersion(object):
@@ -285,7 +284,7 @@ class GitUpdateManager(UpdateManager):
                 self._num_commits_behind = int(output.count("<"))
                 self._num_commits_ahead = int(output.count(">"))
 
-            except:
+            except Exception:
                 logger.log(u"git didn't return numbers for behind and ahead, not using it", logger.DEBUG)
                 return
 

@@ -26,18 +26,18 @@ class DelugeClient(object):
     def _get_local_auth(self):
         username = password = ""
         if platform.system() in ('Windows', 'Microsoft'):
-            appDataPath = os.environ.get("APPDATA")
-            if not appDataPath:
+            app_data_path = os.environ.get("APPDATA")
+            if not app_data_path:
                 from six.moves import winreg
                 hkey = winreg.OpenKey(
                     winreg.HKEY_CURRENT_USER,
                     "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
                 )
-                appDataReg = winreg.QueryValueEx(hkey, "AppData")
-                appDataPath = appDataReg[0]
+                app_data_reg = winreg.QueryValueEx(hkey, "AppData")
+                app_data_path = app_data_reg[0]
                 winreg.CloseKey(hkey)
 
-            auth_file = os.path.join(appDataPath, "deluge", "auth")
+            auth_file = os.path.join(app_data_path, "deluge", "auth")
         else:
             from xdg.BaseDirectory import save_config_path
             try:
@@ -79,11 +79,13 @@ class DelugeClient(object):
         return func
 
     def _introspect(self):
+        def splitter(value):
+            return value.split(".")
+
         self.modules = []
 
         methods = self.remote_call("daemon.get_method_list").get()
         methodmap = defaultdict(dict)
-        splitter = lambda v: v.split(".")
 
         for module, method in imap(splitter, methods):
             methodmap[module][method] = self._create_module_method(module, method)

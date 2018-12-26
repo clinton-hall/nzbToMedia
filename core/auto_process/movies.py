@@ -26,9 +26,9 @@ class Movie(object):
             method = cfg["method"]
         else:
             method = None
-        #added importMode for Radarr config
+        # added importMode for Radarr config
         if section == "Radarr":
-            import_mode = cfg.get("importMode","Move")
+            import_mode = cfg.get("importMode", "Move")
         else:
             import_mode = None
         delete_failed = int(cfg["delete_failed"])
@@ -75,7 +75,7 @@ class Movie(object):
                 download_id = release[release_id]['download_info']['id']
                 downloader = release[release_id]['download_info']['downloader']
                 release_status_old = release[release_id]['status']
-            except:
+            except Exception:
                 pass
 
         if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
@@ -147,7 +147,7 @@ class Movie(object):
                         logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                         os.rename(video, video2)
 
-            if not apikey: #If only using Transcoder functions, exit here.
+            if not apikey:  # If only using Transcoder functions, exit here.
                 logger.info('No CouchPotato or Radarr apikey entered. Processing completed.')
                 return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
 
@@ -170,7 +170,7 @@ class Movie(object):
                 logger.postprocess("Starting {0} scan for {1}".format(method, input_name), section)
 
             if section == "Radarr":
-                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id,'importMode' : import_mode}
+                payload = {'name': 'DownloadedMoviesScan', 'path': params['media_folder'], 'downloadClientId': download_id, 'importMode': import_mode}
                 if not download_id:
                     payload.pop("downloadClientId")
                 logger.debug("Opening URL: {0} with PARAMS: {1}".format(base_url, payload), section)
@@ -300,7 +300,7 @@ class Movie(object):
                         logger.postprocess("SUCCESS: Release for {0} has now been marked with a status of [{1}]".format(
                             title, str(release_status_new).upper()), section)
                         return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
-                except:
+                except Exception:
                     pass
             elif scan_id:
                     url = "{0}/{1}".format(base_url, scan_id)
@@ -416,7 +416,7 @@ class Movie(object):
                 id = result[section]['_id']
                 results[id] = result[section]
                 return results
-            except:
+            except Exception:
                 pass
 
         # Gather release info and proceed with trying to narrow results to one release choice
@@ -441,7 +441,7 @@ class Movie(object):
                     id = release['_id']
                     results[id] = release
                     results[id]['title'] = movie['title']
-                except:
+                except Exception:
                     continue
 
         # Narrow results by removing old releases by comparing their last_edit field
@@ -451,7 +451,7 @@ class Movie(object):
                     try:
                         if x2["last_edit"] > x1["last_edit"]:
                             results.pop(id1)
-                    except:
+                    except Exception:
                         continue
 
         # Search downloads on clients for a match to try and narrow our results down to 1
@@ -460,7 +460,7 @@ class Movie(object):
                 try:
                     if not find_download(str(x['download_info']['downloader']).lower(), x['download_info']['id']):
                         results.pop(id)
-                except:
+                except Exception:
                     continue
 
         return results

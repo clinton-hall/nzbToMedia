@@ -60,7 +60,7 @@ class Game(object):
             logger.postprocess("moving files to library: {0}".format(library), section)
             try:
                 shutil.move(dir_name, os.path.join(library, input_name))
-            except:
+            except Exception:
                 logger.error("Unable to move {0} to {1}".format(dir_name, os.path.join(library, input_name)), section)
                 return [1, "{0}: Failed to post-process - Unable to move files".format(section)]
         else:

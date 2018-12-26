@@ -23,9 +23,9 @@ class MultiPartForm(object):
         self.form_fields.append((name, value))
         return
 
-    def add_file(self, fieldname, filename, fileHandle, mimetype=None):
+    def add_file(self, fieldname, filename, file_handle, mimetype=None):
         """Add a file to be uploaded."""
-        body = fileHandle.read()
+        body = file_handle.read()
         if mimetype is None:
             mimetype = mimetypes.guess_type(filename)[0] or 'application/octet-stream'
         self.files.append((fieldname, filename, mimetype, body))
@@ -42,25 +42,24 @@ class MultiPartForm(object):
 
         # Add the form fields
         parts.extend(
-            [ part_boundary,
-              'Content-Disposition: form-data; name="%s"' % name,
-              '',
-              value,
-            ]
+            [part_boundary,
+             'Content-Disposition: form-data; name="%s"' % name,
+             '',
+             value,
+             ]
             for name, value in self.form_fields
-            )
+        )
 
         # Add the files to upload
         parts.extend(
-            [ part_boundary,
-              'Content-Disposition: file; name="%s"; filename="%s"' % \
-                 (field_name, filename),
-              'Content-Type: %s' % content_type,
-              '',
-              body,
-            ]
+            [part_boundary,
+             'Content-Disposition: file; name="%s"; filename="%s"' % (field_name, filename),
+             'Content-Type: %s' % content_type,
+             '',
+             body,
+             ]
             for field_name, filename, content_type, body in self.files
-            )
+        )
 
         # Flatten the list and add closing boundary marker,
         # then return CR+LF separated data
