@@ -1032,7 +1032,10 @@ def is_archive_file(filename):
     return False
 
 
-def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
+def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, other=False, otherext=None):
+    if otherext is None:
+        otherext = []
+
     file_name, file_ext = os.path.splitext(mediafile)
 
     try:
@@ -1051,7 +1054,10 @@ def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, o
         return False
 
 
-def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=[]):
+def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=None):
+    if otherext is None:
+        otherext = []
+
     files = []
     if not os.path.isdir(path):
         if os.path.isfile(path):  # Single file downloads.
