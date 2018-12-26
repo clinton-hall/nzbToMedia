@@ -15,7 +15,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
         core.USER_SCRIPT_MEDIAEXTENSIONS = settings["user_script_mediaExtensions"].lower()
         if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
             core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
-    except:
+    except Exception:
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
 
     core.USER_SCRIPT = settings.get("user_script_path")
@@ -26,13 +26,13 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
         core.USER_SCRIPT_PARAM = settings["user_script_param"]
         if isinstance(core.USER_SCRIPT_PARAM, str):
             core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
-    except:
+    except Exception:
         core.USER_SCRIPT_PARAM = []
     try:
         core.USER_SCRIPT_SUCCESSCODES = settings["user_script_successCodes"]
         if isinstance(core.USER_SCRIPT_SUCCESSCODES, str):
             core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
-    except:
+    except Exception:
         core.USER_SCRIPT_SUCCESSCODES = 0
 
     core.USER_SCRIPT_CLEAN = int(settings.get("user_script_clean", 1))
@@ -95,7 +95,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                             "If the UserScript completed successfully you should add {0} to the user_script_successCodes".format(
                                 res), "USERSCRIPT")
                         result = int(1)
-                except:
+                except Exception:
                     logger.error("UserScript {0} has failed".format(command[0]), "USERSCRIPT")
                     result = int(1)
                 final_result += result

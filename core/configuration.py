@@ -18,7 +18,7 @@ class Section(configobj.Section, object):
         if not section.sections:
             try:
                 value = list(ConfigObj.find_key(section, 'enabled'))[0]
-            except:
+            except Exception:
                 value = 0
             if int(value) == 1:
                 return section
@@ -28,7 +28,7 @@ class Section(configobj.Section, object):
                 for subsection in subsections:
                     try:
                         value = list(ConfigObj.find_key(subsections, 'enabled'))[0]
-                    except:
+                    except Exception:
                         value = 0
 
                     if int(value) != 1:
@@ -45,7 +45,7 @@ class Section(configobj.Section, object):
         for subsection in to_return:
             try:
                 value = list(ConfigObj.find_key(to_return[subsection], key))[0]
-            except:
+            except Exception:
                 value = None
 
             if not value:
@@ -198,7 +198,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 if not list(ConfigObj.find_key(CFG_NEW, option)):
                     try:
                         values.pop(option)
-                    except:
+                    except Exception:
                         pass
 
             return values

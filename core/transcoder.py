@@ -69,7 +69,7 @@ def zip_out(file, img, bitbucket):
     cmd = [core.SEVENZIP, '-so', 'e', img, file]
     try:
         procin = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
-    except:
+    except Exception:
         logger.error("Extracting [{0}] has failed".format(file), 'TRANSCODER')
     return procin
 
@@ -99,7 +99,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
         out, err = proc.communicate()
         result = proc.returncode
         video_details = json.loads(out)
-    except:
+    except Exception:
         pass
     if not video_details:
         try:
@@ -113,7 +113,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
             out, err = proc.communicate()
             result = proc.returncode
             video_details = json.loads(out)
-        except:
+        except Exception:
             logger.error("Checking [{0}] has failed".format(file), 'TRANSCODER')
     return video_details, result
 
@@ -265,23 +265,23 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 if "Commentary" in val.get("tags").get("title"):  # Split out commentry tracks.
                     commentary.append(val)
                     del audio_streams[i]
-            except:
+            except Exception:
                 continue
         try:
             audio1 = [item for item in audio_streams if item["tags"]["language"] == core.ALANGUAGE]
-        except:  # no language tags. Assume only 1 language.
+        except Exception:  # no language tags. Assume only 1 language.
             audio1 = audio_streams
         try:
             audio2 = [item for item in audio1 if item["codec_name"] in core.ACODEC_ALLOW]
-        except:
+        except Exception:
             audio2 = []
         try:
             audio3 = [item for item in audio_streams if item["tags"]["language"] != core.ALANGUAGE]
-        except:
+        except Exception:
             audio3 = []
         try:
             audio4 = [item for item in audio3 if item["codec_name"] in core.ACODEC_ALLOW]
-        except:
+        except Exception:
             audio4 = []
 
         if audio2:  # right (or only) language and codec...
@@ -328,11 +328,11 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             used_audio += 1
             try:
                 audio5 = [item for item in audio1 if item["codec_name"] in core.ACODEC2_ALLOW]
-            except:
+            except Exception:
                 audio5 = []
             try:
                 audio6 = [item for item in audio3 if item["codec_name"] in core.ACODEC2_ALLOW]
-            except:
+            except Exception:
                 audio6 = []
             if audio5:  # right language and codec.
                 map_cmd.extend(['-map', '0:{index}'.format(index=audio5[0]["index"])])
@@ -425,7 +425,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
     for lan in core.SLANGUAGES:
         try:
             subs1 = [item for item in sub_streams if item["tags"]["language"] == lan]
-        except:
+        except Exception:
             subs1 = []
         if core.BURN and not subs1 and not burnt and os.path.isfile(file):
             for subfile in get_subs(file):
@@ -489,7 +489,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                     metlan = Language(lan)
                 if len(lan) == 2:
                     metlan = Language.fromalpha2(lan)
-            except:
+            except Exception:
                 pass
             if metlan:
                 meta_cmd.extend(['-metadata:s:s:{x}'.format(x=len(s_mapped) + n),
@@ -544,7 +544,7 @@ def extract_subs(file, newfile_path, bitbucket):
         sub_streams = [item for item in video_details["streams"] if
                        item["codec_type"] == "subtitle" and item["tags"]["language"] in core.SLANGUAGES and item[
                            "codec_name"] != "hdmv_pgs_subtitle" and item["codec_name"] != "pgssub"]
-    except:
+    except Exception:
         sub_streams = [item for item in video_details["streams"] if
                        item["codec_type"] == "subtitle" and item["codec_name"] != "hdmv_pgs_subtitle" and item[
                            "codec_name"] != "pgssub"]
@@ -575,13 +575,13 @@ def extract_subs(file, newfile_path, bitbucket):
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             proc.communicate()
             result = proc.returncode
-        except:
+        except Exception:
             logger.error("Extracting subtitle has failed")
 
         if result == 0:
             try:
                 shutil.copymode(file, output_file)
-            except:
+            except Exception:
                 pass
             logger.info("Extracting {0} subtitle from {1} has succeeded".format(lan, file))
         else:
@@ -605,7 +605,7 @@ def process_list(it, new_dir, bitbucket):
             if not vts_path:
                 try:
                     vts_path = re.match("(.+VIDEO_TS)", item).groups()[0]
-                except:
+                except Exception:
                     vts_path = os.path.split(item)[0]
             rem_list.append(item)
         elif re.match(".+VIDEO_TS.", item) or re.match(".+VTS_[0-9][0-9]_[0-9].", item):
@@ -677,7 +677,7 @@ def rip_iso(item, new_dir, bitbucket):
         if not new_files:
             logger.error("No VIDEO_TS folder found in image file {0}".format(item), "TRANSCODER")
             new_files = [failure_dir]
-    except:
+    except Exception:
         logger.error("Failed to extract from image file {0}".format(item), "TRANSCODER")
         new_files = [failure_dir]
     return new_files
@@ -788,7 +788,7 @@ def transcode_directory(dir_name):
                         procin.stdout.close()
             proc.communicate()
             result = proc.returncode
-        except:
+        except Exception:
             logger.error("Transcoding of video {0} has failed".format(newfile_path))
 
         if core.SUBSDIR and result == 0 and isinstance(file, string_types):
@@ -803,13 +803,13 @@ def transcode_directory(dir_name):
         if result == 0:
             try:
                 shutil.copymode(file, newfile_path)
-            except:
+            except Exception:
                 pass
             logger.info("Transcoding of video to {0} succeeded".format(newfile_path))
             if os.path.isfile(newfile_path) and (file in new_list or not core.DUPLICATE):
                 try:
                     os.unlink(file)
-                except:
+                except Exception:
                     pass
         else:
             logger.error("Transcoding of video to {0} failed with result {1}".format(newfile_path, result))
@@ -819,7 +819,7 @@ def transcode_directory(dir_name):
         for file in rem_list:
             try:
                 os.unlink(file)
-            except:
+            except Exception:
                 pass
     if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)

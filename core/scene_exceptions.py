@@ -177,7 +177,7 @@ def par2(dirname):
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             proc.communicate()
             result = proc.returncode
-        except:
+        except Exception:
             logger.error("par2 file processing for {0} has failed".format(parfile), "PAR2")
         if result == 0:
             logger.info("par2 file processing succeeded", "PAR2")

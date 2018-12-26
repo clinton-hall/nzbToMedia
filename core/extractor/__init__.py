@@ -147,7 +147,7 @@ def extract(file_path, output_destination):
                     break
                 else:
                     continue
-    except:
+    except Exception:
         core.logger.error("EXTRACTOR: Extraction failed for {file}. "
                           "Could not call command {cmd}".format
                           (file=file_path, cmd=cmd))
@@ -165,13 +165,13 @@ def extract(file_path, output_destination):
                 if not os.path.join(dir, subdir) in orig_files:
                     try:
                         os.chmod(os.path.join(dir, subdir), perms)
-                    except:
+                    except Exception:
                         pass
             for file in files:
                 if not os.path.join(dir, file) in orig_files:
                     try:
                         shutil.copymode(file_path, os.path.join(dir, file))
-                    except:
+                    except Exception:
                         pass
         return True
     else:

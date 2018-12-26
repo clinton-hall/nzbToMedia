@@ -664,7 +664,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         try:
             encoded, input_directory1 = char_replace(input_directory)
             encoded, input_name1 = char_replace(input_name)
-        except:
+        except Exception:
             pass
 
         control_value_dict = {"input_directory": text_type(input_directory1)}
@@ -716,7 +716,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
             logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 section_name, input_category))
             return [-1, ""]
-    except:
+    except Exception:
         logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
             core.get("remote_path"), section_name, input_category))
 

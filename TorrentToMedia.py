@@ -31,7 +31,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         try:
             encoded, input_directory1 = char_replace(input_directory)
             encoded, input_name1 = char_replace(input_name)
-        except:
+        except Exception:
             pass
 
         control_value_dict = {"input_directory": text_type(input_directory1)}
@@ -196,7 +196,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             try:
                 core.copy_link(inputFile, target_file, core.USELINK)
                 core.remove_read_only(target_file)
-            except:
+            except Exception:
                 logger.error("Failed to link: {0} to {1}".format(inputFile, target_file))
 
     input_name, output_destination = convert_to_ascii(input_name, output_destination)
@@ -306,7 +306,7 @@ def main(args):
 
     try:
         input_directory, input_name, input_category, input_hash, input_id = core.parse_args(client_agent, args)
-    except:
+    except Exception:
         logger.error("There was a problem loading variables")
         return -1
 

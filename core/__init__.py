@@ -281,7 +281,7 @@ def initialize(section=None):
             # pylint: disable=E1101
             # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
             sys.setdefaultencoding(SYS_ENCODING)
-        except:
+        except Exception:
             print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
                   '\nor find another way to force Python to use {codec} for string encoding.'.format
                   (codec=SYS_ENCODING))
@@ -345,7 +345,7 @@ def initialize(section=None):
                 # restart nzbToMedia
                 try:
                     del MYAPP
-                except:
+                except Exception:
                     pass
                 restart()
             else:
@@ -426,22 +426,22 @@ def initialize(section=None):
     try:
         subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
         NICENESS.extend(['nice', '-n{0}'.format(int(CFG["Posix"]["niceness"]))])
-    except:
+    except Exception:
         pass
     try:
         subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
         try:
             NICENESS.extend(['ionice', '-c{0}'.format(int(CFG["Posix"]["ionice_class"]))])
-        except:
+        except Exception:
             pass
         try:
             if 'ionice' in NICENESS:
                 NICENESS.extend(['-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
             else:
                 NICENESS.extend(['ionice', '-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
-        except:
+        except Exception:
             pass
-    except:
+    except Exception:
         pass
     devnull.close()
 
@@ -480,7 +480,7 @@ def initialize(section=None):
         GENERALOPTS.append('+genpts')
     try:
         OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
-    except:
+    except Exception:
         pass
     OUTPUTVIDEOPATH = CFG["Transcoder"]["outputVideoPath"]
     PROCESSOUTPUT = int(CFG["Transcoder"]["processOutput"])
@@ -505,19 +505,19 @@ def initialize(section=None):
     VPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
     try:
         VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
-    except:
+    except Exception:
         pass
     try:
         VCRF = int(CFG["Transcoder"]["outputVideoCRF"].strip())
-    except:
+    except Exception:
         pass
     try:
         VLEVEL = CFG["Transcoder"]["outputVideoLevel"].strip()
-    except:
+    except Exception:
         pass
     try:
         VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k', '000'))
-    except:
+    except Exception:
         pass
     VRESOLUTION = CFG["Transcoder"]["outputVideoResolution"]
     ACODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
@@ -528,11 +528,11 @@ def initialize(section=None):
         ACODEC_ALLOW = []
     try:
         ACHANNELS = int(CFG["Transcoder"]["outputAudioChannels"].strip())
-    except:
+    except Exception:
         pass
     try:
         ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k', '000'))
-    except:
+    except Exception:
         pass
     ACODEC2 = CFG["Transcoder"]["outputAudioTrack2Codec"].strip()
     ACODEC2_ALLOW = CFG["Transcoder"]["AudioCodec2Allow"].strip()
@@ -542,11 +542,11 @@ def initialize(section=None):
         ACODEC2_ALLOW = []
     try:
         ACHANNELS2 = int(CFG["Transcoder"]["outputAudioTrack2Channels"].strip())
-    except:
+    except Exception:
         pass
     try:
         ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k', '000'))
-    except:
+    except Exception:
         pass
     ACODEC3 = CFG["Transcoder"]["outputAudioOtherCodec"].strip()
     ACODEC3_ALLOW = CFG["Transcoder"]["AudioOtherCodecAllow"].strip()
@@ -556,11 +556,11 @@ def initialize(section=None):
         ACODEC3_ALLOW = []
     try:
         ACHANNELS3 = int(CFG["Transcoder"]["outputAudioOtherChannels"].strip())
-    except:
+    except Exception:
         pass
     try:
         ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k', '000'))
-    except:
+    except Exception:
         pass
     SCODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
     BURN = int(CFG["Transcoder"]["burnInSubtitle"].strip())
@@ -765,17 +765,17 @@ def initialize(section=None):
     else:
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
-        except:
+        except Exception:
             pass
         if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except:
+            except Exception:
                 pass
         if not SEVENZIP:
             try:
                 SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except:
+            except Exception:
                 pass
         if not SEVENZIP:
             SEVENZIP = None
@@ -783,7 +783,7 @@ def initialize(section=None):
                 "Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!")
         try:
             PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip()
-        except:
+        except Exception:
             pass
         if not PAR2CMD:
             PAR2CMD = None
@@ -798,12 +798,12 @@ def initialize(section=None):
         else:
             try:
                 FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except:
+            except Exception:
                 pass
             if not FFMPEG:
                 try:
                     FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
-                except:
+                except Exception:
                     pass
         if not FFMPEG:
             FFMPEG = None
@@ -819,12 +819,12 @@ def initialize(section=None):
         else:
             try:
                 FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-            except:
+            except Exception:
                 pass
             if not FFPROBE:
                 try:
                     FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
-                except:
+                except Exception:
                     pass
         if not FFPROBE:
             FFPROBE = None

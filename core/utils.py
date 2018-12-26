@@ -90,7 +90,7 @@ def sanitize_name(name):
     name = name.strip(' .')
     try:
         name = name.encode(core.SYS_ENCODING)
-    except:
+    except Exception:
         pass
 
     return name
@@ -128,11 +128,11 @@ def category_search(input_directory, input_name, input_category, root, categorie
 
     try:
         input_name = input_name.encode(core.SYS_ENCODING)
-    except:
+    except Exception:
         pass
     try:
         input_directory = input_directory.encode(core.SYS_ENCODING)
-    except:
+    except Exception:
         pass
 
     if input_directory is None:  # =Nothing to process here.
@@ -233,7 +233,7 @@ def is_min_size(input_name, min_size):
     if file_ext in core.AUDIOCONTAINER:
         try:
             input_size = get_dir_size(os.path.dirname(input_name))
-        except:
+        except Exception:
             logger.error("Failed to get file size for {0}".format(input_name), 'MINSIZE')
             return True
 
@@ -335,7 +335,7 @@ def flatten(output_destination):
 
         try:
             shutil.move(outputFile, target)
-        except:
+        except Exception:
             logger.error("Could not flatten {0}".format(outputFile), 'FLATTEN')
 
     remove_empty_folders(output_destination)  # Cleanup empty directories
@@ -372,7 +372,7 @@ def remove_read_only(filename):
                          (name=filename))
             try:
                 os.chmod(filename, stat.S_IWRITE)
-            except:
+            except Exception:
                 logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
 
 
@@ -403,7 +403,7 @@ def test_connection(host, port):
     try:
         socket.create_connection((host, port))
         return "Up"
-    except:
+    except Exception:
         return "Down"
 
 
@@ -515,19 +515,19 @@ def parse_rtorrent(args):
     input_directory = os.path.normpath(args[1])
     try:
         input_name = args[2]
-    except:
+    except Exception:
         input_name = ''
     try:
         input_category = args[3]
-    except:
+    except Exception:
         input_category = ''
     try:
         input_hash = args[4]
-    except:
+    except Exception:
         input_hash = ''
     try:
         input_id = args[4]
-    except:
+    except Exception:
         input_id = ''
 
     return input_directory, input_name, input_category, input_hash, input_id
@@ -539,15 +539,15 @@ def parse_utorrent(args):
     input_name = args[2]
     try:
         input_category = args[3]
-    except:
+    except Exception:
         input_category = ''
     try:
         input_hash = args[4]
-    except:
+    except Exception:
         input_hash = ''
     try:
         input_id = args[4]
-    except:
+    except Exception:
         input_id = ''
 
     return input_directory, input_name, input_category, input_hash, input_id
@@ -561,7 +561,7 @@ def parse_deluge(args):
     input_id = args[1]
     try:
         input_category = core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get()['label']
-    except:
+    except Exception:
         input_category = ''
     return input_directory, input_name, input_category, input_hash, input_id
 
@@ -580,32 +580,32 @@ def parse_vuze(args):
     # vuze usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D%N%L%I%K%F"
     try:
         input = args[1].split(',')
-    except:
+    except Exception:
         input = []
     try:
         input_directory = os.path.normpath(input[0])
-    except:
+    except Exception:
         input_directory = ''
     try:
         input_name = input[1]
-    except:
+    except Exception:
         input_name = ''
     try:
         input_category = input[2]
-    except:
+    except Exception:
         input_category = ''
     try:
         input_hash = input[3]
-    except:
+    except Exception:
         input_hash = ''
     try:
         input_id = input[3]
-    except:
+    except Exception:
         input_id = ''
     try:
         if input[4] == 'single':
             input_name = input[5]
-    except:
+    except Exception:
         pass
 
     return input_directory, input_name, input_category, input_hash, input_id
@@ -615,27 +615,27 @@ def parse_qbittorrent(args):
     # qbittorrent usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py "%D|%N|%L|%I"
     try:
         input = args[1].split('|')
-    except:
+    except Exception:
         input = []
     try:
         input_directory = os.path.normpath(input[0].replace('"', ''))
-    except:
+    except Exception:
         input_directory = ''
     try:
         input_name = input[1].replace('"', '')
-    except:
+    except Exception:
         input_name = ''
     try:
         input_category = input[2].replace('"', '')
-    except:
+    except Exception:
         input_category = ''
     try:
         input_hash = input[3].replace('"', '')
-    except:
+    except Exception:
         input_hash = ''
     try:
         input_id = input[3].replace('"', '')
-    except:
+    except Exception:
         input_id = ''
 
     return input_directory, input_name, input_category, input_hash, input_id
@@ -654,7 +654,7 @@ def parse_args(client_agent, args):
 
     try:
         return clients[client_agent](args)
-    except:
+    except Exception:
         return None, None, None, None, None
 
 
@@ -706,7 +706,7 @@ def get_dirs(section, subsection, link='hard'):
 
                 try:
                     new_path = new_path.encode(core.SYS_ENCODING)
-                except:
+                except Exception:
                     pass
 
                 # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
@@ -721,7 +721,7 @@ def get_dirs(section, subsection, link='hard'):
                 newfile = os.path.join(new_path, sanitize_name(os.path.split(mediafile)[1]))
                 try:
                     newfile = newfile.encode(core.SYS_ENCODING)
-                except:
+                except Exception:
                     pass
 
                 # link file to its new path
@@ -787,7 +787,7 @@ def remove_dir(dir_name):
     logger.info("Deleting {0}".format(dir_name))
     try:
         shutil.rmtree(text_type(dir_name), onerror=onerror)
-    except:
+    except Exception:
         logger.error("Unable to delete folder {0}".format(dir_name))
 
 
@@ -804,7 +804,7 @@ def clean_dir(path, section, subsection):
     delete_ignored = int(cfg.get('delete_ignored', 0))
     try:
         num_files = len(list_media_files(path, min_size=min_size, delete_ignored=delete_ignored))
-    except:
+    except Exception:
         num_files = 'unknown'
     if num_files > 0:
         logger.info(
@@ -815,7 +815,7 @@ def clean_dir(path, section, subsection):
     logger.info("Directory {0} has been processed, removing ...".format(path), 'CLEANDIRS')
     try:
         shutil.rmtree(path, onerror=onerror)
-    except:
+    except Exception:
         logger.error("Unable to delete directory {0}".format(path))
 
 
@@ -827,7 +827,7 @@ def create_torrent_class(client_agent):
         try:
             logger.debug("Connecting to {0}: {1}".format(client_agent, core.UTORRENTWEBUI))
             tc = UTorrentClient(core.UTORRENTWEBUI, core.UTORRENTUSR, core.UTORRENTPWD)
-        except:
+        except Exception:
             logger.error("Failed to connect to uTorrent")
 
     if client_agent == 'transmission':
@@ -837,7 +837,7 @@ def create_torrent_class(client_agent):
             tc = TransmissionClient(core.TRANSMISSIONHOST, core.TRANSMISSIONPORT,
                                     core.TRANSMISSIONUSR,
                                     core.TRANSMISSIONPWD)
-        except:
+        except Exception:
             logger.error("Failed to connect to Transmission")
 
     if client_agent == 'deluge':
@@ -846,7 +846,7 @@ def create_torrent_class(client_agent):
             tc = DelugeClient()
             tc.connect(host=core.DELUGEHOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
                        password=core.DELUGEPWD)
-        except:
+        except Exception:
             logger.error("Failed to connect to Deluge")
 
     if client_agent == 'qbittorrent':
@@ -854,7 +854,7 @@ def create_torrent_class(client_agent):
             logger.debug("Connecting to {0}: http://{1}:{2}".format(client_agent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
             tc = qBittorrentClient("http://{0}:{1}/".format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
             tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
-        except:
+        except Exception:
             logger.error("Failed to connect to qBittorrent")
 
     return tc
@@ -872,7 +872,7 @@ def pause_torrent(client_agent, input_hash, input_id, input_name):
         if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
             core.TORRENT_CLASS.pause(input_hash)
         time.sleep(5)
-    except:
+    except Exception:
         logger.warning("Failed to stop torrent {0} in {1}".format(input_name, client_agent))
 
 
@@ -890,7 +890,7 @@ def resume_torrent(client_agent, input_hash, input_id, input_name):
         if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
             core.TORRENT_CLASS.resume(input_hash)
         time.sleep(5)
-    except:
+    except Exception:
         logger.warning("Failed to start torrent {0} in {1}".format(input_name, client_agent))
 
 
@@ -908,7 +908,7 @@ def remove_torrent(client_agent, input_hash, input_id, input_name):
             if client_agent == 'qbittorrent' and core.TORRENT_CLASS != "":
                 core.TORRENT_CLASS.delete_permanently(input_hash)
             time.sleep(5)
-        except:
+        except Exception:
             logger.warning("Failed to delete torrent {0} in {1}".format(input_name, client_agent))
     else:
         resume_torrent(client_agent, input_hash, input_id, input_name)
@@ -981,7 +981,7 @@ def get_nzoid(input_name):
         result = r.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
-    except:
+    except Exception:
         logger.warning("Data from SABnzbd queue could not be parsed")
     params['mode'] = "history"
     try:
@@ -993,7 +993,7 @@ def get_nzoid(input_name):
         result = r.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
-    except:
+    except Exception:
         logger.warning("Data from SABnzbd history could not be parsed")
     try:
         for nzo_id, name in slots:
@@ -1001,7 +1001,7 @@ def get_nzoid(input_name):
                 nzoid = nzo_id
                 logger.debug("Found nzoid: {0}".format(nzoid))
                 break
-    except:
+    except Exception:
         logger.warning("Data from SABnzbd could not be parsed")
     return nzoid
 
@@ -1039,7 +1039,7 @@ def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, o
         # ignore MAC OS's "resource fork" files
         if file_name.startswith('._'):
             return False
-    except:
+    except Exception:
         pass
     if (media and file_ext.lower() in core.MEDIACONTAINER) \
             or (audio and file_ext.lower() in core.AUDIOCONTAINER) \
@@ -1064,7 +1064,7 @@ def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True,
                             os.unlink(path)
                             logger.debug('Ignored file {0} has been removed ...'.format
                                          (cur_file))
-                        except:
+                        except Exception:
                             pass
                 else:
                     files.append(path)
@@ -1086,7 +1086,7 @@ def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True,
                         os.unlink(full_cur_file)
                         logger.debug('Ignored file {0} has been removed ...'.format
                                      (cur_file))
-                    except:
+                    except Exception:
                         pass
                 continue
 
@@ -1126,7 +1126,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
     logger.info('Searching IMDB for imdbID ...')
     try:
         guess = guessit.guessit(input_name)
-    except:
+    except Exception:
         guess = None
     if guess:
         # Movie Title
@@ -1156,12 +1156,12 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
         try:
             results = r.json()
-        except:
+        except Exception:
             logger.error("No json data returned from omdbapi.com")
 
         try:
             imdbid = results['imdbID']
-        except:
+        except Exception:
             logger.error("No imdbID returned from omdbapi.com")
 
         if imdbid:
@@ -1214,14 +1214,14 @@ def import_subs(filename):
         return
     try:
         subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
-    except:
+    except Exception:
         pass
 
     languages = set()
     for item in core.SLANGUAGES:
         try:
             languages.add(Language(item))
-        except:
+        except Exception:
             pass
     if not languages:
         return
@@ -1361,7 +1361,7 @@ class PosixProcess(object):
             # Make sure it is not a "stale" pidFile
             try:
                 pid = int(open(self.pidpath, 'r').read().strip())
-            except:
+            except Exception:
                 pid = None
             # Check list of running pids, if not running it is stale so overwrite
             if isinstance(pid, int):
@@ -1381,7 +1381,7 @@ class PosixProcess(object):
                 fp = open(self.pidpath, 'w')
                 fp.write(str(os.getpid()))
                 fp.close()
-            except:
+            except Exception:
                 pass
 
         return self.lasterror

@@ -82,7 +82,7 @@ def auto_fork(section, input_category):
                 optional_parameters = []
                 try:
                     optional_parameters = r.json()['data']['optionalParameters'].keys()
-                except:
+                except Exception:
                     optional_parameters = r.json()['data']['data']['optionalParameters'].keys()
                 for param in params:
                     if param not in optional_parameters:
