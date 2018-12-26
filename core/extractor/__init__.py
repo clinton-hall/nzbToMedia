@@ -102,11 +102,11 @@ def extract(file_path, output_destination):
 
     orig_files = []
     orig_dirs = []
-    for dir, subdirs, files in os.walk(output_destination):
+    for directory, subdirs, files in os.walk(output_destination):
         for subdir in subdirs:
-            orig_dirs.append(os.path.join(dir, subdir))
+            orig_dirs.append(os.path.join(directory, subdir))
         for file in files:
-            orig_files.append(os.path.join(dir, file))
+            orig_files.append(os.path.join(directory, file))
 
     pwd = os.getcwd()  # Get our Present Working Directory
     os.chdir(output_destination)  # Not all unpack commands accept full paths, so just extract into this directory
@@ -160,17 +160,17 @@ def extract(file_path, output_destination):
         # sleep to let files finish writing to disk
         sleep(3)
         perms = stat.S_IMODE(os.lstat(os.path.split(file_path)[0]).st_mode)
-        for dir, subdirs, files in os.walk(output_destination):
+        for directory, subdirs, files in os.walk(output_destination):
             for subdir in subdirs:
-                if not os.path.join(dir, subdir) in orig_files:
+                if not os.path.join(directory, subdir) in orig_files:
                     try:
-                        os.chmod(os.path.join(dir, subdir), perms)
+                        os.chmod(os.path.join(directory, subdir), perms)
                     except Exception:
                         pass
             for file in files:
-                if not os.path.join(dir, file) in orig_files:
+                if not os.path.join(directory, file) in orig_files:
                     try:
-                        shutil.copymode(file_path, os.path.join(dir, file))
+                        shutil.copymode(file_path, os.path.join(directory, file))
                     except Exception:
                         pass
         return True

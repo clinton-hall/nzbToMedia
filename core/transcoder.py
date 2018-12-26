@@ -124,7 +124,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         if 'concat:' in file:
             file = file.split('|')[0].replace('concat:', '')
         video_details, result = get_video_details(file)
-        dir, name = os.path.split(file)
+        directory, name = os.path.split(file)
         name, ext = os.path.splitext(name)
         check = re.match("VTS_([0-9][0-9])_[0-9]+", name)
         if check and core.CONCAT:
@@ -133,7 +133,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             name = ('{0}.cd{1}'.format(movie_name, check.groups()[0]))
         elif core.CONCAT and re.match("(.+)[cC][dD][0-9]", name):
             name = re.sub('([ ._=:-]+[cC][dD][0-9])', "", name)
-        if ext == core.VEXTENSION and new_dir == dir:  # we need to change the name to prevent overwriting itself.
+        if ext == core.VEXTENSION and new_dir == directory:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
     else:
         img, data = next(iteritems(file))
@@ -521,10 +521,10 @@ def get_subs(file):
     filepaths = []
     sub_ext = ['.srt', '.sub', '.idx']
     name = os.path.splitext(os.path.split(file)[1])[0]
-    dir = os.path.split(file)[0]
-    for dirname, dirs, filenames in os.walk(dir):
+    path = os.path.split(file)[0]
+    for directory, directories, filenames in os.walk(path):
         for filename in filenames:
-            filepaths.extend([os.path.join(dirname, filename)])
+            filepaths.extend([os.path.join(directory, filename)])
     subfiles = [item for item in filepaths if os.path.splitext(item)[1] in sub_ext and name in item]
     return subfiles
 

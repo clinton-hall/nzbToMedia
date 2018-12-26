@@ -121,11 +121,11 @@ def reverse_filename(filename, dirname, name):
 
 def rename_script(dirname):
     rename_file = ""
-    for dir, dirs, files in os.walk(dirname):
+    for directory, directories, files in os.walk(dirname):
         for file in files:
             if re.search(r'(rename\S*\.(sh|bat)$)', file, re.IGNORECASE):
-                rename_file = os.path.join(dir, file)
-                dirname = dir
+                rename_file = os.path.join(directory, file)
+                dirname = directory
                 break
     if rename_file:
         rename_lines = [line.strip() for line in open(rename_file)]

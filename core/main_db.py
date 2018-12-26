@@ -274,8 +274,8 @@ class SchemaUpgrade(object):
     def has_column(self, table_name, column):
         return column in self.connection.table_info(table_name)
 
-    def add_column(self, table, column, type="NUMERIC", default=0):
-        self.connection.action("ALTER TABLE {0} ADD {1} {2}".format(table, column, type))
+    def add_column(self, table, column, data_type="NUMERIC", default=0):
+        self.connection.action("ALTER TABLE {0} ADD {1} {2}".format(table, column, data_type))
         self.connection.action("UPDATE {0} SET {1} = ?".format(table, column), (default,))
 
     def check_db_version(self):
