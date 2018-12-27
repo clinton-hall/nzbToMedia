@@ -3,6 +3,30 @@ import requests
 from core import logger
 
 
+class ProcessResult(object):
+    def __init__(self, message, status_code):
+        self.message = message
+        self.status_code = status_code
+
+    def __iter__(self):
+        return self.status_code, self.message
+
+    def __bool__(self):
+        return not bool(self.status_code)
+
+    def __str__(self):
+        return 'Processing {0}: {1}'.format(
+            'succeeded' if bool(self) else 'failed',
+            self.message
+        )
+
+    def __repr__(self):
+        return '<ProcessResult {0}: {1}>'.format(
+            self.status_code,
+            self.message,
+        )
+
+
 def command_complete(url, params, headers, section):
     try:
         r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))

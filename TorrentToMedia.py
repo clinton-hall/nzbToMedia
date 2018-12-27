@@ -11,6 +11,7 @@ import sys
 import core
 from core import logger, main_db
 from core.auto_process import comics, games, movies, music, tv
+from core.auto_process.common import ProcessResult
 from core.user_scripts import external_script
 from core.utils import char_replace, convert_to_ascii, plex_update, replace_links
 from six import text_type
@@ -233,31 +234,28 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if core.TORRENT_CHMOD_DIRECTORY:
         core.rchmod(output_destination, core.TORRENT_CHMOD_DIRECTORY)
 
-    result = [0, ""]
+    result = ProcessResult(
+        message="",
+        status_code=0,
+    )
     if section_name == 'UserScript':
         result = external_script(output_destination, input_name, input_category, section)
-
     elif section_name in ['CouchPotato', 'Radarr']:
-        result = movies.process(section_name, output_destination, input_name,
-                                      status, client_agent, input_hash, input_category)
+        result = movies.process(section_name, output_destination, input_name, status, client_agent, input_hash, input_category)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
-        result = tv.process(section_name, output_destination, input_name,
-                                   status, client_agent, input_hash, input_category)
+        result = tv.process(section_name, output_destination, input_name, status, client_agent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
-        result = music.process(section_name, output_destination, input_name,
-                                      status, client_agent, input_category)
+        result = music.process(section_name, output_destination, input_name, status, client_agent, input_category)
     elif section_name == 'Mylar':
-        result = comics.process(section_name, output_destination, input_name,
-                                      status, client_agent, input_category)
+        result = comics.process(section_name, output_destination, input_name, status, client_agent, input_category)
     elif section_name == 'Gamez':
-        result = games.process(section_name, output_destination, input_name,
-                                     status, client_agent, input_category)
+        result = games.process(section_name, output_destination, input_name, status, client_agent, input_category)
 
     plex_update(input_category)
 
-    if result[0] != 0:
+    if result.status_code != 0:
         if not core.TORRENT_RESUME_ON_FAILURE:
             logger.error("A problem was reported in the autoProcess* script. "
                          "Torrent won't resume seeding (settings)")
@@ -303,7 +301,10 @@ def main(args):
     logger.debug("Options passed into TorrentToMedia: {0}".format(args))
 
     # Post-Processing Result
-    result = [0, ""]
+    result = ProcessResult(
+        message="",
+        status_code=0,
+    )
 
     try:
         input_directory, input_name, input_category, input_hash, input_id = core.parse_args(client_agent, args)
@@ -362,12 +363,12 @@ def main(args):
                                      (section, subsection))
                         result = results
 
-    if result[0] == 0:
+    if result.status_code == 0:
         logger.info("The {0} script completed successfully.".format(args[0]))
     else:
         logger.error("A problem was reported in the {0} script.".format(args[0]))
     del core.MYAPP
-    return result[0]
+    return result.status_code
 
 
 if __name__ == "__main__":
