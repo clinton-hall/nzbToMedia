@@ -8,6 +8,7 @@ import requests
 
 import core
 from core import logger, transcoder
+from core.auto_process.common import command_complete, completed_download_handling
 from core.scene_exceptions import process_all_exceptions
 from core.utils import convert_to_ascii, find_download, find_imdbid, import_subs, list_media_files, remote_dir, remove_dir, report_nzb, server_responding
 
@@ -334,41 +335,6 @@ def process(section, dir_name, input_name=None, status=0, client_agent="manual",
         "{0} does not appear to have changed status after {1} minutes, Please check your logs.".format(input_name, wait_for),
         section)
     return [1, "{0}: Failed to post-process - No change in status".format(section)]
-
-
-def command_complete(url, params, headers, section):
-    try:
-        r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
-    except requests.ConnectionError:
-        logger.error("Unable to open URL: {0}".format(url), section)
-        return None
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error("Server returned status {0}".format(r.status_code), section)
-        return None
-    else:
-        try:
-            return r.json()['state']
-        except (ValueError, KeyError):
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            logger.error("{0} did not return expected json data.".format(section), section)
-            return None
-
-
-def completed_download_handling(url2, headers, section="MAIN"):
-    try:
-        r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
-    except requests.ConnectionError:
-        logger.error("Unable to open URL: {0}".format(url2), section)
-        return False
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error("Server returned status {0}".format(r.status_code), section)
-        return False
-    else:
-        try:
-            return r.json().get("enableCompletedDownloadHandling", False)
-        except ValueError:
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            return False
 
 
 def get_release(base_url, imdb_id=None, download_id=None, release_id=None):

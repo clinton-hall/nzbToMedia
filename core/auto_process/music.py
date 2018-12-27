@@ -8,6 +8,7 @@ import requests
 
 import core
 from core import logger
+from core.auto_process.common import command_complete
 from core.scene_exceptions import process_all_exceptions
 from core.utils import convert_to_ascii, list_media_files, remote_dir, remove_dir, server_responding
 
@@ -155,24 +156,6 @@ def process(section, dir_name, input_name=None, status=0, client_agent="manual",
                 logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
                 remove_dir(dir_name)
             return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
-
-
-def command_complete(url, params, headers, section):
-    try:
-        r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
-    except requests.ConnectionError:
-        logger.error("Unable to open URL: {0}".format(url), section)
-        return None
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error("Server returned status {0}".format(r.status_code), section)
-        return None
-    else:
-        try:
-            return r.json()['state']
-        except (ValueError, KeyError):
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            logger.error("{0} did not return expected json data.".format(section), section)
-            return None
 
 
 def get_status(url, apikey, dir_name):
