@@ -53,6 +53,8 @@ def clean_bytecode():
         print(result)
     except subprocess.CalledProcessError as error:
         sys.exit('Error Code: {}'.format(error.returncode))
+    except OSError as error:
+        sys.exit('Error: {}'.format(error))
     else:
         return result
 
@@ -68,6 +70,8 @@ def clean_folders(*paths):
         )
     except subprocess.CalledProcessError as error:
         sys.exit('Error Code: {}'.format(error.returncode))
+    except OSError as error:
+        sys.exit('Error: {}'.format(error))
     else:
         return result
 
