@@ -12,7 +12,8 @@ import sys
 
 import core
 from core import logger, main_db
-from core.auto_process import Comic, Game, Movie, Music, TV
+from core.auto_process import comics, games, movies, music, tv
+from core.auto_process.common import ProcessResult
 from core.user_scripts import external_script
 from core.utils import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
@@ -109,26 +110,26 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, input_category, input_name))
 
     if section_name in ["CouchPotato", "Radarr"]:
-        result = Movie().process(section_name, input_directory, input_name, status, client_agent, download_id,
-                                 input_category, failure_link)
+        result = movies.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = TV().process(section_name, input_directory, input_name, status, client_agent,
-                              download_id, input_category, failure_link)
+        result = tv.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
     elif section_name in ["HeadPhones", "Lidarr"]:
-        result = Music().process(section_name, input_directory, input_name, status, client_agent, input_category)
+        result = music.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Mylar":
-        result = Comic().process(section_name, input_directory, input_name, status, client_agent,
-                                 input_category)
+        result = comics.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Gamez":
-        result = Game().process(section_name, input_directory, input_name, status, client_agent, input_category)
+        result = games.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:
-        result = [-1, ""]
+        result = ProcessResult(
+            message="",
+            status_code=-1,
+        )
 
     plex_update(input_category)
 
-    if result[0] == 0:
+    if result.staus_code == 0:
         if client_agent != 'manual':
             # update download status in our DB
             update_download_info_status(input_name, 1)
@@ -151,7 +152,10 @@ def main(args, section=None):
     logger.debug("Options passed into nzbToMedia: {0}".format(args))
 
     # Post-Processing Result
-    result = [0, ""]
+    result = ProcessResult(
+        message="",
+        status_code=0,
+    )
     status = 0
 
     # NZBGet
@@ -289,27 +293,27 @@ def main(args, section=None):
 
                     results = process(dir_name, input_name, 0, client_agent=client_agent,
                                       download_id=download_id or None, input_category=subsection)
-                    if results[0] != 0:
+                    if results.status_code != 0:
                         logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
                                      (section, subsection))
                         result = results
 
-    if result[0] == 0:
+    if result.status_code == 0:
         logger.info("The {0} script completed successfully.".format(args[0]))
-        if result[1]:
-            print(result[1] + "!")
+        if result.message:
+            print(result.message + "!")
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_SUCCESS
     else:
         logger.error("A problem was reported in the {0} script.".format(args[0]))
-        if result[1]:
-            print(result[1] + "!")
+        if result.message:
+            print(result.message + "!")
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_ERROR
     del core.MYAPP
-    return result[0]
+    return result.status_code
 
 
 if __name__ == '__main__':
