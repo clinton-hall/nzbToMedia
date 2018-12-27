@@ -12,7 +12,7 @@ import sys
 
 import core
 from core import logger, main_db
-from core.auto_process import Comic, Game, Movie, Music, TV
+from core.auto_process import comics, games, movies, music, tv
 from core.user_scripts import external_script
 from core.utils import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
 
@@ -109,18 +109,18 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, input_category, input_name))
 
     if section_name in ["CouchPotato", "Radarr"]:
-        result = Movie().process(section_name, input_directory, input_name, status, client_agent, download_id,
+        result = movies.process(section_name, input_directory, input_name, status, client_agent, download_id,
                                  input_category, failure_link)
     elif section_name in ["SickBeard", "NzbDrone", "Sonarr"]:
-        result = TV().process(section_name, input_directory, input_name, status, client_agent,
+        result = tv.process(section_name, input_directory, input_name, status, client_agent,
                               download_id, input_category, failure_link)
     elif section_name in ["HeadPhones", "Lidarr"]:
-        result = Music().process(section_name, input_directory, input_name, status, client_agent, input_category)
+        result = music.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == "Mylar":
-        result = Comic().process(section_name, input_directory, input_name, status, client_agent,
+        result = comics.process(section_name, input_directory, input_name, status, client_agent,
                                  input_category)
     elif section_name == "Gamez":
-        result = Game().process(section_name, input_directory, input_name, status, client_agent, input_category)
+        result = games.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:

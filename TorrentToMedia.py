@@ -10,6 +10,7 @@ import sys
 
 import core
 from core import logger, main_db
+from core.auto_process import comics, games, movies, music, tv
 from core.user_scripts import external_script
 from core.utils import char_replace, convert_to_ascii, plex_update, replace_links
 from six import text_type
@@ -237,21 +238,21 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         result = external_script(output_destination, input_name, input_category, section)
 
     elif section_name in ['CouchPotato', 'Radarr']:
-        result = core.Movie().process(section_name, output_destination, input_name,
+        result = movies.process(section_name, output_destination, input_name,
                                       status, client_agent, input_hash, input_category)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:
             input_hash = input_hash.upper()
-        result = core.TV().process(section_name, output_destination, input_name,
+        result = tv.process(section_name, output_destination, input_name,
                                    status, client_agent, input_hash, input_category)
     elif section_name in ['HeadPhones', 'Lidarr']:
-        result = core.Music().process(section_name, output_destination, input_name,
+        result = music.process(section_name, output_destination, input_name,
                                       status, client_agent, input_category)
     elif section_name == 'Mylar':
-        result = core.Comic().process(section_name, output_destination, input_name,
+        result = comics.process(section_name, output_destination, input_name,
                                       status, client_agent, input_category)
     elif section_name == 'Gamez':
-        result = core.Game().process(section_name, output_destination, input_name,
+        result = games.process(section_name, output_destination, input_name,
                                      status, client_agent, input_category)
 
     plex_update(input_category)
