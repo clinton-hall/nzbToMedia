@@ -49,7 +49,7 @@ from core.nzbToMediaUtil import (
 from core.transcoder import transcoder
 from core.databases import mainDB
 
-__version__ = '11.7.4'
+__version__ = '11.8.0'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']

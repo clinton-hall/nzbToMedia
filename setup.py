@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='nzbToMedia',
-    version='11.7.4',
+    version='11.8.0',
     license='GPLv3',
     description='Efficient on demand post processing',
     long_description="""    
