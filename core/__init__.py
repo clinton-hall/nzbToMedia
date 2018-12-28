@@ -52,6 +52,8 @@ from core.utils import (
     resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
 
+__version__ = '11.8.0'
+
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
 TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'qbittorrent', 'other', 'manual']
