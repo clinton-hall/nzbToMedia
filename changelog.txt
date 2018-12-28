@@ -1,5 +1,11 @@
 Change_LOG / History
 
+V11.8.0 12/28/2018
+
+Add version information
+Add bumpversion support
+Fix automatic cleanup script
+
 V11.7 12/25/2018
 
 Merry Christmas and Happy Holidays!
