@@ -44,7 +44,6 @@ import six
 from six.moves import reload_module
 
 from core import logger, main_db, version_check, databases, transcoder
-from core.auto_process import Comic, Game, Movie, Music, TV
 from core.configuration import config
 from core.utils import (
     RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
