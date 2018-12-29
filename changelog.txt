@@ -1,8 +1,9 @@
 Change_LOG / History
 
-V11.8.1 12/29/2018
+V11.8.2 12/29/2018
 
 Fix cleanup for nzbToMedia installed as a git submodule
+Fix cleaning bytecode for nzbToMedia as submodule
 
 V11.8.0 12/28/2018
 
