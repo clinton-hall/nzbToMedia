@@ -34,6 +34,10 @@ Fix postprocessing of failed / bad downloads (#1091)
 Fix release is None
 Fix UnRAR failing
 
+V11.8.1 12/29/2018
+
+Fix cleanup for nzbToMedia installed as a git submodule
+
 V11.8.0 12/28/2018
 
 Add version information
