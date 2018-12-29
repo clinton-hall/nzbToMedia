@@ -13,24 +13,24 @@ requests.packages.urllib3.disable_warnings()
 
 
 def process(section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
-    apc_version = "2.04"
-    comicrn_version = "1.01"
+    apc_version = '2.04'
+    comicrn_version = '1.01'
 
     cfg = dict(core.CFG[section][input_category])
 
-    host = cfg["host"]
-    port = cfg["port"]
-    apikey = cfg["apikey"]
-    ssl = int(cfg.get("ssl", 0))
-    web_root = cfg.get("web_root", "")
-    remote_path = int(cfg.get("remote_path"), 0)
-    protocol = "https://" if ssl else "http://"
+    host = cfg['host']
+    port = cfg['port']
+    apikey = cfg['apikey']
+    ssl = int(cfg.get('ssl', 0))
+    web_root = cfg.get('web_root', '')
+    remote_path = int(cfg.get('remote_path'), 0)
+    protocol = 'https://' if ssl else 'http://'
 
-    url = "{0}{1}:{2}{3}/api".format(protocol, host, port, web_root)
+    url = '{0}{1}:{2}{3}/api'.format(protocol, host, port, web_root)
     if not server_responding(url):
-        logger.error("Server did not respond. Exiting", section)
+        logger.error('Server did not respond. Exiting', section)
         return ProcessResult(
-            message="{0}: Failed to post-process - {0} did not respond.".format(section),
+            message='{0}: Failed to post-process - {0} did not respond.'.format(section),
             status_code=1,
         )
 
@@ -53,19 +53,19 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
 
     success = False
 
-    logger.debug("Opening URL: {0}".format(url), section)
+    logger.debug('Opening URL: {0}'.format(url), section)
     try:
         r = requests.post(url, params=params, stream=True, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
-        logger.error("Unable to open URL", section)
+        logger.error('Unable to open URL', section)
         return ProcessResult(
-            message="{0}: Failed to post-process - Unable to connect to {0}".format(section),
+            message='{0}: Failed to post-process - Unable to connect to {0}'.format(section),
             status_code=1
         )
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error("Server returned status {0}".format(r.status_code), section)
+        logger.error('Server returned status {0}'.format(r.status_code), section)
         return ProcessResult(
-            message="{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code),
+            message='{0}: Failed to post-process - Server returned status {1}'.format(section, r.status_code),
             status_code=1,
         )
 
@@ -74,19 +74,19 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         result = result.split('\n')
     for line in result:
         if line:
-            logger.postprocess("{0}".format(line), section)
-        if "Post Processing SUCCESSFUL" in line:
+            logger.postprocess('{0}'.format(line), section)
+        if 'Post Processing SUCCESSFUL' in line:
             success = True
 
     if success:
-        logger.postprocess("SUCCESS: This issue has been processed successfully", section)
+        logger.postprocess('SUCCESS: This issue has been processed successfully', section)
         return ProcessResult(
-            message="{0}: Successfully post-processed {1}".format(section, input_name),
+            message='{0}: Successfully post-processed {1}'.format(section, input_name),
             status_code=0,
         )
     else:
-        logger.warning("The issue does not appear to have successfully processed. Please check your Logs", section)
+        logger.warning('The issue does not appear to have successfully processed. Please check your Logs', section)
         return ProcessResult(
-            message="{0}: Failed to post-process - Returned log from {0} was not as expected.".format(section),
+            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(section),
             status_code=1,
         )

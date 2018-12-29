@@ -31,7 +31,7 @@ class UTorrentClient(object):
         # TODO refresh token, when necessary
 
     def _make_opener(self, realm, base_url, username, password):
-        '''uTorrent API need HTTP Basic Auth and cookie support for token verify.'''
+        """uTorrent API need HTTP Basic Auth and cookie support for token verify."""
 
         auth_handler = HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm,
