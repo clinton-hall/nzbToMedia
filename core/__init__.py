@@ -64,22 +64,22 @@ SABNZB_0717_NO_OF_ARGUMENTS = 9
 
 # sickbeard fork/branch constants
 FORKS = {}
-FORK_DEFAULT = "default"
-FORK_FAILED = "failed"
-FORK_FAILED_TORRENT = "failed-torrent"
-FORK_SICKRAGE = "SickRage"
-FORK_SICKCHILL = "SickChill"
-FORK_SICKBEARD_API = "SickBeard-api"
-FORK_MEDUSA = "Medusa"
-FORK_SICKGEAR = "SickGear"
-FORKS[FORK_DEFAULT] = {"dir": None}
-FORKS[FORK_FAILED] = {"dirName": None, "failed": None}
-FORKS[FORK_FAILED_TORRENT] = {"dir": None, "failed": None, "process_method": None}
-FORKS[FORK_SICKRAGE] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None}
-FORKS[FORK_SICKCHILL] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "force_next": None}
-FORKS[FORK_SICKBEARD_API] = {"path": None, "failed": None, "process_method": None, "force_replace": None, "return_data": None, "type": None, "delete": None, "force_next": None}
-FORKS[FORK_MEDUSA] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
-FORKS[FORK_SICKGEAR] = {"dir": None, "failed": None, "process_method": None, "force": None}
+FORK_DEFAULT = 'default'
+FORK_FAILED = 'failed'
+FORK_FAILED_TORRENT = 'failed-torrent'
+FORK_SICKRAGE = 'SickRage'
+FORK_SICKCHILL = 'SickChill'
+FORK_SICKBEARD_API = 'SickBeard-api'
+FORK_MEDUSA = 'Medusa'
+FORK_SICKGEAR = 'SickGear'
+FORKS[FORK_DEFAULT] = {'dir': None}
+FORKS[FORK_FAILED] = {'dirName': None, 'failed': None}
+FORKS[FORK_FAILED_TORRENT] = {'dir': None, 'failed': None, 'process_method': None}
+FORKS[FORK_SICKRAGE] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None}
+FORKS[FORK_SICKCHILL] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None}
+FORKS[FORK_SICKBEARD_API] = {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None}
+FORKS[FORK_MEDUSA] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None}
+FORKS[FORK_SICKGEAR] = {'dir': None, 'failed': None, 'process_method': None, 'force': None}
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
 
 # NZBGet Exit Codes
@@ -257,15 +257,15 @@ def initialize(section=None):
         LOG_DIR = os.path.split(LOG_FILE)[0]
 
     if not make_dir(LOG_DIR):
-        print("No log folder, logging to screen only")
+        print('No log folder, logging to screen only')
 
     MYAPP = RunningProcess()
     while MYAPP.alreadyrunning():
-        print("Waiting for existing session to end")
+        print('Waiting for existing session to end')
         time.sleep(30)
 
     try:
-        locale.setlocale(locale.LC_ALL, "")
+        locale.setlocale(locale.LC_ALL, '')
         SYS_ENCODING = locale.getpreferredencoding()
     except (locale.Error, IOError):
         pass
@@ -275,7 +275,7 @@ def initialize(section=None):
         SYS_ENCODING = 'UTF-8'
 
     if six.PY2:
-        if not hasattr(sys, "setdefaultencoding"):
+        if not hasattr(sys, 'setdefaultencoding'):
             reload_module(sys)
 
         try:
@@ -296,7 +296,7 @@ def initialize(section=None):
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error("Unable to migrate config file {0}, exiting ...".format(CONFIG_FILE))
+        logger.error('Unable to migrate config file {0}, exiting ...'.format(CONFIG_FILE))
         if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
@@ -307,7 +307,7 @@ def initialize(section=None):
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
-        logger.info("Loading config from [{0}]".format(CONFIG_FILE))
+        logger.info('Loading config from [{0}]'.format(CONFIG_FILE))
         CFG = config()
 
     # Enable/Disable DEBUG Logging
@@ -318,7 +318,7 @@ def initialize(section=None):
 
     if LOG_ENV:
         for item in os.environ:
-            logger.info("{0}: {1}".format(item, os.environ[item]), "ENVIRONMENT")
+            logger.info('{0}: {1}'.format(item, os.environ[item]), 'ENVIRONMENT')
 
     # initialize the main SB database
     main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
@@ -331,16 +331,16 @@ def initialize(section=None):
     GIT_PATH = CFG['General']['git_path']
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
     GIT_BRANCH = CFG['General']['git_branch'] or 'master'
-    FORCE_CLEAN = int(CFG["General"]["force_clean"])
-    FFMPEG_PATH = CFG["General"]["ffmpeg_path"]
-    CHECK_MEDIA = int(CFG["General"]["check_media"])
-    SAFE_MODE = int(CFG["General"]["safe_mode"])
-    NOEXTRACTFAILED = int(CFG["General"]["no_extract_failed"])
+    FORCE_CLEAN = int(CFG['General']['force_clean'])
+    FFMPEG_PATH = CFG['General']['ffmpeg_path']
+    CHECK_MEDIA = int(CFG['General']['check_media'])
+    SAFE_MODE = int(CFG['General']['safe_mode'])
+    NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
 
     # Check for updates via GitHUB
     if version_check.CheckVersion().check_for_new_version():
         if AUTO_UPDATE == 1:
-            logger.info("Auto-Updating nzbToMedia, Please wait ...")
+            logger.info('Auto-Updating nzbToMedia, Please wait ...')
             updated = version_check.CheckVersion().update()
             if updated:
                 # restart nzbToMedia
@@ -350,61 +350,61 @@ def initialize(section=None):
                     pass
                 restart()
             else:
-                logger.error("Update wasn't successful, not restarting. Check your log for more information.")
+                logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
 
     # Set Current Version
     logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
                 (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
                  system=platform.system(), release=platform.release()))
 
-    if int(CFG["WakeOnLan"]["wake"]) == 1:
+    if int(CFG['WakeOnLan']['wake']) == 1:
         wake_up()
 
-    NZB_CLIENTAGENT = CFG["Nzb"]["clientAgent"]  # sabnzbd
-    SABNZBDHOST = CFG["Nzb"]["sabnzbd_host"]
-    SABNZBDPORT = int(CFG["Nzb"]["sabnzbd_port"] or 8080)  # defaults to accomodate NzbGet
-    SABNZBDAPIKEY = CFG["Nzb"]["sabnzbd_apikey"]
-    NZB_DEFAULTDIR = CFG["Nzb"]["default_downloadDirectory"]
-    GROUPS = CFG["Custom"]["remove_group"]
+    NZB_CLIENTAGENT = CFG['Nzb']['clientAgent']  # sabnzbd
+    SABNZBDHOST = CFG['Nzb']['sabnzbd_host']
+    SABNZBDPORT = int(CFG['Nzb']['sabnzbd_port'] or 8080)  # defaults to accomodate NzbGet
+    SABNZBDAPIKEY = CFG['Nzb']['sabnzbd_apikey']
+    NZB_DEFAULTDIR = CFG['Nzb']['default_downloadDirectory']
+    GROUPS = CFG['Custom']['remove_group']
     if isinstance(GROUPS, str):
         GROUPS = GROUPS.split(',')
     if GROUPS == ['']:
         GROUPS = None
 
-    TORRENT_CLIENTAGENT = CFG["Torrent"]["clientAgent"]  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
-    USELINK = CFG["Torrent"]["useLink"]  # no | hard | sym
-    OUTPUTDIRECTORY = CFG["Torrent"]["outputDirectory"]  # /abs/path/to/complete/
-    TORRENT_DEFAULTDIR = CFG["Torrent"]["default_downloadDirectory"]
-    CATEGORIES = (CFG["Torrent"]["categories"])  # music,music_videos,pictures,software
-    NOFLATTEN = (CFG["Torrent"]["noFlatten"])
+    TORRENT_CLIENTAGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
+    USELINK = CFG['Torrent']['useLink']  # no | hard | sym
+    OUTPUTDIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
+    TORRENT_DEFAULTDIR = CFG['Torrent']['default_downloadDirectory']
+    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
+    NOFLATTEN = (CFG['Torrent']['noFlatten'])
     if isinstance(NOFLATTEN, str):
         NOFLATTEN = NOFLATTEN.split(',')
     if isinstance(CATEGORIES, str):
         CATEGORIES = CATEGORIES.split(',')
-    DELETE_ORIGINAL = int(CFG["Torrent"]["deleteOriginal"])
-    TORRENT_CHMOD_DIRECTORY = int(str(CFG["Torrent"]["chmodDirectory"]), 8)
-    TORRENT_RESUME_ON_FAILURE = int(CFG["Torrent"]["resumeOnFailure"])
-    TORRENT_RESUME = int(CFG["Torrent"]["resume"])
-    UTORRENTWEBUI = CFG["Torrent"]["uTorrentWEBui"]  # http://localhost:8090/gui/
-    UTORRENTUSR = CFG["Torrent"]["uTorrentUSR"]  # mysecretusr
-    UTORRENTPWD = CFG["Torrent"]["uTorrentPWD"]  # mysecretpwr
+    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
+    TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
+    TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
+    TORRENT_RESUME = int(CFG['Torrent']['resume'])
+    UTORRENTWEBUI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
+    UTORRENTUSR = CFG['Torrent']['uTorrentUSR']  # mysecretusr
+    UTORRENTPWD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
 
-    TRANSMISSIONHOST = CFG["Torrent"]["TransmissionHost"]  # localhost
-    TRANSMISSIONPORT = int(CFG["Torrent"]["TransmissionPort"])
-    TRANSMISSIONUSR = CFG["Torrent"]["TransmissionUSR"]  # mysecretusr
-    TRANSMISSIONPWD = CFG["Torrent"]["TransmissionPWD"]  # mysecretpwr
+    TRANSMISSIONHOST = CFG['Torrent']['TransmissionHost']  # localhost
+    TRANSMISSIONPORT = int(CFG['Torrent']['TransmissionPort'])
+    TRANSMISSIONUSR = CFG['Torrent']['TransmissionUSR']  # mysecretusr
+    TRANSMISSIONPWD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
 
-    DELUGEHOST = CFG["Torrent"]["DelugeHost"]  # localhost
-    DELUGEPORT = int(CFG["Torrent"]["DelugePort"])  # 8084
-    DELUGEUSR = CFG["Torrent"]["DelugeUSR"]  # mysecretusr
-    DELUGEPWD = CFG["Torrent"]["DelugePWD"]  # mysecretpwr
+    DELUGEHOST = CFG['Torrent']['DelugeHost']  # localhost
+    DELUGEPORT = int(CFG['Torrent']['DelugePort'])  # 8084
+    DELUGEUSR = CFG['Torrent']['DelugeUSR']  # mysecretusr
+    DELUGEPWD = CFG['Torrent']['DelugePWD']  # mysecretpwr
 
-    QBITTORRENTHOST = CFG["Torrent"]["qBittorrenHost"]  # localhost
-    QBITTORRENTPORT = int(CFG["Torrent"]["qBittorrentPort"])  # 8080
-    QBITTORRENTUSR = CFG["Torrent"]["qBittorrentUSR"]  # mysecretusr
-    QBITTORRENTPWD = CFG["Torrent"]["qBittorrentPWD"]  # mysecretpwr
+    QBITTORRENTHOST = CFG['Torrent']['qBittorrenHost']  # localhost
+    QBITTORRENTPORT = int(CFG['Torrent']['qBittorrentPort'])  # 8080
+    QBITTORRENTUSR = CFG['Torrent']['qBittorrentUSR']  # mysecretusr
+    QBITTORRENTPWD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
 
-    REMOTEPATHS = CFG["Network"]["mount_points"] or []
+    REMOTEPATHS = CFG['Network']['mount_points'] or []
     if REMOTEPATHS:
         if isinstance(REMOTEPATHS, list):
             REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
@@ -413,11 +413,11 @@ def initialize(section=None):
         REMOTEPATHS = [(local.strip(), remote.strip()) for local, remote in
                        REMOTEPATHS]  # strip trailing and leading whitespaces
 
-    PLEXSSL = int(CFG["Plex"]["plex_ssl"])
-    PLEXHOST = CFG["Plex"]["plex_host"]
-    PLEXPORT = CFG["Plex"]["plex_port"]
-    PLEXTOKEN = CFG["Plex"]["plex_token"]
-    PLEXSEC = CFG["Plex"]["plex_sections"] or []
+    PLEXSSL = int(CFG['Plex']['plex_ssl'])
+    PLEXHOST = CFG['Plex']['plex_host']
+    PLEXPORT = CFG['Plex']['plex_port']
+    PLEXTOKEN = CFG['Plex']['plex_token']
+    PLEXSEC = CFG['Plex']['plex_sections'] or []
     if PLEXSEC:
         if isinstance(PLEXSEC, list):
             PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
@@ -425,21 +425,21 @@ def initialize(section=None):
 
     devnull = open(os.devnull, 'w')
     try:
-        subprocess.Popen(["nice"], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n{0}'.format(int(CFG["Posix"]["niceness"]))])
+        subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
+        NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
     except Exception:
         pass
     try:
-        subprocess.Popen(["ionice"], stdout=devnull, stderr=devnull).communicate()
+        subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
         try:
-            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG["Posix"]["ionice_class"]))])
+            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
         except Exception:
             pass
         try:
             if 'ionice' in NICENESS:
-                NICENESS.extend(['-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
+                NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
             else:
-                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG["Posix"]["ionice_classdata"]))])
+                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
         except Exception:
             pass
     except Exception:
@@ -449,10 +449,10 @@ def initialize(section=None):
     COMPRESSEDCONTAINER = [re.compile(r'.r\d{2}$', re.I),
                            re.compile(r'.part\d+.rar$', re.I),
                            re.compile('.rar$', re.I)]
-    COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG["Extensions"]["compressedExtensions"]]
-    MEDIACONTAINER = CFG["Extensions"]["mediaExtensions"]
-    AUDIOCONTAINER = CFG["Extensions"]["audioExtensions"]
-    METACONTAINER = CFG["Extensions"]["metaExtensions"]  # .nfo,.sub,.srt
+    COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG['Extensions']['compressedExtensions']]
+    MEDIACONTAINER = CFG['Extensions']['mediaExtensions']
+    AUDIOCONTAINER = CFG['Extensions']['audioExtensions']
+    METACONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
     if isinstance(COMPRESSEDCONTAINER, str):
         COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
     if isinstance(MEDIACONTAINER, str):
@@ -462,15 +462,15 @@ def initialize(section=None):
     if isinstance(METACONTAINER, str):
         METACONTAINER = METACONTAINER.split(',')
 
-    GETSUBS = int(CFG["Transcoder"]["getSubs"])
-    TRANSCODE = int(CFG["Transcoder"]["transcode"])
-    DUPLICATE = int(CFG["Transcoder"]["duplicate"])
-    CONCAT = int(CFG["Transcoder"]["concat"])
-    IGNOREEXTENSIONS = (CFG["Transcoder"]["ignoreExtensions"])
+    GETSUBS = int(CFG['Transcoder']['getSubs'])
+    TRANSCODE = int(CFG['Transcoder']['transcode'])
+    DUPLICATE = int(CFG['Transcoder']['duplicate'])
+    CONCAT = int(CFG['Transcoder']['concat'])
+    IGNOREEXTENSIONS = (CFG['Transcoder']['ignoreExtensions'])
     if isinstance(IGNOREEXTENSIONS, str):
         IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
-    OUTPUTFASTSTART = int(CFG["Transcoder"]["outputFastStart"])
-    GENERALOPTS = (CFG["Transcoder"]["generalOptions"])
+    OUTPUTFASTSTART = int(CFG['Transcoder']['outputFastStart'])
+    GENERALOPTS = (CFG['Transcoder']['generalOptions'])
     if isinstance(GENERALOPTS, str):
         GENERALOPTS = GENERALOPTS.split(',')
     if GENERALOPTS == ['']:
@@ -480,93 +480,93 @@ def initialize(section=None):
     if '+genpts' not in GENERALOPTS:
         GENERALOPTS.append('+genpts')
     try:
-        OUTPUTQUALITYPERCENT = int(CFG["Transcoder"]["outputQualityPercent"])
+        OUTPUTQUALITYPERCENT = int(CFG['Transcoder']['outputQualityPercent'])
     except Exception:
         pass
-    OUTPUTVIDEOPATH = CFG["Transcoder"]["outputVideoPath"]
-    PROCESSOUTPUT = int(CFG["Transcoder"]["processOutput"])
-    ALANGUAGE = CFG["Transcoder"]["audioLanguage"]
-    AINCLUDE = int(CFG["Transcoder"]["allAudioLanguages"])
-    SLANGUAGES = CFG["Transcoder"]["subLanguages"]
+    OUTPUTVIDEOPATH = CFG['Transcoder']['outputVideoPath']
+    PROCESSOUTPUT = int(CFG['Transcoder']['processOutput'])
+    ALANGUAGE = CFG['Transcoder']['audioLanguage']
+    AINCLUDE = int(CFG['Transcoder']['allAudioLanguages'])
+    SLANGUAGES = CFG['Transcoder']['subLanguages']
     if isinstance(SLANGUAGES, str):
         SLANGUAGES = SLANGUAGES.split(',')
     if SLANGUAGES == ['']:
         SLANGUAGES = []
-    SINCLUDE = int(CFG["Transcoder"]["allSubLanguages"])
-    SEXTRACT = int(CFG["Transcoder"]["extractSubs"])
-    SEMBED = int(CFG["Transcoder"]["embedSubs"])
-    SUBSDIR = CFG["Transcoder"]["externalSubDir"]
-    VEXTENSION = CFG["Transcoder"]["outputVideoExtension"].strip()
-    VCODEC = CFG["Transcoder"]["outputVideoCodec"].strip()
-    VCODEC_ALLOW = CFG["Transcoder"]["VideoCodecAllow"].strip()
+    SINCLUDE = int(CFG['Transcoder']['allSubLanguages'])
+    SEXTRACT = int(CFG['Transcoder']['extractSubs'])
+    SEMBED = int(CFG['Transcoder']['embedSubs'])
+    SUBSDIR = CFG['Transcoder']['externalSubDir']
+    VEXTENSION = CFG['Transcoder']['outputVideoExtension'].strip()
+    VCODEC = CFG['Transcoder']['outputVideoCodec'].strip()
+    VCODEC_ALLOW = CFG['Transcoder']['VideoCodecAllow'].strip()
     if isinstance(VCODEC_ALLOW, str):
         VCODEC_ALLOW = VCODEC_ALLOW.split(',')
     if VCODEC_ALLOW == ['']:
         VCODEC_ALLOW = []
-    VPRESET = CFG["Transcoder"]["outputVideoPreset"].strip()
+    VPRESET = CFG['Transcoder']['outputVideoPreset'].strip()
     try:
-        VFRAMERATE = float(CFG["Transcoder"]["outputVideoFramerate"].strip())
+        VFRAMERATE = float(CFG['Transcoder']['outputVideoFramerate'].strip())
     except Exception:
         pass
     try:
-        VCRF = int(CFG["Transcoder"]["outputVideoCRF"].strip())
+        VCRF = int(CFG['Transcoder']['outputVideoCRF'].strip())
     except Exception:
         pass
     try:
-        VLEVEL = CFG["Transcoder"]["outputVideoLevel"].strip()
+        VLEVEL = CFG['Transcoder']['outputVideoLevel'].strip()
     except Exception:
         pass
     try:
-        VBITRATE = int((CFG["Transcoder"]["outputVideoBitrate"].strip()).replace('k', '000'))
+        VBITRATE = int((CFG['Transcoder']['outputVideoBitrate'].strip()).replace('k', '000'))
     except Exception:
         pass
-    VRESOLUTION = CFG["Transcoder"]["outputVideoResolution"]
-    ACODEC = CFG["Transcoder"]["outputAudioCodec"].strip()
-    ACODEC_ALLOW = CFG["Transcoder"]["AudioCodecAllow"].strip()
+    VRESOLUTION = CFG['Transcoder']['outputVideoResolution']
+    ACODEC = CFG['Transcoder']['outputAudioCodec'].strip()
+    ACODEC_ALLOW = CFG['Transcoder']['AudioCodecAllow'].strip()
     if isinstance(ACODEC_ALLOW, str):
         ACODEC_ALLOW = ACODEC_ALLOW.split(',')
     if ACODEC_ALLOW == ['']:
         ACODEC_ALLOW = []
     try:
-        ACHANNELS = int(CFG["Transcoder"]["outputAudioChannels"].strip())
+        ACHANNELS = int(CFG['Transcoder']['outputAudioChannels'].strip())
     except Exception:
         pass
     try:
-        ABITRATE = int((CFG["Transcoder"]["outputAudioBitrate"].strip()).replace('k', '000'))
+        ABITRATE = int((CFG['Transcoder']['outputAudioBitrate'].strip()).replace('k', '000'))
     except Exception:
         pass
-    ACODEC2 = CFG["Transcoder"]["outputAudioTrack2Codec"].strip()
-    ACODEC2_ALLOW = CFG["Transcoder"]["AudioCodec2Allow"].strip()
+    ACODEC2 = CFG['Transcoder']['outputAudioTrack2Codec'].strip()
+    ACODEC2_ALLOW = CFG['Transcoder']['AudioCodec2Allow'].strip()
     if isinstance(ACODEC2_ALLOW, str):
         ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
     if ACODEC2_ALLOW == ['']:
         ACODEC2_ALLOW = []
     try:
-        ACHANNELS2 = int(CFG["Transcoder"]["outputAudioTrack2Channels"].strip())
+        ACHANNELS2 = int(CFG['Transcoder']['outputAudioTrack2Channels'].strip())
     except Exception:
         pass
     try:
-        ABITRATE2 = int((CFG["Transcoder"]["outputAudioTrack2Bitrate"].strip()).replace('k', '000'))
+        ABITRATE2 = int((CFG['Transcoder']['outputAudioTrack2Bitrate'].strip()).replace('k', '000'))
     except Exception:
         pass
-    ACODEC3 = CFG["Transcoder"]["outputAudioOtherCodec"].strip()
-    ACODEC3_ALLOW = CFG["Transcoder"]["AudioOtherCodecAllow"].strip()
+    ACODEC3 = CFG['Transcoder']['outputAudioOtherCodec'].strip()
+    ACODEC3_ALLOW = CFG['Transcoder']['AudioOtherCodecAllow'].strip()
     if isinstance(ACODEC3_ALLOW, str):
         ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
     if ACODEC3_ALLOW == ['']:
         ACODEC3_ALLOW = []
     try:
-        ACHANNELS3 = int(CFG["Transcoder"]["outputAudioOtherChannels"].strip())
+        ACHANNELS3 = int(CFG['Transcoder']['outputAudioOtherChannels'].strip())
     except Exception:
         pass
     try:
-        ABITRATE3 = int((CFG["Transcoder"]["outputAudioOtherBitrate"].strip()).replace('k', '000'))
+        ABITRATE3 = int((CFG['Transcoder']['outputAudioOtherBitrate'].strip()).replace('k', '000'))
     except Exception:
         pass
-    SCODEC = CFG["Transcoder"]["outputSubtitleCodec"].strip()
-    BURN = int(CFG["Transcoder"]["burnInSubtitle"].strip())
-    DEFAULTS = CFG["Transcoder"]["outputDefault"].strip()
-    HWACCEL = int(CFG["Transcoder"]["hwAccel"])
+    SCODEC = CFG['Transcoder']['outputSubtitleCodec'].strip()
+    BURN = int(CFG['Transcoder']['burnInSubtitle'].strip())
+    DEFAULTS = CFG['Transcoder']['outputDefault'].strip()
+    HWACCEL = int(CFG['Transcoder']['hwAccel'])
 
     allow_subs = ['.mkv', '.mp4', '.m4v', 'asf', 'wma', 'wmv']
     codec_alias = {
@@ -743,25 +743,25 @@ def initialize(section=None):
             ACODEC3_ALLOW.extend(extra)
     codec_alias = {}  # clear memory
 
-    PASSWORDSFILE = CFG["passwords"]["PassWordFile"]
+    PASSWORDSFILE = CFG['passwords']['PassWordFile']
 
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
         FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
         SEVENZIP = os.path.join(APP_ROOT, 'core', 'extractor', 'bin', platform.machine(), '7z.exe')
-        SHOWEXTRACT = int(str(CFG["Windows"]["show_extraction"]), 0)
+        SHOWEXTRACT = int(str(CFG['Windows']['show_extraction']), 0)
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
-            logger.warning("Failed to locate ffmpeg.exe. Transcoding disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            logger.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
+            logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
         if not (os.path.isfile(FFPROBE)):
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning("Failed to locate ffprobe.exe. Video corruption detection disabled!")
-                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+                logger.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')
+                logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
     else:
         try:
@@ -781,7 +781,7 @@ def initialize(section=None):
         if not SEVENZIP:
             SEVENZIP = None
             logger.warning(
-                "Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!")
+                'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
         try:
             PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip()
         except Exception:
@@ -789,7 +789,7 @@ def initialize(section=None):
         if not PAR2CMD:
             PAR2CMD = None
             logger.warning(
-                "Failed to locate par2. Repair and rename using par files will not be possible!")
+                'Failed to locate par2. Repair and rename using par files will not be possible!')
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'),
                                                                             os.X_OK):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
@@ -808,8 +808,8 @@ def initialize(section=None):
                     pass
         if not FFMPEG:
             FFMPEG = None
-            logger.warning("Failed to locate ffmpeg. Transcoding disabled!")
-            logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+            logger.warning('Failed to locate ffmpeg. Transcoding disabled!')
+            logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'),
                                                                              os.X_OK):
@@ -830,8 +830,8 @@ def initialize(section=None):
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning("Failed to locate ffprobe. Video corruption detection disabled!")
-                logger.warning("Install ffmpeg with x264 support to enable this feature  ...")
+                logger.warning('Failed to locate ffprobe. Video corruption detection disabled!')
+                logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
     # check for script-defied section and if None set to allow sections
     SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
@@ -857,7 +857,7 @@ def restart():
 
     if popen_list:
         popen_list += SYS_ARGV
-        logger.log(u"Restarting nzbToMedia with {args}".format(args=popen_list))
+        logger.log(u'Restarting nzbToMedia with {args}'.format(args=popen_list))
         logger.close()
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()
@@ -867,7 +867,7 @@ def restart():
 
 
 def rchmod(path, mod):
-    logger.log("Changing file mode of {0} to {1}".format(path, oct(mod)))
+    logger.log('Changing file mode of {0} to {1}'.format(path, oct(mod)))
     os.chmod(path, mod)
     if not os.path.isdir(path):
         return  # Skip files

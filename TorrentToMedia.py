@@ -36,24 +36,24 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         except Exception:
             pass
 
-        control_value_dict = {"input_directory": text_type(input_directory1)}
+        control_value_dict = {'input_directory': text_type(input_directory1)}
         new_value_dict = {
-            "input_name": text_type(input_name1),
-            "input_hash": text_type(input_hash),
-            "input_id": text_type(input_id),
-            "client_agent": text_type(client_agent),
-            "status": 0,
-            "last_update": datetime.date.today().toordinal(),
+            'input_name': text_type(input_name1),
+            'input_hash': text_type(input_hash),
+            'input_id': text_type(input_id),
+            'client_agent': text_type(client_agent),
+            'status': 0,
+            'last_update': datetime.date.today().toordinal(),
         }
-        my_db.upsert("downloads", new_value_dict, control_value_dict)
+        my_db.upsert('downloads', new_value_dict, control_value_dict)
 
-    logger.debug("Received Directory: {0} | Name: {1} | Category: {2}".format(input_directory, input_name, input_category))
+    logger.debug('Received Directory: {0} | Name: {1} | Category: {2}'.format(input_directory, input_name, input_category))
 
     # Confirm the category by parsing directory structure
     input_directory, input_name, input_category, root = core.category_search(input_directory, input_name, input_category,
                                                                              root, core.CATEGORIES)
-    if input_category == "":
-        input_category = "UNCAT"
+    if input_category == '':
+        input_category = 'UNCAT'
 
     usercat = input_category
     try:
@@ -65,45 +65,45 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     except UnicodeError:
         pass
 
-    logger.debug("Determined Directory: {0} | Name: {1} | Category: {2}".format
+    logger.debug('Determined Directory: {0} | Name: {1} | Category: {2}'.format
                  (input_directory, input_name, input_category))
 
     # auto-detect section
     section = core.CFG.findsection(input_category).isenabled()
     if section is None:
-        section = core.CFG.findsection("ALL").isenabled()
+        section = core.CFG.findsection('ALL').isenabled()
         if section is None:
             logger.error('Category:[{0}] is not defined or is not enabled. '
                          'Please rename it or ensure it is enabled for the appropriate section '
                          'in your autoProcessMedia.cfg and try again.'.format
                          (input_category))
-            return [-1, ""]
+            return [-1, '']
         else:
-            usercat = "ALL"
+            usercat = 'ALL'
 
     if len(section) > 1:
         logger.error('Category:[{0}] is not unique, {1} are using it. '
                      'Please rename it or disable all other sections using the same category name '
                      'in your autoProcessMedia.cfg and try again.'.format
                      (usercat, section.keys()))
-        return [-1, ""]
+        return [-1, '']
 
     if section:
         section_name = section.keys()[0]
         logger.info('Auto-detected SECTION:{0}'.format(section_name))
     else:
-        logger.error("Unable to locate a section with subsection:{0} "
-                     "enabled in your autoProcessMedia.cfg, exiting!".format
+        logger.error('Unable to locate a section with subsection:{0} '
+                     'enabled in your autoProcessMedia.cfg, exiting!'.format
                      (input_category))
-        return [-1, ""]
+        return [-1, '']
 
     section = dict(section[section_name][usercat])  # Type cast to dict() to allow effective usage of .get()
 
-    torrent_no_link = int(section.get("Torrent_NoLink", 0))
-    keep_archive = int(section.get("keep_archive", 0))
+    torrent_no_link = int(section.get('Torrent_NoLink', 0))
+    keep_archive = int(section.get('keep_archive', 0))
     extract = int(section.get('extract', 0))
-    extensions = section.get('user_script_mediaExtensions', "").lower().split(',')
-    unique_path = int(section.get("unique_path", 1))
+    extensions = section.get('user_script_mediaExtensions', '').lower().split(',')
+    unique_path = int(section.get('unique_path', 1))
 
     if client_agent != 'manual':
         core.pause_torrent(client_agent, input_hash, input_id, input_name)
@@ -117,7 +117,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         output_destination = os.path.join(core.OUTPUTDIRECTORY, input_category, basename)
     elif unique_path:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, input_category, core.sanitize_name(input_name).replace(" ", ".")))
+            core.os.path.join(core.OUTPUTDIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
     else:
         output_destination = os.path.normpath(
             core.os.path.join(core.OUTPUTDIRECTORY, input_category))
@@ -129,15 +129,15 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if output_destination in input_directory:
         output_destination = input_directory
 
-    logger.info("Output directory set to: {0}".format(output_destination))
+    logger.info('Output directory set to: {0}'.format(output_destination))
 
     if core.SAFE_MODE and output_destination == core.TORRENT_DEFAULTDIR:
         logger.error('The output directory:[{0}] is the Download Directory. '
                      'Edit outputDirectory in autoProcessMedia.cfg. Exiting'.format
                      (input_directory))
-        return [-1, ""]
+        return [-1, '']
 
-    logger.debug("Scanning files in directory: {0}".format(input_directory))
+    logger.debug('Scanning files in directory: {0}'.format(input_directory))
 
     if section_name in ['HeadPhones', 'Lidarr']:
         core.NOFLATTEN.extend(
@@ -151,9 +151,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_files = core.list_media_files(input_directory, other=True, otherext=extensions)
     if len(input_files) == 0 and os.path.isfile(input_directory):
         input_files = [input_directory]
-        logger.debug("Found 1 file to process: {0}".format(input_directory))
+        logger.debug('Found 1 file to process: {0}'.format(input_directory))
     else:
-        logger.debug("Found {0} files in {1}".format(len(input_files), input_directory))
+        logger.debug('Found {0} files in {1}'.format(len(input_files), input_directory))
     for inputFile in input_files:
         file_path = os.path.dirname(inputFile)
         file_name, file_ext = os.path.splitext(os.path.basename(inputFile))
@@ -164,7 +164,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             if not os.path.basename(file_path) in output_destination:
                 target_file = core.os.path.join(
                     core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name)
-                logger.debug("Setting outputDestination to {0} to preserve folder structure".format
+                logger.debug('Setting outputDestination to {0} to preserve folder structure'.format
                              (os.path.dirname(target_file)))
         try:
             target_file = target_file.encode(core.SYS_ENCODING)
@@ -172,11 +172,11 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             pass
         if root == 1:
             if not found_file:
-                logger.debug("Looking for {0} in: {1}".format(input_name, inputFile))
+                logger.debug('Looking for {0} in: {1}'.format(input_name, inputFile))
             if any([core.sanitize_name(input_name) in core.sanitize_name(inputFile),
                     core.sanitize_name(file_name) in core.sanitize_name(input_name)]):
                 found_file = True
-                logger.debug("Found file {0} that matches Torrent Name {1}".format
+                logger.debug('Found file {0} that matches Torrent Name {1}'.format
                              (full_file_name, input_name))
             else:
                 continue
@@ -186,10 +186,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(inputFile))
 
             if not found_file:
-                logger.debug("Looking for files with modified/created dates less than 5 minutes old.")
+                logger.debug('Looking for files with modified/created dates less than 5 minutes old.')
             if (mtime_lapse < datetime.timedelta(minutes=5)) or (ctime_lapse < datetime.timedelta(minutes=5)):
                 found_file = True
-                logger.debug("Found file {0} with date modified/created less than 5 minutes ago.".format
+                logger.debug('Found file {0} with date modified/created less than 5 minutes ago.'.format
                              (full_file_name))
             else:
                 continue  # This file has not been recently moved or created, skip it
@@ -199,7 +199,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                 core.copy_link(inputFile, target_file, core.USELINK)
                 core.remove_read_only(target_file)
             except Exception:
-                logger.error("Failed to link: {0} to {1}".format(inputFile, target_file))
+                logger.error('Failed to link: {0} to {1}'.format(inputFile, target_file))
 
     input_name, output_destination = convert_to_ascii(input_name, output_destination)
 
@@ -212,30 +212,30 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         core.flatten(output_destination)
 
     # Now check if video files exist in destination:
-    if section_name in ["SickBeard", "NzbDrone", "Sonarr", "CouchPotato", "Radarr"]:
+    if section_name in ['SickBeard', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr']:
         num_videos = len(
             core.list_media_files(output_destination, media=True, audio=False, meta=False, archives=False))
         if num_videos > 0:
-            logger.info("Found {0} media files in {1}".format(num_videos, output_destination))
+            logger.info('Found {0} media files in {1}'.format(num_videos, output_destination))
             status = 0
         elif extract != 1:
-            logger.info("Found no media files in {0}. Sending to {1} to process".format(output_destination, section_name))
+            logger.info('Found no media files in {0}. Sending to {1} to process'.format(output_destination, section_name))
             status = 0
         else:
-            logger.warning("Found no media files in {0}".format(output_destination))
+            logger.warning('Found no media files in {0}'.format(output_destination))
 
     # Only these sections can handling failed downloads
     # so make sure everything else gets through without the check for failed
     if section_name not in ['CouchPotato', 'Radarr', 'SickBeard', 'NzbDrone', 'Sonarr']:
         status = 0
 
-    logger.info("Calling {0}:{1} to post-process:{2}".format(section_name, usercat, input_name))
+    logger.info('Calling {0}:{1} to post-process:{2}'.format(section_name, usercat, input_name))
 
     if core.TORRENT_CHMOD_DIRECTORY:
         core.rchmod(output_destination, core.TORRENT_CHMOD_DIRECTORY)
 
     result = ProcessResult(
-        message="",
+        message='',
         status_code=0,
     )
     if section_name == 'UserScript':
@@ -257,11 +257,11 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     if result.status_code != 0:
         if not core.TORRENT_RESUME_ON_FAILURE:
-            logger.error("A problem was reported in the autoProcess* script. "
-                         "Torrent won't resume seeding (settings)")
+            logger.error('A problem was reported in the autoProcess* script. '
+                         'Torrent won\'t resume seeding (settings)')
         elif client_agent != 'manual':
-            logger.error("A problem was reported in the autoProcess* script. "
-                         "If torrent was paused we will resume seeding")
+            logger.error('A problem was reported in the autoProcess* script. '
+                         'If torrent was paused we will resume seeding')
             core.resume_torrent(client_agent, input_hash, input_id, input_name)
 
     else:
@@ -293,48 +293,48 @@ def main(args):
     # clientAgent for Torrents
     client_agent = core.TORRENT_CLIENTAGENT
 
-    logger.info("#########################################################")
-    logger.info("## ..::[{0}]::.. ##".format(os.path.basename(__file__)))
-    logger.info("#########################################################")
+    logger.info('#########################################################')
+    logger.info('## ..::[{0}]::.. ##'.format(os.path.basename(__file__)))
+    logger.info('#########################################################')
 
     # debug command line options
-    logger.debug("Options passed into TorrentToMedia: {0}".format(args))
+    logger.debug('Options passed into TorrentToMedia: {0}'.format(args))
 
     # Post-Processing Result
     result = ProcessResult(
-        message="",
+        message='',
         status_code=0,
     )
 
     try:
         input_directory, input_name, input_category, input_hash, input_id = core.parse_args(client_agent, args)
     except Exception:
-        logger.error("There was a problem loading variables")
+        logger.error('There was a problem loading variables')
         return -1
 
     if input_directory and input_name and input_hash and input_id:
         result = process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent)
     else:
         # Perform Manual Post-Processing
-        logger.warning("Invalid number of arguments received from client, Switching to manual run mode ...")
+        logger.warning('Invalid number of arguments received from client, Switching to manual run mode ...')
 
         for section, subsections in core.SECTIONS.items():
             for subsection in subsections:
                 if not core.CFG[section][subsection].isenabled():
                     continue
                 for dir_name in core.get_dirs(section, subsection, link='hard'):
-                    logger.info("Starting manual run for {0}:{1} - Folder:{2}".format
+                    logger.info('Starting manual run for {0}:{1} - Folder:{2}'.format
                                 (section, subsection, dir_name))
 
-                    logger.info("Checking database for download info for {0} ...".format
+                    logger.info('Checking database for download info for {0} ...'.format
                                 (os.path.basename(dir_name)))
                     core.DOWNLOADINFO = core.get_download_info(os.path.basename(dir_name), 0)
                     if core.DOWNLOADINFO:
                         client_agent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
                         input_hash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
                         input_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
-                        logger.info("Found download info for {0}, "
-                                    "setting variables now ...".format(os.path.basename(dir_name)))
+                        logger.info('Found download info for {0}, '
+                                    'setting variables now ...'.format(os.path.basename(dir_name)))
                     else:
                         logger.info('Unable to locate download info for {0}, '
                                     'continuing to try and process this release ...'.format
@@ -359,17 +359,17 @@ def main(args):
                     results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,
                                               client_agent)
                     if results[0] != 0:
-                        logger.error("A problem was reported when trying to perform a manual run for {0}:{1}.".format
+                        logger.error('A problem was reported when trying to perform a manual run for {0}:{1}.'.format
                                      (section, subsection))
                         result = results
 
     if result.status_code == 0:
-        logger.info("The {0} script completed successfully.".format(args[0]))
+        logger.info('The {0} script completed successfully.'.format(args[0]))
     else:
-        logger.error("A problem was reported in the {0} script.".format(args[0]))
+        logger.error('A problem was reported in the {0} script.'.format(args[0]))
     del core.MYAPP
     return result.status_code
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     exit(main(sys.argv))

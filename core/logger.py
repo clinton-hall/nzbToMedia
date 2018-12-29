@@ -193,9 +193,9 @@ class NTMRotatingLogHandler(object):
                 self.writes_since_check += 1
 
             try:
-                message = u"{0}: {1}".format(section.upper(), to_log)
+                message = u'{0}: {1}'.format(section.upper(), to_log)
             except UnicodeError:
-                message = u"{0}: Message contains non-utf-8 string".format(section.upper())
+                message = u'{0}: Message contains non-utf-8 string'.format(section.upper())
 
             out_line = message
 
