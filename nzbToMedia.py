@@ -29,7 +29,10 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         logger.error(
             'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
                 input_directory))
-        return [-1, '']
+        return ProcessResult(
+            message='',
+            status_code=-1,
+        )
 
     if not download_id and client_agent == 'sabnzbd':
         download_id = get_nzoid(input_name)
@@ -70,7 +73,10 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
             logger.error(
                 'Category:[{0}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.'.format(
                     input_category))
-            return [-1, '']
+            return ProcessResult(
+                message='',
+                status_code=-1,
+            )
         else:
             usercat = 'ALL'
 
@@ -78,7 +84,10 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         logger.error(
             'Category:[{0}] is not unique, {1} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.'.format(
                 input_category, section.keys()))
-        return [-1, '']
+        return ProcessResult(
+            message='',
+            status_code=-1,
+        )
 
     if section:
         section_name = section.keys()[0]
@@ -86,7 +95,10 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     else:
         logger.error('Unable to locate a section with subsection:{0} enabled in your autoProcessMedia.cfg, exiting!'.format(
             input_category))
-        return [-1, '']
+        return ProcessResult(
+            status_code=-1,
+            message='',
+        )
 
     cfg = dict(core.CFG[section_name][usercat])
 
@@ -96,7 +108,10 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         if int(cfg.get('remote_path')) and not core.REMOTEPATHS:
             logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 section_name, input_category))
-            return [-1, '']
+            return ProcessResult(
+                status_code=-1,
+                message='',
+            )
     except Exception:
         logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
             core.get('remote_path'), section_name, input_category))
