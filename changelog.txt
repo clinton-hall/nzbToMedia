@@ -1,6 +1,6 @@
 Change_LOG / History
 
-V12.01
+V12.0.0
 
 NOTE:
 - This release contains major backwards-incompatible changes to the internal API
@@ -15,18 +15,9 @@ Move custom libs to `libs/custom`
 Move Python 2 libs to `libs/py2`
 Move Windows libs to `libs/windows`
 Fix PEP8
-
-pick 43ffbc7 Add feature to make libs importable
-pick 26008b3 Add feature to auto-update libs
-pick 339d287 Add path parent option to module path and default to using local path
-pick 7aff860 Add git clean functionality
-pick 70acfc2 Add cleanup upon update
-pick 2fce0e4 Add logging for cleanup
-
-#1091
-#1396
-#1399
-
+Add feature to make libs importable
+Add feature to auto-update libs
+Add path parent option to module path and default to using local path
 Update invisible.cmd to return errorlevel
 Update invisible.vbs to return exit code of 7zip
 Update extractor.py for correct return code
@@ -39,7 +30,15 @@ Fix execution of extraction
 Start vbs directly from extractor
 Delete invisible.cmd
 Use args instead of Wscript.Arguments
+Fix postprocessing of failed / bad downloads (#1091)
+Fix release is None
+Fix UnRAR failing
 
+V11.8.0 12/28/2018
+
+Add version information
+Add bumpversion support
+Fix automatic cleanup script
 
 V11.7 12/25/2018
 
