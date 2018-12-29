@@ -10,7 +10,7 @@ import requests
 
 import core
 from core import logger, transcoder
-from core.auto_process.common import command_complete, completed_download_handling
+from core.auto_process.common import command_complete, completed_download_handling, ProcessResult
 from core.forks import auto_fork
 from core.scene_exceptions import process_all_exceptions
 from core.utils import convert_to_ascii, flatten, import_subs, list_media_files, remote_dir, remove_dir, report_nzb, server_responding
@@ -39,7 +39,10 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
         fork, fork_params = "None", {}
     else:
         logger.error("Server did not respond. Exiting", section)
-        return [1, "{0}: Failed to post-process - {1} did not respond.".format(section, section)]
+        return ProcessResult(
+            status_code=1,
+            message="{0}: Failed to post-process - {0} did not respond.".format(section),
+        )
 
     delete_failed = int(cfg.get("delete_failed", 0))
     nzb_extraction_by = cfg.get("nzbExtractionBy", "Downloader")
@@ -117,7 +120,10 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
                 failure_link += '&corrupt=true'
     elif client_agent == "manual":
         logger.warning("No media files found in directory {0} to manually process.".format(dir_name), section)
-        return [0, ""]  # Success (as far as this script is concerned)
+        return ProcessResult(
+            message="",
+            status_code=0,  # Success (as far as this script is concerned)
+        )
     elif nzb_extraction_by == "Destination":
         logger.info("Check for media files ignored because nzbExtractionBy is set to Destination.")
         if int(failed) == 0:
@@ -148,7 +154,10 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
                 core.rchmod(dir_name, chmod_directory)
         else:
             logger.error("FAILED: Transcoding failed for files in {0}".format(dir_name), section)
-            return [1, "{0}: Failed to post-process - Transcoding failed".format(section)]
+            return ProcessResult(
+                message="{0}: Failed to post-process - Transcoding failed".format(section),
+                status_code=1,
+            )
 
     # configure SB params to pass
     fork_params['quiet'] = 1
@@ -210,7 +219,10 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
     if status == 0:
         if section == "NzbDrone" and not apikey:
             logger.info('No Sonarr apikey entered. Processing completed.')
-            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            return ProcessResult(
+                message="{0}: Successfully post-processed {1}".format(section, input_name),
+                status_code=0,
+            )
         logger.postprocess("SUCCESS: The download succeeded, sending a post-process request", section)
     else:
         core.FAILED = True
@@ -220,13 +232,19 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
             logger.postprocess("FAILED: The download failed. Sending 'failed' process request to {0} branch".format(fork), section)
         elif section == "NzbDrone":
             logger.postprocess("FAILED: The download failed. Sending failed download to {0} for CDH processing".format(fork), section)
-            return [1, "{0}: Download Failed. Sending back to {1}".format(section, section)]  # Return as failed to flag this in the downloader.
+            return ProcessResult(
+                message="{0}: Download Failed. Sending back to {0}".format(section),
+                status_code=1,  # Return as failed to flag this in the downloader.
+            )
         else:
             logger.postprocess("FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process".format(fork), section)
             if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
                 logger.postprocess("Deleting failed files and folder {0}".format(dir_name), section)
                 remove_dir(dir_name)
-            return [1, "{0}: Failed to post-process. {1} does not support failed downloads".format(section, section)]  # Return as failed to flag this in the downloader.
+            return ProcessResult(
+                message="{0}: Failed to post-process. {0} does not support failed downloads".format(section),
+                status_code=1,  # Return as failed to flag this in the downloader.
+            )
 
     url = None
     if section == "SickBeard":
@@ -266,11 +284,17 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
             r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
     except requests.ConnectionError:
         logger.error("Unable to open URL: {0}".format(url), section)
-        return [1, "{0}: Failed to post-process - Unable to connect to {1}".format(section, section)]
+        return ProcessResult(
+            message="{0}: Failed to post-process - Unable to connect to {0}".format(section),
+            status_code=1,
+        )
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error("Server returned status {0}".format(r.status_code), section)
-        return [1, "{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code)]
+        return ProcessResult(
+            message="{0}: Failed to post-process - Server returned status {1}".format(section, r.status_code),
+            status_code=1,
+        )
 
     success = False
     queued = False
@@ -309,7 +333,10 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
         remove_dir(dir_name)
 
     if success:
-        return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+        return ProcessResult(
+            message="{0}: Successfully post-processed {1}".format(section, input_name),
+            status_code=0,
+        )
     elif section == "NzbDrone" and started:
         n = 0
         params = {}
@@ -324,18 +351,36 @@ def process(section, dir_name, input_name=None, failed=False, client_agent="manu
             logger.debug("The Scan command return status: {0}".format(command_status), section)
         if not os.path.exists(dir_name):
             logger.debug("The directory {0} has been removed. Renaming was successful.".format(dir_name), section)
-            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            return ProcessResult(
+                message="{0}: Successfully post-processed {1}".format(section, input_name),
+                status_code=0,
+            )
         elif command_status and command_status in ['completed']:
             logger.debug("The Scan command has completed successfully. Renaming was successful.", section)
-            return [0, "{0}: Successfully post-processed {1}".format(section, input_name)]
+            return ProcessResult(
+                message="{0}: Successfully post-processed {1}".format(section, input_name),
+                status_code=0,
+            )
         elif command_status and command_status in ['failed']:
             logger.debug("The Scan command has failed. Renaming was not successful.", section)
-            # return [1, "%s: Failed to post-process %s" % (section, input_name) ]
+            # return ProcessResult(
+            #     message="{0}: Failed to post-process {1}".format(section, input_name),
+            #     status_code=1,
+            # )
         if completed_download_handling(url2, headers, section=section):
             logger.debug("The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.".format(section), section)
-            return [status, "{0}: Complete DownLoad Handling is enabled. Passing back to {1}".format(section, section)]
+            return ProcessResult(
+                message="{0}: Complete DownLoad Handling is enabled. Passing back to {0}".format(section),
+                status_code=status,
+            )
         else:
             logger.warning("The Scan command did not return a valid status. Renaming was not successful.", section)
-            return [1, "{0}: Failed to post-process {1}".format(section, input_name)]
+            return ProcessResult(
+                message="{0}: Failed to post-process {1}".format(section, input_name),
+                status_code=1,
+            )
     else:
-        return [1, "{0}: Failed to post-process - Returned log from {1} was not as expected.".format(section, section)]  # We did not receive Success confirmation.
+        return ProcessResult(
+            message="{0}: Failed to post-process - Returned log from {0} was not as expected.".format(section),
+            status_code=1,  # We did not receive Success confirmation.
+        )
