@@ -106,9 +106,7 @@ def clean_folders(*paths):
 
 def clean(*paths):
     """Clean up bytecode and obsolete folders."""
-    with WorkingDirectory(module_path()) as cwd:
-        if cwd.working_directory != cwd.original_directory:
-            print('Changing to directory:', cwd.working_directory)
+    def _clean(*paths):
         print('\n-- Cleaning bytecode --')
         try:
             result = clean_bytecode()
@@ -124,8 +122,19 @@ def clean(*paths):
                 print(error)
             else:
                 print(result or 'No folders to clean\n')
+
+    with WorkingDirectory(module_path()) as cwd:
+        if cwd.working_directory != cwd.original_directory:
+            print('Changing to directory:', cwd.working_directory)
+
+        if os.path.exists('.git'):
+            _clean(*paths)
+        else:
+            print('Directory is not a git repository')
+
         if cwd.working_directory != cwd.original_directory:
             print('Returning to directory: ', cwd.original_directory)
+
         print('\n-- Cleanup finished --\n')
 
 
