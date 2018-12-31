@@ -72,6 +72,7 @@ FORK_SICKCHILL = 'SickChill'
 FORK_SICKBEARD_API = 'SickBeard-api'
 FORK_MEDUSA = 'Medusa'
 FORK_SICKGEAR = 'SickGear'
+FORK_STHENO = 'Stheno'
 FORKS[FORK_DEFAULT] = {'dir': None}
 FORKS[FORK_FAILED] = {'dirName': None, 'failed': None}
 FORKS[FORK_FAILED_TORRENT] = {'dir': None, 'failed': None, 'process_method': None}
@@ -80,6 +81,7 @@ FORKS[FORK_SICKCHILL] = {'proc_dir': None, 'failed': None, 'process_method': Non
 FORKS[FORK_SICKBEARD_API] = {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None}
 FORKS[FORK_MEDUSA] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None}
 FORKS[FORK_SICKGEAR] = {'dir': None, 'failed': None, 'process_method': None, 'force': None}
+FORKS[FORK_STHENO] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
 
 # NZBGet Exit Codes

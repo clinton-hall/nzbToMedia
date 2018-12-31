@@ -20,7 +20,7 @@ def auto_fork(section, input_category):
     apikey = cfg.get('apikey')
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    replace = {'sickrage': 'SickRage', 'sickchill': 'SickChill', 'sickgear': 'SickGear', 'medusa': 'Medusa', 'sickbeard-api': 'SickBeard-api'}
+    replace = {'sickrage': 'SickRage', 'sickchill': 'SickChill', 'sickgear': 'SickGear', 'medusa': 'Medusa', 'sickbeard-api': 'SickBeard-api', 'stheno': 'Stheno'}
     f1 = replace[cfg.get('fork', 'auto')] if cfg.get('fork', 'auto') in replace else cfg.get('fork', 'auto')
     try:
         fork = f1, core.FORKS[f1]
