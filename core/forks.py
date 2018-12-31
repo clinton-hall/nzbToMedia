@@ -20,8 +20,16 @@ def auto_fork(section, input_category):
     apikey = cfg.get('apikey')
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    replace = {'sickrage': 'SickRage', 'sickchill': 'SickChill', 'sickgear': 'SickGear', 'medusa': 'Medusa', 'sickbeard-api': 'SickBeard-api', 'stheno': 'Stheno'}
-    f1 = replace[cfg.get('fork', 'auto')] if cfg.get('fork', 'auto') in replace else cfg.get('fork', 'auto')
+    replace = {
+        'medusa': 'Medusa',
+        'sickbeard-api': 'SickBeard-api',
+        'sickgear': 'SickGear',
+        'sickchill': 'SickChill',
+        'sickrage': 'SickRage',
+        'stheno': 'Stheno',
+    }
+    _val = cfg.get('fork', 'auto')
+    f1 = replace.get(_val, _val)
     try:
         fork = f1, core.FORKS[f1]
     except KeyError:
