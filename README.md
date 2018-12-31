@@ -1,4 +1,4 @@
-nzbToMedia v11.8.1
+nzbToMedia v12.0.0
 ==================
 
 Provides an [efficient](https://github.com/clinton-hall/nzbToMedia/wiki/Efficient-on-demand-post-processing) way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") and [SickBeard](http://sickbeard.com/ "SickBeard") (and its [forks](https://github.com/clinton-hall/nzbToMedia/wiki/Failed-Download-Handling-%28FDH%29#sick-beard-and-its-forks))
@@ -50,9 +50,11 @@ Sorry for any inconvenience caused here.
 
 ### General
 
-1. Install python 2.7.
+1. Install Python
 
-2. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your download client) 
+1. Install `pywin32`
+
+1. Clone or copy all files into a directory wherever you want to keep them (eg. /scripts/ in the home directory of your download client) 
    and change the permission accordingly so the download client can access these files.
 	
   `git clone git://github.com/clinton-hall/nzbToMedia.git`

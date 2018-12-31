@@ -1,5 +1,39 @@
 Change_LOG / History
 
+V12.0.0
+
+NOTE:
+- This release contains major backwards-incompatible changes to the internal API
+- Windows users will need to manually install pywin32
+
+Add Python 3 support
+Add cleanup script for post-update cleanup
+Update all dependencies
+Move vendored packages in `core` to `libs`
+Move common libs to `libs/common`
+Move custom libs to `libs/custom`
+Move Python 2 libs to `libs/py2`
+Move Windows libs to `libs/windows`
+Fix PEP8
+Add feature to make libs importable
+Add feature to auto-update libs
+Add path parent option to module path and default to using local path
+Update invisible.cmd to return errorlevel
+Update invisible.vbs to return exit code of 7zip
+Update extractor.py for correct return code
+Added debugging to extractor
+Add option for windows extraction debugging
+Remove surplus debug
+Fix handling of None Password file
+Fix invisible windows extraction
+Fix execution of extraction
+Start vbs directly from extractor
+Delete invisible.cmd
+Use args instead of Wscript.Arguments
+Fix postprocessing of failed / bad downloads (#1091)
+Fix release is None
+Fix UnRAR failing
+
 V11.8.1 12/29/2018
 
 Fix cleanup for nzbToMedia installed as a git submodule
