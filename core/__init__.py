@@ -745,7 +745,6 @@ def initialize(section=None):
         if codec in codec_alias:
             extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
             ACODEC3_ALLOW.extend(extra)
-    codec_alias = {}  # clear memory
 
     PASSWORDSFILE = CFG['passwords']['PassWordFile']
 

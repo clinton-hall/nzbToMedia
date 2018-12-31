@@ -221,7 +221,6 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
-                started = True
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
                 scan_id = None

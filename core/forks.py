@@ -87,7 +87,6 @@ def auto_fork(section, input_category):
             r = []
         if r and r.ok:
             if apikey:
-                optional_parameters = []
                 try:
                     json_data = r.json()
                 except ValueError:
