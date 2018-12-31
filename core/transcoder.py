@@ -80,10 +80,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
     file = videofile
     if not core.FFPROBE:
         return video_details, result
-    if 'avprobe' in core.FFPROBE:
-        print_format = '-of'
-    else:
-        print_format = '-print_format'
+    print_format = '-of' if 'avprobe' in core.FFPROBE else '-print_format'
     try:
         if img:
             videofile = '-'
