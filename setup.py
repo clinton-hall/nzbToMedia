@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='nzbToMedia',
-    version='11.8.1',
+    version='12.0.0',
     license='GPLv3',
     description='Efficient on demand post processing',
     long_description="""    
@@ -51,22 +51,8 @@ setup(
     """,
     author='Clinton Hall',
     author_email='fock_wulf@hotmail.com',
-    url='https://github.com/clinton-hall/nzbToMedia_repo',
+    url='https://github.com/clinton-hall/nzbToMedia',
     packages=['core'],
-    include_package_data=True,
-    zip_safe=False,
-    scripts=[
-        'nzbToCouchPotato',
-        'nzbToGamez',
-        'nzbToHeadPhones',
-        'nzbToLidarr',
-        'nzbToMedia',
-        'nzbToMylar',
-        'nzbToNzbDrone',
-        'nzbToRadarr',
-        'nzbToSickBeard',
-        'TorrentToMedia',
-    ],
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 5 - Production/Stable',
