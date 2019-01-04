@@ -1,1 +1,0 @@
-from .configobj import *

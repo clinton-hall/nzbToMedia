@@ -10,3 +10,5 @@
 /userscripts/
 /logs/
 /.idea/
+*.dist-info
+*.egg-info

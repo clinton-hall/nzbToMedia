@@ -40,6 +40,11 @@
     # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
     ionice_classdata = 0
 
+[Windows]
+    ### Set specific settings for Windows systems
+    # Set this to 1 to allow extraction (7zip) windows to be lunched visble (for debugging) otherwise 0 to have this run in background.
+    show_extraction = 0
+
 [CouchPotato]
     #### autoProcessing for Movies
     #### movie - category that gets called for post-processing with CPS
