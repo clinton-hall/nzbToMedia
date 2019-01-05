@@ -8,16 +8,16 @@ database = main_db.DBConnection()
 
 
 def update_download_info_status(input_name, status):
-    logger.db('Updating status of our download {0} in the DB to {1}'.format(input_name, status))
-
-    database.action('UPDATE downloads SET status=?, last_update=? WHERE input_name=?',
-                    [status, datetime.date.today().toordinal(), text_type(input_name)])
+    msg = 'Updating DB download status of {0} to {1}'
+    action = 'UPDATE downloads SET status=?, last_update=? WHERE input_name=?'
+    args = [status, datetime.date.today().toordinal(), text_type(input_name)]
+    logger.db(msg.format(input_name, status))
+    database.action(action, args)
 
 
 def get_download_info(input_name, status):
-    logger.db('Getting download info for {0} from the DB'.format(input_name))
-
-    sql_results = database.select('SELECT * FROM downloads WHERE input_name=? AND status=?',
-                                  [text_type(input_name), status])
-
-    return sql_results
+    msg = 'Getting download info for {0} from the DB'
+    action = 'SELECT * FROM downloads WHERE input_name=? AND status=?'
+    args = [text_type(input_name), status]
+    logger.db(msg.format(input_name))
+    return database.select(action, args)
