@@ -21,10 +21,21 @@ from core import extractor, logger
 from core.utils.download_info import get_download_info, update_download_info_status
 from core.utils.network import test_connection, wake_on_lan, wake_up
 from core.utils.parsers import (
-    parse_args, parse_deluge, parse_other, parse_qbittorrent, parse_rtorrent, parse_transmission,
-    parse_utorrent, parse_vuze,
+    parse_args,
+    parse_deluge,
+    parse_other,
+    parse_qbittorrent,
+    parse_rtorrent,
+    parse_transmission,
+    parse_utorrent,
+    parse_vuze,
 )
-from core.utils.paths import get_dir_size, make_dir, remote_dir
+from core.utils.paths import (
+    get_dir_size, make_dir,
+    remote_dir,
+    remove_empty_folders,
+    remove_read_only,
+)
 from core.utils.processes import RunningProcess
 from core.utils.torrents import create_torrent_class, pause_torrent, remove_torrent, resume_torrent
 
@@ -281,41 +292,6 @@ def flatten(output_destination):
             logger.error('Could not flatten {0}'.format(outputFile), 'FLATTEN')
 
     remove_empty_folders(output_destination)  # Cleanup empty directories
-
-
-def remove_empty_folders(path, remove_root=True):
-    """Function to remove empty folders"""
-    if not os.path.isdir(path):
-        return
-
-    # remove empty subfolders
-    logger.debug('Checking for empty folders in:{0}'.format(path))
-    files = os.listdir(text_type(path))
-    if len(files):
-        for f in files:
-            fullpath = os.path.join(path, f)
-            if os.path.isdir(fullpath):
-                remove_empty_folders(fullpath)
-
-    # if folder empty, delete it
-    files = os.listdir(text_type(path))
-    if len(files) == 0 and remove_root:
-        logger.debug('Removing empty folder:{}'.format(path))
-        os.rmdir(path)
-
-
-def remove_read_only(filename):
-    if os.path.isfile(filename):
-        # check first the read-only attribute
-        file_attribute = os.stat(filename)[0]
-        if not file_attribute & stat.S_IWRITE:
-            # File is read-only, so make it writeable
-            logger.debug('Read only mode on file {name}. Attempting to make it writeable'.format
-                         (name=filename))
-            try:
-                os.chmod(filename, stat.S_IWRITE)
-            except Exception:
-                logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
 
 
 def char_replace(name):

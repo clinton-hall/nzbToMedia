@@ -2,10 +2,12 @@
 from functools import partial
 import os
 import re
+import stat
 
 from six import text_type
 
 import core
+from core import logger
 
 
 def make_dir(path):
@@ -41,3 +43,38 @@ def get_dir_size(input_path):
         (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
         for f in map(prepend, os.listdir(text_type(input_path)))
     ])
+
+
+def remove_empty_folders(path, remove_root=True):
+    """Function to remove empty folders"""
+    if not os.path.isdir(path):
+        return
+
+    # remove empty subfolders
+    logger.debug('Checking for empty folders in:{0}'.format(path))
+    files = os.listdir(text_type(path))
+    if len(files):
+        for f in files:
+            fullpath = os.path.join(path, f)
+            if os.path.isdir(fullpath):
+                remove_empty_folders(fullpath)
+
+    # if folder empty, delete it
+    files = os.listdir(text_type(path))
+    if len(files) == 0 and remove_root:
+        logger.debug('Removing empty folder:{}'.format(path))
+        os.rmdir(path)
+
+
+def remove_read_only(filename):
+    if os.path.isfile(filename):
+        # check first the read-only attribute
+        file_attribute = os.stat(filename)[0]
+        if not file_attribute & stat.S_IWRITE:
+            # File is read-only, so make it writeable
+            logger.debug('Read only mode on file {name}. Attempting to make it writeable'.format
+                         (name=filename))
+            try:
+                os.chmod(filename, stat.S_IWRITE)
+            except Exception:
+                logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
