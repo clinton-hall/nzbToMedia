@@ -2,6 +2,8 @@ import socket
 import struct
 import time
 
+import requests
+
 import core
 from core import logger
 
@@ -64,3 +66,59 @@ def wake_up():
             logger.warning(msg.format(mac, max_attempts))
 
     logger.info('Continuing with the rest of the script.')
+
+
+def server_responding(base_url):
+    logger.debug('Attempting to connect to server at {0}'.format(base_url), 'SERVER')
+    try:
+        requests.get(base_url, timeout=(60, 120), verify=False)
+    except (requests.ConnectionError, requests.exceptions.Timeout):
+        logger.error('Server failed to respond at {0}'.format(base_url), 'SERVER')
+        return False
+    else:
+        logger.debug('Server responded at {0}'.format(base_url), 'SERVER')
+        return True
+
+
+def find_download(client_agent, download_id):
+    logger.debug('Searching for Download on {0} ...'.format(client_agent))
+    if client_agent == 'utorrent':
+        torrents = core.TORRENT_CLASS.list()[1]['torrents']
+        for torrent in torrents:
+            if download_id in torrent:
+                return True
+    if client_agent == 'transmission':
+        torrents = core.TORRENT_CLASS.get_torrents()
+        for torrent in torrents:
+            torrent_hash = torrent.hashString
+            if torrent_hash == download_id:
+                return True
+    if client_agent == 'deluge':
+        return False
+    if client_agent == 'qbittorrent':
+        torrents = core.TORRENT_CLASS.torrents()
+        for torrent in torrents:
+            if torrent['hash'] == download_id:
+                return True
+    if client_agent == 'sabnzbd':
+        if 'http' in core.SABNZBDHOST:
+            base_url = '{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
+        else:
+            base_url = 'http://{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
+        url = base_url
+        params = {
+            'apikey': core.SABNZBDAPIKEY,
+            'mode': 'get_files',
+            'output': 'json',
+            'value': download_id,
+        }
+        try:
+            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+        except requests.ConnectionError:
+            logger.error('Unable to open URL')
+            return False  # failure
+
+        result = r.json()
+        if result['files']:
+            return True
+    return False

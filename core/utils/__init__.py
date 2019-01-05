@@ -20,7 +20,7 @@ from core import extractor, logger
 from core.utils import shutil_custom
 from core.utils.download_info import get_download_info, update_download_info_status
 from core.utils.links import copy_link, replace_links
-from core.utils.network import test_connection, wake_on_lan, wake_up
+from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
 from core.utils.parsers import (
     parse_args,
     parse_deluge,
@@ -451,50 +451,6 @@ def clean_dir(path, section, subsection):
         shutil.rmtree(path, onerror=onerror)
     except Exception:
         logger.error('Unable to delete directory {0}'.format(path))
-
-
-def find_download(client_agent, download_id):
-    logger.debug('Searching for Download on {0} ...'.format(client_agent))
-    if client_agent == 'utorrent':
-        torrents = core.TORRENT_CLASS.list()[1]['torrents']
-        for torrent in torrents:
-            if download_id in torrent:
-                return True
-    if client_agent == 'transmission':
-        torrents = core.TORRENT_CLASS.get_torrents()
-        for torrent in torrents:
-            torrent_hash = torrent.hashString
-            if torrent_hash == download_id:
-                return True
-    if client_agent == 'deluge':
-        return False
-    if client_agent == 'qbittorrent':
-        torrents = core.TORRENT_CLASS.torrents()
-        for torrent in torrents:
-            if torrent['hash'] == download_id:
-                return True
-    if client_agent == 'sabnzbd':
-        if 'http' in core.SABNZBDHOST:
-            base_url = '{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
-        else:
-            base_url = 'http://{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
-        url = base_url
-        params = {
-            'apikey': core.SABNZBDAPIKEY,
-            'mode': 'get_files',
-            'output': 'json',
-            'value': download_id,
-        }
-        try:
-            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
-        except requests.ConnectionError:
-            logger.error('Unable to open URL')
-            return False  # failure
-
-        result = r.json()
-        if result['files']:
-            return True
-    return False
 
 
 def clean_file_name(filename):
