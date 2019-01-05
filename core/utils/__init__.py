@@ -22,6 +22,7 @@ from core.utils.download_info import get_download_info, update_download_info_sta
 from core.utils.links import copy_link, replace_links
 from core.utils.naming import clean_file_name, is_sample, sanitize_name
 from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
+from core.utils.notifications import plex_update
 from core.utils.parsers import (
     parse_args,
     parse_deluge,
@@ -666,30 +667,6 @@ def server_responding(base_url):
     except (requests.ConnectionError, requests.exceptions.Timeout):
         logger.error('Server failed to respond at {0}'.format(base_url), 'SERVER')
         return False
-
-
-def plex_update(category):
-    if core.FAILED:
-        return
-    url = '{scheme}://{host}:{port}/library/sections/'.format(
-        scheme='https' if core.PLEXSSL else 'http',
-        host=core.PLEXHOST,
-        port=core.PLEXPORT,
-    )
-    section = None
-    if not core.PLEXSEC:
-        return
-    logger.debug('Attempting to update Plex Library for category {0}.'.format(category), 'PLEX')
-    for item in core.PLEXSEC:
-        if item[0] == category:
-            section = item[1]
-
-    if section:
-        url = '{url}{section}/refresh?X-Plex-Token={token}'.format(url=url, section=section, token=core.PLEXTOKEN)
-        requests.get(url, timeout=(60, 120), verify=False)
-        logger.debug('Plex Library has been refreshed.', 'PLEX')
-    else:
-        logger.debug('Could not identify section for plex update', 'PLEX')
 
 
 def backup_versioned_file(old_file, version):
