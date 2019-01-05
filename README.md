@@ -5,8 +5,8 @@ Provides an [efficient](https://github.com/clinton-hall/nzbToMedia/wiki/Efficien
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/ "SABnzbd") and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
 This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli") and further contributions by [schumi2004](https://github.com/schumi2004 "schumi2004") and [hugbug](https://sourceforge.net/apps/phpbb/nzbget/memberlist.php?mode=viewprofile&u=67 "hugbug").
 Torrent suport added by [jkaberg](https://github.com/jkaberg "jkaberg") and [berkona](https://github.com/berkona "berkona")
-Corrupt video checking, auto SickBeard fork determination and a whole lot of code improvement was done by [Labrys of Knossos](https://github.com/echel0n "Labrys of Knossos")
-Python3 compatibility, and much cleaner code base has been contributed by [echel0n](https://github.com/labrys "echel0n")
+Corrupt video checking, auto SickBeard fork determination and a whole lot of code improvement was done by [echel0n](https://github.com/echel0n "echel0n")
+Python3 compatibility, and much cleaner code base has been contributed by [Labrys of Knossos](https://github.com/labrys "Labrys of Knossos")
 
 
 Introduction
