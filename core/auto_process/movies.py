@@ -365,7 +365,10 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                     logger.debug('The Scan command return status: {0}'.format(command_status), section)
                     if command_status in ['completed']:
                         logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
-                        return [0, '{0}: Successfully post-processed {1}'.format(section, input_name)]
+                        return ProcessResult(
+                            message='{0}: Successfully post-processed {1}'.format(section, input_name),
+                            status_code=0,
+                        )
                     elif command_status in ['failed']:
                         logger.debug('The Scan command has failed. Renaming was not successful.', section)
                         # return ProcessResult(
