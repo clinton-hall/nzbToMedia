@@ -19,6 +19,7 @@ import subliminal
 import core
 from core import extractor, logger
 from core.utils.download_info import get_download_info, update_download_info_status
+from core.utils import shutil_custom
 from core.utils.network import test_connection, wake_on_lan, wake_up
 from core.utils.parsers import (
     parse_args,
@@ -47,15 +48,7 @@ except ImportError:
 
 requests.packages.urllib3.disable_warnings()
 
-# Monkey Patch shutil.copyfileobj() to adjust the buffer length to 512KB rather than 4KB
-shutil.copyfileobjOrig = shutil.copyfileobj
-
-
-def copyfileobj_fast(fsrc, fdst, length=512 * 1024):
-    shutil.copyfileobjOrig(fsrc, fdst, length=length)
-
-
-shutil.copyfileobj = copyfileobj_fast
+shutil_custom.monkey_patch()
 
 
 def sanitize_name(name):
