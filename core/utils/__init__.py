@@ -3,7 +3,6 @@
 from __future__ import print_function, unicode_literals
 
 import datetime
-from functools import partial
 import os
 import re
 import shutil
@@ -26,6 +25,7 @@ from core.utils.parsers import (
     parse_args, parse_deluge, parse_other, parse_qbittorrent, parse_rtorrent, parse_transmission,
     parse_utorrent, parse_vuze,
 )
+from core.utils.paths import get_dir_size, make_dir, remote_dir
 from core.utils.processes import RunningProcess
 from core.utils.torrents import create_torrent_class, pause_torrent, remove_torrent, resume_torrent
 
@@ -72,33 +72,6 @@ def sanitize_name(name):
         pass
 
     return name
-
-
-def make_dir(path):
-    if not os.path.isdir(path):
-        try:
-            os.makedirs(path)
-        except Exception:
-            return False
-    return True
-
-
-def remote_dir(path):
-    if not core.REMOTEPATHS:
-        return path
-    for local, remote in core.REMOTEPATHS:
-        if local in path:
-            base_dirs = path.replace(local, '').split(os.sep)
-            if '/' in remote:
-                remote_sep = '/'
-            else:
-                remote_sep = '\\'
-            new_path = remote_sep.join([remote] + base_dirs)
-            new_path = re.sub(r'(\S)(\\+)', r'\1\\', new_path)
-            new_path = re.sub(r'(/+)', r'/', new_path)
-            new_path = re.sub(r'([/\\])$', r'', new_path)
-            return new_path
-    return path
 
 
 def category_search(input_directory, input_name, input_category, root, categories):
@@ -193,14 +166,6 @@ def category_search(input_directory, input_name, input_category, root, categorie
         logger.info('SEARCH: We will try and determine which files to process, individually')
 
     return input_directory, input_name, input_category, root
-
-
-def get_dir_size(input_path):
-    prepend = partial(os.path.join, input_path)
-    return sum([
-        (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
-        for f in map(prepend, os.listdir(text_type(input_path)))
-    ])
 
 
 def is_min_size(input_name, min_size):
@@ -597,7 +562,7 @@ def onerror(func, path, exc_info):
     it attempts to add write permission and then retries.
 
     If the error is for another reason it re-raises the error.
-    
+
     Usage : ``shutil.rmtree(path, onerror=onerror)``
     """
     if not os.access(path, os.W_OK):
