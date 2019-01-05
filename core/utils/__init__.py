@@ -8,12 +8,10 @@ import shutil
 import stat
 import time
 
-from babelfish import Language
 import beets
 import guessit
 import requests
 from six import text_type
-import subliminal
 
 import core
 from core import extractor, logger
@@ -41,6 +39,7 @@ from core.utils.paths import (
     remove_read_only,
 )
 from core.utils.processes import RunningProcess
+from core.utils.subtitles import import_subs
 from core.utils.torrents import create_torrent_class, pause_torrent, remove_torrent, resume_torrent
 
 try:
@@ -552,32 +551,6 @@ def extract_files(src, dst=None, keep_archive=None):
                 time.sleep(1)
             except Exception as e:
                 logger.error('Unable to remove file {0} due to: {1}'.format(inputFile, e))
-
-
-def import_subs(filename):
-    if not core.GETSUBS:
-        return
-    try:
-        subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
-    except Exception:
-        pass
-
-    languages = set()
-    for item in core.SLANGUAGES:
-        try:
-            languages.add(Language(item))
-        except Exception:
-            pass
-    if not languages:
-        return
-
-    logger.info('Attempting to download subtitles for {0}'.format(filename), 'SUBTITLES')
-    try:
-        video = subliminal.scan_video(filename)
-        subtitles = subliminal.download_best_subtitles({video}, languages)
-        subliminal.save_subtitles(video, subtitles[video])
-    except Exception as e:
-        logger.error('Failed to download subtitles for {0} due to: {1}'.format(filename, e), 'SUBTITLES')
 
 
 def server_responding(base_url):
