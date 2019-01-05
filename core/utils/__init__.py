@@ -20,6 +20,7 @@ from core import extractor, logger
 from core.utils import shutil_custom
 from core.utils.download_info import get_download_info, update_download_info_status
 from core.utils.links import copy_link, replace_links
+from core.utils.naming import clean_file_name, is_sample, sanitize_name
 from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
 from core.utils.parsers import (
     parse_args,
@@ -49,32 +50,6 @@ except ImportError:
 requests.packages.urllib3.disable_warnings()
 
 shutil_custom.monkey_patch()
-
-
-def sanitize_name(name):
-    """
-    >>> sanitize_name('a/b/c')
-    'a-b-c'
-    >>> sanitize_name('abc')
-    'abc'
-    >>> sanitize_name('a"b')
-    'ab'
-    >>> sanitize_name('.a.b..')
-    'a.b'
-    """
-
-    # remove bad chars from the filename
-    name = re.sub(r'[\\/*]', '-', name)
-    name = re.sub(r'[:\'<>|?]', '', name)
-
-    # remove leading/trailing periods and spaces
-    name = name.strip(' .')
-    try:
-        name = name.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
-
-    return name
 
 
 def category_search(input_directory, input_name, input_category, root, categories):
@@ -185,12 +160,6 @@ def is_min_size(input_name, min_size):
 
     # Ignore files under a certain size
     if input_size > min_size * 1048576:
-        return True
-
-
-def is_sample(input_name):
-    # Ignore 'sample' in files
-    if re.search('(^|[\\W_])sample\\d*[\\W_]', input_name.lower()):
         return True
 
 
