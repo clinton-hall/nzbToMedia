@@ -5,7 +5,9 @@ Provides an [efficient](https://github.com/clinton-hall/nzbToMedia/wiki/Efficien
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/ "SABnzbd") and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
 This script is based on sabToSickBeard (written by Nic Wolfe and supplied with SickBeard), with the support for NZBGet being added by [thorli](https://github.com/thorli "thorli") and further contributions by [schumi2004](https://github.com/schumi2004 "schumi2004") and [hugbug](https://sourceforge.net/apps/phpbb/nzbget/memberlist.php?mode=viewprofile&u=67 "hugbug").
 Torrent suport added by [jkaberg](https://github.com/jkaberg "jkaberg") and [berkona](https://github.com/berkona "berkona")
-Corrupt video checking, auto SickBeard fork determination and a whole lot of code improvement was done by [echel0n](https://github.com/echel0n "echel0n")
+Corrupt video checking, auto SickBeard fork determination and a whole lot of code improvement was done by [Labrys of Knossos](https://github.com/echel0n "Labrys of Knossos")
+Python3 compatibility, and much cleaner code base has been contributed by [echel0n](https://github.com/labrys "echel0n")
+
 
 Introduction
 ------------
@@ -17,7 +19,7 @@ Failed download handling for SickBeard is available by using Tolstyak's fork [Si
 To use this feature, in autoProcessTV.cfg set the parameter "fork=failed". Default is "fork=default" and will work with the standard version of SickBeard and just ignores failed downloads.
 Development of Tolstyak's fork ended in 2013, but newer forks exist with significant feature updates such as [Mr-Orange TPB](https://github.com/coach0742/Sick-Beard) (discontinued), [SickRageTV](https://github.com/SiCKRAGETV/SickRage) and [SickRage](https://github.com/SickRage/SickRage) (active). See [SickBeard Forks](https://github.com/clinton-hall/nzbToMedia/wiki/Failed-Download-Handling-%28FDH%29#sick-beard-and-its-forks "SickBeard Forks") for a list of known forks.
 
-Full support is provided for [SickRageTV](https://github.com/SiCKRAGETV/SickRage), [SickRage](https://github.com/SickRage/SickRage), and [SickGear](https://github.com/SickGear/SickGear).
+Full support is provided for [SickChill](https://github.com/SickChill/SickChill), [SiCKRAGE](https://github.com/SiCKRAGE/SiCKRAGE), [Medusa](https://github.com/pymedusa/Medusa), and [SickGear](https://github.com/SickGear/SickGear).
 
 Torrent support has been added with the assistance of jkaberg and berkona. Currently supports uTorrent, Transmission, Deluge and possibly more.
 To enable Torrent extraction, on Windows, you need to install [7-zip](http://www.7-zip.org/ "7-zip") or on *nix you need to install the following packages/commands.
