@@ -202,17 +202,17 @@ class DBConnection(object):
     def table_info(self, table_name):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually
         cursor = self.connection.execute('PRAGMA table_info({0})'.format(table_name))
-        columns = {}
-        for column in cursor:
-            columns[column['name']] = {'type': column['type']}
-        return columns
+        return {
+            column['name']: {'type': column['type']}
+            for column in cursor
+        }
 
     # http://stackoverflow.com/questions/3300464/how-can-i-get-dict-from-sqlite-query
     def _dict_factory(self, cursor, row):
-        d = {}
-        for idx, col in enumerate(cursor.description):
-            d[col[0]] = row[idx]
-        return d
+        return {
+            col[0]: row[idx]
+            for idx, col in enumerate(cursor.description)
+        }
 
 
 def sanity_check_database(connection, sanity_check):

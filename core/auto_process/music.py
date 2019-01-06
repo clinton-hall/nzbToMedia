@@ -117,18 +117,12 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 status_code=1,
             )
 
-        success = False
-        queued = False
-        started = False
         try:
             res = json.loads(r.content)
             scan_id = int(res['id'])
             logger.debug('Scan started with id: {0}'.format(scan_id), section)
-            started = True
         except Exception as e:
             logger.warning('No scan id was returned due to: {0}'.format(e), section)
-            scan_id = None
-            started = False
             return ProcessResult(
                 message='{0}: Failed to post-process - Unable to start scan'.format(section),
                 status_code=1,
