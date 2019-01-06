@@ -97,14 +97,16 @@ def auto_fork(section, input_category):
                     json_data = json_data.get('data', json_data)
 
                 optional_parameters = json_data['optionalParameters'].keys()
-
-                for param in params:
-                    if param not in optional_parameters:
-                        rem_params.append(param)
+                # Find excess parameters
+                excess_parameters = set(params).difference(optional_parameters)
+                logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+                rem_params.extend(excess_parameters)
             else:
-                for param in params:
-                    if 'name="{param}"'.format(param=param) not in r.text:
-                        rem_params.append(param)
+                rem_params.extend(
+                    param
+                    for param in params
+                    if 'name="{param}"'.format(param=param) not in r.text
+                )
             for param in rem_params:
                 params.pop(param)
             for fork in sorted(iteritems(core.FORKS), reverse=False):
