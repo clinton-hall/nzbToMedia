@@ -79,94 +79,95 @@ def clean_dir(path, section, subsection):
     return clean_directory(path, files)
 
 
+def process_dir(path, link):
+    folders = []
+
+    logger.info('Searching {0} for mediafiles to post-process ...'.format(path))
+    sync = [o for o in os.listdir(text_type(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+    # search for single files and move them into their own folder for post-processing
+    for mediafile in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
+                      os.path.isfile(os.path.join(path, o))]:
+        if len(sync) > 0:
+            break
+        if os.path.split(mediafile)[1] in ['Thumbs.db', 'thumbs.db']:
+            continue
+        try:
+            logger.debug('Found file {0} in root directory {1}.'.format(os.path.split(mediafile)[1], path))
+            new_path = None
+            file_ext = os.path.splitext(mediafile)[1]
+            try:
+                if file_ext in core.AUDIOCONTAINER:
+                    f = beets.mediafile.MediaFile(mediafile)
+
+                    # get artist and album info
+                    artist = f.artist
+                    album = f.album
+
+                    # create new path
+                    new_path = os.path.join(path, '{0} - {1}'.format(sanitize_name(artist), sanitize_name(album)))
+                elif file_ext in core.MEDIACONTAINER:
+                    f = guessit.guessit(mediafile)
+
+                    # get title
+                    title = f.get('series') or f.get('title')
+
+                    if not title:
+                        title = os.path.splitext(os.path.basename(mediafile))[0]
+
+                    new_path = os.path.join(path, sanitize_name(title))
+            except Exception as e:
+                logger.error('Exception parsing name for media file: {0}: {1}'.format(os.path.split(mediafile)[1], e))
+
+            if not new_path:
+                title = os.path.splitext(os.path.basename(mediafile))[0]
+                new_path = os.path.join(path, sanitize_name(title))
+
+            try:
+                new_path = new_path.encode(core.SYS_ENCODING)
+            except Exception:
+                pass
+
+            # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
+            if os.path.isfile(new_path):
+                new_path2 = os.path.join(os.path.join(os.path.split(new_path)[0], 'new'), os.path.split(new_path)[1])
+                new_path = new_path2
+
+            # create new path if it does not exist
+            if not os.path.exists(new_path):
+                make_dir(new_path)
+
+            newfile = os.path.join(new_path, sanitize_name(os.path.split(mediafile)[1]))
+            try:
+                newfile = newfile.encode(core.SYS_ENCODING)
+            except Exception:
+                pass
+
+            # link file to its new path
+            copy_link(mediafile, newfile, link)
+        except Exception as e:
+            logger.error('Failed to move {0} to its own directory: {1}'.format(os.path.split(mediafile)[1], e))
+
+    # removeEmptyFolders(path, removeRoot=False)
+
+    if os.listdir(text_type(path)):
+        for directory in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
+                          os.path.isdir(os.path.join(path, o))]:
+            sync = [o for o in os.listdir(text_type(directory)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+            if len(sync) > 0 or len(os.listdir(text_type(directory))) == 0:
+                continue
+            folders.extend([directory])
+    return folders
+
+
 def get_dirs(section, subsection, link='hard'):
     to_return = []
-
-    def process_dir(path):
-        folders = []
-
-        logger.info('Searching {0} for mediafiles to post-process ...'.format(path))
-        sync = [o for o in os.listdir(text_type(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-        # search for single files and move them into their own folder for post-processing
-        for mediafile in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
-                          os.path.isfile(os.path.join(path, o))]:
-            if len(sync) > 0:
-                break
-            if os.path.split(mediafile)[1] in ['Thumbs.db', 'thumbs.db']:
-                continue
-            try:
-                logger.debug('Found file {0} in root directory {1}.'.format(os.path.split(mediafile)[1], path))
-                new_path = None
-                file_ext = os.path.splitext(mediafile)[1]
-                try:
-                    if file_ext in core.AUDIOCONTAINER:
-                        f = beets.mediafile.MediaFile(mediafile)
-
-                        # get artist and album info
-                        artist = f.artist
-                        album = f.album
-
-                        # create new path
-                        new_path = os.path.join(path, '{0} - {1}'.format(sanitize_name(artist), sanitize_name(album)))
-                    elif file_ext in core.MEDIACONTAINER:
-                        f = guessit.guessit(mediafile)
-
-                        # get title
-                        title = f.get('series') or f.get('title')
-
-                        if not title:
-                            title = os.path.splitext(os.path.basename(mediafile))[0]
-
-                        new_path = os.path.join(path, sanitize_name(title))
-                except Exception as e:
-                    logger.error('Exception parsing name for media file: {0}: {1}'.format(os.path.split(mediafile)[1], e))
-
-                if not new_path:
-                    title = os.path.splitext(os.path.basename(mediafile))[0]
-                    new_path = os.path.join(path, sanitize_name(title))
-
-                try:
-                    new_path = new_path.encode(core.SYS_ENCODING)
-                except Exception:
-                    pass
-
-                # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
-                if os.path.isfile(new_path):
-                    new_path2 = os.path.join(os.path.join(os.path.split(new_path)[0], 'new'), os.path.split(new_path)[1])
-                    new_path = new_path2
-
-                # create new path if it does not exist
-                if not os.path.exists(new_path):
-                    make_dir(new_path)
-
-                newfile = os.path.join(new_path, sanitize_name(os.path.split(mediafile)[1]))
-                try:
-                    newfile = newfile.encode(core.SYS_ENCODING)
-                except Exception:
-                    pass
-
-                # link file to its new path
-                copy_link(mediafile, newfile, link)
-            except Exception as e:
-                logger.error('Failed to move {0} to its own directory: {1}'.format(os.path.split(mediafile)[1], e))
-
-        # removeEmptyFolders(path, removeRoot=False)
-
-        if os.listdir(text_type(path)):
-            for directory in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
-                              os.path.isdir(os.path.join(path, o))]:
-                sync = [o for o in os.listdir(text_type(directory)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-                if len(sync) > 0 or len(os.listdir(text_type(directory))) == 0:
-                    continue
-                folders.extend([directory])
-        return folders
 
     try:
         watch_dir = os.path.join(core.CFG[section][subsection]['watch_dir'], subsection)
         if os.path.exists(watch_dir):
-            to_return.extend(process_dir(watch_dir))
+            to_return.extend(process_dir(watch_dir, link))
         elif os.path.exists(core.CFG[section][subsection]['watch_dir']):
-            to_return.extend(process_dir(core.CFG[section][subsection]['watch_dir']))
+            to_return.extend(process_dir(core.CFG[section][subsection]['watch_dir'], link))
     except Exception as e:
         logger.error('Failed to add directories from {0} for post-processing: {1}'.format
                      (core.CFG[section][subsection]['watch_dir'], e))
@@ -175,7 +176,7 @@ def get_dirs(section, subsection, link='hard'):
         try:
             output_directory = os.path.join(core.OUTPUTDIRECTORY, subsection)
             if os.path.exists(output_directory):
-                to_return.extend(process_dir(output_directory))
+                to_return.extend(process_dir(output_directory, link))
         except Exception as e:
             logger.error('Failed to add directories from {0} for post-processing: {1}'.format(core.OUTPUTDIRECTORY, e))
 
