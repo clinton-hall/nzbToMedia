@@ -102,17 +102,22 @@ def auto_fork(section, input_category):
                 logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
                 rem_params.extend(excess_parameters)
             else:
+                # Find excess parameters
                 rem_params.extend(
                     param
                     for param in params
                     if 'name="{param}"'.format(param=param) not in r.text
                 )
+
+            # Remove excess params
             for param in rem_params:
                 params.pop(param)
+
             for fork in sorted(iteritems(core.FORKS), reverse=False):
                 if params == fork[1]:
                     detected = True
                     break
+
         if detected:
             logger.info('{section}:{category} fork auto-detection successful ...'.format
                         (section=section, category=input_category))
