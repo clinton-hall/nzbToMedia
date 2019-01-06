@@ -81,9 +81,23 @@ def auto_fork(section, input_category):
             if apikey:
                 optional_parameters = []
                 try:
-                    optional_parameters = r.json()['data']['optionalParameters'].keys()
-                except Exception:
-                    optional_parameters = r.json()['data']['data']['optionalParameters'].keys()
+                    json_data = r.json()
+                except ValueError:
+                    logger.error('Failed to get JSON data from response')
+                    logger.debug('Response received')
+                    raise
+
+                try:
+                    json_data = json_data['data']
+                except KeyError:
+                    logger.error('Failed to get data from JSON')
+                    logger.debug('Response received: {}'.format(json_data))
+                    raise
+                else:
+                    json_data = json_data.get('data', json_data)
+
+                optional_parameters = json_data['optionalParameters'].keys()
+
                 for param in params:
                     if param not in optional_parameters:
                         rem_params.append(param)
