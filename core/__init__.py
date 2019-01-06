@@ -52,7 +52,7 @@ from core.utils import (
     resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
 
-__version__ = '12.0.2'
+__version__ = '12.0.3'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
