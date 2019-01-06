@@ -4,8 +4,6 @@ from __future__ import print_function, unicode_literals
 
 import os
 
-import beets.mediafile
-import guessit
 import requests
 from six import text_type
 
@@ -21,6 +19,7 @@ from core.utils.files import (
     is_media_file,
     is_min_size,
     list_media_files,
+    move_file,
 )
 from core.utils.identification import find_imdbid
 from core.utils.links import copy_link, replace_links
@@ -77,61 +76,6 @@ def clean_dir(path, section, subsection):
     except Exception:
         files = []
     return clean_directory(path, files)
-
-
-def move_file(mediafile, path, link):
-    logger.debug('Found file {0} in root directory {1}.'.format(os.path.split(mediafile)[1], path))
-    new_path = None
-    file_ext = os.path.splitext(mediafile)[1]
-    try:
-        if file_ext in core.AUDIOCONTAINER:
-            f = beets.mediafile.MediaFile(mediafile)
-
-            # get artist and album info
-            artist = f.artist
-            album = f.album
-
-            # create new path
-            new_path = os.path.join(path, '{0} - {1}'.format(sanitize_name(artist), sanitize_name(album)))
-        elif file_ext in core.MEDIACONTAINER:
-            f = guessit.guessit(mediafile)
-
-            # get title
-            title = f.get('series') or f.get('title')
-
-            if not title:
-                title = os.path.splitext(os.path.basename(mediafile))[0]
-
-            new_path = os.path.join(path, sanitize_name(title))
-    except Exception as e:
-        logger.error('Exception parsing name for media file: {0}: {1}'.format(os.path.split(mediafile)[1], e))
-
-    if not new_path:
-        title = os.path.splitext(os.path.basename(mediafile))[0]
-        new_path = os.path.join(path, sanitize_name(title))
-
-    try:
-        new_path = new_path.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
-
-    # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
-    if os.path.isfile(new_path):
-        new_path2 = os.path.join(os.path.join(os.path.split(new_path)[0], 'new'), os.path.split(new_path)[1])
-        new_path = new_path2
-
-    # create new path if it does not exist
-    if not os.path.exists(new_path):
-        make_dir(new_path)
-
-    newfile = os.path.join(new_path, sanitize_name(os.path.split(mediafile)[1]))
-    try:
-        newfile = newfile.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
-
-    # link file to its new path
-    copy_link(mediafile, newfile, link)
 
 
 def process_dir(path, link):
