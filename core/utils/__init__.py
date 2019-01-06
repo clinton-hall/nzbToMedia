@@ -6,7 +6,6 @@ import os
 import re
 import shutil
 import stat
-import time
 
 import beets
 import guessit
@@ -14,11 +13,18 @@ import requests
 from six import text_type
 
 import core
-from core import extractor, logger
+from core import logger
 from core.utils import shutil_custom
 from core.utils.download_info import get_download_info, update_download_info_status
 from core.utils.encoding import char_replace, convert_to_ascii
-from core.utils.files import is_archive_file, is_media_file, is_min_size, list_media_files
+from core.utils.files import (
+    backup_versioned_file,
+    extract_files,
+    is_archive_file,
+    is_media_file,
+    is_min_size,
+    list_media_files,
+)
 from core.utils.links import copy_link, replace_links
 from core.utils.naming import clean_file_name, is_sample, sanitize_name
 from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
@@ -406,43 +412,6 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
     return imdbid
 
 
-def extract_files(src, dst=None, keep_archive=None):
-    extracted_folder = []
-    extracted_archive = []
-
-    for inputFile in list_media_files(src, media=False, audio=False, meta=False, archives=True):
-        dir_path = os.path.dirname(inputFile)
-        full_file_name = os.path.basename(inputFile)
-        archive_name = os.path.splitext(full_file_name)[0]
-        archive_name = re.sub(r'part[0-9]+', '', archive_name)
-
-        if dir_path in extracted_folder and archive_name in extracted_archive:
-            continue  # no need to extract this, but keep going to look for other archives and sub directories.
-
-        try:
-            if extractor.extract(inputFile, dst or dir_path):
-                extracted_folder.append(dir_path)
-                extracted_archive.append(archive_name)
-        except Exception:
-            logger.error('Extraction failed for: {0}'.format(full_file_name))
-
-    for folder in extracted_folder:
-        for inputFile in list_media_files(folder, media=False, audio=False, meta=False, archives=True):
-            full_file_name = os.path.basename(inputFile)
-            archive_name = os.path.splitext(full_file_name)[0]
-            archive_name = re.sub(r'part[0-9]+', '', archive_name)
-            if archive_name not in extracted_archive or keep_archive:
-                continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
-            logger.info('Removing extracted archive {0} from folder {1} ...'.format(full_file_name, folder))
-            try:
-                if not os.access(inputFile, os.W_OK):
-                    os.chmod(inputFile, stat.S_IWUSR)
-                os.remove(inputFile)
-                time.sleep(1)
-            except Exception as e:
-                logger.error('Unable to remove file {0} due to: {1}'.format(inputFile, e))
-
-
 def server_responding(base_url):
     logger.debug('Attempting to connect to server at {0}'.format(base_url), 'SERVER')
     try:
@@ -452,32 +421,3 @@ def server_responding(base_url):
     except (requests.ConnectionError, requests.exceptions.Timeout):
         logger.error('Server failed to respond at {0}'.format(base_url), 'SERVER')
         return False
-
-
-def backup_versioned_file(old_file, version):
-    num_tries = 0
-
-    new_file = '{old}.v{version}'.format(old=old_file, version=version)
-
-    while not os.path.isfile(new_file):
-        if not os.path.isfile(old_file):
-            logger.log(u'Not creating backup, {file} doesn\'t exist'.format(file=old_file), logger.DEBUG)
-            break
-
-        try:
-            logger.log(u'Trying to back up {old} to {new]'.format(old=old_file, new=new_file), logger.DEBUG)
-            shutil.copy(old_file, new_file)
-            logger.log(u'Backup done', logger.DEBUG)
-            break
-        except Exception as error:
-            logger.log(u'Error while trying to back up {old} to {new} : {msg}'.format
-                       (old=old_file, new=new_file, msg=error), logger.WARNING)
-            num_tries += 1
-            time.sleep(1)
-            logger.log(u'Trying again.', logger.DEBUG)
-
-        if num_tries >= 10:
-            logger.log(u'Unable to back up {old} to {new} please do it manually.'.format(old=old_file, new=new_file), logger.ERROR)
-            return False
-
-    return True
