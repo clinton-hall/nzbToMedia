@@ -21,7 +21,7 @@ from core.utils.files import (
     list_media_files,
     move_file,
 )
-from core.utils.identification import find_imdbid
+from core.utils.identification import category_search, find_imdbid
 from core.utils.links import copy_link, replace_links
 from core.utils.naming import clean_file_name, is_sample, sanitize_name
 from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
