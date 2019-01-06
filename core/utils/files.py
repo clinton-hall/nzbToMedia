@@ -45,14 +45,14 @@ def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, o
             return False
     except Exception:
         pass
-    if (media and file_ext.lower() in core.MEDIACONTAINER) \
-            or (audio and file_ext.lower() in core.AUDIOCONTAINER) \
-            or (meta and file_ext.lower() in core.METACONTAINER) \
-            or (archives and is_archive_file(mediafile)) \
-            or (other and (file_ext.lower() in otherext or 'all' in otherext)):
-        return True
-    else:
-        return False
+
+    return any([
+        (media and file_ext.lower() in core.MEDIACONTAINER),
+        (audio and file_ext.lower() in core.AUDIOCONTAINER),
+        (meta and file_ext.lower() in core.METACONTAINER),
+        (archives and is_archive_file(mediafile)),
+        (other and (file_ext.lower() in otherext or 'all' in otherext)),
+    ])
 
 
 def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True, meta=True, archives=True, other=False, otherext=None):
