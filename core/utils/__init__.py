@@ -162,15 +162,16 @@ def process_dir(path, link):
 def get_dirs(section, subsection, link='hard'):
     to_return = []
 
+    watch_directory = core.CFG[section][subsection]['watch_dir']
+    directory = os.path.join(watch_directory, subsection)
+
+    if not os.path.exists(directory):
+        directory = watch_directory
+
     try:
-        watch_dir = os.path.join(core.CFG[section][subsection]['watch_dir'], subsection)
-        if os.path.exists(watch_dir):
-            to_return.extend(process_dir(watch_dir, link))
-        elif os.path.exists(core.CFG[section][subsection]['watch_dir']):
-            to_return.extend(process_dir(core.CFG[section][subsection]['watch_dir'], link))
+        to_return.extend(process_dir(directory, link))
     except Exception as e:
-        logger.error('Failed to add directories from {0} for post-processing: {1}'.format
-                     (core.CFG[section][subsection]['watch_dir'], e))
+        logger.error('Failed to add directories from {0} for post-processing: {1}'.format(watch_directory, e))
 
     if core.USELINK == 'move':
         try:
