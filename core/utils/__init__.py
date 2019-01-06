@@ -4,8 +4,6 @@ from __future__ import print_function, unicode_literals
 
 import os
 import re
-import shutil
-import stat
 
 import beets
 import guessit
@@ -41,12 +39,13 @@ from core.utils.parsers import (
     parse_vuze,
 )
 from core.utils.paths import (
+    clean_directory,
     flatten_dir,
     get_dir_size,
     make_dir,
     onerror,
-    remove_dir,
     remote_dir,
+    remove_dir,
     remove_empty_folders,
     remove_read_only,
 )
@@ -163,6 +162,17 @@ def flatten(output_destination):
     return flatten_dir(output_destination, list_media_files(output_destination))
 
 
+def clean_dir(path, section, subsection):
+    cfg = dict(core.CFG[section][subsection])
+    min_size = int(cfg.get('minSize', 0))
+    delete_ignored = int(cfg.get('delete_ignored', 0))
+    try:
+        files = list_media_files(path, min_size=min_size, delete_ignored=delete_ignored)
+    except Exception:
+        files = []
+    return clean_directory(path, files)
+
+
 def get_dirs(section, subsection, link='hard'):
     to_return = []
 
@@ -267,35 +277,6 @@ def get_dirs(section, subsection, link='hard'):
         logger.debug('No directories identified in {0}:{1} for post-processing'.format(section, subsection))
 
     return list(set(to_return))
-
-
-def clean_dir(path, section, subsection):
-    cfg = dict(core.CFG[section][subsection])
-    if not os.path.exists(path):
-        logger.info('Directory {0} has been processed and removed ...'.format(path), 'CLEANDIR')
-        return
-    if core.FORCE_CLEAN and not core.FAILED:
-        logger.info('Doing Forceful Clean of {0}'.format(path), 'CLEANDIR')
-        remove_dir(path)
-        return
-    min_size = int(cfg.get('minSize', 0))
-    delete_ignored = int(cfg.get('delete_ignored', 0))
-    try:
-        num_files = len(list_media_files(path, min_size=min_size, delete_ignored=delete_ignored))
-    except Exception:
-        num_files = 0
-
-    if num_files > 0:
-        logger.info(
-            'Directory {0} still contains {1} unprocessed file(s), skipping ...'.format(path, num_files),
-            'CLEANDIRS')
-        return
-
-    logger.info('Directory {0} has been processed, removing ...'.format(path), 'CLEANDIRS')
-    try:
-        shutil.rmtree(path, onerror=onerror)
-    except Exception:
-        logger.error('Unable to delete directory {0}'.format(path))
 
 
 def find_imdbid(dir_name, input_name, omdb_api_key):

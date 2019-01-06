@@ -125,3 +125,27 @@ def flatten_dir(destination, files):
             logger.error('Could not flatten {0}'.format(outputFile), 'FLATTEN')
 
     remove_empty_folders(destination)  # Cleanup empty directories
+
+
+def clean_directory(path, files):
+    if not os.path.exists(path):
+        logger.info('Directory {0} has been processed and removed ...'.format(path), 'CLEANDIR')
+        return
+
+    if core.FORCE_CLEAN and not core.FAILED:
+        logger.info('Doing Forceful Clean of {0}'.format(path), 'CLEANDIR')
+        remove_dir(path)
+        return
+
+    if files:
+        logger.info(
+            'Directory {0} still contains {1} unprocessed file(s), skipping ...'.format(path, len(files)),
+            'CLEANDIRS',
+        )
+        return
+
+    logger.info('Directory {0} has been processed, removing ...'.format(path), 'CLEANDIRS')
+    try:
+        shutil.rmtree(path, onerror=onerror)
+    except Exception:
+        logger.error('Unable to delete directory {0}'.format(path))
