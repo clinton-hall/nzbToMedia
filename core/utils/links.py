@@ -6,8 +6,14 @@ import linktastic
 from core import logger
 from core.utils.paths import make_dir
 
-if os.name == 'nt':
-    import jaraco
+try:
+    from jaraco.windows.filesystem import islink, readlink
+except ImportError:
+    if os.name == 'nt':
+        raise
+    else:
+        from os.path import islink
+        from os import readlink
 
 
 def copy_link(src, target_link, use_link):
@@ -61,24 +67,21 @@ def copy_link(src, target_link, use_link):
     return True
 
 
-def replace_links(link):
-    n = 0
+def replace_links(link, max_depth=10):
+    link_depth = 0
     target = link
-    if os.name == 'nt':
-        if not jaraco.windows.filesystem.islink(link):
-            logger.debug('{0} is not a link'.format(link))
-            return
-        while jaraco.windows.filesystem.islink(target):
-            target = jaraco.windows.filesystem.readlink(target)
-            n = n + 1
+
+    for attempt in range(0, max_depth):
+        if not islink(target):
+            break
+        target = readlink(target)
+        link_depth = attempt
+
+    if not link_depth:
+        logger.debug('{0} is not a link'.format(link))
+    elif link_depth > max_depth or (link_depth == max_depth and islink(target)):
+        logger.warning('Exceeded maximum depth {0} while following link {1}'.format(max_depth, link))
     else:
-        if not os.path.islink(link):
-            logger.debug('{0} is not a link'.format(link))
-            return
-        while os.path.islink(target):
-            target = os.readlink(target)
-            n = n + 1
-    if n > 1:
         logger.info('Changing sym-link: {0} to point directly to file: {1}'.format(link, target), 'COPYLINK')
         os.unlink(link)
         linktastic.symlink(target, link)
