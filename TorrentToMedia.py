@@ -2,7 +2,7 @@
 # coding=utf-8
 
 import cleanup
-cleanup.clean('core', 'libs')
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
 import datetime
 import os
