@@ -345,24 +345,6 @@ def clean_dir(path, section, subsection):
         logger.error('Unable to delete directory {0}'.format(path))
 
 
-def clean_file_name(filename):
-    """Cleans up nzb name by removing any . and _
-    characters, along with any trailing hyphens.
-
-    Is basically equivalent to replacing all _ and . with a
-    space, but handles decimal numbers in string, for example:
-    """
-
-    filename = re.sub(r'(\D)\.(?!\s)(\D)', r'\1 \2', filename)
-    filename = re.sub(r'(\d)\.(\d{4})', r'\1 \2', filename)  # if it ends in a year then don't keep the dot
-    filename = re.sub(r'(\D)\.(?!\s)', r'\1 ', filename)
-    filename = re.sub(r'\.(?!\s)(\D)', r' \1', filename)
-    filename = filename.replace('_', ' ')
-    filename = re.sub('-$', '', filename)
-    filename = re.sub(r'^\[.*]', '', filename)
-    return filename.strip()
-
-
 def is_archive_file(filename):
     """Check if the filename is allowed for the Archive"""
     for regext in core.COMPRESSEDCONTAINER:
