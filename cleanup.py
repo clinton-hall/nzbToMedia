@@ -5,6 +5,20 @@ from __future__ import print_function
 import os
 import subprocess
 import sys
+import shutil
+
+FOLDER_STRUCTURE = {
+    'libs': [
+        'common',
+        'custom',
+        'py2',
+        'win',
+    ],
+    'core': [
+        'auto_process',
+        'extractor',
+    ],
+}
 
 
 class WorkingDirectory(object):
@@ -106,7 +120,22 @@ def clean_folders(*paths):
         return result
 
 
-def clean(*paths):
+def force_clean_folder(path, required):
+    root, dirs, files = next(os.walk(path))
+    required = sorted(required)
+    if required:
+        print('Skipping required subfolders', required)
+    remove = sorted(set(dirs).difference(required))
+    missing = sorted(set(required).difference(dirs))
+    for path in remove:
+        pathname = os.path.join(root, path)
+        print('Removing', pathname)
+        shutil.rmtree(pathname)
+    if missing:
+        raise Exception('Required subfolders missing:', missing)
+
+
+def clean(paths):
     """Clean up bytecode and obsolete folders."""
     with WorkingDirectory(module_path()) as cwd:
         if cwd.working_directory != cwd.original_directory:
@@ -121,7 +150,7 @@ def clean(*paths):
             print(result or 'No bytecode to clean')
 
         if paths and os.path.exists('.git'):
-            print('\n-- Cleaning folders: {} --'.format(paths))
+            print('\n-- Cleaning folders: {} --'.format(list(paths)))
             try:
                 result = clean_folders(*paths)
             except SystemExit as error:
@@ -129,7 +158,15 @@ def clean(*paths):
             else:
                 print(result or 'No folders to clean\n')
         else:
-            print('Directory is not a git repository')
+            print('\nDirectory is not a git repository')
+            try:
+                items = paths.items()
+            except AttributeError:
+                print('Failed to clean, no subfolder structure given')
+            else:
+                for folder, subfolders in items:
+                    print('\nForce cleaning folder:', folder)
+                    force_clean_folder(folder, subfolders)
 
         if cwd.working_directory != cwd.original_directory:
             print('Returning to directory: ', cwd.original_directory)
@@ -138,4 +175,4 @@ def clean(*paths):
 
 
 if __name__ == '__main__':
-    clean('libs', 'core')
+    clean(FOLDER_STRUCTURE)
