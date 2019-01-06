@@ -410,14 +410,3 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
     logger.warning('Unable to find a imdbID for {0}'.format(input_name))
     return imdbid
-
-
-def server_responding(base_url):
-    logger.debug('Attempting to connect to server at {0}'.format(base_url), 'SERVER')
-    try:
-        requests.get(base_url, timeout=(60, 120), verify=False)
-        logger.debug('Server responded at {0}'.format(base_url), 'SERVER')
-        return True
-    except (requests.ConnectionError, requests.exceptions.Timeout):
-        logger.error('Server failed to respond at {0}'.format(base_url), 'SERVER')
-        return False
