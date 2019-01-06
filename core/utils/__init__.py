@@ -82,28 +82,61 @@ def process_dir(path, link):
     folders = []
 
     logger.info('Searching {0} for mediafiles to post-process ...'.format(path))
-    sync = [o for o in os.listdir(text_type(path)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
+    dir_contents = os.listdir(text_type(path))
+
     # search for single files and move them into their own folder for post-processing
-    for mediafile in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
-                      os.path.isfile(os.path.join(path, o))]:
-        if len(sync) > 0:
-            break
-        if os.path.split(mediafile)[1] in ['Thumbs.db', 'thumbs.db']:
-            continue
-        try:
-            move_file(mediafile, path, link)
-        except Exception as e:
-            logger.error('Failed to move {0} to its own directory: {1}'.format(os.path.split(mediafile)[1], e))
+
+    # Generate list of sync files
+    sync_files = (
+        item for item in dir_contents
+        if os.path.splitext(item)[1] in ['.!sync', '.bts']
+    )
+
+    # Generate a list of file paths
+    filepaths = (
+        os.path.join(path, item) for item in dir_contents
+        if item not in ['Thumbs.db', 'thumbs.db']
+    )
+
+    # Generate a list of media files
+    mediafiles = (
+        item for item in filepaths
+        if os.path.isfile(item)
+    )
+
+    if any(sync_files):
+        logger.info('')
+    else:
+        for mediafile in mediafiles:
+            try:
+                move_file(mediafile, path, link)
+            except Exception as e:
+                logger.error('Failed to move {0} to its own directory: {1}'.format(os.path.split(mediafile)[1], e))
 
     # removeEmptyFolders(path, removeRoot=False)
 
-    if os.listdir(text_type(path)):
-        for directory in [os.path.join(path, o) for o in os.listdir(text_type(path)) if
-                          os.path.isdir(os.path.join(path, o))]:
-            sync = [o for o in os.listdir(text_type(directory)) if os.path.splitext(o)[1] in ['.!sync', '.bts']]
-            if len(sync) > 0 or len(os.listdir(text_type(directory))) == 0:
-                continue
-            folders.extend([directory])
+    # Generate all path contents
+    path_contents = (
+        os.path.join(path, item)
+        for item in os.listdir(text_type(path))
+    )
+
+    # Generate all directories from path contents
+    directories = (
+        path for path in path_contents
+        if os.path.isdir(path)
+    )
+
+    for directory in directories:
+        dir_contents = os.listdir(directory)
+        sync_files = (
+            item for item in dir_contents
+            if os.path.splitext(item)[1] in ['.!sync', '.bts']
+        )
+        if not any(dir_contents) or any(sync_files):
+            continue
+        folders.append(directory)
+
     return folders
 
 
