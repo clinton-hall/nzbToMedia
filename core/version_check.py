@@ -81,7 +81,7 @@ class CheckVersion(object):
     def update(self):
         if self.updater.need_update():
             result = self.updater.update()
-            cleanup.clean('core', 'libs')
+            cleanup.clean(cleanup.FOLDER_STRUCTURE)
             return result
 
 
