@@ -283,7 +283,8 @@ def clean_dir(path, section, subsection):
     try:
         num_files = len(list_media_files(path, min_size=min_size, delete_ignored=delete_ignored))
     except Exception:
-        num_files = 'unknown'
+        num_files = 0
+
     if num_files > 0:
         logger.info(
             'Directory {0} still contains {1} unprocessed file(s), skipping ...'.format(path, num_files),
