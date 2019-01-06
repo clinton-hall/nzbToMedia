@@ -22,6 +22,7 @@ from core.utils.links import copy_link, replace_links
 from core.utils.naming import clean_file_name, is_sample, sanitize_name
 from core.utils.network import find_download, test_connection, wake_on_lan, wake_up
 from core.utils.notifications import plex_update
+from core.utils.nzbs import get_nzoid, report_nzb
 from core.utils.parsers import (
     parse_args,
     parse_deluge,
