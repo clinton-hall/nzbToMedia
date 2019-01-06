@@ -2,12 +2,40 @@
 from functools import partial
 import os
 import re
+import shutil
 import stat
 
 from six import text_type
 
 import core
 from core import logger
+
+
+def onerror(func, path, exc_info):
+    """
+    Error handler for ``shutil.rmtree``.
+
+    If the error is due to an access error (read only file)
+    it attempts to add write permission and then retries.
+
+    If the error is for another reason it re-raises the error.
+
+    Usage : ``shutil.rmtree(path, onerror=onerror)``
+    """
+    if not os.access(path, os.W_OK):
+        # Is the error an access error ?
+        os.chmod(path, stat.S_IWUSR)
+        func(path)
+    else:
+        raise Exception
+
+
+def remove_dir(dir_name):
+    logger.info('Deleting {0}'.format(dir_name))
+    try:
+        shutil.rmtree(text_type(dir_name), onerror=onerror)
+    except Exception:
+        logger.error('Unable to delete folder {0}'.format(dir_name))
 
 
 def make_dir(path):
@@ -78,3 +106,22 @@ def remove_read_only(filename):
                 os.chmod(filename, stat.S_IWRITE)
             except Exception:
                 logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
+
+
+def flatten_dir(destination, files):
+    logger.info('FLATTEN: Flattening directory: {0}'.format(destination))
+    for outputFile in files:
+        dir_path = os.path.dirname(outputFile)
+        file_name = os.path.basename(outputFile)
+
+        if dir_path == destination:
+            continue
+
+        target = os.path.join(destination, file_name)
+
+        try:
+            shutil.move(outputFile, target)
+        except Exception:
+            logger.error('Could not flatten {0}'.format(outputFile), 'FLATTEN')
+
+    remove_empty_folders(destination)  # Cleanup empty directories

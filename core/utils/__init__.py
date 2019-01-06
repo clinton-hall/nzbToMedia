@@ -41,7 +41,11 @@ from core.utils.parsers import (
     parse_vuze,
 )
 from core.utils.paths import (
-    get_dir_size, make_dir,
+    flatten_dir,
+    get_dir_size,
+    make_dir,
+    onerror,
+    remove_dir,
     remote_dir,
     remove_empty_folders,
     remove_read_only,
@@ -156,22 +160,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
 
 
 def flatten(output_destination):
-    logger.info('FLATTEN: Flattening directory: {0}'.format(output_destination))
-    for outputFile in list_media_files(output_destination):
-        dir_path = os.path.dirname(outputFile)
-        file_name = os.path.basename(outputFile)
-
-        if dir_path == output_destination:
-            continue
-
-        target = os.path.join(output_destination, file_name)
-
-        try:
-            shutil.move(outputFile, target)
-        except Exception:
-            logger.error('Could not flatten {0}'.format(outputFile), 'FLATTEN')
-
-    remove_empty_folders(output_destination)  # Cleanup empty directories
+    return flatten_dir(output_destination, list_media_files(output_destination))
 
 
 def get_dirs(section, subsection, link='hard'):
@@ -278,33 +267,6 @@ def get_dirs(section, subsection, link='hard'):
         logger.debug('No directories identified in {0}:{1} for post-processing'.format(section, subsection))
 
     return list(set(to_return))
-
-
-def onerror(func, path, exc_info):
-    """
-    Error handler for ``shutil.rmtree``.
-
-    If the error is due to an access error (read only file)
-    it attempts to add write permission and then retries.
-
-    If the error is for another reason it re-raises the error.
-
-    Usage : ``shutil.rmtree(path, onerror=onerror)``
-    """
-    if not os.access(path, os.W_OK):
-        # Is the error an access error ?
-        os.chmod(path, stat.S_IWUSR)
-        func(path)
-    else:
-        raise Exception
-
-
-def remove_dir(dir_name):
-    logger.info('Deleting {0}'.format(dir_name))
-    try:
-        shutil.rmtree(text_type(dir_name), onerror=onerror)
-    except Exception:
-        logger.error('Unable to delete folder {0}'.format(dir_name))
 
 
 def clean_dir(path, section, subsection):
