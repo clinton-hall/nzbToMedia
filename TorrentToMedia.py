@@ -358,7 +358,7 @@ def main(args):
 
                     results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,
                                               client_agent)
-                    if results[0] != 0:
+                    if results.status_code != 0:
                         logger.error('A problem was reported when trying to perform a manual run for {0}:{1}.'.format
                                      (section, subsection))
                         result = results
