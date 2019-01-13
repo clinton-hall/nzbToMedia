@@ -20,8 +20,16 @@ def auto_fork(section, input_category):
     apikey = cfg.get('apikey')
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    replace = {'sickrage': 'SickRage', 'sickchill': 'SickChill', 'sickgear': 'SickGear', 'medusa': 'Medusa', 'sickbeard-api': 'SickBeard-api', 'stheno': 'Stheno'}
-    f1 = replace[cfg.get('fork', 'auto')] if cfg.get('fork', 'auto') in replace else cfg.get('fork', 'auto')
+    replace = {
+        'medusa': 'Medusa',
+        'sickbeard-api': 'SickBeard-api',
+        'sickgear': 'SickGear',
+        'sickchill': 'SickChill',
+        'sickrage': 'SickRage',
+        'stheno': 'Stheno',
+    }
+    _val = cfg.get('fork', 'auto')
+    f1 = replace.get(_val, _val)
     try:
         fork = f1, core.FORKS[f1]
     except KeyError:
@@ -79,24 +87,44 @@ def auto_fork(section, input_category):
             r = []
         if r and r.ok:
             if apikey:
-                optional_parameters = []
                 try:
-                    optional_parameters = r.json()['data']['optionalParameters'].keys()
-                except Exception:
-                    optional_parameters = r.json()['data']['data']['optionalParameters'].keys()
-                for param in params:
-                    if param not in optional_parameters:
-                        rem_params.append(param)
+                    json_data = r.json()
+                except ValueError:
+                    logger.error('Failed to get JSON data from response')
+                    logger.debug('Response received')
+                    raise
+
+                try:
+                    json_data = json_data['data']
+                except KeyError:
+                    logger.error('Failed to get data from JSON')
+                    logger.debug('Response received: {}'.format(json_data))
+                    raise
+                else:
+                    json_data = json_data.get('data', json_data)
+
+                optional_parameters = json_data['optionalParameters'].keys()
+                # Find excess parameters
+                excess_parameters = set(params).difference(optional_parameters)
+                logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+                rem_params.extend(excess_parameters)
             else:
-                for param in params:
-                    if 'name="{param}"'.format(param=param) not in r.text:
-                        rem_params.append(param)
+                # Find excess parameters
+                rem_params.extend(
+                    param
+                    for param in params
+                    if 'name="{param}"'.format(param=param) not in r.text
+                )
+
+            # Remove excess params
             for param in rem_params:
                 params.pop(param)
+
             for fork in sorted(iteritems(core.FORKS), reverse=False):
                 if params == fork[1]:
                     detected = True
                     break
+
         if detected:
             logger.info('{section}:{category} fork auto-detection successful ...'.format
                         (section=section, category=input_category))

@@ -163,17 +163,18 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 status_code=0,
             )
 
-        params = {}
+        params = {
+            'media_folder': remote_dir(dir_name) if remote_path else dir_name,
+        }
+
         if download_id and release_id:
             params['downloader'] = downloader or client_agent
             params['download_id'] = download_id
 
-        params['media_folder'] = remote_dir(dir_name) if remote_path else dir_name
-
         if section == 'CouchPotato':
             if method == 'manage':
                 command = 'manage.update'
-                params = {}
+                params.clear()
             else:
                 command = 'renamer.scan'
 
@@ -220,7 +221,6 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 res = json.loads(r.content)
                 scan_id = int(res['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
-                started = True
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
                 scan_id = None

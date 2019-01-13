@@ -63,7 +63,6 @@ SABNZB_NO_OF_ARGUMENTS = 8
 SABNZB_0717_NO_OF_ARGUMENTS = 9
 
 # sickbeard fork/branch constants
-FORKS = {}
 FORK_DEFAULT = 'default'
 FORK_FAILED = 'failed'
 FORK_FAILED_TORRENT = 'failed-torrent'
@@ -73,15 +72,18 @@ FORK_SICKBEARD_API = 'SickBeard-api'
 FORK_MEDUSA = 'Medusa'
 FORK_SICKGEAR = 'SickGear'
 FORK_STHENO = 'Stheno'
-FORKS[FORK_DEFAULT] = {'dir': None}
-FORKS[FORK_FAILED] = {'dirName': None, 'failed': None}
-FORKS[FORK_FAILED_TORRENT] = {'dir': None, 'failed': None, 'process_method': None}
-FORKS[FORK_SICKRAGE] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None}
-FORKS[FORK_SICKCHILL] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None}
-FORKS[FORK_SICKBEARD_API] = {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None}
-FORKS[FORK_MEDUSA] = {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None}
-FORKS[FORK_SICKGEAR] = {'dir': None, 'failed': None, 'process_method': None, 'force': None}
-FORKS[FORK_STHENO] = {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
+
+FORKS = {
+    FORK_DEFAULT: {'dir': None},
+    FORK_FAILED: {'dirName': None, 'failed': None},
+    FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
+    FORK_SICKRAGE: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None},
+    FORK_SICKCHILL: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None},
+    FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None},
+    FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
+    FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
+    FORK_STHENO: {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
+}
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
 
 # NZBGet Exit Codes
@@ -743,7 +745,6 @@ def initialize(section=None):
         if codec in codec_alias:
             extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
             ACODEC3_ALLOW.extend(extra)
-    codec_alias = {}  # clear memory
 
     PASSWORDSFILE = CFG['passwords']['PassWordFile']
 

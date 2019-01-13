@@ -148,7 +148,6 @@ def rename_script(dirname):
 
 
 def par2(dirname):
-    newlist = []
     sofar = 0
     parfile = ''
     objects = []
