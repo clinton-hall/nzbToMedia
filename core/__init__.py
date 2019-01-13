@@ -52,7 +52,7 @@ from core.utils import (
     resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
 )
 
-__version__ = '12.0.5'
+__version__ = '12.0.6'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -101,7 +101,7 @@ SYS_ENCODING = None
 FAILED = False
 
 AUTO_UPDATE = None
-NZBTOMEDIA_VERSION = None
+NZBTOMEDIA_VERSION = __version__
 NEWEST_VERSION = None
 NEWEST_VERSION_STRING = None
 VERSION_NOTIFY = None
@@ -328,7 +328,6 @@ def initialize(section=None):
     main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
 
     # Set Version and GIT variables
-    NZBTOMEDIA_VERSION = '11.06'
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
     AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_REPO = 'nzbToMedia'

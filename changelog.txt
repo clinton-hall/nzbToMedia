@@ -1,5 +1,33 @@
 Change_LOG / History
 
+V12.0.6
+
+Hotfix for Manual Torrent run results.
+
+V12.0.5
+
+Proper fix for source cleaner
+
+V12.0.4
+
+Hotfix missed commit for source cleaner
+
+V12.0.3
+
+Hotfix cleaning for source installs
+
+V12.0.2
+
+Fix missed ProcessResult
+
+V12.0.1
+
+Added Python 3 support
+Updated all dependencies
+Major code refactoring
+Various bug fixes
+Hotfix NZBGet not working without comment
+
 V12.0.0
 
 NOTE:
