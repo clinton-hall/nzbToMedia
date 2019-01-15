@@ -116,7 +116,7 @@ class GitUpdateManager(UpdateManager):
         test_cmd = 'version'
 
         if core.GIT_PATH:
-            main_git = '\'{git}\''.format(git=core.GIT_PATH)
+            main_git = '"{git}"'.format(git=core.GIT_PATH)
         else:
             main_git = 'git'
 
