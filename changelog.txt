@@ -1,5 +1,13 @@
 Change_LOG / History
 
+V12.0.7
+
+Refactor utils
+Fix git subprocess
+Fix cleanup script output
+Add extra logging for fork detection
+Additional code clean up
+
 V12.0.6
 
 Hotfix for Manual Torrent run results.

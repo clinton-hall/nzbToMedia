@@ -37,6 +37,13 @@ class WorkingDirectory(object):
 
 
 def module_path(module=__file__, parent=False):
+    """
+    Detect path for a module.
+
+    :param module: The module who's path is being detected.  Defaults to current module.
+    :param parent: True to return the parent folder of the current module.
+    :return: The absolute normalized path to the module or its parent.
+    """
     try:
         path = module.__file__
     except AttributeError:
@@ -122,6 +129,12 @@ def clean_folders(*paths):
 
 
 def force_clean_folder(path, required):
+    """
+    Force clean a folder and exclude any required subfolders.
+
+    :param path: Target folder to remove subfolders
+    :param required: Keep only the required subfolders
+    """
     root, dirs, files = next(os.walk(path))
     required = sorted(required)
     if required:
@@ -138,6 +151,11 @@ def force_clean_folder(path, required):
 
 def clean(paths):
     """Clean up bytecode and obsolete folders."""
+    def _report_error(msg):
+        print('WARNING: Automatic cleanup could not be executed.')
+        print('         If errors occur, manual cleanup may be required.')
+        print('REASON : {}'.format(msg))
+
     with WorkingDirectory(module_path()) as cwd:
         if cwd.working_directory != cwd.original_directory:
             print('Changing to directory:', cwd.working_directory)
@@ -146,7 +164,7 @@ def clean(paths):
         try:
             result = clean_bytecode()
         except SystemExit as error:
-            print(error)
+            _report_error(error)
         else:
             print(result or 'No bytecode to clean')
 
@@ -155,7 +173,7 @@ def clean(paths):
             try:
                 result = clean_folders(*paths)
             except SystemExit as error:
-                print(error)
+                _report_error(error)
             else:
                 print(result or 'No folders to clean\n')
         else:
@@ -163,7 +181,7 @@ def clean(paths):
             try:
                 items = paths.items()
             except AttributeError:
-                print('Failed to clean, no subfolder structure given')
+                _report_error('Failed to clean, no subfolder structure given')
             else:
                 for folder, subfolders in items:
                     print('\nForce cleaning folder:', folder)
