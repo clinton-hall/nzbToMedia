@@ -46,13 +46,31 @@ from six.moves import reload_module
 from core import logger, main_db, version_check, databases, transcoder
 from core.configuration import config
 from core.utils import (
-    RunningProcess, wake_up, category_search, clean_dir, clean_dir, copy_link,
-    create_torrent_class, extract_files, flatten, get_dirs, get_download_info,
-    list_media_files, make_dir, parse_args, pause_torrent, remove_torrent,
-    resume_torrent, remove_dir, remove_read_only, sanitize_name, update_download_info_status,
+    RunningProcess,
+    category_search,
+    clean_dir,
+    copy_link,
+    create_torrent_class,
+    extract_files,
+    flatten,
+    get_dirs,
+    get_download_info,
+    list_media_files,
+    make_dir,
+    parse_args,
+    pause_torrent,
+    rchmod,
+    remove_dir,
+    remove_read_only,
+    remove_torrent,
+    restart,
+    resume_torrent,
+    sanitize_name,
+    update_download_info_status,
+    wake_up,
 )
 
-__version__ = '12.0.6'
+__version__ = '12.0.7'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -846,36 +864,3 @@ def initialize(section=None):
 
     # finished initalizing
     return True
-
-
-def restart():
-    install_type = version_check.CheckVersion().install_type
-
-    status = 0
-    popen_list = []
-
-    if install_type in ('git', 'source'):
-        popen_list = [sys.executable, APP_FILENAME]
-
-    if popen_list:
-        popen_list += SYS_ARGV
-        logger.log(u'Restarting nzbToMedia with {args}'.format(args=popen_list))
-        logger.close()
-        p = subprocess.Popen(popen_list, cwd=os.getcwd())
-        p.wait()
-        status = p.returncode
-
-    os._exit(status)
-
-
-def rchmod(path, mod):
-    logger.log('Changing file mode of {0} to {1}'.format(path, oct(mod)))
-    os.chmod(path, mod)
-    if not os.path.isdir(path):
-        return  # Skip files
-
-    for root, dirs, files in os.walk(path):
-        for d in dirs:
-            os.chmod(os.path.join(root, d), mod)
-        for f in files:
-            os.chmod(os.path.join(root, f), mod)
