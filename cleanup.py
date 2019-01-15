@@ -151,6 +151,11 @@ def force_clean_folder(path, required):
 
 def clean(paths):
     """Clean up bytecode and obsolete folders."""
+    def _report_error(msg):
+        print('WARNING: Automatic cleanup could not be executed.')
+        print('         If errors occur, manual cleanup may be required.')
+        print('REASON : {}'.format(msg))
+
     with WorkingDirectory(module_path()) as cwd:
         if cwd.working_directory != cwd.original_directory:
             print('Changing to directory:', cwd.working_directory)
@@ -159,7 +164,7 @@ def clean(paths):
         try:
             result = clean_bytecode()
         except SystemExit as error:
-            print(error)
+            _report_error(error)
         else:
             print(result or 'No bytecode to clean')
 
@@ -168,7 +173,7 @@ def clean(paths):
             try:
                 result = clean_folders(*paths)
             except SystemExit as error:
-                print(error)
+                _report_error(error)
             else:
                 print(result or 'No folders to clean\n')
         else:
@@ -176,7 +181,7 @@ def clean(paths):
             try:
                 items = paths.items()
             except AttributeError:
-                print('Failed to clean, no subfolder structure given')
+                _report_error('Failed to clean, no subfolder structure given')
             else:
                 for folder, subfolders in items:
                     print('\nForce cleaning folder:', folder)
