@@ -37,6 +37,7 @@ from core.utils.paths import (
     get_dir_size,
     make_dir,
     onerror,
+    rchmod,
     remote_dir,
     remove_dir,
     remove_empty_folders,

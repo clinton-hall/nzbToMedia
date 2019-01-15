@@ -149,3 +149,16 @@ def clean_directory(path, files):
         shutil.rmtree(path, onerror=onerror)
     except Exception:
         logger.error('Unable to delete directory {0}'.format(path))
+
+
+def rchmod(path, mod):
+    logger.log('Changing file mode of {0} to {1}'.format(path, oct(mod)))
+    os.chmod(path, mod)
+    if not os.path.isdir(path):
+        return  # Skip files
+
+    for root, dirs, files in os.walk(path):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), mod)
+        for f in files:
+            os.chmod(os.path.join(root, f), mod)
