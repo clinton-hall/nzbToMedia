@@ -43,7 +43,7 @@ from core.utils.paths import (
     remove_empty_folders,
     remove_read_only,
 )
-from core.utils.processes import RunningProcess
+from core.utils.processes import RunningProcess, restart
 from core.utils.subtitles import import_subs
 from core.utils.torrents import create_torrent_class, pause_torrent, remove_torrent, resume_torrent
 

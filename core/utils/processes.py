@@ -1,7 +1,10 @@
 import os
 import socket
+import subprocess
+import sys
 
 import core
+from core import logger, version_check, APP_FILENAME, SYS_ARGV
 
 if os.name == 'nt':
     from win32event import CreateMutex
@@ -90,3 +93,23 @@ if os.name == 'nt':
     RunningProcess = WindowsProcess
 else:
     RunningProcess = PosixProcess
+
+
+def restart():
+    install_type = version_check.CheckVersion().install_type
+
+    status = 0
+    popen_list = []
+
+    if install_type in ('git', 'source'):
+        popen_list = [sys.executable, APP_FILENAME]
+
+    if popen_list:
+        popen_list += SYS_ARGV
+        logger.log(u'Restarting nzbToMedia with {args}'.format(args=popen_list))
+        logger.close()
+        p = subprocess.Popen(popen_list, cwd=os.getcwd())
+        p.wait()
+        status = p.returncode
+
+    os._exit(status)
