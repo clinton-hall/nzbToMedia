@@ -303,10 +303,31 @@ def configure_locale():
                 sys.exit(1)
 
 
+def configure_migration():
+    global CONFIG_FILE
+    global CFG
+
+    # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
+    if not config.migrate():
+        logger.error('Unable to migrate config file {0}, exiting ...'.format(CONFIG_FILE))
+        if 'NZBOP_SCRIPTDIR' in os.environ:
+            pass  # We will try and read config from Environment.
+        else:
+            sys.exit(-1)
+
+    # run migrate to convert NzbGet data from old cfg style to new cfg style
+    if 'NZBOP_SCRIPTDIR' in os.environ:
+        CFG = config.addnzbget()
+
+    else:  # load newly migrated config
+        logger.info('Loading config from [{0}]'.format(CONFIG_FILE))
+        CFG = config()
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, NOEXTRACTFAILED, SHOWEXTRACT, \
-        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, CFG, \
+        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, \
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENT_AGENT, USE_LINK, OUTPUT_DIRECTORY, \
         NOFLATTEN, UTORRENT_PASSWORD, UTORRENT_USER, UTORRENT_WEB_UI, DELUGE_HOST, DELUGE_PORT, DELUGE_USER, DELUGE_PASSWORD, VLEVEL, \
         TRANSMISSION_HOST, TRANSMISSION_PORT, TRANSMISSION_PASSWORD, TRANSMISSION_USER, COMPRESSED_CONTAINER, MEDIA_CONTAINER, \
@@ -333,21 +354,7 @@ def initialize(section=None):
     # init logging
     logger.ntm_log_instance.init_logging()
 
-    # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-    if not config.migrate():
-        logger.error('Unable to migrate config file {0}, exiting ...'.format(CONFIG_FILE))
-        if 'NZBOP_SCRIPTDIR' in os.environ:
-            pass  # We will try and read config from Environment.
-        else:
-            sys.exit(-1)
-
-    # run migrate to convert NzbGet data from old cfg style to new cfg style
-    if 'NZBOP_SCRIPTDIR' in os.environ:
-        CFG = config.addnzbget()
-
-    else:  # load newly migrated config
-        logger.info('Loading config from [{0}]'.format(CONFIG_FILE))
-        CFG = config()
+    configure_migration()
 
     # Enable/Disable DEBUG Logging
     LOG_DEBUG = int(CFG['General']['log_debug'])
