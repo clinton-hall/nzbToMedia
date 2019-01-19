@@ -530,28 +530,27 @@ def configure_plex():
 def configure_niceness():
     global NICENESS
 
-    devnull = open(os.devnull, 'w')
-    try:
-        subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
-    except Exception:
-        pass
-    try:
-        subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
+    with open(os.devnull, 'w') as devnull:
         try:
-            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+            subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
+            NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
         except Exception:
             pass
         try:
-            if 'ionice' in NICENESS:
-                NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
-            else:
-                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+            subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
+            try:
+                NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+            except Exception:
+                pass
+            try:
+                if 'ionice' in NICENESS:
+                    NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+                else:
+                    NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+            except Exception:
+                pass
         except Exception:
             pass
-    except Exception:
-        pass
-    devnull.close()
 
 
 def initialize(section=None):
