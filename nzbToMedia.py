@@ -645,7 +645,7 @@ except NameError:
 
 # post-processing
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
-    if core.SAFE_MODE and input_directory == core.NZB_DEFAULTDIR:
+    if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
         logger.error(
             'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
                 input_directory))
