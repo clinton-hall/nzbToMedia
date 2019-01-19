@@ -370,12 +370,13 @@ def configure_updates():
     global AUTO_UPDATE
 
     AUTO_UPDATE = int(CFG['General']['auto_update'])
+    version_checker = version_check.CheckVersion()
 
     # Check for updates via GitHUB
-    if version_check.CheckVersion().check_for_new_version():
+    if version_checker.check_for_new_version():
         if AUTO_UPDATE == 1:
             logger.info('Auto-Updating nzbToMedia, Please wait ...')
-            updated = version_check.CheckVersion().update()
+            updated = version_checker.update()
             if updated:
                 # restart nzbToMedia
                 try:
