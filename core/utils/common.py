@@ -102,11 +102,11 @@ def get_dirs(section, subsection, link='hard'):
 
     if core.USE_LINK == 'move':
         try:
-            output_directory = os.path.join(core.OUTPUTDIRECTORY, subsection)
+            output_directory = os.path.join(core.OUTPUT_DIRECTORY, subsection)
             if os.path.exists(output_directory):
                 to_return.extend(process_dir(output_directory, link))
         except Exception as e:
-            logger.error('Failed to add directories from {0} for post-processing: {1}'.format(core.OUTPUTDIRECTORY, e))
+            logger.error('Failed to add directories from {0} for post-processing: {1}'.format(core.OUTPUT_DIRECTORY, e))
 
     if not to_return:
         logger.debug('No directories identified in {0}:{1} for post-processing'.format(section, subsection))

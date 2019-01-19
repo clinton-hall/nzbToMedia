@@ -114,13 +114,13 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         basename = os.path.basename(input_directory)
         basename = core.sanitize_name(input_name) \
             if input_name == basename else os.path.splitext(core.sanitize_name(input_name))[0]
-        output_destination = os.path.join(core.OUTPUTDIRECTORY, input_category, basename)
+        output_destination = os.path.join(core.OUTPUT_DIRECTORY, input_category, basename)
     elif unique_path:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
     else:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, input_category))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
     try:
         output_destination = output_destination.encode(core.SYS_ENCODING)
     except UnicodeError:
