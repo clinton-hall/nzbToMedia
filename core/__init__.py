@@ -169,11 +169,11 @@ QBITTORRENT_PORT = None
 QBITTORRENT_USER = None
 QBITTORRENT_PASSWORD = None
 
-PLEXSSL = None
-PLEXHOST = None
-PLEXPORT = None
-PLEXTOKEN = None
-PLEXSEC = []
+PLEX_SSL = None
+PLEX_HOST = None
+PLEX_PORT = None
+PLEX_TOKEN = None
+PLEX_SECTION = []
 
 EXTCONTAINER = []
 COMPRESSEDCONTAINER = []
@@ -269,7 +269,7 @@ def initialize(section=None):
         DELETE_ORIGINAL, TORRENT_CHMOD_DIRECTORY, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
         TORRENT_DEFAULTDIR, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
-        PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC, TORRENT_RESUME, PAR2CMD, QBITTORRENT_HOST, QBITTORRENT_PORT, QBITTORRENT_USER, QBITTORRENT_PASSWORD
+        PLEX_SSL, PLEX_HOST, PLEX_PORT, PLEX_TOKEN, PLEX_SECTION, TORRENT_RESUME, PAR2CMD, QBITTORRENT_HOST, QBITTORRENT_PORT, QBITTORRENT_USER, QBITTORRENT_PASSWORD
 
     if __INITIALIZED__:
         return False
@@ -434,15 +434,15 @@ def initialize(section=None):
         REMOTEPATHS = [(local.strip(), remote.strip()) for local, remote in
                        REMOTEPATHS]  # strip trailing and leading whitespaces
 
-    PLEXSSL = int(CFG['Plex']['plex_ssl'])
-    PLEXHOST = CFG['Plex']['plex_host']
-    PLEXPORT = CFG['Plex']['plex_port']
-    PLEXTOKEN = CFG['Plex']['plex_token']
-    PLEXSEC = CFG['Plex']['plex_sections'] or []
-    if PLEXSEC:
-        if isinstance(PLEXSEC, list):
-            PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
-        PLEXSEC = [tuple(item.split(',')) for item in PLEXSEC.split('|')]
+    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
+    PLEX_HOST = CFG['Plex']['plex_host']
+    PLEX_PORT = CFG['Plex']['plex_port']
+    PLEX_TOKEN = CFG['Plex']['plex_token']
+    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
+    if PLEX_SECTION:
+        if isinstance(PLEX_SECTION, list):
+            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
+        PLEX_SECTION = [tuple(item.split(',')) for item in PLEX_SECTION.split('|')]
 
     devnull = open(os.devnull, 'w')
     try:
