@@ -25,7 +25,7 @@ def create_torrent_class(client_agent):
             logger.debug('Connecting to {0}: http://{1}:{2}'.format(
                 client_agent, core.TRANSMISSION_HOST, core.TRANSMISSION_PORT))
             tc = TransmissionClient(core.TRANSMISSION_HOST, core.TRANSMISSION_PORT,
-                                    core.TRANSMISSIONUSR,
+                                    core.TRANSMISSION_USER,
                                     core.TRANSMISSIONPWD)
         except Exception:
             logger.error('Failed to connect to Transmission')
