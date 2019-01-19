@@ -491,10 +491,18 @@ def configure_remote_paths():
     if REMOTE_PATHS:
         if isinstance(REMOTE_PATHS, list):
             REMOTE_PATHS = ','.join(REMOTE_PATHS)  # fix in case this imported as list.
-        REMOTE_PATHS = [tuple(item.split(',')) for item in
-                        REMOTE_PATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
-        REMOTE_PATHS = [(local.strip(), remote.strip()) for local, remote in
-                        REMOTE_PATHS]  # strip trailing and leading whitespaces
+
+        REMOTE_PATHS = (
+            # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+            tuple(item.split(','))
+            for item in REMOTE_PATHS.split('|')
+        )
+
+        REMOTE_PATHS = [
+            # strip trailing and leading whitespaces
+            (local.strip(), remote.strip())
+            for local, remote in REMOTE_PATHS
+        ]
 
 
 def initialize(section=None):
