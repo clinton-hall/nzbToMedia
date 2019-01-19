@@ -934,47 +934,12 @@ def configure_sections(section):
     CATEGORIES = list(set(CATEGORIES))
 
 
-def initialize(section=None):
+def configure_utility_locations():
     global SHOWEXTRACT
-    global CATEGORIES
-    global SECTIONS
     global SEVENZIP
-    global __INITIALIZED__
-    global USER_DELAY
-    global SYS_ENCODING
     global FFMPEG
     global FFPROBE
-    global TORRENT_CLASS
-    global PASSWORDS_FILE
     global PAR2CMD
-
-    if __INITIALIZED__:
-        return False
-
-    configure_logging()
-    configure_process()
-    configure_locale()
-
-    # init logging
-    logger.ntm_log_instance.init_logging()
-
-    configure_migration()
-    configure_logging_part_2()
-
-    # initialize the main SB database
-    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
-
-    configure_general()
-    configure_updates()
-    configure_wake_on_lan()
-    configure_nzbs()
-    configure_torrents()
-    configure_remote_paths()
-    configure_plex()
-    configure_niceness()
-    configure_containers()
-    configure_transcoder()
-    configure_passwords_file()
 
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
@@ -1064,6 +1029,38 @@ def initialize(section=None):
                 logger.warning('Failed to locate ffprobe. Video corruption detection disabled!')
                 logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
+
+def initialize(section=None):
+    global __INITIALIZED__
+
+    if __INITIALIZED__:
+        return False
+
+    configure_logging()
+    configure_process()
+    configure_locale()
+
+    # init logging
+    logger.ntm_log_instance.init_logging()
+
+    configure_migration()
+    configure_logging_part_2()
+
+    # initialize the main SB database
+    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
+
+    configure_general()
+    configure_updates()
+    configure_wake_on_lan()
+    configure_nzbs()
+    configure_torrents()
+    configure_remote_paths()
+    configure_plex()
+    configure_niceness()
+    configure_containers()
+    configure_transcoder()
+    configure_passwords_file()
+    configure_utility_locations()
     configure_sections(section)
     configure_torrent_class()
 
