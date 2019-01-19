@@ -397,18 +397,24 @@ def configure_wake_on_lan():
         wake_up()
 
 
-def configure_nzbs():
-    global NZB_CLIENT_AGENT
+def configure_sabnzbd():
     global SABNZBD_HOST
     global SABNZBD_PORT
     global SABNZBD_APIKEY
-    global NZB_DEFAULT_DIRECTORY
 
-    NZB_CLIENT_AGENT = CFG['Nzb']['clientAgent']  # sabnzbd
     SABNZBD_HOST = CFG['Nzb']['sabnzbd_host']
     SABNZBD_PORT = int(CFG['Nzb']['sabnzbd_port'] or 8080)  # defaults to accommodate NzbGet
     SABNZBD_APIKEY = CFG['Nzb']['sabnzbd_apikey']
+
+
+def configure_nzbs():
+    global NZB_CLIENT_AGENT
+    global NZB_DEFAULT_DIRECTORY
+
+    NZB_CLIENT_AGENT = CFG['Nzb']['clientAgent']  # sabnzbd
     NZB_DEFAULT_DIRECTORY = CFG['Nzb']['default_downloadDirectory']
+
+    configure_sabnzbd()
 
 
 def configure_groups():
