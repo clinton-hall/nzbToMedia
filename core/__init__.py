@@ -483,6 +483,20 @@ def configure_torrents():
     QBITTORRENT_PASSWORD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
 
 
+def configure_remote_paths():
+    global REMOTE_PATHS
+
+    REMOTE_PATHS = CFG['Network']['mount_points'] or []
+
+    if REMOTE_PATHS:
+        if isinstance(REMOTE_PATHS, list):
+            REMOTE_PATHS = ','.join(REMOTE_PATHS)  # fix in case this imported as list.
+        REMOTE_PATHS = [tuple(item.split(',')) for item in
+                        REMOTE_PATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+        REMOTE_PATHS = [(local.strip(), remote.strip()) for local, remote in
+                        REMOTE_PATHS]  # strip trailing and leading whitespaces
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
@@ -500,7 +514,7 @@ def initialize(section=None):
         NICENESS, FFMPEG, FFPROBE, AUDIO_CONTAINER, EXT_CONTAINER, TORRENT_CLASS, \
         PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
-        REMOTE_PATHS, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
+        PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
         PLEX_SSL, PLEX_HOST, PLEX_PORT, PLEX_TOKEN, PLEX_SECTION, PAR2CMD
 
     if __INITIALIZED__:
@@ -524,15 +538,7 @@ def initialize(section=None):
     configure_wake_on_lan()
     configure_nzbs()
     configure_torrents()
-
-    REMOTE_PATHS = CFG['Network']['mount_points'] or []
-    if REMOTE_PATHS:
-        if isinstance(REMOTE_PATHS, list):
-            REMOTE_PATHS = ','.join(REMOTE_PATHS)  # fix in case this imported as list.
-        REMOTE_PATHS = [tuple(item.split(',')) for item in
-                        REMOTE_PATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
-        REMOTE_PATHS = [(local.strip(), remote.strip()) for local, remote in
-                        REMOTE_PATHS]  # strip trailing and leading whitespaces
+    configure_remote_paths()
 
     PLEX_SSL = int(CFG['Plex']['plex_ssl'])
     PLEX_HOST = CFG['Plex']['plex_host']
