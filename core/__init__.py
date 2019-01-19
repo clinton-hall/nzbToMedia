@@ -581,50 +581,49 @@ def configure_containers():
         META_CONTAINER = META_CONTAINER.split(',')
 
 
-def initialize(section=None):
-    global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
-        NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
-        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, SYS_ARGV, \
-        SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, \
-        VLEVEL, \
-        SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, SEVENZIP, CONCAT, VCRF, \
-        __INITIALIZED__, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, \
-        SYS_ENCODING, \
-        DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
-        VFRAMERATE, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, FAILED, \
-        ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
-        SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, \
-        FFMPEG, FFPROBE, EXT_CONTAINER, TORRENT_CLASS, \
-        PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
-        PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
-        PAR2CMD
-
-    if __INITIALIZED__:
-        return False
-
-    configure_logging()
-    configure_process()
-    configure_locale()
-
-    # init logging
-    logger.ntm_log_instance.init_logging()
-
-    configure_migration()
-    configure_logging_part_2()
-
-    # initialize the main SB database
-    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
-
-    configure_general()
-    configure_updates()
-    configure_wake_on_lan()
-    configure_nzbs()
-    configure_torrents()
-    configure_remote_paths()
-    configure_plex()
-    configure_niceness()
-    configure_containers()
+def configure_transcoder():
+    global GETSUBS
+    global TRANSCODE
+    global DUPLICATE
+    global CONCAT
+    global IGNOREEXTENSIONS
+    global OUTPUTFASTSTART
+    global GENERALOPTS
+    global OUTPUTQUALITYPERCENT
+    global OUTPUTVIDEOPATH
+    global PROCESSOUTPUT
+    global ALANGUAGE
+    global AINCLUDE
+    global SLANGUAGES
+    global SINCLUDE
+    global SEXTRACT
+    global SEMBED
+    global SUBSDIR
+    global VEXTENSION
+    global VCODEC
+    global VPRESET
+    global VFRAMERATE
+    global VBITRATE
+    global VRESOLUTION
+    global VCRF
+    global VLEVEL
+    global VCODEC_ALLOW
+    global ACODEC
+    global ACODEC_ALLOW
+    global ACHANNELS
+    global ABITRATE
+    global ACODEC2
+    global ACODEC2_ALLOW
+    global ACHANNELS2
+    global ABITRATE2
+    global ACODEC3
+    global ACODEC3_ALLOW
+    global ACHANNELS3
+    global ABITRATE3
+    global SCODEC
+    global BURN
+    global HWACCEL
+    global ALLOWSUBS
 
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
@@ -905,6 +904,49 @@ def initialize(section=None):
         if codec in codec_alias:
             extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
             ACODEC3_ALLOW.extend(extra)
+
+
+def initialize(section=None):
+    global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
+        NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
+        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, SYS_ARGV, \
+        SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, \
+        SECTIONS, ALL_FORKS, TEST_FILE, SEVENZIP, \
+        __INITIALIZED__, APP_FILENAME, USER_DELAY, APP_NAME, DEFAULTS, \
+        SYS_ENCODING, \
+        FAILED, \
+        FFMPEG, FFPROBE, EXT_CONTAINER, TORRENT_CLASS, \
+        PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
+        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
+        PID_FILE, MYAPP, \
+        PAR2CMD
+
+    if __INITIALIZED__:
+        return False
+
+    configure_logging()
+    configure_process()
+    configure_locale()
+
+    # init logging
+    logger.ntm_log_instance.init_logging()
+
+    configure_migration()
+    configure_logging_part_2()
+
+    # initialize the main SB database
+    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
+
+    configure_general()
+    configure_updates()
+    configure_wake_on_lan()
+    configure_nzbs()
+    configure_torrents()
+    configure_remote_paths()
+    configure_plex()
+    configure_niceness()
+    configure_containers()
+    configure_transcoder()
 
     PASSWORDS_FILE = CFG['passwords']['PassWordFile']
 
