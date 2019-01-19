@@ -511,16 +511,21 @@ def configure_torrent_deltetion():
     DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
 
 
+def configure_torrent_linking():
+    global USE_LINK
+
+    USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
-    global USE_LINK
     global OUTPUT_DIRECTORY
     global TORRENT_DEFAULT_DIRECTORY
 
     TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
-    USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
     OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
     TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
+    configure_torrent_linking()
     configure_flattening()
     configure_torrent_deltetion()
     configure_torrent_categories()
