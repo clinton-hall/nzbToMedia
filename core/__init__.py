@@ -527,6 +527,33 @@ def configure_plex():
         ]
 
 
+def configure_niceness():
+    global NICENESS
+
+    devnull = open(os.devnull, 'w')
+    try:
+        subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
+        NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
+    except Exception:
+        pass
+    try:
+        subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
+        try:
+            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+        except Exception:
+            pass
+        try:
+            if 'ionice' in NICENESS:
+                NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+            else:
+                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+        except Exception:
+            pass
+    except Exception:
+        pass
+    devnull.close()
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
@@ -541,7 +568,7 @@ def initialize(section=None):
         VFRAMERATE, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, FAILED, \
         ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
         SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, \
-        NICENESS, FFMPEG, FFPROBE, AUDIO_CONTAINER, EXT_CONTAINER, TORRENT_CLASS, \
+        FFMPEG, FFPROBE, AUDIO_CONTAINER, EXT_CONTAINER, TORRENT_CLASS, \
         PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
         PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
@@ -570,29 +597,7 @@ def initialize(section=None):
     configure_torrents()
     configure_remote_paths()
     configure_plex()
-
-    devnull = open(os.devnull, 'w')
-    try:
-        subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
-    except Exception:
-        pass
-    try:
-        subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
-        try:
-            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
-        except Exception:
-            pass
-        try:
-            if 'ionice' in NICENESS:
-                NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
-            else:
-                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
-        except Exception:
-            pass
-    except Exception:
-        pass
-    devnull.close()
+    configure_niceness()
 
     COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
                             re.compile(r'.part\d+.rar$', re.I),
