@@ -368,6 +368,7 @@ def configure_general():
 
 def configure_updates():
     global AUTO_UPDATE
+    global MYAPP
 
     AUTO_UPDATE = int(CFG['General']['auto_update'])
     version_checker = version_check.CheckVersion()
@@ -624,6 +625,7 @@ def configure_transcoder():
     global BURN
     global HWACCEL
     global ALLOWSUBS
+    global DEFAULTS
 
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
@@ -907,19 +909,18 @@ def configure_transcoder():
 
 
 def initialize(section=None):
-    global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
-        NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
-        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, SYS_ARGV, \
-        SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, \
-        SECTIONS, ALL_FORKS, TEST_FILE, SEVENZIP, \
-        __INITIALIZED__, APP_FILENAME, USER_DELAY, APP_NAME, DEFAULTS, \
-        SYS_ENCODING, \
-        FAILED, \
-        FFMPEG, FFPROBE, EXT_CONTAINER, TORRENT_CLASS, \
-        PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
-        PID_FILE, MYAPP, \
-        PAR2CMD
+    global SHOWEXTRACT
+    global CATEGORIES
+    global SECTIONS
+    global SEVENZIP
+    global __INITIALIZED__
+    global USER_DELAY
+    global SYS_ENCODING
+    global FFMPEG
+    global FFPROBE
+    global TORRENT_CLASS
+    global PASSWORDS_FILE
+    global PAR2CMD
 
     if __INITIALIZED__:
         return False
