@@ -475,13 +475,20 @@ def configure_qbittorrent():
     QBITTORRENT_PASSWORD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
 
 
+def configure_flattening():
+    global NOFLATTEN
+
+    NOFLATTEN = (CFG['Torrent']['noFlatten'])
+    if isinstance(NOFLATTEN, str):
+        NOFLATTEN = NOFLATTEN.split(',')
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
     global OUTPUT_DIRECTORY
     global TORRENT_DEFAULT_DIRECTORY
     global CATEGORIES
-    global NOFLATTEN
     global DELETE_ORIGINAL
     global TORRENT_CHMOD_DIRECTORY
     global TORRENT_RESUME_ON_FAILURE
@@ -492,9 +499,9 @@ def configure_torrents():
     OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
     TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
     CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
-    NOFLATTEN = (CFG['Torrent']['noFlatten'])
-    if isinstance(NOFLATTEN, str):
-        NOFLATTEN = NOFLATTEN.split(',')
+
+    configure_flattening()
+
     if isinstance(CATEGORIES, str):
         CATEGORIES = CATEGORIES.split(',')
     DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
