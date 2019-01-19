@@ -423,6 +423,18 @@ def configure_groups():
         GROUPS = None
 
 
+def configure_transmission():
+    global TRANSMISSION_HOST
+    global TRANSMISSION_PORT
+    global TRANSMISSION_USER
+    global TRANSMISSION_PASSWORD
+
+    TRANSMISSION_HOST = CFG['Torrent']['TransmissionHost']  # localhost
+    TRANSMISSION_PORT = int(CFG['Torrent']['TransmissionPort'])
+    TRANSMISSION_USER = CFG['Torrent']['TransmissionUSR']  # mysecretusr
+    TRANSMISSION_PASSWORD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
@@ -437,10 +449,6 @@ def configure_torrents():
     global UTORRENT_WEB_UI
     global UTORRENT_USER
     global UTORRENT_PASSWORD
-    global TRANSMISSION_HOST
-    global TRANSMISSION_PORT
-    global TRANSMISSION_USER
-    global TRANSMISSION_PASSWORD
     global DELUGE_HOST
     global DELUGE_PORT
     global DELUGE_USER
@@ -468,10 +476,7 @@ def configure_torrents():
     UTORRENT_USER = CFG['Torrent']['uTorrentUSR']  # mysecretusr
     UTORRENT_PASSWORD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
 
-    TRANSMISSION_HOST = CFG['Torrent']['TransmissionHost']  # localhost
-    TRANSMISSION_PORT = int(CFG['Torrent']['TransmissionPort'])
-    TRANSMISSION_USER = CFG['Torrent']['TransmissionUSR']  # mysecretusr
-    TRANSMISSION_PASSWORD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
+    configure_transmission()
 
     DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
     DELUGE_PORT = int(CFG['Torrent']['DelugePort'])  # 8084
