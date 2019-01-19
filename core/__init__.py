@@ -410,6 +410,18 @@ def configure_nzbs():
     NZB_DEFAULT_DIRECTORY = CFG['Nzb']['default_downloadDirectory']
 
 
+def configure_groups():
+    global GROUPS
+
+    GROUPS = CFG['Custom']['remove_group']
+
+    if isinstance(GROUPS, str):
+        GROUPS = GROUPS.split(',')
+
+    if GROUPS == ['']:
+        GROUPS = None
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
@@ -417,7 +429,7 @@ def initialize(section=None):
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENT_AGENT, USE_LINK, OUTPUT_DIRECTORY, \
         NOFLATTEN, UTORRENT_PASSWORD, UTORRENT_USER, UTORRENT_WEB_UI, DELUGE_HOST, DELUGE_PORT, DELUGE_USER, DELUGE_PASSWORD, VLEVEL, \
         TRANSMISSION_HOST, TRANSMISSION_PORT, TRANSMISSION_PASSWORD, TRANSMISSION_USER, COMPRESSED_CONTAINER, MEDIA_CONTAINER, \
-        META_CONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, GROUPS, SEVENZIP, CONCAT, VCRF, \
+        META_CONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, SEVENZIP, CONCAT, VCRF, \
         __INITIALIZED__, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, \
         SYS_ENCODING, \
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
@@ -450,12 +462,6 @@ def initialize(section=None):
     configure_updates()
     configure_wake_on_lan()
     configure_nzbs()
-
-    GROUPS = CFG['Custom']['remove_group']
-    if isinstance(GROUPS, str):
-        GROUPS = GROUPS.split(',')
-    if GROUPS == ['']:
-        GROUPS = None
 
     TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
     USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
