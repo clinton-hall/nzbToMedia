@@ -22,7 +22,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     root = 0
     found_file = 0
 
-    if client_agent != 'manual' and not core.DOWNLOADINFO:
+    if client_agent != 'manual' and not core.DOWNLOAD_INFO:
         logger.debug('Adding TORRENT download info for directory {0} to database'.format(input_directory))
 
         my_db = main_db.DBConnection()
@@ -328,11 +328,11 @@ def main(args):
 
                     logger.info('Checking database for download info for {0} ...'.format
                                 (os.path.basename(dir_name)))
-                    core.DOWNLOADINFO = core.get_download_info(os.path.basename(dir_name), 0)
-                    if core.DOWNLOADINFO:
-                        client_agent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
-                        input_hash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
-                        input_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
+                    core.DOWNLOAD_INFO = core.get_download_info(os.path.basename(dir_name), 0)
+                    if core.DOWNLOAD_INFO:
+                        client_agent = text_type(core.DOWNLOAD_INFO[0].get('client_agent', 'manual'))
+                        input_hash = text_type(core.DOWNLOAD_INFO[0].get('input_hash', ''))
+                        input_id = text_type(core.DOWNLOAD_INFO[0].get('input_id', ''))
                         logger.info('Found download info for {0}, '
                                     'setting variables now ...'.format(os.path.basename(dir_name)))
                     else:
