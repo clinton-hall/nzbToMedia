@@ -914,6 +914,13 @@ def configure_passwords_file():
     PASSWORDS_FILE = CFG['passwords']['PassWordFile']
 
 
+def configure_torrent_class():
+    global TORRENT_CLASS
+
+    # create torrent class
+    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENT_AGENT)
+
+
 def initialize(section=None):
     global SHOWEXTRACT
     global CATEGORIES
@@ -1050,8 +1057,7 @@ def initialize(section=None):
         CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
     CATEGORIES = list(set(CATEGORIES))
 
-    # create torrent class
-    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENT_AGENT)
+    configure_torrent_class()
 
     # finished initalizing
     return True
