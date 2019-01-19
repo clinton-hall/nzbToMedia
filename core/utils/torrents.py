@@ -23,8 +23,8 @@ def create_torrent_class(client_agent):
     if client_agent == 'transmission':
         try:
             logger.debug('Connecting to {0}: http://{1}:{2}'.format(
-                client_agent, core.TRANSMISSION_HOST, core.TRANSMISSIONPORT))
-            tc = TransmissionClient(core.TRANSMISSION_HOST, core.TRANSMISSIONPORT,
+                client_agent, core.TRANSMISSION_HOST, core.TRANSMISSION_PORT))
+            tc = TransmissionClient(core.TRANSMISSION_HOST, core.TRANSMISSION_PORT,
                                     core.TRANSMISSIONUSR,
                                     core.TRANSMISSIONPWD)
         except Exception:
