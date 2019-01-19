@@ -41,9 +41,9 @@ def create_torrent_class(client_agent):
 
     if client_agent == 'qbittorrent':
         try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
-            tc = qBittorrentClient('http://{0}:{1}/'.format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
-            tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
+            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
+            tc = qBittorrentClient('http://{0}:{1}/'.format(core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
+            tc.login(core.QBITTORRENT_USER, core.QBITTORRENT_PASSWORD)
         except Exception:
             logger.error('Failed to connect to qBittorrent')
 
