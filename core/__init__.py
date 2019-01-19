@@ -921,6 +921,19 @@ def configure_torrent_class():
     TORRENT_CLASS = create_torrent_class(TORRENT_CLIENT_AGENT)
 
 
+def configure_sections(section):
+    global SECTIONS
+    global CATEGORIES
+    # check for script-defied section and if None set to allow sections
+    SECTIONS = CFG[
+        tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled())
+        if not section else (section,)
+    ]
+    for section, subsections in SECTIONS.items():
+        CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
+    CATEGORIES = list(set(CATEGORIES))
+
+
 def initialize(section=None):
     global SHOWEXTRACT
     global CATEGORIES
@@ -1051,12 +1064,7 @@ def initialize(section=None):
                 logger.warning('Failed to locate ffprobe. Video corruption detection disabled!')
                 logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
-    # check for script-defied section and if None set to allow sections
-    SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
-    for section, subsections in SECTIONS.items():
-        CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
-    CATEGORIES = list(set(CATEGORIES))
-
+    configure_sections(section)
     configure_torrent_class()
 
     # finished initalizing
