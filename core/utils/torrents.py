@@ -32,9 +32,9 @@ def create_torrent_class(client_agent):
 
     if client_agent == 'deluge':
         try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.DELUGEHOST, core.DELUGEPORT))
+            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.DELUGE_HOST, core.DELUGEPORT))
             tc = DelugeClient()
-            tc.connect(host=core.DELUGEHOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
+            tc.connect(host=core.DELUGE_HOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
                        password=core.DELUGEPWD)
         except Exception:
             logger.error('Failed to connect to Deluge')
