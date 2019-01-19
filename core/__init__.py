@@ -383,7 +383,7 @@ def configure_updates():
                 pass
             restart()
         else:
-            logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
+            logger.error('Update failed, not restarting. Check your log for more information.')
 
     # Set Current Version
     logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
