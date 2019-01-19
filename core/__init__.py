@@ -373,19 +373,17 @@ def configure_updates():
     version_checker = version_check.CheckVersion()
 
     # Check for updates via GitHUB
-    if version_checker.check_for_new_version():
-        if AUTO_UPDATE == 1:
-            logger.info('Auto-Updating nzbToMedia, Please wait ...')
-            updated = version_checker.update()
-            if updated:
-                # restart nzbToMedia
-                try:
-                    del MYAPP
-                except Exception:
-                    pass
-                restart()
-            else:
-                logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
+    if version_checker.check_for_new_version() and AUTO_UPDATE:
+        logger.info('Auto-Updating nzbToMedia, Please wait ...')
+        if version_checker.update():
+            # restart nzbToMedia
+            try:
+                del MYAPP
+            except Exception:
+                pass
+            restart()
+        else:
+            logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
 
     # Set Current Version
     logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
