@@ -47,7 +47,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     delete_failed = int(cfg.get('delete_failed', 0))
     nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
     process_method = cfg.get('process_method')
-    if client_agent == core.TORRENT_CLIENTAGENT and core.USE_LINK == 'move-sym':
+    if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
         process_method = 'symlink'
     remote_path = int(cfg.get('remote_path', 0))
     wait_for = int(cfg.get('wait_for', 2))

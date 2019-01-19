@@ -291,7 +291,7 @@ def main(args):
     core.initialize()
 
     # clientAgent for Torrents
-    client_agent = core.TORRENT_CLIENTAGENT
+    client_agent = core.TORRENT_CLIENT_AGENT
 
     logger.info('#########################################################')
     logger.info('## ..::[{0}]::.. ##'.format(os.path.basename(__file__)))
