@@ -148,7 +148,7 @@ TORRENT_DEFAULT_DIRECTORY = None
 TORRENT_RESUME = None
 TORRENT_RESUME_ON_FAILURE = None
 
-REMOTEPATHS = []
+REMOTE_PATHS = []
 
 UTORRENT_WEB_UI = None
 UTORRENT_USER = None
@@ -268,7 +268,7 @@ def initialize(section=None):
         NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
         DELETE_ORIGINAL, TORRENT_CHMOD_DIRECTORY, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULT_DIRECTORY, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULT_DIRECTORY, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
+        TORRENT_DEFAULT_DIRECTORY, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULT_DIRECTORY, REMOTE_PATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
         PLEX_SSL, PLEX_HOST, PLEX_PORT, PLEX_TOKEN, PLEX_SECTION, TORRENT_RESUME, PAR2CMD, QBITTORRENT_HOST, QBITTORRENT_PORT, QBITTORRENT_USER, QBITTORRENT_PASSWORD
 
     if __INITIALIZED__:
@@ -425,14 +425,14 @@ def initialize(section=None):
     QBITTORRENT_USER = CFG['Torrent']['qBittorrentUSR']  # mysecretusr
     QBITTORRENT_PASSWORD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
 
-    REMOTEPATHS = CFG['Network']['mount_points'] or []
-    if REMOTEPATHS:
-        if isinstance(REMOTEPATHS, list):
-            REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
-        REMOTEPATHS = [tuple(item.split(',')) for item in
-                       REMOTEPATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
-        REMOTEPATHS = [(local.strip(), remote.strip()) for local, remote in
-                       REMOTEPATHS]  # strip trailing and leading whitespaces
+    REMOTE_PATHS = CFG['Network']['mount_points'] or []
+    if REMOTE_PATHS:
+        if isinstance(REMOTE_PATHS, list):
+            REMOTE_PATHS = ','.join(REMOTE_PATHS)  # fix in case this imported as list.
+        REMOTE_PATHS = [tuple(item.split(',')) for item in
+                        REMOTE_PATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+        REMOTE_PATHS = [(local.strip(), remote.strip()) for local, remote in
+                        REMOTE_PATHS]  # strip trailing and leading whitespaces
 
     PLEX_SSL = int(CFG['Plex']['plex_ssl'])
     PLEX_HOST = CFG['Plex']['plex_host']

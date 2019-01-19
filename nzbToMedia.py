@@ -725,7 +725,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     extract = int(cfg.get('extract', 0))
 
     try:
-        if int(cfg.get('remote_path')) and not core.REMOTEPATHS:
+        if int(cfg.get('remote_path')) and not core.REMOTE_PATHS:
             logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 section_name, input_category))
             return ProcessResult(
