@@ -263,6 +263,15 @@ def configure_logging():
         print('No log folder, logging to screen only')
 
 
+def configure_process():
+    global MYAPP
+
+    MYAPP = RunningProcess()
+    while MYAPP.alreadyrunning():
+        print('Waiting for existing session to end')
+        time.sleep(30)
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, NOEXTRACTFAILED, SHOWEXTRACT, \
@@ -287,11 +296,7 @@ def initialize(section=None):
         return False
 
     configure_logging()
-
-    MYAPP = RunningProcess()
-    while MYAPP.alreadyrunning():
-        print('Waiting for existing session to end')
-        time.sleep(30)
+    configure_process()
 
     try:
         locale.setlocale(locale.LC_ALL, '')
