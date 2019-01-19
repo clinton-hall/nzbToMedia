@@ -505,20 +505,25 @@ def configure_torrent_permissions():
     TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
 
 
+def configure_torrent_deltetion():
+    global DELETE_ORIGINAL
+
+    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
     global OUTPUT_DIRECTORY
     global TORRENT_DEFAULT_DIRECTORY
-    global DELETE_ORIGINAL
 
     TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
     USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
     OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
     TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
     configure_flattening()
+    configure_torrent_deltetion()
     configure_torrent_categories()
-    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
     configure_torrent_permissions()
     configure_torrent_resuming()
     configure_utorrent()
