@@ -131,7 +131,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     logger.info('Output directory set to: {0}'.format(output_destination))
 
-    if core.SAFE_MODE and output_destination == core.TORRENT_DEFAULTDIR:
+    if core.SAFE_MODE and output_destination == core.TORRENT_DEFAULT_DIRECTORY:
         logger.error('The output directory:[{0}] is the Download Directory. '
                      'Edit outputDirectory in autoProcessMedia.cfg. Exiting'.format
                      (input_directory))
