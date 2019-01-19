@@ -445,6 +445,18 @@ def configure_transmission():
     TRANSMISSION_PASSWORD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
 
 
+def configure_deluge():
+    global DELUGE_HOST
+    global DELUGE_PORT
+    global DELUGE_USER
+    global DELUGE_PASSWORD
+
+    DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
+    DELUGE_PORT = int(CFG['Torrent']['DelugePort'])  # 8084
+    DELUGE_USER = CFG['Torrent']['DelugeUSR']  # mysecretusr
+    DELUGE_PASSWORD = CFG['Torrent']['DelugePWD']  # mysecretpwr
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
@@ -456,10 +468,6 @@ def configure_torrents():
     global TORRENT_CHMOD_DIRECTORY
     global TORRENT_RESUME_ON_FAILURE
     global TORRENT_RESUME
-    global DELUGE_HOST
-    global DELUGE_PORT
-    global DELUGE_USER
-    global DELUGE_PASSWORD
     global QBITTORRENT_HOST
     global QBITTORRENT_PORT
     global QBITTORRENT_USER
@@ -482,11 +490,7 @@ def configure_torrents():
 
     configure_utorrent()
     configure_transmission()
-
-    DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
-    DELUGE_PORT = int(CFG['Torrent']['DelugePort'])  # 8084
-    DELUGE_USER = CFG['Torrent']['DelugeUSR']  # mysecretusr
-    DELUGE_PASSWORD = CFG['Torrent']['DelugePWD']  # mysecretpwr
+    configure_deluge()
 
     QBITTORRENT_HOST = CFG['Torrent']['qBittorrenHost']  # localhost
     QBITTORRENT_PORT = int(CFG['Torrent']['qBittorrentPort'])  # 8080
