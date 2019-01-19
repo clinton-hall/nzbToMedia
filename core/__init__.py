@@ -553,21 +553,48 @@ def configure_niceness():
             pass
 
 
+def configure_containers():
+    global COMPRESSED_CONTAINER
+    global MEDIA_CONTAINER
+    global AUDIO_CONTAINER
+    global META_CONTAINER
+
+    COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
+                            re.compile(r'.part\d+.rar$', re.I),
+                            re.compile('.rar$', re.I)]
+    COMPRESSED_CONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in
+                             CFG['Extensions']['compressedExtensions']]
+    MEDIA_CONTAINER = CFG['Extensions']['mediaExtensions']
+    AUDIO_CONTAINER = CFG['Extensions']['audioExtensions']
+    META_CONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
+
+    if isinstance(COMPRESSED_CONTAINER, str):
+        COMPRESSED_CONTAINER = COMPRESSED_CONTAINER.split(',')
+
+    if isinstance(MEDIA_CONTAINER, str):
+        MEDIA_CONTAINER = MEDIA_CONTAINER.split(',')
+
+    if isinstance(AUDIO_CONTAINER, str):
+        AUDIO_CONTAINER = AUDIO_CONTAINER.split(',')
+
+    if isinstance(META_CONTAINER, str):
+        META_CONTAINER = META_CONTAINER.split(',')
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
         NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, SYS_ARGV, \
         SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, \
         VLEVEL, \
-        COMPRESSED_CONTAINER, MEDIA_CONTAINER, \
-        META_CONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, SEVENZIP, CONCAT, VCRF, \
+        SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, SEVENZIP, CONCAT, VCRF, \
         __INITIALIZED__, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, \
         SYS_ENCODING, \
         DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
         VFRAMERATE, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, FAILED, \
         ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
         SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, \
-        FFMPEG, FFPROBE, AUDIO_CONTAINER, EXT_CONTAINER, TORRENT_CLASS, \
+        FFMPEG, FFPROBE, EXT_CONTAINER, TORRENT_CLASS, \
         PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
         PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
@@ -597,22 +624,7 @@ def initialize(section=None):
     configure_remote_paths()
     configure_plex()
     configure_niceness()
-
-    COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
-                            re.compile(r'.part\d+.rar$', re.I),
-                            re.compile('.rar$', re.I)]
-    COMPRESSED_CONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG['Extensions']['compressedExtensions']]
-    MEDIA_CONTAINER = CFG['Extensions']['mediaExtensions']
-    AUDIO_CONTAINER = CFG['Extensions']['audioExtensions']
-    META_CONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
-    if isinstance(COMPRESSED_CONTAINER, str):
-        COMPRESSED_CONTAINER = COMPRESSED_CONTAINER.split(',')
-    if isinstance(MEDIA_CONTAINER, str):
-        MEDIA_CONTAINER = MEDIA_CONTAINER.split(',')
-    if isinstance(AUDIO_CONTAINER, str):
-        AUDIO_CONTAINER = AUDIO_CONTAINER.split(',')
-    if isinstance(META_CONTAINER, str):
-        META_CONTAINER = META_CONTAINER.split(',')
+    configure_containers()
 
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
