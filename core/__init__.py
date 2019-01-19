@@ -391,6 +391,11 @@ def configure_updates():
                  system=platform.system(), release=platform.release()))
 
 
+def configure_wake_on_lan():
+    if int(CFG['WakeOnLan']['wake']):
+        wake_up()
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
@@ -429,9 +434,7 @@ def initialize(section=None):
 
     configure_general()
     configure_updates()
-
-    if int(CFG['WakeOnLan']['wake']) == 1:
-        wake_up()
+    configure_wake_on_lan()
 
     NZB_CLIENT_AGENT = CFG['Nzb']['clientAgent']  # sabnzbd
     SABNZBD_HOST = CFG['Nzb']['sabnzbd_host']
