@@ -908,6 +908,12 @@ def configure_transcoder():
             ACODEC3_ALLOW.extend(extra)
 
 
+def configure_passwords_file():
+    global PASSWORDS_FILE
+
+    PASSWORDS_FILE = CFG['passwords']['PassWordFile']
+
+
 def initialize(section=None):
     global SHOWEXTRACT
     global CATEGORIES
@@ -948,8 +954,7 @@ def initialize(section=None):
     configure_niceness()
     configure_containers()
     configure_transcoder()
-
-    PASSWORDS_FILE = CFG['passwords']['PassWordFile']
+    configure_passwords_file()
 
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
