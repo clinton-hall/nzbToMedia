@@ -343,7 +343,6 @@ def configure_logging_part_2():
 
 def configure_general():
     global VERSION_NOTIFY
-    global AUTO_UPDATE
     global GIT_REPO
     global GIT_PATH
     global GIT_USER
@@ -356,7 +355,6 @@ def configure_general():
 
     # Set Version and GIT variables
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
-    AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_REPO = 'nzbToMedia'
     GIT_PATH = CFG['General']['git_path']
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
@@ -366,6 +364,32 @@ def configure_general():
     CHECK_MEDIA = int(CFG['General']['check_media'])
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
+
+
+def configure_updates():
+    global AUTO_UPDATE
+
+    AUTO_UPDATE = int(CFG['General']['auto_update'])
+
+    # Check for updates via GitHUB
+    if version_check.CheckVersion().check_for_new_version():
+        if AUTO_UPDATE == 1:
+            logger.info('Auto-Updating nzbToMedia, Please wait ...')
+            updated = version_check.CheckVersion().update()
+            if updated:
+                # restart nzbToMedia
+                try:
+                    del MYAPP
+                except Exception:
+                    pass
+                restart()
+            else:
+                logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
+
+    # Set Current Version
+    logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
+                (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
+                 system=platform.system(), release=platform.release()))
 
 
 def initialize(section=None):
@@ -405,26 +429,7 @@ def initialize(section=None):
     main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
 
     configure_general()
-
-    # Check for updates via GitHUB
-    if version_check.CheckVersion().check_for_new_version():
-        if AUTO_UPDATE == 1:
-            logger.info('Auto-Updating nzbToMedia, Please wait ...')
-            updated = version_check.CheckVersion().update()
-            if updated:
-                # restart nzbToMedia
-                try:
-                    del MYAPP
-                except Exception:
-                    pass
-                restart()
-            else:
-                logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
-
-    # Set Current Version
-    logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
-                (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
-                 system=platform.system(), release=platform.release()))
+    configure_updates()
 
     if int(CFG['WakeOnLan']['wake']) == 1:
         wake_up()
