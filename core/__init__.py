@@ -505,6 +505,28 @@ def configure_remote_paths():
         ]
 
 
+def configure_plex():
+    global PLEX_SSL
+    global PLEX_HOST
+    global PLEX_PORT
+    global PLEX_TOKEN
+    global PLEX_SECTION
+
+    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
+    PLEX_HOST = CFG['Plex']['plex_host']
+    PLEX_PORT = CFG['Plex']['plex_port']
+    PLEX_TOKEN = CFG['Plex']['plex_token']
+    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
+
+    if PLEX_SECTION:
+        if isinstance(PLEX_SECTION, list):
+            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
+        PLEX_SECTION = [
+            tuple(item.split(','))
+            for item in PLEX_SECTION.split('|')
+        ]
+
+
 def initialize(section=None):
     global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PAR_CHECK, NZBGET_POSTPROCESS_SUCCESS, \
         NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, SHOWEXTRACT, \
@@ -523,7 +545,7 @@ def initialize(section=None):
         PASSWORDS_FILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
         USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOAD_INFO, \
         PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
-        PLEX_SSL, PLEX_HOST, PLEX_PORT, PLEX_TOKEN, PLEX_SECTION, PAR2CMD
+        PAR2CMD
 
     if __INITIALIZED__:
         return False
@@ -547,16 +569,7 @@ def initialize(section=None):
     configure_nzbs()
     configure_torrents()
     configure_remote_paths()
-
-    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
-    PLEX_HOST = CFG['Plex']['plex_host']
-    PLEX_PORT = CFG['Plex']['plex_port']
-    PLEX_TOKEN = CFG['Plex']['plex_token']
-    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
-    if PLEX_SECTION:
-        if isinstance(PLEX_SECTION, list):
-            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
-        PLEX_SECTION = [tuple(item.split(',')) for item in PLEX_SECTION.split('|')]
+    configure_plex()
 
     devnull = open(os.devnull, 'w')
     try:
