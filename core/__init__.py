@@ -491,6 +491,14 @@ def configure_torrent_categories():
         CATEGORIES = CATEGORIES.split(',')
 
 
+def configure_torrent_resuming():
+    global TORRENT_RESUME
+    global TORRENT_RESUME_ON_FAILURE
+
+    TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
+    TORRENT_RESUME = int(CFG['Torrent']['resume'])
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
@@ -498,8 +506,6 @@ def configure_torrents():
     global TORRENT_DEFAULT_DIRECTORY
     global DELETE_ORIGINAL
     global TORRENT_CHMOD_DIRECTORY
-    global TORRENT_RESUME_ON_FAILURE
-    global TORRENT_RESUME
 
     TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
     USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
@@ -509,9 +515,7 @@ def configure_torrents():
     configure_torrent_categories()
     DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
     TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
-    TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
-    TORRENT_RESUME = int(CFG['Torrent']['resume'])
-
+    configure_torrent_resuming()
     configure_utorrent()
     configure_transmission()
     configure_deluge()
