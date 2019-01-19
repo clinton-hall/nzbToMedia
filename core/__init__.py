@@ -1064,5 +1064,7 @@ def initialize(section=None):
     configure_sections(section)
     configure_torrent_class()
 
-    # finished initalizing
-    return True
+    __INITIALIZED__ = True
+
+    # finished initializing
+    return __INITIALIZED__
