@@ -16,7 +16,7 @@ def create_torrent_class(client_agent):
     if client_agent == 'utorrent':
         try:
             logger.debug('Connecting to {0}: {1}'.format(client_agent, core.UTORRENT_WEB_UI))
-            tc = UTorrentClient(core.UTORRENT_WEB_UI, core.UTORRENTUSR, core.UTORRENTPWD)
+            tc = UTorrentClient(core.UTORRENT_WEB_UI, core.UTORRENT_USER, core.UTORRENTPWD)
         except Exception:
             logger.error('Failed to connect to uTorrent')
 
