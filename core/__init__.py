@@ -483,12 +483,19 @@ def configure_flattening():
         NOFLATTEN = NOFLATTEN.split(',')
 
 
+def configure_torrent_categories():
+    global CATEGORIES
+
+    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
+    if isinstance(CATEGORIES, str):
+        CATEGORIES = CATEGORIES.split(',')
+
+
 def configure_torrents():
     global TORRENT_CLIENT_AGENT
     global USE_LINK
     global OUTPUT_DIRECTORY
     global TORRENT_DEFAULT_DIRECTORY
-    global CATEGORIES
     global DELETE_ORIGINAL
     global TORRENT_CHMOD_DIRECTORY
     global TORRENT_RESUME_ON_FAILURE
@@ -498,12 +505,8 @@ def configure_torrents():
     USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
     OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
     TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
-    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
-
     configure_flattening()
-
-    if isinstance(CATEGORIES, str):
-        CATEGORIES = CATEGORIES.split(',')
+    configure_torrent_categories()
     DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
     TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
     TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
