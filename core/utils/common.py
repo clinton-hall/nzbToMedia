@@ -100,7 +100,7 @@ def get_dirs(section, subsection, link='hard'):
     except Exception as e:
         logger.error('Failed to add directories from {0} for post-processing: {1}'.format(watch_directory, e))
 
-    if core.USELINK == 'move':
+    if core.USE_LINK == 'move':
         try:
             output_directory = os.path.join(core.OUTPUTDIRECTORY, subsection)
             if os.path.exists(output_directory):

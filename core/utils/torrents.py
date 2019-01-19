@@ -85,7 +85,7 @@ def resume_torrent(client_agent, input_hash, input_id, input_name):
 
 
 def remove_torrent(client_agent, input_hash, input_id, input_name):
-    if core.DELETE_ORIGINAL == 1 or core.USELINK == 'move':
+    if core.DELETE_ORIGINAL == 1 or core.USE_LINK == 'move':
         logger.debug('Deleting torrent {0} from {1}'.format(input_name, client_agent))
         try:
             if client_agent == 'utorrent' and core.TORRENT_CLASS != '':

@@ -196,7 +196,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
         if torrent_no_link == 0:
             try:
-                core.copy_link(inputFile, target_file, core.USELINK)
+                core.copy_link(inputFile, target_file, core.USE_LINK)
                 core.remove_read_only(target_file)
             except Exception:
                 logger.error('Failed to link: {0} to {1}'.format(inputFile, target_file))
@@ -270,7 +270,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             core.update_download_info_status(input_name, 1)
 
             # remove torrent
-            if core.USELINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
+            if core.USE_LINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
                 logger.debug('Checking for sym-links to re-direct in: {0}'.format(input_directory))
                 for dirpath, dirs, files in os.walk(input_directory):
                     for file in files:
