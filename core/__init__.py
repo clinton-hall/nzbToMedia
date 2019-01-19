@@ -423,6 +423,16 @@ def configure_groups():
         GROUPS = None
 
 
+def configure_utorrent():
+    global UTORRENT_WEB_UI
+    global UTORRENT_USER
+    global UTORRENT_PASSWORD
+
+    UTORRENT_WEB_UI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
+    UTORRENT_USER = CFG['Torrent']['uTorrentUSR']  # mysecretusr
+    UTORRENT_PASSWORD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
+
+
 def configure_transmission():
     global TRANSMISSION_HOST
     global TRANSMISSION_PORT
@@ -446,9 +456,6 @@ def configure_torrents():
     global TORRENT_CHMOD_DIRECTORY
     global TORRENT_RESUME_ON_FAILURE
     global TORRENT_RESUME
-    global UTORRENT_WEB_UI
-    global UTORRENT_USER
-    global UTORRENT_PASSWORD
     global DELUGE_HOST
     global DELUGE_PORT
     global DELUGE_USER
@@ -472,10 +479,8 @@ def configure_torrents():
     TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
     TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
     TORRENT_RESUME = int(CFG['Torrent']['resume'])
-    UTORRENT_WEB_UI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
-    UTORRENT_USER = CFG['Torrent']['uTorrentUSR']  # mysecretusr
-    UTORRENT_PASSWORD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
 
+    configure_utorrent()
     configure_transmission()
 
     DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
