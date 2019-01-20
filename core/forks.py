@@ -22,6 +22,7 @@ def auto_fork(section, input_category):
     web_root = cfg.get('web_root', '')
     replace = {
         'medusa': 'Medusa',
+        'medusa-api': 'Medusa-api',
         'sickbeard-api': 'SickBeard-api',
         'sickgear': 'SickGear',
         'sickchill': 'SickChill',
