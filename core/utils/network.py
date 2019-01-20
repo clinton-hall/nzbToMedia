@@ -101,13 +101,13 @@ def find_download(client_agent, download_id):
             if torrent['hash'] == download_id:
                 return True
     if client_agent == 'sabnzbd':
-        if 'http' in core.SABNZBDHOST:
-            base_url = '{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
+        if 'http' in core.SABNZBD_HOST:
+            base_url = '{0}:{1}/api'.format(core.SABNZBD_HOST, core.SABNZBD_PORT)
         else:
-            base_url = 'http://{0}:{1}/api'.format(core.SABNZBDHOST, core.SABNZBDPORT)
+            base_url = 'http://{0}:{1}/api'.format(core.SABNZBD_HOST, core.SABNZBD_PORT)
         url = base_url
         params = {
-            'apikey': core.SABNZBDAPIKEY,
+            'apikey': core.SABNZBD_APIKEY,
             'mode': 'get_files',
             'output': 'json',
             'value': download_id,

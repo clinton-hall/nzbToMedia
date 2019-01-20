@@ -22,7 +22,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     root = 0
     found_file = 0
 
-    if client_agent != 'manual' and not core.DOWNLOADINFO:
+    if client_agent != 'manual' and not core.DOWNLOAD_INFO:
         logger.debug('Adding TORRENT download info for directory {0} to database'.format(input_directory))
 
         my_db = main_db.DBConnection()
@@ -114,13 +114,13 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         basename = os.path.basename(input_directory)
         basename = core.sanitize_name(input_name) \
             if input_name == basename else os.path.splitext(core.sanitize_name(input_name))[0]
-        output_destination = os.path.join(core.OUTPUTDIRECTORY, input_category, basename)
+        output_destination = os.path.join(core.OUTPUT_DIRECTORY, input_category, basename)
     elif unique_path:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
     else:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUTDIRECTORY, input_category))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
     try:
         output_destination = output_destination.encode(core.SYS_ENCODING)
     except UnicodeError:
@@ -131,7 +131,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     logger.info('Output directory set to: {0}'.format(output_destination))
 
-    if core.SAFE_MODE and output_destination == core.TORRENT_DEFAULTDIR:
+    if core.SAFE_MODE and output_destination == core.TORRENT_DEFAULT_DIRECTORY:
         logger.error('The output directory:[{0}] is the Download Directory. '
                      'Edit outputDirectory in autoProcessMedia.cfg. Exiting'.format
                      (input_directory))
@@ -196,7 +196,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
         if torrent_no_link == 0:
             try:
-                core.copy_link(inputFile, target_file, core.USELINK)
+                core.copy_link(inputFile, target_file, core.USE_LINK)
                 core.remove_read_only(target_file)
             except Exception:
                 logger.error('Failed to link: {0} to {1}'.format(inputFile, target_file))
@@ -270,7 +270,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             core.update_download_info_status(input_name, 1)
 
             # remove torrent
-            if core.USELINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
+            if core.USE_LINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
                 logger.debug('Checking for sym-links to re-direct in: {0}'.format(input_directory))
                 for dirpath, dirs, files in os.walk(input_directory):
                     for file in files:
@@ -291,7 +291,7 @@ def main(args):
     core.initialize()
 
     # clientAgent for Torrents
-    client_agent = core.TORRENT_CLIENTAGENT
+    client_agent = core.TORRENT_CLIENT_AGENT
 
     logger.info('#########################################################')
     logger.info('## ..::[{0}]::.. ##'.format(os.path.basename(__file__)))
@@ -328,11 +328,11 @@ def main(args):
 
                     logger.info('Checking database for download info for {0} ...'.format
                                 (os.path.basename(dir_name)))
-                    core.DOWNLOADINFO = core.get_download_info(os.path.basename(dir_name), 0)
-                    if core.DOWNLOADINFO:
-                        client_agent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
-                        input_hash = text_type(core.DOWNLOADINFO[0].get('input_hash', ''))
-                        input_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
+                    core.DOWNLOAD_INFO = core.get_download_info(os.path.basename(dir_name), 0)
+                    if core.DOWNLOAD_INFO:
+                        client_agent = text_type(core.DOWNLOAD_INFO[0].get('client_agent', 'manual'))
+                        input_hash = text_type(core.DOWNLOAD_INFO[0].get('input_hash', ''))
+                        input_id = text_type(core.DOWNLOAD_INFO[0].get('input_id', ''))
                         logger.info('Found download info for {0}, '
                                     'setting variables now ...'.format(os.path.basename(dir_name)))
                     else:

@@ -152,7 +152,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             if not release and '.cp(tt' not in video and imdbid:
                 video_name, video_ext = os.path.splitext(video)
                 video2 = '{0}.cp({1}){2}'.format(video_name, imdbid, video_ext)
-                if not (client_agent in [core.TORRENT_CLIENTAGENT, 'manual'] and core.USELINK == 'move-sym'):
+                if not (client_agent in [core.TORRENT_CLIENT_AGENT, 'manual'] and core.USE_LINK == 'move-sym'):
                     logger.debug('Renaming: {0} to: {1}'.format(video, video2))
                     os.rename(video, video2)
 
