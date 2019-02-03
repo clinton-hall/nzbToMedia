@@ -1,6 +1,9 @@
 #!/usr/bin/env python
 # coding=utf-8
 
+import eol
+eol.check()
+
 import cleanup
 cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
