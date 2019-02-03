@@ -1,55 +1,28 @@
 import time
 
-from qbittorrent import Client as qBittorrentClient
-from synchronousdeluge.client import DelugeClient
-from transmissionrpc.client import Client as TransmissionClient
-from utorrent.client import UTorrentClient
-
 import core
 from core import logger
 
+from .deluge import configure_client as deluge_client
+from .qbittorrent import configure_client as qbittorrent_client
+from .transmission import configure_client as transmission_client
+from .utorrent import configure_client as utorrent_client
+
+torrent_clients = {
+    'deluge': deluge_client,
+    'qbittorrent': qbittorrent_client,
+    'transmission': transmission_client,
+    'utorrent': utorrent_client,
+}
+
 
 def create_torrent_class(client_agent):
-    # Hardlink solution for Torrents
-    tc = None
-    if not core.APP_NAME == 'TorrentToMedia.py': #Skip loading Torrent for NZBs.
-        return tc
+    if not core.APP_NAME == 'TorrentToMedia.py':
+        return  # Skip loading Torrent for NZBs.
 
-    if client_agent == 'utorrent':
-        try:
-            logger.debug('Connecting to {0}: {1}'.format(client_agent, core.UTORRENT_WEB_UI))
-            tc = UTorrentClient(core.UTORRENT_WEB_UI, core.UTORRENT_USER, core.UTORRENT_PASSWORD)
-        except Exception:
-            logger.error('Failed to connect to uTorrent')
-
-    if client_agent == 'transmission':
-        try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(
-                client_agent, core.TRANSMISSION_HOST, core.TRANSMISSION_PORT))
-            tc = TransmissionClient(core.TRANSMISSION_HOST, core.TRANSMISSION_PORT,
-                                    core.TRANSMISSION_USER,
-                                    core.TRANSMISSION_PASSWORD)
-        except Exception:
-            logger.error('Failed to connect to Transmission')
-
-    if client_agent == 'deluge':
-        try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.DELUGE_HOST, core.DELUGE_PORT))
-            tc = DelugeClient()
-            tc.connect(host=core.DELUGE_HOST, port=core.DELUGE_PORT, username=core.DELUGE_USER,
-                       password=core.DELUGE_PASSWORD)
-        except Exception:
-            logger.error('Failed to connect to Deluge')
-
-    if client_agent == 'qbittorrent':
-        try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
-            tc = qBittorrentClient('http://{0}:{1}/'.format(core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
-            tc.login(core.QBITTORRENT_USER, core.QBITTORRENT_PASSWORD)
-        except Exception:
-            logger.error('Failed to connect to qBittorrent')
-
-    return tc
+    client = torrent_clients.get(client_agent)
+    if client:
+        return client()
 
 
 def pause_torrent(client_agent, input_hash, input_id, input_name):

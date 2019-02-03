@@ -45,7 +45,6 @@ from core.utils.paths import (
 )
 from core.utils.processes import RunningProcess, restart
 from core.utils.subtitles import import_subs
-from core.utils.torrents import create_torrent_class, pause_torrent, remove_torrent, resume_torrent
 
 requests.packages.urllib3.disable_warnings()
 shutil_custom.monkey_patch()
