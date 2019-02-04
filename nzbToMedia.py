@@ -623,6 +623,9 @@
 
 from __future__ import print_function
 
+import eol
+eol.check()
+
 import cleanup
 cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
