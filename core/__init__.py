@@ -1017,17 +1017,17 @@ def configure_utility_locations():
 
     else:
         try:
-            SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
+            SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
             pass
         if not SEVENZIP:
             try:
-                SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
+                SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
         if not SEVENZIP:
             try:
-                SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
+                SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
         if not SEVENZIP:
@@ -1035,7 +1035,7 @@ def configure_utility_locations():
             logger.warning(
                 'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
         try:
-            PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip()
+            PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
             pass
         if not PAR2CMD:
@@ -1050,12 +1050,12 @@ def configure_utility_locations():
             FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
         else:
             try:
-                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
+                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
             if not FFMPEG:
                 try:
-                    FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
+                    FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
                 except Exception:
                     pass
         if not FFMPEG:
@@ -1071,12 +1071,12 @@ def configure_utility_locations():
             FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
         else:
             try:
-                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
             if not FFPROBE:
                 try:
-                    FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+                    FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
                 except Exception:
                     pass
         if not FFPROBE:

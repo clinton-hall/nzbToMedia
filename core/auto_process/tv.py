@@ -168,13 +168,15 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     for param in copy.copy(fork_params):
         if param == 'failed':
             fork_params[param] = failed
-            del fork_params['proc_type']
+            if 'proc_type' in fork_params:
+                del fork_params['proc_type']
             if 'type' in fork_params:
                 del fork_params['type']
 
         if param == 'return_data':
             fork_params[param] = 0
-            del fork_params['quiet']
+            if 'quiet' in fork_params:
+                del fork_params['quiet']
 
         if param == 'type':
             fork_params[param] = 'manual'

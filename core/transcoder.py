@@ -95,7 +95,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
             proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
-        video_details = json.loads(out)
+        video_details = json.loads(out.decode())
     except Exception:
         pass
     if not video_details:
@@ -109,7 +109,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE)
             out, err = proc.communicate()
             result = proc.returncode
-            video_details = json.loads(out)
+            video_details = json.loads(out.decode())
         except Exception:
             logger.error('Checking [{0}] has failed'.format(file), 'TRANSCODER')
     return video_details, result
