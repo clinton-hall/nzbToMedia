@@ -216,7 +216,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             fork_params[param] = 1
 
     # delete any unused params so we don't pass them to SB by mistake
-    [fork_params.pop(k) for k, v in fork_params.items() if v is None]
+    [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
 
     if status == 0:
         if section == 'NzbDrone' and not apikey:
