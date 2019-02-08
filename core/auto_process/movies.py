@@ -238,11 +238,11 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             report_nzb(failure_link, client_agent)
 
         if section == 'Radarr':
-            logger.postprocess('FAILED: The download failed. Sending failed download to {0} for CDH processing'.format(section), section)
+            logger.postprocess('SUCCESS: Sending failed download to {0} for CDH processing'.format(section), section)
             return ProcessResult(
-                message='{0}: Download Failed. Sending back to {0}'.format(section),
+                message='{0}: Sending failed download back to {0}'.format(section),
                 status_code=1,  # Return as failed to flag this in the downloader.
-            )
+            ) # Return failed flag, but log the event as successful.
 
         if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
             logger.postprocess('Deleting failed files and folder {0}'.format(dir_name), section)
