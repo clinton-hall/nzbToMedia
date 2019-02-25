@@ -191,6 +191,7 @@ GETSUBS = False
 TRANSCODE = None
 CONCAT = None
 FFMPEG_PATH = None
+SYS_PATH = None
 DUPLICATE = None
 IGNOREEXTENSIONS = []
 VEXTENSION = None
@@ -352,6 +353,7 @@ def configure_general():
     global GIT_BRANCH
     global FORCE_CLEAN
     global FFMPEG_PATH
+    global SYS_PATH
     global CHECK_MEDIA
     global SAFE_MODE
     global NOEXTRACTFAILED
@@ -364,6 +366,7 @@ def configure_general():
     GIT_BRANCH = CFG['General']['git_branch'] or 'master'
     FORCE_CLEAN = int(CFG['General']['force_clean'])
     FFMPEG_PATH = CFG['General']['ffmpeg_path']
+    SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
@@ -1016,6 +1019,8 @@ def configure_utility_locations():
                 logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
     else:
+        if SYS_PATH:
+            sys.path.append(SYS_PATH)
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
