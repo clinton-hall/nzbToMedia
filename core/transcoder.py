@@ -645,7 +645,7 @@ def rip_iso(item, new_dir, bitbucket):
         logger.debug('Attempting to extract .vob from image file {0}'.format(item), 'TRANSCODER')
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
-        out, err = proc.communicate()
+        out, err = proc.communicate().decode()
         file_list = [re.match(r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line).groups()[0] for line in
                      out.splitlines() if re.match(r'.+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', line)]
         combined = []
