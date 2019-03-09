@@ -12,6 +12,8 @@ from core import logger
 def create_torrent_class(client_agent):
     # Hardlink solution for Torrents
     tc = None
+    if not core.APP_NAME == 'TorrentToMedia.py': #Skip loading Torrent for NZBs.
+        return tc
 
     if client_agent == 'utorrent':
         try:
