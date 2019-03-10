@@ -33,7 +33,17 @@ class WorkingDirectory(object):
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        os.chdir(self.original_directory)
+        try:
+            os.chdir(self.original_directory)
+        except OSError as error:
+            print(
+                'Unable to return to {original_directory}: {error}\n'
+                'Continuing in {working_directory}'.format(
+                    original_directory=self.original_directory,
+                    error=error,
+                    working_directory=self.working_directory,
+                )
+            )
 
 
 def module_path(module=__file__, parent=False):

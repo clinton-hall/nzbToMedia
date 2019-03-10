@@ -623,6 +623,9 @@
 
 from __future__ import print_function
 
+import eol
+eol.check()
+
 import cleanup
 cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
@@ -645,7 +648,7 @@ except NameError:
 
 # post-processing
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
-    if core.SAFE_MODE and input_directory == core.NZB_DEFAULTDIR:
+    if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
         logger.error(
             'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
                 input_directory))
@@ -657,7 +660,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     if not download_id and client_agent == 'sabnzbd':
         download_id = get_nzoid(input_name)
 
-    if client_agent != 'manual' and not core.DOWNLOADINFO:
+    if client_agent != 'manual' and not core.DOWNLOAD_INFO:
         logger.debug('Adding NZB download info for directory {0} to database'.format(input_directory))
 
         my_db = main_db.DBConnection()
@@ -725,7 +728,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
     extract = int(cfg.get('extract', 0))
 
     try:
-        if int(cfg.get('remote_path')) and not core.REMOTEPATHS:
+        if int(cfg.get('remote_path')) and not core.REMOTE_PATHS:
             logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
                 section_name, input_category))
             return ProcessResult(
@@ -899,13 +902,13 @@ def main(args, section=None):
                     logger.info('Starting manual run for {0}:{1} - Folder: {2}'.format(section, subsection, dir_name))
                     logger.info('Checking database for download info for {0} ...'.format(os.path.basename(dir_name)))
 
-                    core.DOWNLOADINFO = get_download_info(os.path.basename(dir_name), 0)
-                    if core.DOWNLOADINFO:
+                    core.DOWNLOAD_INFO = get_download_info(os.path.basename(dir_name), 0)
+                    if core.DOWNLOAD_INFO:
                         logger.info('Found download info for {0}, '
                                     'setting variables now ...'.format
                                     (os.path.basename(dir_name)))
-                        client_agent = text_type(core.DOWNLOADINFO[0].get('client_agent', 'manual'))
-                        download_id = text_type(core.DOWNLOADINFO[0].get('input_id', ''))
+                        client_agent = text_type(core.DOWNLOAD_INFO[0].get('client_agent', 'manual'))
+                        download_id = text_type(core.DOWNLOAD_INFO[0].get('input_id', ''))
                     else:
                         logger.info('Unable to locate download info for {0}, '
                                     'continuing to try and process this release ...'.format

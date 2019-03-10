@@ -22,7 +22,7 @@ def is_video_good(videofile, status):
     file_name_ext = os.path.basename(videofile)
     file_name, file_ext = os.path.splitext(file_name_ext)
     disable = False
-    if file_ext not in core.MEDIACONTAINER or not core.FFPROBE or not core.CHECK_MEDIA or file_ext in ['.iso'] or (status > 0 and core.NOEXTRACTFAILED):
+    if file_ext not in core.MEDIA_CONTAINER or not core.FFPROBE or not core.CHECK_MEDIA or file_ext in ['.iso'] or (status > 0 and core.NOEXTRACTFAILED):
         disable = True
     else:
         test_details, res = get_video_details(core.TEST_FILE)
@@ -95,7 +95,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
             proc = subprocess.Popen(command, stdout=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
-        video_details = json.loads(out)
+        video_details = json.loads(out.decode())
     except Exception:
         pass
     if not video_details:
@@ -109,7 +109,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE)
             out, err = proc.communicate()
             result = proc.returncode
-            video_details = json.loads(out)
+            video_details = json.loads(out.decode())
         except Exception:
             logger.error('Checking [{0}] has failed'.format(file), 'TRANSCODER')
     return video_details, result
@@ -646,8 +646,8 @@ def rip_iso(item, new_dir, bitbucket):
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
-        file_list = [re.match(r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line).groups()[0] for line in
-                     out.splitlines() if re.match(r'.+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', line)]
+        file_list = [re.match(r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line.decode()).groups()[0] for line in
+                     out.splitlines() if re.match(r'.+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', line.decode())]
         combined = []
         for n in range(99):
             concat = []

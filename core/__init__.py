@@ -13,6 +13,7 @@ import time
 
 import libs.autoload
 import libs.util
+import eol
 
 if not libs.autoload.completed:
     sys.exit('Could not load vendored libraries.')
@@ -70,7 +71,7 @@ from core.utils import (
     wake_up,
 )
 
-__version__ = '12.0.7'
+__version__ = '12.0.8'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -88,6 +89,7 @@ FORK_SICKRAGE = 'SickRage'
 FORK_SICKCHILL = 'SickChill'
 FORK_SICKBEARD_API = 'SickBeard-api'
 FORK_MEDUSA = 'Medusa'
+FORK_MEDUSA_API = 'Medusa-api'
 FORK_SICKGEAR = 'SickGear'
 FORK_STHENO = 'Stheno'
 
@@ -99,13 +101,14 @@ FORKS = {
     FORK_SICKCHILL: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None},
     FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None},
     FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
+    FORK_MEDUSA_API:    {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None},
     FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
     FORK_STHENO: {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
 }
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
 
 # NZBGet Exit Codes
-NZBGET_POSTPROCESS_PARCHECK = 92
+NZBGET_POSTPROCESS_PAR_CHECK = 92
 NZBGET_POSTPROCESS_SUCCESS = 93
 NZBGET_POSTPROCESS_ERROR = 94
 NZBGET_POSTPROCESS_NONE = 95
@@ -131,55 +134,55 @@ FORCE_CLEAN = None
 SAFE_MODE = None
 NOEXTRACTFAILED = None
 
-NZB_CLIENTAGENT = None
-SABNZBDHOST = None
-SABNZBDPORT = None
-SABNZBDAPIKEY = None
-NZB_DEFAULTDIR = None
+NZB_CLIENT_AGENT = None
+SABNZBD_HOST = None
+SABNZBD_PORT = None
+SABNZBD_APIKEY = None
+NZB_DEFAULT_DIRECTORY = None
 
-TORRENT_CLIENTAGENT = None
+TORRENT_CLIENT_AGENT = None
 TORRENT_CLASS = None
-USELINK = None
-OUTPUTDIRECTORY = None
+USE_LINK = None
+OUTPUT_DIRECTORY = None
 NOFLATTEN = []
 DELETE_ORIGINAL = None
 TORRENT_CHMOD_DIRECTORY = None
-TORRENT_DEFAULTDIR = None
+TORRENT_DEFAULT_DIRECTORY = None
 TORRENT_RESUME = None
 TORRENT_RESUME_ON_FAILURE = None
 
-REMOTEPATHS = []
+REMOTE_PATHS = []
 
-UTORRENTWEBUI = None
-UTORRENTUSR = None
-UTORRENTPWD = None
+UTORRENT_WEB_UI = None
+UTORRENT_USER = None
+UTORRENT_PASSWORD = None
 
-TRANSMISSIONHOST = None
-TRANSMISSIONPORT = None
-TRANSMISSIONUSR = None
-TRANSMISSIONPWD = None
+TRANSMISSION_HOST = None
+TRANSMISSION_PORT = None
+TRANSMISSION_USER = None
+TRANSMISSION_PASSWORD = None
 
-DELUGEHOST = None
-DELUGEPORT = None
-DELUGEUSR = None
-DELUGEPWD = None
+DELUGE_HOST = None
+DELUGE_PORT = None
+DELUGE_USER = None
+DELUGE_PASSWORD = None
 
-QBITTORRENTHOST = None
-QBITTORRENTPORT = None
-QBITTORRENTUSR = None
-QBITTORRENTPWD = None
+QBITTORRENT_HOST = None
+QBITTORRENT_PORT = None
+QBITTORRENT_USER = None
+QBITTORRENT_PASSWORD = None
 
-PLEXSSL = None
-PLEXHOST = None
-PLEXPORT = None
-PLEXTOKEN = None
-PLEXSEC = []
+PLEX_SSL = None
+PLEX_HOST = None
+PLEX_PORT = None
+PLEX_TOKEN = None
+PLEX_SECTION = []
 
-EXTCONTAINER = []
-COMPRESSEDCONTAINER = []
-MEDIACONTAINER = []
-AUDIOCONTAINER = []
-METACONTAINER = []
+EXT_CONTAINER = []
+COMPRESSED_CONTAINER = []
+MEDIA_CONTAINER = []
+AUDIO_CONTAINER = []
+META_CONTAINER = []
 
 SECTIONS = []
 CATEGORIES = []
@@ -188,6 +191,7 @@ GETSUBS = False
 TRANSCODE = None
 CONCAT = None
 FFMPEG_PATH = None
+SYS_PATH = None
 DUPLICATE = None
 IGNOREEXTENSIONS = []
 VEXTENSION = None
@@ -236,8 +240,8 @@ CHECK_MEDIA = None
 NICENESS = []
 HWACCEL = False
 
-PASSWORDSFILE = None
-DOWNLOADINFO = None
+PASSWORDS_FILE = None
+DOWNLOAD_INFO = None
 GROUPS = None
 
 USER_SCRIPT_MEDIAEXTENSIONS = None
@@ -251,28 +255,9 @@ USER_SCRIPT_RUNONCE = None
 __INITIALIZED__ = False
 
 
-def initialize(section=None):
-    global NZBGET_POSTPROCESS_ERROR, NZBGET_POSTPROCESS_NONE, NZBGET_POSTPROCESS_PARCHECK, NZBGET_POSTPROCESS_SUCCESS, \
-        NZBTOMEDIA_TIMEOUT, FORKS, FORK_DEFAULT, FORK_FAILED_TORRENT, FORK_FAILED, NOEXTRACTFAILED, SHOWEXTRACT, \
-        NZBTOMEDIA_BRANCH, NZBTOMEDIA_VERSION, NEWEST_VERSION, NEWEST_VERSION_STRING, VERSION_NOTIFY, SYS_ARGV, CFG, \
-        SABNZB_NO_OF_ARGUMENTS, SABNZB_0717_NO_OF_ARGUMENTS, CATEGORIES, TORRENT_CLIENTAGENT, USELINK, OUTPUTDIRECTORY, \
-        NOFLATTEN, UTORRENTPWD, UTORRENTUSR, UTORRENTWEBUI, DELUGEHOST, DELUGEPORT, DELUGEUSR, DELUGEPWD, VLEVEL, \
-        TRANSMISSIONHOST, TRANSMISSIONPORT, TRANSMISSIONPWD, TRANSMISSIONUSR, COMPRESSEDCONTAINER, MEDIACONTAINER, \
-        METACONTAINER, SECTIONS, ALL_FORKS, TEST_FILE, GENERALOPTS, LOG_GIT, GROUPS, SEVENZIP, CONCAT, VCRF, \
-        __INITIALIZED__, AUTO_UPDATE, APP_FILENAME, USER_DELAY, APP_NAME, TRANSCODE, DEFAULTS, GIT_PATH, GIT_USER, \
-        GIT_BRANCH, GIT_REPO, SYS_ENCODING, NZB_CLIENTAGENT, SABNZBDHOST, SABNZBDPORT, SABNZBDAPIKEY, \
-        DUPLICATE, IGNOREEXTENSIONS, VEXTENSION, OUTPUTVIDEOPATH, PROCESSOUTPUT, VCODEC, VCODEC_ALLOW, VPRESET, \
-        VFRAMERATE, LOG_DB, VBITRATE, VRESOLUTION, ALANGUAGE, AINCLUDE, ACODEC, ACODEC_ALLOW, ABITRATE, FAILED, \
-        ACODEC2, ACODEC2_ALLOW, ABITRATE2, ACODEC3, ACODEC3_ALLOW, ABITRATE3, ALLOWSUBS, SEXTRACT, SEMBED, SLANGUAGES, \
-        SINCLUDE, SUBSDIR, SCODEC, OUTPUTFASTSTART, OUTPUTQUALITYPERCENT, BURN, GETSUBS, HWACCEL, LOG_DIR, LOG_FILE, \
-        NICENESS, LOG_DEBUG, FORCE_CLEAN, FFMPEG_PATH, FFMPEG, FFPROBE, AUDIOCONTAINER, EXTCONTAINER, TORRENT_CLASS, \
-        DELETE_ORIGINAL, TORRENT_CHMOD_DIRECTORY, PASSWORDSFILE, USER_DELAY, USER_SCRIPT, USER_SCRIPT_CLEAN, USER_SCRIPT_MEDIAEXTENSIONS, \
-        USER_SCRIPT_PARAM, USER_SCRIPT_RUNONCE, USER_SCRIPT_SUCCESSCODES, DOWNLOADINFO, CHECK_MEDIA, SAFE_MODE, \
-        TORRENT_DEFAULTDIR, TORRENT_RESUME_ON_FAILURE, NZB_DEFAULTDIR, REMOTEPATHS, LOG_ENV, PID_FILE, MYAPP, ACHANNELS, ACHANNELS2, ACHANNELS3, \
-        PLEXSSL, PLEXHOST, PLEXPORT, PLEXTOKEN, PLEXSEC, TORRENT_RESUME, PAR2CMD, QBITTORRENTHOST, QBITTORRENTPORT, QBITTORRENTUSR, QBITTORRENTPWD
-
-    if __INITIALIZED__:
-        return False
+def configure_logging():
+    global LOG_FILE
+    global LOG_DIR
 
     if 'NTM_LOGFILE' in os.environ:
         LOG_FILE = os.environ['NTM_LOGFILE']
@@ -281,10 +266,18 @@ def initialize(section=None):
     if not make_dir(LOG_DIR):
         print('No log folder, logging to screen only')
 
+
+def configure_process():
+    global MYAPP
+
     MYAPP = RunningProcess()
     while MYAPP.alreadyrunning():
         print('Waiting for existing session to end')
         time.sleep(30)
+
+
+def configure_locale():
+    global SYS_ENCODING
 
     try:
         locale.setlocale(locale.LC_ALL, '')
@@ -313,8 +306,10 @@ def initialize(section=None):
             else:
                 sys.exit(1)
 
-    # init logging
-    logger.ntm_log_instance.init_logging()
+
+def configure_migration():
+    global CONFIG_FILE
+    global CFG
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
@@ -332,9 +327,16 @@ def initialize(section=None):
         logger.info('Loading config from [{0}]'.format(CONFIG_FILE))
         CFG = config()
 
+
+def configure_logging_part_2():
+    global LOG_DB
+    global LOG_DEBUG
+    global LOG_ENV
+    global LOG_GIT
+
     # Enable/Disable DEBUG Logging
-    LOG_DEBUG = int(CFG['General']['log_debug'])
     LOG_DB = int(CFG['General']['log_db'])
+    LOG_DEBUG = int(CFG['General']['log_debug'])
     LOG_ENV = int(CFG['General']['log_env'])
     LOG_GIT = int(CFG['General']['log_git'])
 
@@ -342,146 +344,347 @@ def initialize(section=None):
         for item in os.environ:
             logger.info('{0}: {1}'.format(item, os.environ[item]), 'ENVIRONMENT')
 
-    # initialize the main SB database
-    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
+
+def configure_general():
+    global VERSION_NOTIFY
+    global GIT_REPO
+    global GIT_PATH
+    global GIT_USER
+    global GIT_BRANCH
+    global FORCE_CLEAN
+    global FFMPEG_PATH
+    global SYS_PATH
+    global CHECK_MEDIA
+    global SAFE_MODE
+    global NOEXTRACTFAILED
 
     # Set Version and GIT variables
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
-    AUTO_UPDATE = int(CFG['General']['auto_update'])
     GIT_REPO = 'nzbToMedia'
     GIT_PATH = CFG['General']['git_path']
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
     GIT_BRANCH = CFG['General']['git_branch'] or 'master'
     FORCE_CLEAN = int(CFG['General']['force_clean'])
     FFMPEG_PATH = CFG['General']['ffmpeg_path']
+    SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
 
+
+def configure_updates():
+    global AUTO_UPDATE
+    global MYAPP
+
+    AUTO_UPDATE = int(CFG['General']['auto_update'])
+    version_checker = version_check.CheckVersion()
+
     # Check for updates via GitHUB
-    if version_check.CheckVersion().check_for_new_version():
-        if AUTO_UPDATE == 1:
-            logger.info('Auto-Updating nzbToMedia, Please wait ...')
-            updated = version_check.CheckVersion().update()
-            if updated:
-                # restart nzbToMedia
-                try:
-                    del MYAPP
-                except Exception:
-                    pass
-                restart()
-            else:
-                logger.error('Update wasn\'t successful, not restarting. Check your log for more information.')
+    if version_checker.check_for_new_version() and AUTO_UPDATE:
+        logger.info('Auto-Updating nzbToMedia, Please wait ...')
+        if version_checker.update():
+            # restart nzbToMedia
+            try:
+                del MYAPP
+            except Exception:
+                pass
+            restart()
+        else:
+            logger.error('Update failed, not restarting. Check your log for more information.')
 
     # Set Current Version
     logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
                 (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
                  system=platform.system(), release=platform.release()))
 
-    if int(CFG['WakeOnLan']['wake']) == 1:
+
+def configure_wake_on_lan():
+    if int(CFG['WakeOnLan']['wake']):
         wake_up()
 
-    NZB_CLIENTAGENT = CFG['Nzb']['clientAgent']  # sabnzbd
-    SABNZBDHOST = CFG['Nzb']['sabnzbd_host']
-    SABNZBDPORT = int(CFG['Nzb']['sabnzbd_port'] or 8080)  # defaults to accomodate NzbGet
-    SABNZBDAPIKEY = CFG['Nzb']['sabnzbd_apikey']
-    NZB_DEFAULTDIR = CFG['Nzb']['default_downloadDirectory']
+
+def configure_sabnzbd():
+    global SABNZBD_HOST
+    global SABNZBD_PORT
+    global SABNZBD_APIKEY
+
+    SABNZBD_HOST = CFG['Nzb']['sabnzbd_host']
+    SABNZBD_PORT = int(CFG['Nzb']['sabnzbd_port'] or 8080)  # defaults to accommodate NzbGet
+    SABNZBD_APIKEY = CFG['Nzb']['sabnzbd_apikey']
+
+
+def configure_nzbs():
+    global NZB_CLIENT_AGENT
+    global NZB_DEFAULT_DIRECTORY
+
+    NZB_CLIENT_AGENT = CFG['Nzb']['clientAgent']  # sabnzbd
+    NZB_DEFAULT_DIRECTORY = CFG['Nzb']['default_downloadDirectory']
+
+    configure_sabnzbd()
+
+
+def configure_groups():
+    global GROUPS
+
     GROUPS = CFG['Custom']['remove_group']
+
     if isinstance(GROUPS, str):
         GROUPS = GROUPS.split(',')
+
     if GROUPS == ['']:
         GROUPS = None
 
-    TORRENT_CLIENTAGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
-    USELINK = CFG['Torrent']['useLink']  # no | hard | sym
-    OUTPUTDIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
-    TORRENT_DEFAULTDIR = CFG['Torrent']['default_downloadDirectory']
-    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
+
+def configure_utorrent():
+    global UTORRENT_WEB_UI
+    global UTORRENT_USER
+    global UTORRENT_PASSWORD
+
+    UTORRENT_WEB_UI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
+    UTORRENT_USER = CFG['Torrent']['uTorrentUSR']  # mysecretusr
+    UTORRENT_PASSWORD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
+
+
+def configure_transmission():
+    global TRANSMISSION_HOST
+    global TRANSMISSION_PORT
+    global TRANSMISSION_USER
+    global TRANSMISSION_PASSWORD
+
+    TRANSMISSION_HOST = CFG['Torrent']['TransmissionHost']  # localhost
+    TRANSMISSION_PORT = int(CFG['Torrent']['TransmissionPort'])
+    TRANSMISSION_USER = CFG['Torrent']['TransmissionUSR']  # mysecretusr
+    TRANSMISSION_PASSWORD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
+
+
+def configure_deluge():
+    global DELUGE_HOST
+    global DELUGE_PORT
+    global DELUGE_USER
+    global DELUGE_PASSWORD
+
+    DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
+    DELUGE_PORT = int(CFG['Torrent']['DelugePort'])  # 8084
+    DELUGE_USER = CFG['Torrent']['DelugeUSR']  # mysecretusr
+    DELUGE_PASSWORD = CFG['Torrent']['DelugePWD']  # mysecretpwr
+
+
+def configure_qbittorrent():
+    global QBITTORRENT_HOST
+    global QBITTORRENT_PORT
+    global QBITTORRENT_USER
+    global QBITTORRENT_PASSWORD
+
+    QBITTORRENT_HOST = CFG['Torrent']['qBittorrenHost']  # localhost
+    QBITTORRENT_PORT = int(CFG['Torrent']['qBittorrentPort'])  # 8080
+    QBITTORRENT_USER = CFG['Torrent']['qBittorrentUSR']  # mysecretusr
+    QBITTORRENT_PASSWORD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
+
+
+def configure_flattening():
+    global NOFLATTEN
+
     NOFLATTEN = (CFG['Torrent']['noFlatten'])
     if isinstance(NOFLATTEN, str):
         NOFLATTEN = NOFLATTEN.split(',')
+
+
+def configure_torrent_categories():
+    global CATEGORIES
+
+    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
     if isinstance(CATEGORIES, str):
         CATEGORIES = CATEGORIES.split(',')
-    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
-    TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
+
+
+def configure_torrent_resuming():
+    global TORRENT_RESUME
+    global TORRENT_RESUME_ON_FAILURE
+
     TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
     TORRENT_RESUME = int(CFG['Torrent']['resume'])
-    UTORRENTWEBUI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
-    UTORRENTUSR = CFG['Torrent']['uTorrentUSR']  # mysecretusr
-    UTORRENTPWD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
 
-    TRANSMISSIONHOST = CFG['Torrent']['TransmissionHost']  # localhost
-    TRANSMISSIONPORT = int(CFG['Torrent']['TransmissionPort'])
-    TRANSMISSIONUSR = CFG['Torrent']['TransmissionUSR']  # mysecretusr
-    TRANSMISSIONPWD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
 
-    DELUGEHOST = CFG['Torrent']['DelugeHost']  # localhost
-    DELUGEPORT = int(CFG['Torrent']['DelugePort'])  # 8084
-    DELUGEUSR = CFG['Torrent']['DelugeUSR']  # mysecretusr
-    DELUGEPWD = CFG['Torrent']['DelugePWD']  # mysecretpwr
+def configure_torrent_permissions():
+    global TORRENT_CHMOD_DIRECTORY
 
-    QBITTORRENTHOST = CFG['Torrent']['qBittorrenHost']  # localhost
-    QBITTORRENTPORT = int(CFG['Torrent']['qBittorrentPort'])  # 8080
-    QBITTORRENTUSR = CFG['Torrent']['qBittorrentUSR']  # mysecretusr
-    QBITTORRENTPWD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
+    TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
 
-    REMOTEPATHS = CFG['Network']['mount_points'] or []
-    if REMOTEPATHS:
-        if isinstance(REMOTEPATHS, list):
-            REMOTEPATHS = ','.join(REMOTEPATHS)  # fix in case this imported as list.
-        REMOTEPATHS = [tuple(item.split(',')) for item in
-                       REMOTEPATHS.split('|')]  # /volume1/Public/,E:\|/volume2/share/,\\NAS\
-        REMOTEPATHS = [(local.strip(), remote.strip()) for local, remote in
-                       REMOTEPATHS]  # strip trailing and leading whitespaces
 
-    PLEXSSL = int(CFG['Plex']['plex_ssl'])
-    PLEXHOST = CFG['Plex']['plex_host']
-    PLEXPORT = CFG['Plex']['plex_port']
-    PLEXTOKEN = CFG['Plex']['plex_token']
-    PLEXSEC = CFG['Plex']['plex_sections'] or []
-    if PLEXSEC:
-        if isinstance(PLEXSEC, list):
-            PLEXSEC = ','.join(PLEXSEC)  # fix in case this imported as list.
-        PLEXSEC = [tuple(item.split(',')) for item in PLEXSEC.split('|')]
+def configure_torrent_deltetion():
+    global DELETE_ORIGINAL
 
-    devnull = open(os.devnull, 'w')
-    try:
-        subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-        NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
-    except Exception:
-        pass
-    try:
-        subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
+    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
+
+
+def configure_torrent_linking():
+    global USE_LINK
+
+    USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
+
+
+def configure_torrents():
+    global TORRENT_CLIENT_AGENT
+    global OUTPUT_DIRECTORY
+    global TORRENT_DEFAULT_DIRECTORY
+
+    TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
+    OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
+    TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
+    configure_torrent_linking()
+    configure_flattening()
+    configure_torrent_deltetion()
+    configure_torrent_categories()
+    configure_torrent_permissions()
+    configure_torrent_resuming()
+    configure_utorrent()
+    configure_transmission()
+    configure_deluge()
+    configure_qbittorrent()
+
+
+def configure_remote_paths():
+    global REMOTE_PATHS
+
+    REMOTE_PATHS = CFG['Network']['mount_points'] or []
+
+    if REMOTE_PATHS:
+        if isinstance(REMOTE_PATHS, list):
+            REMOTE_PATHS = ','.join(REMOTE_PATHS)  # fix in case this imported as list.
+
+        REMOTE_PATHS = (
+            # /volume1/Public/,E:\|/volume2/share/,\\NAS\
+            tuple(item.split(','))
+            for item in REMOTE_PATHS.split('|')
+        )
+
+        REMOTE_PATHS = [
+            # strip trailing and leading whitespaces
+            (local.strip(), remote.strip())
+            for local, remote in REMOTE_PATHS
+        ]
+
+
+def configure_plex():
+    global PLEX_SSL
+    global PLEX_HOST
+    global PLEX_PORT
+    global PLEX_TOKEN
+    global PLEX_SECTION
+
+    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
+    PLEX_HOST = CFG['Plex']['plex_host']
+    PLEX_PORT = CFG['Plex']['plex_port']
+    PLEX_TOKEN = CFG['Plex']['plex_token']
+    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
+
+    if PLEX_SECTION:
+        if isinstance(PLEX_SECTION, list):
+            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
+        PLEX_SECTION = [
+            tuple(item.split(','))
+            for item in PLEX_SECTION.split('|')
+        ]
+
+
+def configure_niceness():
+    global NICENESS
+
+    with open(os.devnull, 'w') as devnull:
         try:
-            NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+            subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
+            NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
         except Exception:
             pass
         try:
-            if 'ionice' in NICENESS:
-                NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
-            else:
-                NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+            subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
+            try:
+                NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+            except Exception:
+                pass
+            try:
+                if 'ionice' in NICENESS:
+                    NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+                else:
+                    NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+            except Exception:
+                pass
         except Exception:
             pass
-    except Exception:
-        pass
-    devnull.close()
 
-    COMPRESSEDCONTAINER = [re.compile(r'.r\d{2}$', re.I),
-                           re.compile(r'.part\d+.rar$', re.I),
-                           re.compile('.rar$', re.I)]
-    COMPRESSEDCONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in CFG['Extensions']['compressedExtensions']]
-    MEDIACONTAINER = CFG['Extensions']['mediaExtensions']
-    AUDIOCONTAINER = CFG['Extensions']['audioExtensions']
-    METACONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
-    if isinstance(COMPRESSEDCONTAINER, str):
-        COMPRESSEDCONTAINER = COMPRESSEDCONTAINER.split(',')
-    if isinstance(MEDIACONTAINER, str):
-        MEDIACONTAINER = MEDIACONTAINER.split(',')
-    if isinstance(AUDIOCONTAINER, str):
-        AUDIOCONTAINER = AUDIOCONTAINER.split(',')
-    if isinstance(METACONTAINER, str):
-        METACONTAINER = METACONTAINER.split(',')
+
+def configure_containers():
+    global COMPRESSED_CONTAINER
+    global MEDIA_CONTAINER
+    global AUDIO_CONTAINER
+    global META_CONTAINER
+
+    COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
+                            re.compile(r'.part\d+.rar$', re.I),
+                            re.compile('.rar$', re.I)]
+    COMPRESSED_CONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in
+                             CFG['Extensions']['compressedExtensions']]
+    MEDIA_CONTAINER = CFG['Extensions']['mediaExtensions']
+    AUDIO_CONTAINER = CFG['Extensions']['audioExtensions']
+    META_CONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
+
+    if isinstance(COMPRESSED_CONTAINER, str):
+        COMPRESSED_CONTAINER = COMPRESSED_CONTAINER.split(',')
+
+    if isinstance(MEDIA_CONTAINER, str):
+        MEDIA_CONTAINER = MEDIA_CONTAINER.split(',')
+
+    if isinstance(AUDIO_CONTAINER, str):
+        AUDIO_CONTAINER = AUDIO_CONTAINER.split(',')
+
+    if isinstance(META_CONTAINER, str):
+        META_CONTAINER = META_CONTAINER.split(',')
+
+
+def configure_transcoder():
+    global GETSUBS
+    global TRANSCODE
+    global DUPLICATE
+    global CONCAT
+    global IGNOREEXTENSIONS
+    global OUTPUTFASTSTART
+    global GENERALOPTS
+    global OUTPUTQUALITYPERCENT
+    global OUTPUTVIDEOPATH
+    global PROCESSOUTPUT
+    global ALANGUAGE
+    global AINCLUDE
+    global SLANGUAGES
+    global SINCLUDE
+    global SEXTRACT
+    global SEMBED
+    global SUBSDIR
+    global VEXTENSION
+    global VCODEC
+    global VPRESET
+    global VFRAMERATE
+    global VBITRATE
+    global VRESOLUTION
+    global VCRF
+    global VLEVEL
+    global VCODEC_ALLOW
+    global ACODEC
+    global ACODEC_ALLOW
+    global ACHANNELS
+    global ABITRATE
+    global ACODEC2
+    global ACODEC2_ALLOW
+    global ACHANNELS2
+    global ABITRATE2
+    global ACODEC3
+    global ACODEC3_ALLOW
+    global ACHANNELS3
+    global ABITRATE3
+    global SCODEC
+    global BURN
+    global HWACCEL
+    global ALLOWSUBS
+    global DEFAULTS
 
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
@@ -763,7 +966,39 @@ def initialize(section=None):
             extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
             ACODEC3_ALLOW.extend(extra)
 
-    PASSWORDSFILE = CFG['passwords']['PassWordFile']
+
+def configure_passwords_file():
+    global PASSWORDS_FILE
+
+    PASSWORDS_FILE = CFG['passwords']['PassWordFile']
+
+
+def configure_torrent_class():
+    global TORRENT_CLASS
+
+    # create torrent class
+    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENT_AGENT)
+
+
+def configure_sections(section):
+    global SECTIONS
+    global CATEGORIES
+    # check for script-defied section and if None set to allow sections
+    SECTIONS = CFG[
+        tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled())
+        if not section else (section,)
+    ]
+    for section, subsections in SECTIONS.items():
+        CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
+    CATEGORIES = list(set(CATEGORIES))
+
+
+def configure_utility_locations():
+    global SHOWEXTRACT
+    global SEVENZIP
+    global FFMPEG
+    global FFPROBE
+    global PAR2CMD
 
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
@@ -784,18 +1019,20 @@ def initialize(section=None):
                 logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
     else:
+        if SYS_PATH:
+            os.environ['PATH'] += ':'+SYS_PATH
         try:
-            SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip()
+            SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
             pass
         if not SEVENZIP:
             try:
-                SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip()
+                SEVENZIP = subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
         if not SEVENZIP:
             try:
-                SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip()
+                SEVENZIP = subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
         if not SEVENZIP:
@@ -803,7 +1040,7 @@ def initialize(section=None):
             logger.warning(
                 'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
         try:
-            PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip()
+            PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
             pass
         if not PAR2CMD:
@@ -818,12 +1055,12 @@ def initialize(section=None):
             FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
         else:
             try:
-                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip()
+                FFMPEG = subprocess.Popen(['which', 'ffmpeg'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
             if not FFMPEG:
                 try:
-                    FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip()
+                    FFMPEG = subprocess.Popen(['which', 'avconv'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
                 except Exception:
                     pass
         if not FFMPEG:
@@ -839,12 +1076,12 @@ def initialize(section=None):
             FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
         else:
             try:
-                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+                FFPROBE = subprocess.Popen(['which', 'ffprobe'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
             except Exception:
                 pass
             if not FFPROBE:
                 try:
-                    FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip()
+                    FFPROBE = subprocess.Popen(['which', 'avprobe'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
                 except Exception:
                     pass
         if not FFPROBE:
@@ -853,14 +1090,67 @@ def initialize(section=None):
                 logger.warning('Failed to locate ffprobe. Video corruption detection disabled!')
                 logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
-    # check for script-defied section and if None set to allow sections
-    SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
-    for section, subsections in SECTIONS.items():
-        CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
-    CATEGORIES = list(set(CATEGORIES))
 
-    # create torrent class
-    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENTAGENT)
+def check_python():
+    """Check End-of-Life status for Python version."""
+    # Raise if end of life
+    eol.check()
 
-    # finished initalizing
-    return True
+    # Warn if within grace period
+    grace_period = 365  # days
+    eol.warn_for_status(grace_period=-grace_period)
+
+    # Log warning if within grace period
+    days_left = eol.lifetime()
+    logger.info(
+        'Python v{major}.{minor} will reach end of life in {x} days.'.format(
+            major=sys.version_info[0],
+            minor=sys.version_info[1],
+            x=days_left,
+        )
+    )
+    if days_left <= grace_period:
+        logger.warning('Please upgrade to a more recent Python version.')
+
+
+def initialize(section=None):
+    global __INITIALIZED__
+
+    if __INITIALIZED__:
+        return False
+
+    configure_logging()
+    configure_process()
+    configure_locale()
+
+    # init logging
+    logger.ntm_log_instance.init_logging()
+
+    configure_migration()
+    configure_logging_part_2()
+
+    # check python version
+    check_python()
+
+    # initialize the main SB database
+    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
+
+    configure_general()
+    configure_updates()
+    configure_wake_on_lan()
+    configure_nzbs()
+    configure_torrents()
+    configure_remote_paths()
+    configure_plex()
+    configure_niceness()
+    configure_containers()
+    configure_transcoder()
+    configure_passwords_file()
+    configure_utility_locations()
+    configure_sections(section)
+    configure_torrent_class()
+
+    __INITIALIZED__ = True
+
+    # finished initializing
+    return __INITIALIZED__

@@ -22,6 +22,8 @@
     log_env = 0
     # Enable/Disable logging git output to debug nzbtomedia.log (helpful to track down update failures.)
     log_git = 0
+    # Set to the directory to search for executables if not in default system path
+    sys_path =
     # Set to the directory where your ffmpeg/ffprobe executables are located
     ffmpeg_path =
     # Enable/Disable media file checking using ffprobe.

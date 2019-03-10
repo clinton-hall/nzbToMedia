@@ -47,7 +47,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     delete_failed = int(cfg.get('delete_failed', 0))
     nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
     process_method = cfg.get('process_method')
-    if client_agent == core.TORRENT_CLIENTAGENT and core.USELINK == 'move-sym':
+    if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
         process_method = 'symlink'
     remote_path = int(cfg.get('remote_path', 0))
     wait_for = int(cfg.get('wait_for', 2))
@@ -168,13 +168,15 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     for param in copy.copy(fork_params):
         if param == 'failed':
             fork_params[param] = failed
-            del fork_params['proc_type']
+            if 'proc_type' in fork_params:
+                del fork_params['proc_type']
             if 'type' in fork_params:
                 del fork_params['type']
 
         if param == 'return_data':
             fork_params[param] = 0
-            del fork_params['quiet']
+            if 'quiet' in fork_params:
+                del fork_params['quiet']
 
         if param == 'type':
             fork_params[param] = 'manual'
@@ -214,7 +216,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             fork_params[param] = 1
 
     # delete any unused params so we don't pass them to SB by mistake
-    [fork_params.pop(k) for k, v in fork_params.items() if v is None]
+    [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
 
     if status == 0:
         if section == 'NzbDrone' and not apikey:

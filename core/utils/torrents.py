@@ -12,38 +12,40 @@ from core import logger
 def create_torrent_class(client_agent):
     # Hardlink solution for Torrents
     tc = None
+    if not core.APP_NAME == 'TorrentToMedia.py': #Skip loading Torrent for NZBs.
+        return tc
 
     if client_agent == 'utorrent':
         try:
-            logger.debug('Connecting to {0}: {1}'.format(client_agent, core.UTORRENTWEBUI))
-            tc = UTorrentClient(core.UTORRENTWEBUI, core.UTORRENTUSR, core.UTORRENTPWD)
+            logger.debug('Connecting to {0}: {1}'.format(client_agent, core.UTORRENT_WEB_UI))
+            tc = UTorrentClient(core.UTORRENT_WEB_UI, core.UTORRENT_USER, core.UTORRENT_PASSWORD)
         except Exception:
             logger.error('Failed to connect to uTorrent')
 
     if client_agent == 'transmission':
         try:
             logger.debug('Connecting to {0}: http://{1}:{2}'.format(
-                client_agent, core.TRANSMISSIONHOST, core.TRANSMISSIONPORT))
-            tc = TransmissionClient(core.TRANSMISSIONHOST, core.TRANSMISSIONPORT,
-                                    core.TRANSMISSIONUSR,
-                                    core.TRANSMISSIONPWD)
+                client_agent, core.TRANSMISSION_HOST, core.TRANSMISSION_PORT))
+            tc = TransmissionClient(core.TRANSMISSION_HOST, core.TRANSMISSION_PORT,
+                                    core.TRANSMISSION_USER,
+                                    core.TRANSMISSION_PASSWORD)
         except Exception:
             logger.error('Failed to connect to Transmission')
 
     if client_agent == 'deluge':
         try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.DELUGEHOST, core.DELUGEPORT))
+            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.DELUGE_HOST, core.DELUGE_PORT))
             tc = DelugeClient()
-            tc.connect(host=core.DELUGEHOST, port=core.DELUGEPORT, username=core.DELUGEUSR,
-                       password=core.DELUGEPWD)
+            tc.connect(host=core.DELUGE_HOST, port=core.DELUGE_PORT, username=core.DELUGE_USER,
+                       password=core.DELUGE_PASSWORD)
         except Exception:
             logger.error('Failed to connect to Deluge')
 
     if client_agent == 'qbittorrent':
         try:
-            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.QBITTORRENTHOST, core.QBITTORRENTPORT))
-            tc = qBittorrentClient('http://{0}:{1}/'.format(core.QBITTORRENTHOST, core.QBITTORRENTPORT))
-            tc.login(core.QBITTORRENTUSR, core.QBITTORRENTPWD)
+            logger.debug('Connecting to {0}: http://{1}:{2}'.format(client_agent, core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
+            tc = qBittorrentClient('http://{0}:{1}/'.format(core.QBITTORRENT_HOST, core.QBITTORRENT_PORT))
+            tc.login(core.QBITTORRENT_USER, core.QBITTORRENT_PASSWORD)
         except Exception:
             logger.error('Failed to connect to qBittorrent')
 
@@ -85,7 +87,7 @@ def resume_torrent(client_agent, input_hash, input_id, input_name):
 
 
 def remove_torrent(client_agent, input_hash, input_id, input_name):
-    if core.DELETE_ORIGINAL == 1 or core.USELINK == 'move':
+    if core.DELETE_ORIGINAL == 1 or core.USE_LINK == 'move':
         logger.debug('Deleting torrent {0} from {1}'.format(input_name, client_agent))
         try:
             if client_agent == 'utorrent' and core.TORRENT_CLASS != '':
