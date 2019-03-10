@@ -48,9 +48,9 @@ def make_dir(path):
 
 
 def remote_dir(path):
-    if not core.REMOTEPATHS:
+    if not core.REMOTE_PATHS:
         return path
-    for local, remote in core.REMOTEPATHS:
+    for local, remote in core.REMOTE_PATHS:
         if local in path:
             base_dirs = path.replace(local, '').split(os.sep)
             if '/' in remote:

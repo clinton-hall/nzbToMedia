@@ -77,7 +77,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         }
 
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
-        if res[0] in [0, 1]:
+        if res.status_code in [0, 1]:
             return res
 
         params = {

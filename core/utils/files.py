@@ -20,7 +20,7 @@ def move_file(mediafile, path, link):
     new_path = None
     file_ext = os.path.splitext(mediafile)[1]
     try:
-        if file_ext in core.AUDIOCONTAINER:
+        if file_ext in core.AUDIO_CONTAINER:
             f = beets.mediafile.MediaFile(mediafile)
 
             # get artist and album info
@@ -29,7 +29,7 @@ def move_file(mediafile, path, link):
 
             # create new path
             new_path = os.path.join(path, '{0} - {1}'.format(sanitize_name(artist), sanitize_name(album)))
-        elif file_ext in core.MEDIACONTAINER:
+        elif file_ext in core.MEDIA_CONTAINER:
             f = guessit.guessit(mediafile)
 
             # get title
@@ -75,7 +75,7 @@ def is_min_size(input_name, min_size):
 
     # audio files we need to check directory size not file size
     input_size = os.path.getsize(input_name)
-    if file_ext in core.AUDIOCONTAINER:
+    if file_ext in core.AUDIO_CONTAINER:
         try:
             input_size = get_dir_size(os.path.dirname(input_name))
         except Exception:
@@ -89,7 +89,7 @@ def is_min_size(input_name, min_size):
 
 def is_archive_file(filename):
     """Check if the filename is allowed for the Archive"""
-    for regext in core.COMPRESSEDCONTAINER:
+    for regext in core.COMPRESSED_CONTAINER:
         if regext.search(filename):
             return regext.split(filename)[0]
     return False
@@ -109,9 +109,9 @@ def is_media_file(mediafile, media=True, audio=True, meta=True, archives=True, o
         pass
 
     return any([
-        (media and file_ext.lower() in core.MEDIACONTAINER),
-        (audio and file_ext.lower() in core.AUDIOCONTAINER),
-        (meta and file_ext.lower() in core.METACONTAINER),
+        (media and file_ext.lower() in core.MEDIA_CONTAINER),
+        (audio and file_ext.lower() in core.AUDIO_CONTAINER),
+        (meta and file_ext.lower() in core.META_CONTAINER),
         (archives and is_archive_file(mediafile)),
         (other and (file_ext.lower() in otherext or 'all' in otherext)),
     ])

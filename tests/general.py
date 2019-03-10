@@ -1,15 +1,18 @@
 #! /usr/bin/env python2
 from __future__ import print_function
 
-from babelfish import Language
-import guessit
-import requests
-import subliminal
+import datetime
+import os
+import sys
 
 import core
-from core import transcoder
+from core import logger, main_db, transcoder
+from core.auto_process import comics, games, movies, music, tv
+from core.auto_process.common import ProcessResult
+from core.user_scripts import external_script
 from core.forks import auto_fork
-from core.utils import server_responding
+from core.utils import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status, server_responding
+
 
 # Initialize the config
 core.initialize()
