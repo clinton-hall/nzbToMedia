@@ -11,9 +11,9 @@ import subprocess
 import sys
 import time
 
+import eol
 import libs.autoload
 import libs.util
-import eol
 
 if not libs.autoload.completed:
     sys.exit('Could not load vendored libraries.')
@@ -46,12 +46,22 @@ from six.moves import reload_module
 
 from core import logger, main_db, version_check, databases, transcoder
 from core.configuration import config
+from core.plugins.downloaders.configuration import (
+    configure_nzbs,
+    configure_torrents,
+    configure_torrent_class,
+)
+from core.plugins.downloaders.utils import (
+    pause_torrent,
+    remove_torrent,
+    resume_torrent,
+)
+from core.plugins.plex import configure_plex
 from core.utils import (
     RunningProcess,
     category_search,
     clean_dir,
     copy_link,
-    create_torrent_class,
     extract_files,
     flatten,
     get_dirs,
@@ -59,13 +69,10 @@ from core.utils import (
     list_media_files,
     make_dir,
     parse_args,
-    pause_torrent,
     rchmod,
     remove_dir,
     remove_read_only,
-    remove_torrent,
     restart,
-    resume_torrent,
     sanitize_name,
     update_download_info_status,
     wake_up,
@@ -403,26 +410,6 @@ def configure_wake_on_lan():
         wake_up()
 
 
-def configure_sabnzbd():
-    global SABNZBD_HOST
-    global SABNZBD_PORT
-    global SABNZBD_APIKEY
-
-    SABNZBD_HOST = CFG['Nzb']['sabnzbd_host']
-    SABNZBD_PORT = int(CFG['Nzb']['sabnzbd_port'] or 8080)  # defaults to accommodate NzbGet
-    SABNZBD_APIKEY = CFG['Nzb']['sabnzbd_apikey']
-
-
-def configure_nzbs():
-    global NZB_CLIENT_AGENT
-    global NZB_DEFAULT_DIRECTORY
-
-    NZB_CLIENT_AGENT = CFG['Nzb']['clientAgent']  # sabnzbd
-    NZB_DEFAULT_DIRECTORY = CFG['Nzb']['default_downloadDirectory']
-
-    configure_sabnzbd()
-
-
 def configure_groups():
     global GROUPS
 
@@ -433,114 +420,6 @@ def configure_groups():
 
     if GROUPS == ['']:
         GROUPS = None
-
-
-def configure_utorrent():
-    global UTORRENT_WEB_UI
-    global UTORRENT_USER
-    global UTORRENT_PASSWORD
-
-    UTORRENT_WEB_UI = CFG['Torrent']['uTorrentWEBui']  # http://localhost:8090/gui/
-    UTORRENT_USER = CFG['Torrent']['uTorrentUSR']  # mysecretusr
-    UTORRENT_PASSWORD = CFG['Torrent']['uTorrentPWD']  # mysecretpwr
-
-
-def configure_transmission():
-    global TRANSMISSION_HOST
-    global TRANSMISSION_PORT
-    global TRANSMISSION_USER
-    global TRANSMISSION_PASSWORD
-
-    TRANSMISSION_HOST = CFG['Torrent']['TransmissionHost']  # localhost
-    TRANSMISSION_PORT = int(CFG['Torrent']['TransmissionPort'])
-    TRANSMISSION_USER = CFG['Torrent']['TransmissionUSR']  # mysecretusr
-    TRANSMISSION_PASSWORD = CFG['Torrent']['TransmissionPWD']  # mysecretpwr
-
-
-def configure_deluge():
-    global DELUGE_HOST
-    global DELUGE_PORT
-    global DELUGE_USER
-    global DELUGE_PASSWORD
-
-    DELUGE_HOST = CFG['Torrent']['DelugeHost']  # localhost
-    DELUGE_PORT = int(CFG['Torrent']['DelugePort'])  # 8084
-    DELUGE_USER = CFG['Torrent']['DelugeUSR']  # mysecretusr
-    DELUGE_PASSWORD = CFG['Torrent']['DelugePWD']  # mysecretpwr
-
-
-def configure_qbittorrent():
-    global QBITTORRENT_HOST
-    global QBITTORRENT_PORT
-    global QBITTORRENT_USER
-    global QBITTORRENT_PASSWORD
-
-    QBITTORRENT_HOST = CFG['Torrent']['qBittorrenHost']  # localhost
-    QBITTORRENT_PORT = int(CFG['Torrent']['qBittorrentPort'])  # 8080
-    QBITTORRENT_USER = CFG['Torrent']['qBittorrentUSR']  # mysecretusr
-    QBITTORRENT_PASSWORD = CFG['Torrent']['qBittorrentPWD']  # mysecretpwr
-
-
-def configure_flattening():
-    global NOFLATTEN
-
-    NOFLATTEN = (CFG['Torrent']['noFlatten'])
-    if isinstance(NOFLATTEN, str):
-        NOFLATTEN = NOFLATTEN.split(',')
-
-
-def configure_torrent_categories():
-    global CATEGORIES
-
-    CATEGORIES = (CFG['Torrent']['categories'])  # music,music_videos,pictures,software
-    if isinstance(CATEGORIES, str):
-        CATEGORIES = CATEGORIES.split(',')
-
-
-def configure_torrent_resuming():
-    global TORRENT_RESUME
-    global TORRENT_RESUME_ON_FAILURE
-
-    TORRENT_RESUME_ON_FAILURE = int(CFG['Torrent']['resumeOnFailure'])
-    TORRENT_RESUME = int(CFG['Torrent']['resume'])
-
-
-def configure_torrent_permissions():
-    global TORRENT_CHMOD_DIRECTORY
-
-    TORRENT_CHMOD_DIRECTORY = int(str(CFG['Torrent']['chmodDirectory']), 8)
-
-
-def configure_torrent_deltetion():
-    global DELETE_ORIGINAL
-
-    DELETE_ORIGINAL = int(CFG['Torrent']['deleteOriginal'])
-
-
-def configure_torrent_linking():
-    global USE_LINK
-
-    USE_LINK = CFG['Torrent']['useLink']  # no | hard | sym
-
-
-def configure_torrents():
-    global TORRENT_CLIENT_AGENT
-    global OUTPUT_DIRECTORY
-    global TORRENT_DEFAULT_DIRECTORY
-
-    TORRENT_CLIENT_AGENT = CFG['Torrent']['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
-    OUTPUT_DIRECTORY = CFG['Torrent']['outputDirectory']  # /abs/path/to/complete/
-    TORRENT_DEFAULT_DIRECTORY = CFG['Torrent']['default_downloadDirectory']
-    configure_torrent_linking()
-    configure_flattening()
-    configure_torrent_deltetion()
-    configure_torrent_categories()
-    configure_torrent_permissions()
-    configure_torrent_resuming()
-    configure_utorrent()
-    configure_transmission()
-    configure_deluge()
-    configure_qbittorrent()
 
 
 def configure_remote_paths():
@@ -562,28 +441,6 @@ def configure_remote_paths():
             # strip trailing and leading whitespaces
             (local.strip(), remote.strip())
             for local, remote in REMOTE_PATHS
-        ]
-
-
-def configure_plex():
-    global PLEX_SSL
-    global PLEX_HOST
-    global PLEX_PORT
-    global PLEX_TOKEN
-    global PLEX_SECTION
-
-    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
-    PLEX_HOST = CFG['Plex']['plex_host']
-    PLEX_PORT = CFG['Plex']['plex_port']
-    PLEX_TOKEN = CFG['Plex']['plex_token']
-    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
-
-    if PLEX_SECTION:
-        if isinstance(PLEX_SECTION, list):
-            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
-        PLEX_SECTION = [
-            tuple(item.split(','))
-            for item in PLEX_SECTION.split('|')
         ]
 
 
@@ -973,13 +830,6 @@ def configure_passwords_file():
     PASSWORDS_FILE = CFG['passwords']['PassWordFile']
 
 
-def configure_torrent_class():
-    global TORRENT_CLASS
-
-    # create torrent class
-    TORRENT_CLASS = create_torrent_class(TORRENT_CLIENT_AGENT)
-
-
 def configure_sections(section):
     global SECTIONS
     global CATEGORIES
@@ -1138,10 +988,10 @@ def initialize(section=None):
     configure_general()
     configure_updates()
     configure_wake_on_lan()
-    configure_nzbs()
-    configure_torrents()
+    configure_nzbs(CFG)
+    configure_torrents(CFG)
     configure_remote_paths()
-    configure_plex()
+    configure_plex(CFG)
     configure_niceness()
     configure_containers()
     configure_transcoder()

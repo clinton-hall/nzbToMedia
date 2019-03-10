@@ -10,10 +10,23 @@ import requests
 
 import core
 from core import logger, transcoder
-from core.auto_process.common import command_complete, completed_download_handling, ProcessResult
+from core.auto_process.common import (
+    ProcessResult,
+    command_complete,
+    completed_download_handling,
+)
 from core.forks import auto_fork
+from core.plugins.downloaders.nzb.utils import report_nzb
+from core.plugins.subtitles import import_subs
 from core.scene_exceptions import process_all_exceptions
-from core.utils import convert_to_ascii, flatten, import_subs, list_media_files, remote_dir, remove_dir, report_nzb, server_responding
+from core.utils import (
+    convert_to_ascii,
+    flatten,
+    list_media_files,
+    remote_dir,
+    remove_dir,
+    server_responding,
+)
 
 requests.packages.urllib3.disable_warnings()
 
