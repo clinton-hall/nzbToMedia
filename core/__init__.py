@@ -11,9 +11,9 @@ import subprocess
 import sys
 import time
 
+import eol
 import libs.autoload
 import libs.util
-import eol
 
 if not libs.autoload.completed:
     sys.exit('Could not load vendored libraries.')
@@ -56,6 +56,7 @@ from core.plugins.downloaders.utils import (
     remove_torrent,
     resume_torrent,
 )
+from core.plugins.plex import configure_plex
 from core.utils import (
     RunningProcess,
     category_search,
@@ -440,28 +441,6 @@ def configure_remote_paths():
             # strip trailing and leading whitespaces
             (local.strip(), remote.strip())
             for local, remote in REMOTE_PATHS
-        ]
-
-
-def configure_plex():
-    global PLEX_SSL
-    global PLEX_HOST
-    global PLEX_PORT
-    global PLEX_TOKEN
-    global PLEX_SECTION
-
-    PLEX_SSL = int(CFG['Plex']['plex_ssl'])
-    PLEX_HOST = CFG['Plex']['plex_host']
-    PLEX_PORT = CFG['Plex']['plex_port']
-    PLEX_TOKEN = CFG['Plex']['plex_token']
-    PLEX_SECTION = CFG['Plex']['plex_sections'] or []
-
-    if PLEX_SECTION:
-        if isinstance(PLEX_SECTION, list):
-            PLEX_SECTION = ','.join(PLEX_SECTION)  # fix in case this imported as list.
-        PLEX_SECTION = [
-            tuple(item.split(','))
-            for item in PLEX_SECTION.split('|')
         ]
 
 
@@ -1012,7 +991,7 @@ def initialize(section=None):
     configure_nzbs(CFG)
     configure_torrents(CFG)
     configure_remote_paths()
-    configure_plex()
+    configure_plex(CFG)
     configure_niceness()
     configure_containers()
     configure_transcoder()
