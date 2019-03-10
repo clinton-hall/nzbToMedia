@@ -42,7 +42,6 @@ from core.utils.paths import (
     remove_read_only,
 )
 from core.utils.processes import RunningProcess, restart
-from core.utils.subtitles import import_subs
 
 requests.packages.urllib3.disable_warnings()
 shutil_custom.monkey_patch()

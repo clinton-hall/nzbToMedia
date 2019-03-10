@@ -14,12 +14,12 @@ from core.auto_process.common import (
     completed_download_handling,
 )
 from core.plugins.downloaders.nzb.utils import report_nzb
+from core.plugins.subtitles import import_subs
 from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
     find_download,
     find_imdbid,
-    import_subs,
     list_media_files,
     remote_dir,
     remove_dir,

@@ -17,11 +17,11 @@ from core.auto_process.common import (
 )
 from core.forks import auto_fork
 from core.plugins.downloaders.nzb.utils import report_nzb
+from core.plugins.subtitles import import_subs
 from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
     flatten,
-    import_subs,
     list_media_files,
     remote_dir,
     remove_dir,
