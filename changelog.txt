@@ -1,5 +1,18 @@
 Change_LOG / History
 
+V12.0.8
+
+Refactor and Rename Modules
+Add Medusa API
+Fix return parsing from HeadPhones
+Add Python end of life detection and reporting
+Fix Py3 return from Popen (Transcoder and executable path detection)
+Add variable sys_path to config (allows user to specify separate path for binary detection)
+Various Py3 compatability fixes
+Log successful when returning to Radarr CDH
+Add exception handling when failing to return to original directory (due to permissions)
+Don't load Torrent Clients when calling NZB processing
+
 V12.0.7
 
 Refactor utils

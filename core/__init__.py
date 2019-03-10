@@ -71,7 +71,7 @@ from core.utils import (
     wake_up,
 )
 
-__version__ = '12.0.7'
+__version__ = '12.0.8'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
