@@ -646,8 +646,8 @@ def rip_iso(item, new_dir, bitbucket):
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
-        file_list = [re.match(r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line.decode()).groups()[0] for line in
-                     out.splitlines() if re.match(r'.+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', line.decode())]
+        file_list = [re.match(r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line).groups()[0] for line in
+                     out.decode().splitlines() if re.match(r'.+VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', line)]
         combined = []
         for n in range(99):
             concat = []
