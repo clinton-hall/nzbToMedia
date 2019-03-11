@@ -1,9 +1,8 @@
 #! /usr/bin/env python
 from __future__ import print_function
-from __future__ import absolute_import
 
 import eol
-eol.check()
+#eol.check()
 
 import cleanup
 cleanup.clean(cleanup.FOLDER_STRUCTURE)
