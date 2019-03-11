@@ -15,8 +15,9 @@ import core
 from core import logger, main_db
 from core.auto_process import comics, games, movies, music, tv
 from core.auto_process.common import ProcessResult
+from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import char_replace, convert_to_ascii, plex_update, replace_links
+from core.utils import char_replace, convert_to_ascii, replace_links
 from six import text_type
 
 
