@@ -1,15 +1,16 @@
 #! /usr/bin/env python
 from __future__ import print_function
 
+import datetime
+import os
+import sys
+sys.path.extend(["..","."])
+
 import eol
 eol.check()
 
 import cleanup
 cleanup.clean(cleanup.FOLDER_STRUCTURE)
-
-import datetime
-import os
-import sys
 
 import core
 from core import logger, main_db
