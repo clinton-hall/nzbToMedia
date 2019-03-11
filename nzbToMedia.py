@@ -637,8 +637,14 @@ import core
 from core import logger, main_db
 from core.auto_process import comics, games, movies, music, tv
 from core.auto_process.common import ProcessResult
+from core.plugins.downloaders.nzb.utils import get_nzoid
+from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import char_replace, clean_dir, convert_to_ascii, extract_files, get_dirs, get_download_info, get_nzoid, plex_update, update_download_info_status
+from core.utils import (
+    char_replace, clean_dir, convert_to_ascii,
+    extract_files, get_dirs, get_download_info,
+    update_download_info_status,
+)
 
 try:
     text_type = unicode
