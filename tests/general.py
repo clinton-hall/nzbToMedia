@@ -26,7 +26,7 @@ from core.utils import (
 
 # Initialize the config
 core.initialize()
+del core.MYAPP
 
 def test_answer():
-    assert core.APP_NAME == "general.py"
-    del core.MYAPP
+    assert core.CHECK_MEDIA == 1
