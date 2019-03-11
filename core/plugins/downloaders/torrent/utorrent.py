@@ -1,3 +1,5 @@
+from __future__ import absolute_import
+
 from utorrent.client import UTorrentClient
 
 import core
