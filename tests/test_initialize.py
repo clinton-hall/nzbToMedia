@@ -4,7 +4,7 @@ import datetime
 import os
 import sys
 
-def test_eol()
+def test_eol():
     import eol
     eol.check()
 
@@ -41,5 +41,5 @@ def test_initial():
     core.initialize()
     del core.MYAPP
 
-def test_answer():
+def test_core_parameters():
     assert core.CHECK_MEDIA == 1
