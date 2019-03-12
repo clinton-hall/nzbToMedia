@@ -14,7 +14,7 @@ A clear and concise description of what the bug is.
 1. Running on (Windows, Linux, NAS Model etc) '....'
 2. Python version '....'
 3. Download Client (NZBget, SABnbzd, Transmission) '....'
-4. Intended media management (SickChill, CouchPotoato, Radarr, Sonarr) '....'
+4. Intended Media Management (SickChill, CouchPotoato, Radarr, Sonarr) '....'
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
