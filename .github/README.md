@@ -1,5 +1,5 @@
-nzbToMedia v12.0.8
-==================
+nzbToMedia
+==========
 
 Provides an [efficient](https://github.com/clinton-hall/nzbToMedia/wiki/Efficient-on-demand-post-processing) way to handle postprocessing for [CouchPotatoServer](https://couchpota.to/ "CouchPotatoServer") and [SickBeard](http://sickbeard.com/ "SickBeard") (and its [forks](https://github.com/clinton-hall/nzbToMedia/wiki/Failed-Download-Handling-%28FDH%29#sick-beard-and-its-forks))
 when using one of the popular NZB download clients like [SABnzbd](http://sabnzbd.org/ "SABnzbd") and [NZBGet](http://nzbget.sourceforge.net/ "NZBGet") on low performance systems like a NAS. 
