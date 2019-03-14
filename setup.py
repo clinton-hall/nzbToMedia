@@ -18,7 +18,7 @@ def read(*names, **kwargs):
 
 setup(
     name='nzbToMedia',
-    version='12.0.9',
+    version='12.0.10',
     license='GPLv3',
     description='Efficient on demand post processing',
     long_description="""    
@@ -42,8 +42,8 @@ setup(
     4. Continuously polling a folder for changes can prevent the drive from going to sleep
     5. Continuous polling may encounter file access/permissions issues
     6. Continuous polling may miss a folder change, causing the PVR app to wait forever
-    6. An on-demand post-processing script is able to utilize additional functionality such as ffprobe media checking to test for bad video files.
-    7. On-demand scripts can be tweaked to allow for delays with slow hardware
+    7. An on-demand post-processing script is able to utilize additional functionality such as ffprobe media checking to test for bad video files.
+    8. On-demand scripts can be tweaked to allow for delays with slow hardware
 
     nzbToMedia is an on-demand post-processing script and was created out of a demand for more efficient post-processing on low-performance hardware. Many features have been added so higher performance hardware can benefit too.
     

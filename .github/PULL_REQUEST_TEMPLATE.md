@@ -20,7 +20,7 @@ Please describe the tests that you ran to verify your changes. Provide instructi
 **Test Configuration**:
 
 # Checklist:
-- [ ] I have based this chnage on the nightly branch
+- [ ] I have based this change on the nightly branch
 - [ ] I have performed a self-review of my own code
 - [ ] I have commented my code, particularly in hard-to-understand areas
 - [ ] I have made corresponding changes to the documentation
