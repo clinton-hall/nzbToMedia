@@ -60,14 +60,14 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_category = 'UNCAT'
 
     usercat = input_category
-    try:
-        input_name = input_name.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
-    try:
-        input_directory = input_directory.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
+    #try:
+    #    input_name = input_name.encode(core.SYS_ENCODING)
+    #except UnicodeError:
+    #    pass
+    #try:
+    #    input_directory = input_directory.encode(core.SYS_ENCODING)
+    #except UnicodeError:
+    #    pass
 
     logger.debug('Determined Directory: {0} | Name: {1} | Category: {2}'.format
                  (input_directory, input_name, input_category))
@@ -125,10 +125,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     else:
         output_destination = os.path.normpath(
             core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
-    try:
-        output_destination = output_destination.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
+    #try:
+    #    output_destination = output_destination.encode(core.SYS_ENCODING)
+    #except UnicodeError:
+    #    pass
 
     if output_destination in input_directory:
         output_destination = input_directory
@@ -170,10 +170,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                     core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name)
                 logger.debug('Setting outputDestination to {0} to preserve folder structure'.format
                              (os.path.dirname(target_file)))
-        try:
-            target_file = target_file.encode(core.SYS_ENCODING)
-        except UnicodeError:
-            pass
+        #try:
+        #    target_file = target_file.encode(core.SYS_ENCODING)
+        #except UnicodeError:
+        #    pass
         if root == 1:
             if not found_file:
                 logger.debug('Looking for {0} in: {1}'.format(input_name, inputFile))
@@ -350,15 +350,15 @@ def main(args):
                     if client_agent.lower() not in core.TORRENT_CLIENTS:
                         continue
 
-                    try:
-                        dir_name = dir_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
-                        pass
+                    #try:
+                    #    dir_name = dir_name.encode(core.SYS_ENCODING)
+                    #except UnicodeError:
+                    #    pass
                     input_name = os.path.basename(dir_name)
-                    try:
-                        input_name = input_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
-                        pass
+                    #try:
+                    #    input_name = input_name.encode(core.SYS_ENCODING)
+                    #except UnicodeError:
+                    #    pass
 
                     results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,
                                               client_agent)
