@@ -30,8 +30,10 @@ jobs:
       architecture: 'x64'
 
   - script: python -m pip install --upgrade pip
-      apt-get install -y ffmpeg
     displayName: 'Install dependencies'
+
+  - script: apt-get install -y ffmpeg
+    displayName: 'Install ffmpeg'
 
   - script: |
       pip install pytest
