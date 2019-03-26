@@ -32,7 +32,7 @@ jobs:
   - script: python -m pip install --upgrade pip
     displayName: 'Install dependencies'
 
-  - script: apt-get install -y ffmpeg
+  - script: sudo apt-get install ffmpeg
     displayName: 'Install ffmpeg'
 
   - script: |
