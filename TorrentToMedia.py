@@ -13,7 +13,7 @@ import sys
 
 import core
 from core import logger, main_db
-from core.auto_process import comics, games, movies, music, tv
+from core.auto_process import comics, games, movies, music, tv, books
 from core.auto_process.common import ProcessResult
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
@@ -256,6 +256,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         result = comics.process(section_name, output_destination, input_name, status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = games.process(section_name, output_destination, input_name, status, client_agent, input_category)
+    elif section_name == 'LazyLibrarian':
+        result = books.process(section_name, output_destination, input_name, status, client_agent, input_category)
+
 
     plex_update(input_category)
 

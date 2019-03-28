@@ -282,6 +282,31 @@
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
+[LazyLibrarian]
+    #### autoProcessing for Games
+    #### games - category that gets called for post-processing with Gamez
+    [[books]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 5299
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        ssl = 0
+        web_root =
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if LazyLibrarian is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+
+
 [Network]
     # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
     # e.g. MountPoints = /volume1/Public/,E:\|/volume2/share/,\\NAS\

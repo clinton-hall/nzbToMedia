@@ -383,6 +383,21 @@ class ConfigObj(configobj.ConfigObj, Section):
                         cfg_new[section][os.environ[env_cat_key]][option] = value
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
 
+            section = 'LazyLibrarian'
+            env_cat_key = 'NZBPO_LLCATEGORY'
+            env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
+            cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'remote_path']
+            if env_cat_key in os.environ:
+                for index in range(len(env_keys)):
+                    key = 'NZBPO_LL{index}'.format(index=env_keys[index])
+                    if key in os.environ:
+                        option = cfg_keys[index]
+                        value = os.environ[key]
+                        if os.environ[env_cat_key] not in cfg_new[section].sections:
+                            cfg_new[section][os.environ[env_cat_key]] = {}
+                        cfg_new[section][os.environ[env_cat_key]][option] = value
+                cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
+
             section = 'NzbDrone'
             env_cat_key = 'NZBPO_NDCATEGORY'
             env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
