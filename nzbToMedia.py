@@ -4,7 +4,8 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to CouchPotato, SickBeard, NzbDrone, Mylar, Gamez, HeadPhones.
+# Post-Process to CouchPotato, SickBeard, Sonarr, Mylar, Gamez, HeadPhones,
+# LazyLibrarian, Radarr, Lidarr
 #
 # This script sends the download to your automated media management servers.
 #
@@ -410,6 +411,39 @@
 # Enable to replace local path with the path as per the mountPoints below.
 #gzremote_path=0
 
+## LazyLibrarian
+
+# LazyLibrarian script category.
+#
+# category that gets called for post-processing with LazyLibrarian.
+#llCategory=games
+
+# LazyLibrarian api key.
+#llapikey=
+
+# LazyLibrarian host.
+#
+# The ipaddress for your LazyLibrarian server. e.g For the Same system use localhost or 127.0.0.1
+#llhost=localhost
+
+# LazyLibrarian port.
+#llport=5299
+
+# LazyLibrarian uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#llssl=0
+
+# LazyLibrarian web_root
+#
+# set this if using a reverse proxy.
+#llweb_root=
+
+# LazyLibrarian watch directory.
+#
+# set this to where your LazyLibrarian completed downloads are.
+#llwatch_dir=
+
 ## Network
 
 # Network Mount Points (Needed for remote path above)
@@ -635,7 +669,7 @@ import sys
 
 import core
 from core import logger, main_db
-from core.auto_process import comics, games, movies, music, tv
+from core.auto_process import comics, games, movies, music, tv, books
 from core.auto_process.common import ProcessResult
 from core.plugins.downloaders.nzb.utils import get_nzoid
 from core.plugins.plex import plex_update
@@ -763,6 +797,8 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         result = comics.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = games.process(section_name, input_directory, input_name, status, client_agent, input_category)
+    elif section_name == 'LazyLibrarian':
+        result = books.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:
