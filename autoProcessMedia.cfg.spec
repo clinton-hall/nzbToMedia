@@ -283,8 +283,8 @@
         watch_dir =
 
 [LazyLibrarian]
-    #### autoProcessing for Games
-    #### games - category that gets called for post-processing with Gamez
+    #### autoProcessing for LazyLibrarian
+    #### books - category that gets called for post-processing with LazyLibrarian
     [[books]]
         enabled = 0
         apikey =

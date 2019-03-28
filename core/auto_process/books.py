@@ -36,12 +36,11 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
     params = {
-        'api_key': apikey,
+        'apikey': apikey,
         'cmd': 'forceProcess',
         'dir': dir_name,
     }
-
-    logger.debug('Opening URL: {0}'.format(url), section)
+    logger.debug('Opening URL: {0} with params: {1}'.format(url, params), section)
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
@@ -52,8 +51,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             status_code=1,
         )
 
-    result = r.json()
-    logger.postprocess('{0}'.format(result), section)
+    logger.postprocess('{0}'.format(r.text), section)
  
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error('Server returned status {0}'.format(r.status_code), section)
@@ -61,7 +59,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             message='{0}: Failed to post-process - Server returned status {1}'.format(section, r.status_code),
             status_code=1,
         )
-    elif result['success']:
+    elif r.text == 'OK':
         logger.postprocess('SUCCESS: ForceProcess for {0} has been started in LazyLibrarian'.format(dir_name), section)
         return ProcessResult(
             message='{0}: Successfully post-processed {1}'.format(section, input_name),
