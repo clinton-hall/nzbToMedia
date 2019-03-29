@@ -31,7 +31,7 @@
 # LazyLibrarian script category.
 #
 # category that gets called for post-processing with LazyLibrarian.
-#llCategory=games
+#llCategory=books
 
 # LazyLibrarian api key.
 #llapikey=
