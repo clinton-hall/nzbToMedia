@@ -590,6 +590,7 @@ def process_list(it, new_dir, bitbucket):
     new_list = []
     combine = []
     vts_path = None
+    mts_path = None
     success = True
     for item in it:
         ext = os.path.splitext(item)[1].lower()
@@ -605,6 +606,14 @@ def process_list(it, new_dir, bitbucket):
                 except Exception:
                     vts_path = os.path.split(item)[0]
             rem_list.append(item)
+        elif re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', item) and '.mts' not in core.IGNOREEXTENSIONS:
+            logger.debug('Found MTS image file: {0}'.format(item), 'TRANSCODER')
+            if not mts_path:
+                try:
+                    mts_path = re.match('(.+BDMV[/\\]SOURCE)', item).groups()[0]
+                except Exception:
+                    mts_path = os.path.split(item)[0]
+            rem_list.append(item)
         elif re.match('.+VIDEO_TS.', item) or re.match('.+VTS_[0-9][0-9]_[0-9].', item):
             rem_list.append(item)
         elif core.CONCAT and re.match('.+[cC][dD][0-9].', item):
@@ -614,6 +623,8 @@ def process_list(it, new_dir, bitbucket):
             continue
     if vts_path:
         new_list.extend(combine_vts(vts_path))
+    if mts_path:
+        new_list.extend(combine_mts(mts_path))
     if combine:
         new_list.extend(combine_cd(combine))
     for file in new_list:
@@ -642,7 +653,7 @@ def rip_iso(item, new_dir, bitbucket):
         return new_files
     cmd = [core.SEVENZIP, 'l', item]
     try:
-        logger.debug('Attempting to extract .vob from image file {0}'.format(item), 'TRANSCODER')
+        logger.debug('Attempting to extract .vob or .mts from image file {0}'.format(item), 'TRANSCODER')
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
@@ -656,30 +667,54 @@ def rip_iso(item, new_dir, bitbucket):
             if file_match
         ]
         combined = []
-        for n in range(99):
-            concat = []
-            m = 1
-            while True:
-                vts_name = 'VIDEO_TS{0}VTS_{1:02d}_{2:d}.VOB'.format(os.sep, n + 1, m)
-                if vts_name in file_list:
-                    concat.append(vts_name)
-                    m += 1
-                else:
+        if file_list: # handle DVD
+            for n in range(99):
+                concat = []
+                m = 1
+                while True:
+                    vts_name = 'VIDEO_TS{0}VTS_{1:02d}_{2:d}.VOB'.format(os.sep, n + 1, m)
+                    if vts_name in file_list:
+                        concat.append(vts_name)
+                        m += 1
+                    else:
+                        break
+                if not concat:
                     break
-            if not concat:
-                break
-            if core.CONCAT:
-                combined.extend(concat)
-                continue
-            name = '{name}.cd{x}'.format(
-                name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
+                if core.CONCAT:
+                    combined.extend(concat)
+                    continue
+                name = '{name}.cd{x}'.format(
+                    name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
+                )
+                new_files.append({item: {'name': name, 'files': concat}})
+        else: #check BlueRay for BDMV/SOURCE/XXXX.MTS
+            mts_list_gen = (
+                re.match(r'.+(BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss])', line)
+                for line in out.decode().splitlines()
             )
-            new_files.append({item: {'name': name, 'files': concat}})
+            mts_list = [
+                file_match.groups()[0]
+                for file_match in mts_list_gen
+                if file_match
+            ]
+            mts_list.sort(key=lambda f: int(filter(str.isdigit, f))) # Sot all .mts files in numerical order
+            n = 0
+            for mts_name in mts_list:
+                concat = []
+                n += 1
+                concat.append(mts_name)
+                if core.CONCAT:
+                    combined.extend(concat)
+                    continue
+                name = '{name}.cd{x}'.format(
+                    name=os.path.splitext(os.path.split(item)[1])[0], x=n
+                )
+                new_files.append({item: {'name': name, 'files': concat}})
         if core.CONCAT:
             name = os.path.splitext(os.path.split(item)[1])[0]
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
-            logger.error('No VIDEO_TS folder found in image file {0}'.format(item), 'TRANSCODER')
+            logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file {0}'.format(item), 'TRANSCODER')
             new_files = [failure_dir]
     except Exception:
         logger.error('Failed to extract from image file {0}'.format(item), 'TRANSCODER')
@@ -702,6 +737,23 @@ def combine_vts(vts_path):
                 break
         if not concat:
             break
+        if core.CONCAT:
+            combined += '{files}|'.format(files=concat)
+            continue
+        new_files.append('concat:{0}'.format(concat[:-1]))
+    if core.CONCAT:
+        new_files.append('concat:{0}'.format(combined[:-1]))
+    return new_files
+
+
+def combine_mts(mts_path):
+    new_files = []
+    combined = ''
+    mts_list = [f for f in listdir(mts_path) if isfile(join(mts_path, f))]
+    mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))
+    for mts_name in mts_list:  ### need to sort all files [1 - 998].mts in order
+        concat = ''
+        concat += '{file}|'.format(file=os.path.join(mts_path, mts_name))
         if core.CONCAT:
             combined += '{files}|'.format(files=concat)
             continue
