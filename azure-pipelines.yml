@@ -40,6 +40,13 @@ jobs:
       pytest tests --doctest-modules --junitxml=junit/test-results.xml
     displayName: 'pytest'
 
+  - script:
+        rm -rf .git
+        python cleanup.py
+        python TorrentToMedia.py
+        python nzbToMedia.py
+    displayName: 'Test source install cleanup'
+
   - task: PublishTestResults@2
     inputs:
       testResultsFiles: '**/test-results.xml'
