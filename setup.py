@@ -53,6 +53,9 @@ setup(
     author_email='fock_wulf@hotmail.com',
     url='https://github.com/clinton-hall/nzbToMedia',
     packages=['core'],
+    install_requires=[
+        'pywin32;platform_system=="Windows"',
+    ],
     classifiers=[
         # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
         'Development Status :: 5 - Production/Stable',
