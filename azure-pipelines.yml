@@ -40,7 +40,7 @@ jobs:
       pytest tests --doctest-modules --junitxml=junit/test-results.xml
     displayName: 'pytest'
 
-  - script:
+  - script: |
         rm -rf .git
         python cleanup.py
         python TorrentToMedia.py
