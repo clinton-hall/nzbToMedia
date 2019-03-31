@@ -15,6 +15,10 @@ FOLDER_STRUCTURE = {
         'win',
     ],
     'core': [
+        'auto_process',
+        'extractor',
+        'plugins',
+        'utils',
     ],
 }
 
