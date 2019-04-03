@@ -710,7 +710,7 @@ def rip_iso(item, new_dir, bitbucket):
                     name=os.path.splitext(os.path.split(item)[1])[0], x=n
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
-        if core.CONCAT:
+        if core.CONCAT and combined:
             name = os.path.splitext(os.path.split(item)[1])[0]
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
