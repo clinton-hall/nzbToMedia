@@ -194,6 +194,7 @@ META_CONTAINER = []
 SECTIONS = []
 CATEGORIES = []
 
+MOUNTED = None
 GETSUBS = False
 TRANSCODE = None
 CONCAT = None
@@ -499,6 +500,7 @@ def configure_containers():
 
 
 def configure_transcoder():
+    global MOUNTED
     global GETSUBS
     global TRANSCODE
     global DUPLICATE
@@ -543,6 +545,7 @@ def configure_transcoder():
     global ALLOWSUBS
     global DEFAULTS
 
+    MOUNTED = None
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
     DUPLICATE = int(CFG['Transcoder']['duplicate'])
