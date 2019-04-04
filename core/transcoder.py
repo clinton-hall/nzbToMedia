@@ -643,13 +643,46 @@ def process_list(it, new_dir, bitbucket):
     return it, rem_list, new_list, success
 
 
+def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount when permissions allow.
+    mount_point = os.path.join(os.path.dirname(os.path.abspath(item)),'temp')
+    make_dir(mount_point)
+    cmd = ['mount', '-o', 'loop', item, mount_point]
+    print_cmd(cmd)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+    out, err = proc.communicate()
+    core.MOUNTED = mount_point # Allows us to verify this has been done and then cleanup.
+    for root, dirs, files in os.walk(mount_point):
+        for file in files:
+            full_path = os.path.join(root, file)
+            if re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', full_path) and '.vob' not in core.IGNOREEXTENSIONS:
+                logger.debug('Found VIDEO_TS image file: {0}'.format(full_path), 'TRANSCODER')
+                try:
+                    vts_path = re.match('(.+VIDEO_TS)', full_path).groups()[0]
+                except Exception:
+                    vts_path = os.path.split(full_path)[0]
+                return combine_vts(vts_path)
+            elif re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', full_path) and '.mts' not in core.IGNOREEXTENSIONS:
+                logger.debug('Found MTS image file: {0}'.format(full_path), 'TRANSCODER')
+                try:
+                    mts_path = re.match('(.+BDMV[/\\]SOURCE)', full_path).groups()[0]
+                except Exception:
+                    mts_path = os.path.split(full_path)[0]
+                return combine_mts(mts_path)
+    logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file {0}'.format(item), 'TRANSCODER')        
+    return [] # If we got here, nothing matched our criteria
+
+
 def rip_iso(item, new_dir, bitbucket):
     new_files = []
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
     if not core.SEVENZIP:
-        logger.error('No 7zip installed. Can\'t extract image file {0}'.format(item), 'TRANSCODER')
-        new_files = [failure_dir]
+        logger.debug('No 7zip installed. Attempting to mount image file {0}'.format(item), 'TRANSCODER')
+        try:
+            new_files = mount_iso(item, new_dir, bitbucket) # Currently only works for Linux.
+        except Exception:
+            logger.error('Failed to mount and extract from image file {0}'.format(item), 'TRANSCODER')
+            new_files = [failure_dir]
         return new_files
     cmd = [core.SEVENZIP, 'l', item]
     try:
@@ -714,8 +747,8 @@ def rip_iso(item, new_dir, bitbucket):
             name = os.path.splitext(os.path.split(item)[1])[0]
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
-            logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file {0}'.format(item), 'TRANSCODER')
-            new_files = [failure_dir]
+            logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file. Attempting to mount and scan {0}'.format(item), 'TRANSCODER')
+            new_files = mount_iso(item, new_dir, bitbucket)
     except Exception:
         logger.error('Failed to extract from image file {0}'.format(item), 'TRANSCODER')
         new_files = [failure_dir]
@@ -871,6 +904,13 @@ def transcode_directory(dir_name):
             logger.error('Transcoding of video to {0} failed with result {1}'.format(newfile_path, result))
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
+    if core.MOUNTED: # In case we mounted an .iso file, unmount here.
+        cmd = ['umount', core.MOUNTED] # currently for Linux only.
+        print_cmd(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+        out, err = proc.communicate()
+        os.unlink(core.MOUNTED)
+        core.MOUNTED = None
     if final_result == 0 and not core.DUPLICATE:
         for file in rem_list:
             try:
