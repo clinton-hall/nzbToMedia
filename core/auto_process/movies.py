@@ -373,22 +373,22 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             except Exception:
                 pass
         elif scan_id:
-                url = '{0}/{1}'.format(base_url, scan_id)
-                command_status = command_complete(url, params, headers, section)
-                if command_status:
-                    logger.debug('The Scan command return status: {0}'.format(command_status), section)
-                    if command_status in ['completed']:
-                        logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
-                        return ProcessResult(
-                            message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                            status_code=0,
-                        )
-                    elif command_status in ['failed']:
-                        logger.debug('The Scan command has failed. Renaming was not successful.', section)
-                        # return ProcessResult(
-                        #     message='{0}: Failed to post-process {1}'.format(section, input_name),
-                        #     status_code=1,
-                        # )
+            url = '{0}/{1}'.format(base_url, scan_id)
+            command_status = command_complete(url, params, headers, section)
+            if command_status:
+                logger.debug('The Scan command return status: {0}'.format(command_status), section)
+                if command_status in ['completed']:
+                    logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
+                    return ProcessResult(
+                        message='{0}: Successfully post-processed {1}'.format(section, input_name),
+                        status_code=0,
+                    )
+                elif command_status in ['failed']:
+                    logger.debug('The Scan command has failed. Renaming was not successful.', section)
+                    # return ProcessResult(
+                    #     message='{0}: Failed to post-process {1}'.format(section, input_name),
+                    #     status_code=1,
+                    # )
 
         if not os.path.isdir(dir_name):
             logger.postprocess('SUCCESS: Input Directory [{0}] has been processed and removed'.format(
