@@ -67,10 +67,10 @@ def remote_dir(path):
 
 def get_dir_size(input_path):
     prepend = partial(os.path.join, input_path)
-    return sum([
+    return sum(
         (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
         for f in map(prepend, os.listdir(text_type(input_path)))
-    ])
+    )
 
 
 def remove_empty_folders(path, remove_root=True):
