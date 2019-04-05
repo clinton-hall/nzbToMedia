@@ -73,7 +73,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         params = {
             'apikey': apikey,
             'cmd': 'forceProcess',
-            'dir': remote_dir(dir_name) if remote_path else dir_name
+            'dir': remote_dir(dir_name) if remote_path else dir_name,
         }
 
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
@@ -83,7 +83,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         params = {
             'apikey': apikey,
             'cmd': 'forceProcess',
-            'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]
+            'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0],
         }
 
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
@@ -187,7 +187,7 @@ def get_status(url, apikey, dir_name):
 
     params = {
         'apikey': apikey,
-        'cmd': 'getHistory'
+        'cmd': 'getHistory',
     }
 
     logger.debug('Opening URL: {0} with PARAMS: {1}'.format(url, params))

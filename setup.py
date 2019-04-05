@@ -11,7 +11,7 @@ from setuptools import setup
 def read(*names, **kwargs):
     with io.open(
         os.path.join(os.path.dirname(__file__), *names),
-        encoding=kwargs.get('encoding', 'utf8')
+        encoding=kwargs.get('encoding', 'utf8'),
     ) as fh:
         return fh.read()
 

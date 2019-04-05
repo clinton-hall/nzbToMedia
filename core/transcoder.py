@@ -672,7 +672,7 @@ def rip_iso(item, new_dir, bitbucket):
                 combined.extend(concat)
                 continue
             name = '{name}.cd{x}'.format(
-                name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
+                name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1,
             )
             new_files.append({item: {'name': name, 'files': concat}})
         if core.CONCAT:
