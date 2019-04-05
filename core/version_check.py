@@ -239,8 +239,11 @@ class GitUpdateManager(UpdateManager):
 
     def _check_github_for_update(self):
         """
-        Uses git commands to check if there is a newer version that the provided
-        commit hash. If there is a newer version it sets _num_commits_behind.
+        Check Github for a new version.
+
+        Uses git commands to check if there is a newer version than
+        the provided commit hash. If there is a newer version it
+        sets _num_commits_behind.
         """
         self._newest_commit_hash = None
         self._num_commits_behind = 0
@@ -318,8 +321,10 @@ class GitUpdateManager(UpdateManager):
 
     def update(self):
         """
-        Calls git pull origin <branch> in order to update Sick Beard. Returns a bool depending
-        on the call's success.
+        Check git for a new version.
+
+        Calls git pull origin <branch> in order to update Sick Beard.
+        Returns a bool depending on the call's success.
         """
         output, err, exit_status = self._run_git(self._git_path, 'pull origin {branch}'.format(branch=self.branch))  # @UnusedVariable
 
@@ -375,8 +380,11 @@ class SourceUpdateManager(UpdateManager):
 
     def _check_github_for_update(self):
         """
-        Uses pygithub to ask github if there is a newer version that the provided
-        commit hash. If there is a newer version it sets Sick Beard's version text.
+        Check Github for a new version.
+
+        Uses pygithub to ask github if there is a newer version than
+        the provided commit hash. If there is a newer version it sets
+        Sick Beard's version text.
 
         commit_hash: hash that we're checking against
         """

@@ -14,6 +14,8 @@ from core import logger
 
 def db_filename(filename='nzbtomedia.db', suffix=None):
     """
+    Return the correct location of the database file.
+
     @param filename: The sqlite database filename to use. If not specified,
                      will be made to be nzbtomedia.db
     @param suffix: The suffix to append to the filename. A '.' will be added

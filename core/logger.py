@@ -127,8 +127,10 @@ class NTMRotatingLogHandler(object):
 
     def _log_file_name(self, i):
         """
-        Returns a numbered log file name depending on i. If i==0 it just uses logName, if not it appends
-        it to the extension (blah.log.3 for i == 3)
+        Returns a numbered log file name depending on i.
+
+        If i==0 it just uses logName, if not it appends it to the extension
+        e.g. (blah.log.3 for i == 3)
 
         i: Log number to ues
         """
