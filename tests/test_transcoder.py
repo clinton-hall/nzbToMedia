@@ -10,5 +10,6 @@ import requests
 import core
 from core import logger, transcoder
 
+
 def test_transcoder_check():
     assert transcoder.is_video_good(core.TEST_FILE, 0) == True
