@@ -6,6 +6,7 @@ import sys
 import threading
 
 import core
+import functools
 
 # number of log files to keep
 NUM_LOGS = 3
@@ -199,9 +200,8 @@ class NTMRotatingLogHandler(object):
             ntm_logger = logging.getLogger('nzbtomedia')
             pp_logger = logging.getLogger('postprocess')
             db_logger = logging.getLogger('db')
-            setattr(pp_logger, 'postprocess', lambda *args: pp_logger.log(POSTPROCESS, *args))
-            setattr(db_logger, 'db', lambda *args: db_logger.log(DB, *args))
-
+            pp_logger.postprocess = functools.partial(pp_logger.log, POSTPROCESS)
+            db_logger.db = functools.partial(db_logger.log, DB)
             try:
                 if log_level == DEBUG:
                     if core.LOG_DEBUG == 1:
