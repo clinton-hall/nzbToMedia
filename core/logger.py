@@ -111,9 +111,7 @@ class NTMRotatingLogHandler(object):
             self.close_log(old_handler)
 
     def _config_handler(self):
-        """
-        Configure a file handler to log at file_name and return it.
-        """
+        """Configure a file handler to log at file_name and return it."""
 
         file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
 

@@ -19,9 +19,7 @@ from core import github_api as github, logger
 
 
 class CheckVersion(object):
-    """
-    Version check class meant to run as a thread object with the SB scheduler.
-    """
+    """Version checker that runs in a thread with the SB scheduler."""
 
     def __init__(self):
         self.install_type = self.find_install_type()
@@ -435,9 +433,7 @@ class SourceUpdateManager(UpdateManager):
             return
 
     def update(self):
-        """
-        Downloads the latest source tarball from github and installs it over the existing version.
-        """
+        """Download and install latest source tarball from github."""
         tar_download_url = 'https://github.com/{org}/{repo}/tarball/{branch}'.format(
             org=self.github_repo_user, repo=self.github_repo, branch=self.branch)
         version_path = os.path.join(core.APP_ROOT, u'version.txt')

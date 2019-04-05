@@ -4,9 +4,7 @@ import requests
 
 
 class GitHub(object):
-    """
-    Simple api wrapper for the Github API v3.
-    """
+    """Simple api wrapper for the Github API v3."""
 
     def __init__(self, github_repo_user, github_repo, branch='master'):
 
@@ -15,9 +13,7 @@ class GitHub(object):
         self.branch = branch
 
     def _access_api(self, path, params=None):
-        """
-        Access the API at the path given and with the optional params given.
-        """
+        """Access API at given an API path and optional parameters."""
         url = 'https://api.github.com/{path}'.format(path='/'.join(path))
         data = requests.get(url, params=params, verify=False)
         return data.json() if data.ok else []
