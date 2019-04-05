@@ -49,7 +49,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         )
 
     logger.postprocess('{0}'.format(r.text), section)
- 
+
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error('Server returned status {0}'.format(r.status_code), section)
         return ProcessResult(
