@@ -38,7 +38,7 @@ class CheckVersion(object):
 
     def find_install_type(self):
         """
-        Determines how this copy of SB was installed.
+        Determine how this copy of SB was installed.
 
         returns: type of installation. Possible values are:
             'win': any compiled windows build
@@ -55,7 +55,7 @@ class CheckVersion(object):
 
     def check_for_new_version(self, force=False):
         """
-        Checks the internet for a newer version.
+        Check the internet for a newer version.
 
         returns: bool, True for new version or False for no new version.
 
@@ -207,7 +207,7 @@ class GitUpdateManager(UpdateManager):
 
     def _find_installed_version(self):
         """
-        Attempts to find the currently installed version of Sick Beard.
+        Attempt to find the currently installed version of Sick Beard.
 
         Uses git show to get commit version.
 

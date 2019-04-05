@@ -29,7 +29,7 @@ def sanitize_name(name):
 
 def clean_file_name(filename):
     """
-    Cleans up nzb name by removing any . and _ characters and trailing hyphens.
+    Clean up nzb name by removing any . and _ characters and trailing hyphens.
 
     Is basically equivalent to replacing all _ and . with a
     space, but handles decimal numbers in string, for example:

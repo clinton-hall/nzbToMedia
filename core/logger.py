@@ -127,7 +127,7 @@ class NTMRotatingLogHandler(object):
 
     def _log_file_name(self, i):
         """
-        Returns a numbered log file name depending on i.
+        Return a numbered log file name depending on i.
 
         If i==0 it just uses logName, if not it appends it to the extension
         e.g. (blah.log.3 for i == 3)
@@ -138,7 +138,7 @@ class NTMRotatingLogHandler(object):
 
     def _num_logs(self):
         """
-        Scans the log folder and figures out how many log files there are already on disk.
+        Scan the log folder and figure out how many log files there are already on disk.
 
         Returns: The number of the last used file (eg. mylog.log.3 would return 3). If there are no logs it returns -1
         """

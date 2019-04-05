@@ -20,7 +20,7 @@ class GitHub(object):
 
     def commits(self):
         """
-        Uses the API to get a list of the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
+        Get the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
 
         user: The github username of the person whose repo you're querying
         repo: The repo name to query
@@ -35,7 +35,7 @@ class GitHub(object):
 
     def compare(self, base, head, per_page=1):
         """
-        Uses the API to get a list of compares between base and head.
+        Get compares between base and head.
 
         user: The github username of the person whose repo you're querying
         repo: The repo name to query
