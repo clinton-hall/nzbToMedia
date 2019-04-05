@@ -2,6 +2,7 @@
 
 import errno
 import json
+import sys
 import os
 import platform
 import re
@@ -664,15 +665,15 @@ def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount wh
                 except Exception:
                     vts_path = os.path.split(full_path)[0]
                 return combine_vts(vts_path)
-            elif re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', full_path) and '.mts' not in core.IGNOREEXTENSIONS:
+            elif re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path) and '.mts' not in core.IGNOREEXTENSIONS:
                 logger.debug('Found MTS image file: {0}'.format(full_path), 'TRANSCODER')
                 try:
-                    mts_path = re.match('(.+BDMV[/\\]SOURCE)', full_path).groups()[0]
+                    mts_path = re.match('(.+BDMV[/\\]STREAM)', full_path).groups()[0]
                 except Exception:
                     mts_path = os.path.split(full_path)[0]
                 return combine_mts(mts_path)
-    logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file {0}'.format(item), 'TRANSCODER')        
-    return [] # If we got here, nothing matched our criteria
+    logger.error('No VIDEO_TS or BDMV/SOURCE folder found in image file {0}'.format(mount_point), 'TRANSCODER')
+    return ['failure'] # If we got here, nothing matched our criteria
 
 
 def rip_iso(item, new_dir, bitbucket):
@@ -723,9 +724,9 @@ def rip_iso(item, new_dir, bitbucket):
                     name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
-        else: #check BlueRay for BDMV/SOURCE/XXXX.MTS
+        else: #check BlueRay for BDMV/STREAM/XXXX.MTS
             mts_list_gen = (
-                re.match(r'.+(BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss])', line)
+                re.match(r'.+(BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]).', line)
                 for line in out.decode().splitlines()
             )
             mts_list = [
@@ -733,7 +734,10 @@ def rip_iso(item, new_dir, bitbucket):
                 for file_match in mts_list_gen
                 if file_match
             ]
-            mts_list.sort(key=lambda f: int(filter(str.isdigit, f))) # Sot all .mts files in numerical order
+            if sys.version_info[0] == 2: # Python2 sorting
+                mts_list.sort(key=lambda f: int(filter(str.isdigit, f))) # Sort all .mts files in numerical order
+            else: # Python3 sorting
+                mts_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
             n = 0
             for mts_name in mts_list:
                 concat = []
@@ -785,8 +789,11 @@ def combine_vts(vts_path):
 def combine_mts(mts_path):
     new_files = []
     combined = ''
-    mts_list = [f for f in listdir(mts_path) if isfile(join(mts_path, f))]
-    mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))
+    mts_list = [f for f in os.listdir(mts_path) if os.path.isfile(os.path.join(mts_path, f))]
+    if sys.version_info[0] == 2: # Python2 sorting
+        mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))
+    else: # Python3 sorting
+        mts_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     for mts_name in mts_list:  ### need to sort all files [1 - 998].mts in order
         concat = ''
         concat += '{file}|'.format(file=os.path.join(mts_path, mts_name))
@@ -912,7 +919,7 @@ def transcode_directory(dir_name):
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
-        os.unlink(core.MOUNTED)
+        os.rmdir(core.MOUNTED)
         core.MOUNTED = None
     if final_result == 0 and not core.DUPLICATE:
         for file in rem_list:
