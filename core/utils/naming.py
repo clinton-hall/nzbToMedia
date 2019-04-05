@@ -1,5 +1,4 @@
 import re
-import core
 
 
 def sanitize_name(name):

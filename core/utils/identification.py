@@ -5,7 +5,6 @@ import guessit
 import requests
 from six import text_type
 
-import core
 from core import logger
 from core.utils.naming import sanitize_name
 

@@ -1,11 +1,7 @@
 #! /usr/bin/env python
 from __future__ import print_function
-import datetime
-import os
-import sys
 
 import core
-from core import logger, main_db
 
 
 def test_eol():
@@ -19,34 +15,27 @@ def test_cleanup():
 
 
 def test_import_core():
-    import core
-    from core import logger, main_db
+    pass
 
 
 def test_import_core_auto_process():
-    from core.auto_process import comics, games, movies, music, tv
-    from core.auto_process.common import ProcessResult
+    pass
 
 
 def test_import_core_plugins():
-    from core.plugins.downloaders.nzb.utils import get_nzoid
-    from core.plugins.plex import plex_update
+    pass
 
 
 def test_import_core_user_scripts():
-    from core.user_scripts import external_script
+    pass
 
 
 def test_import_six():
-    from six import text_type
+    pass
 
 
 def test_import_core_utils():
-    from core.utils import (
-        char_replace, clean_dir, convert_to_ascii,
-        extract_files, get_dirs, get_download_info,
-        update_download_info_status, replace_links,
-    )
+    pass
 
 
 def test_initial():
