@@ -21,7 +21,7 @@ setup(
     version='12.0.10',
     license='GPLv3',
     description='Efficient on demand post processing',
-    long_description="""    
+    long_description="""
     nzbToMedia
     ==========
     

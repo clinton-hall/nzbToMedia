@@ -828,7 +828,7 @@ def transcode_directory(dir_name):
     if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
         new_dir = dir_name
-    if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB 
+    if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB
         new_dir = dir_name
     bitbucket.close()
     return final_result, new_dir
