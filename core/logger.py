@@ -112,7 +112,6 @@ class NTMRotatingLogHandler(object):
 
     def _config_handler(self):
         """Configure a file handler to log at file_name and return it."""
-
         file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
 
         file_handler.setLevel(DB)
@@ -133,7 +132,6 @@ class NTMRotatingLogHandler(object):
 
         i: Log number to ues
         """
-
         return self.log_file_path + ('.{0}'.format(i) if i else '')
 
     def _num_logs(self):
@@ -142,7 +140,6 @@ class NTMRotatingLogHandler(object):
 
         Returns: The number of the last used file (eg. mylog.log.3 would return 3). If there are no logs it returns -1
         """
-
         cur_log = 0
         while os.path.isfile(self._log_file_name(cur_log)):
             cur_log += 1

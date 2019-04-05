@@ -12,7 +12,6 @@ def sanitize_name(name):
     >>> sanitize_name('.a.b..')
     'a.b'
     """
-
     # remove bad chars from the filename
     name = re.sub(r'[\\/*]', '-', name)
     name = re.sub(r'[:\'<>|?]', '', name)
@@ -34,7 +33,6 @@ def clean_file_name(filename):
     Is basically equivalent to replacing all _ and . with a
     space, but handles decimal numbers in string, for example:
     """
-
     filename = re.sub(r'(\D)\.(?!\s)(\D)', r'\1 \2', filename)
     filename = re.sub(r'(\d)\.(\d{4})', r'\1 \2', filename)  # if it ends in a year then don't keep the dot
     filename = re.sub(r'(\D)\.(?!\s)', r'\1 ', filename)

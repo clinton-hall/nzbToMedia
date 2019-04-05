@@ -45,7 +45,6 @@ class CheckVersion(object):
             'git': running from source using git
             'source': running from source without git
         """
-
         # check if we're a windows build
         if os.path.isdir(os.path.join(core.APP_ROOT, u'.git')):
             install_type = 'git'
@@ -62,7 +61,6 @@ class CheckVersion(object):
 
         force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
         """
-
         if not core.VERSION_NOTIFY and not force:
             logger.log(u'Version checking is disabled, not checking for the newest version')
             return False
@@ -215,7 +213,6 @@ class GitUpdateManager(UpdateManager):
 
         Returns: True for success or False for failure
         """
-
         output, err, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
 
         if exit_status == 0 and output:
@@ -245,7 +242,6 @@ class GitUpdateManager(UpdateManager):
         Uses git commands to check if there is a newer version that the provided
         commit hash. If there is a newer version it sets _num_commits_behind.
         """
-
         self._newest_commit_hash = None
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
@@ -325,7 +321,6 @@ class GitUpdateManager(UpdateManager):
         Calls git pull origin <branch> in order to update Sick Beard. Returns a bool depending
         on the call's success.
         """
-
         output, err, exit_status = self._run_git(self._git_path, 'pull origin {branch}'.format(branch=self.branch))  # @UnusedVariable
 
         if exit_status == 0:
@@ -385,7 +380,6 @@ class SourceUpdateManager(UpdateManager):
 
         commit_hash: hash that we're checking against
         """
-
         self._num_commits_behind = 0
         self._newest_commit_hash = None
 
