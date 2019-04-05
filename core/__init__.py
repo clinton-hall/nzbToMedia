@@ -870,7 +870,7 @@ def configure_utility_locations():
 
     else:
         if SYS_PATH:
-            os.environ['PATH'] += ':'+SYS_PATH
+            os.environ['PATH'] += ':' + SYS_PATH
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
