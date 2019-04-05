@@ -87,7 +87,7 @@ class NTMRotatingLogHandler(object):
                      'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      },
-                    logging.Formatter('%(message)s'), ))
+                    logging.Formatter('%(message)s')))
 
                 # add the handler to the root logger
                 logging.getLogger('nzbtomedia').addHandler(console)
@@ -124,7 +124,7 @@ class NTMRotatingLogHandler(object):
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              },
-            logging.Formatter('%(message)s'), ))
+            logging.Formatter('%(message)s')))
 
         return file_handler
 
