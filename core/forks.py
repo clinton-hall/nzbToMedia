@@ -42,7 +42,8 @@ def auto_fork(section, input_category):
         logger.info('Attempting to verify {category} fork'.format
                     (category=input_category))
         url = '{protocol}{host}:{port}{root}/api/rootfolder'.format(
-                    protocol=protocol, host=host, port=port, root=web_root)
+            protocol=protocol, host=host, port=port, root=web_root
+        )
         headers = {'X-Api-Key': apikey}
         try:
             r = requests.get(url, headers=headers, stream=True, verify=False)
@@ -65,10 +66,12 @@ def auto_fork(section, input_category):
 
         if apikey:
             url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
-                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey)
+                protocol=protocol, host=host, port=port, root=web_root, apikey=apikey
+            )
         else:
             url = '{protocol}{host}:{port}{root}/home/postprocess/'.format(
-                        protocol=protocol, host=host, port=port, root=web_root)
+                protocol=protocol, host=host, port=port, root=web_root
+            )
 
         # attempting to auto-detect fork
         try:
