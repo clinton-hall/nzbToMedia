@@ -138,7 +138,7 @@ class NTMRotatingLogHandler(object):
 
     def _num_logs(self):
         """
-        Scans the log folder and figures out how many log files there are already on disk
+        Scans the log folder and figures out how many log files there are already on disk.
 
         Returns: The number of the last used file (eg. mylog.log.3 would return 3). If there are no logs it returns -1
         """
