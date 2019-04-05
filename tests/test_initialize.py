@@ -4,6 +4,10 @@ import datetime
 import os
 import sys
 
+import core
+from core import logger, main_db
+
+
 def test_eol():
     import eol
     eol.check()
@@ -44,9 +48,6 @@ def test_import_core_utils():
         update_download_info_status, replace_links,
     )
 
-
-import core
-from core import logger, main_db
 
 def test_initial():
     core.initialize()
