@@ -85,7 +85,7 @@ class NTMRotatingLogHandler(object):
                 console.setFormatter(DispatchingFormatter(
                     {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
+                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      },
                     logging.Formatter('%(message)s'), ))
 
@@ -122,7 +122,7 @@ class NTMRotatingLogHandler(object):
         file_handler.setFormatter(DispatchingFormatter(
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
+             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              },
             logging.Formatter('%(message)s'), ))
 

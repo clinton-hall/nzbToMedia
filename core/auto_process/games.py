@@ -46,7 +46,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         'api_key': apikey,
         'mode': 'UPDATEREQUESTEDSTATUS',
         'db_id': gamez_id,
-        'status': download_status
+        'status': download_status,
     }
 
     logger.debug('Opening URL: {0}'.format(url), section)

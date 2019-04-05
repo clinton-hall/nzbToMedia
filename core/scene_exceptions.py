@@ -25,7 +25,7 @@ media_list = [r'\.s\d{2}e\d{2}\.', r'\.1080[pi]\.', r'\.720p\.', r'\.576[pi]', r
               r'\.internal\.', r'\bac3\b', r'\.ntsc\.', r'\.pal\.', r'\.secam\.', r'\bdivx\b', r'\bxvid\b']
 media_pattern = re.compile('|'.join(media_list), flags=re.IGNORECASE)
 garbage_name = re.compile(r'^[a-zA-Z0-9]*$')
-char_replace = [[r'(\w)1\.(\w)', r'\1i\2']
+char_replace = [[r'(\w)1\.(\w)', r'\1i\2'],
                 ]
 
 

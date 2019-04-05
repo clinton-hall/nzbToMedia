@@ -183,9 +183,9 @@ class DBConnection(object):
             'WHERE {conditions}'.format(
                 table=table_name,
                 params=', '.join(gen_params(value_dict)),
-                conditions=' AND '.join(gen_params(key_dict))
+                conditions=' AND '.join(gen_params(key_dict)),
             ),
-            items
+            items,
         )
 
         if self.connection.total_changes == changes_before:
@@ -194,9 +194,9 @@ class DBConnection(object):
                 'VALUES ({values})'.format(
                     table=table_name,
                     columns=', '.join(map(text_type, value_dict.keys())),
-                    values=', '.join(['?'] * len(value_dict.values()))
+                    values=', '.join(['?'] * len(value_dict.values())),
                 ),
-                list(value_dict.values())
+                list(value_dict.values()),
             )
 
     def table_info(self, table_name):

@@ -17,7 +17,7 @@ class ProcessResult(object):
     def __str__(self):
         return 'Processing {0}: {1}'.format(
             'succeeded' if bool(self) else 'failed',
-            self.message
+            self.message,
         )
 
     def __repr__(self):
