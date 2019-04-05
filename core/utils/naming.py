@@ -1,5 +1,4 @@
 import re
-import core
 
 
 def sanitize_name(name):
@@ -20,9 +19,9 @@ def sanitize_name(name):
 
     # remove leading/trailing periods and spaces
     name = name.strip(' .')
-    #try:
+    # try:
     #    name = name.encode(core.SYS_ENCODING)
-    #except Exception:
+    # except Exception:
     #    pass
 
     return name

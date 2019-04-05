@@ -132,7 +132,7 @@ class NTMRotatingLogHandler(object):
         """
         Returns a numbered log file name depending on i. If i==0 it just uses logName, if not it appends
         it to the extension (blah.log.3 for i == 3)
-        
+
         i: Log number to ues
         """
 

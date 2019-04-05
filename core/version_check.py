@@ -199,8 +199,8 @@ class GitUpdateManager(UpdateManager):
             logger.log(u'{cmd} : returned successful'.format(cmd=cmd), logger.DEBUG)
             exit_status = 0
         elif core.LOG_GIT and exit_status in (1, 128):
-                logger.log(u'{cmd} returned : {output}'.format
-                           (cmd=cmd, output=output), logger.DEBUG)
+            logger.log(u'{cmd} returned : {output}'.format
+                       (cmd=cmd, output=output), logger.DEBUG)
         else:
             if core.LOG_GIT:
                 logger.log(u'{cmd} returned : {output}, treat as error for now'.format

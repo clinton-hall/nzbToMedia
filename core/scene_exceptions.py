@@ -171,7 +171,7 @@ def par2(dirname):
         cmd = ''
         for item in command:
             cmd = '{cmd} {item}'.format(cmd=cmd, item=item)
-        logger.debug('calling command:{0}'.format(cmd), 'PAR2')    
+        logger.debug('calling command:{0}'.format(cmd), 'PAR2')
         try:
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             proc.communicate()
