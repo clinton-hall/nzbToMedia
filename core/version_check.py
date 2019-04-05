@@ -487,7 +487,7 @@ class SourceUpdateManager(UpdateManager):
             # walk temp folder and move files to main folder
             logger.log(u'Moving files from {source} to {destination}'.format
                        (source=content_dir, destination=core.APP_ROOT))
-            for dirname, dirnames, filenames in os.walk(content_dir):  # @UnusedVariable
+            for dirname, _, filenames in os.walk(content_dir):  # @UnusedVariable
                 dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
                     old_path = os.path.join(content_dir, dirname, curfile)

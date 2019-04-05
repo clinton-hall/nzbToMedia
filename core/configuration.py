@@ -136,10 +136,10 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         subsections = {}
         # gather all new-style and old-style sub-sections
-        for newsection, newitems in CFG_NEW.items():
+        for newsection in CFG_NEW:
             if CFG_NEW[newsection].sections:
                 subsections.update({newsection: CFG_NEW[newsection].sections})
-        for section, items in CFG_OLD.items():
+        for section in CFG_OLD:
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():

@@ -504,7 +504,7 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
     # Narrow results by removing old releases by comparing their last_edit field
     if len(results) > 1:
         for id1, x1 in results.items():
-            for id2, x2 in results.items():
+            for x2 in results.values():
                 try:
                     if x2['last_edit'] > x1['last_edit']:
                         results.pop(id1)
