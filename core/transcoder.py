@@ -644,6 +644,9 @@ def process_list(it, new_dir, bitbucket):
 
 
 def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount when permissions allow.
+    if platform.system() == 'Windows':
+        logger.error('No mounting options available under Windows for image file {0}'.format(item), 'TRANSCODER')
+        return []
     mount_point = os.path.join(os.path.dirname(os.path.abspath(item)),'temp')
     make_dir(mount_point)
     cmd = ['mount', '-o', 'loop', item, mount_point]
