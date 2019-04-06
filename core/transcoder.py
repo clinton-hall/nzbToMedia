@@ -4,6 +4,7 @@ import errno
 import json
 import sys
 import os
+import time
 import platform
 import re
 import shutil
@@ -67,7 +68,10 @@ def is_video_good(videofile, status):
 
 def zip_out(file, img, bitbucket):
     procin = None
-    cmd = [core.SEVENZIP, '-so', 'e', img, file]
+    if os.path.isfile(file):
+        cmd = ['cat', file]
+    else:
+        cmd = [core.SEVENZIP, '-so', 'e', img, file]
     try:
         procin = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
     except Exception:
@@ -116,6 +120,21 @@ def get_video_details(videofile, img=None, bitbucket=None):
     return video_details, result
 
 
+def check_vid_file(video_details, result):
+    if result != 0:
+        return False
+    if video_details.get('error'):
+        return False
+    if not video_details.get('streams'):
+        return False
+    video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
+    audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
+    if len(video_streams) > 0 and len(audio_streams) > 0:
+        return True
+    else:
+        return False
+
+
 def build_commands(file, new_dir, movie_name, bitbucket):
     if isinstance(file, string_types):
         input_file = file
@@ -133,9 +152,18 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             name = re.sub('([ ._=:-]+[cC][dD][0-9])', '', name)
         if ext == core.VEXTENSION and new_dir == directory:  # we need to change the name to prevent overwriting itself.
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
+        new_file = file
     else:
         img, data = next(iteritems(file))
         name = data['name']
+        new_file = []
+        rem_vid = []
+        for vid in data['files']:
+            video_details, result = get_video_details(vid, img, bitbucket)
+            if not check_vid_file(video_details, result): #lets not transcode menu or other clips that don't have audio and video.
+                rem_vid.append(vid)
+        data['files'] = [ f for f in data['files'] if f not in rem_vid ]
+        new_file = {img: {'name': data['name'], 'files': data['files']}}
         video_details, result = get_video_details(data['files'][0], img, bitbucket)
         input_file = '-'
         file = '-'
@@ -512,7 +540,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
     command.append(newfile_path)
     if platform.system() != 'Windows':
         command = core.NICENESS + command
-    return command
+    return command, new_file
 
 
 def get_subs(file):
@@ -764,45 +792,63 @@ def rip_iso(item, new_dir, bitbucket):
 
 def combine_vts(vts_path):
     new_files = []
-    combined = ''
+    combined = []
+    name = re.match(r'(.+)[/\\]VIDEO_TS', vts_path).groups()[0]
+    if os.path.basename(name) == 'temp':
+        name = os.path.basename(os.path.dirname(name))
+    else:
+        name = os.path.basename(name)
     for n in range(99):
-        concat = ''
+        concat = []
         m = 1
         while True:
             vts_name = 'VTS_{0:02d}_{1:d}.VOB'.format(n + 1, m)
             if os.path.isfile(os.path.join(vts_path, vts_name)):
-                concat += '{file}|'.format(file=os.path.join(vts_path, vts_name))
+                concat.append(os.path.join(vts_path, vts_name))
                 m += 1
             else:
                 break
         if not concat:
             break
         if core.CONCAT:
-            combined += '{files}|'.format(files=concat)
+            combined.extend(concat)
             continue
-        new_files.append('concat:{0}'.format(concat[:-1]))
+        name = '{name}.cd{x}'.format(
+            name=name, x=n + 1
+        )
+        new_files.append({vts_path: {'name': name, 'files': concat}})
     if core.CONCAT:
-        new_files.append('concat:{0}'.format(combined[:-1]))
+        new_files.append({vts_path: {'name': name, 'files': combined}})
     return new_files
 
 
 def combine_mts(mts_path):
     new_files = []
-    combined = ''
+    combined = []
+    name = re.match(r'(.+)[/\\]BDMV[/\\]STREAM', mts_path).groups()[0]
+    if os.path.basename(name) == 'temp':
+        name = os.path.basename(os.path.dirname(name))
+    else:
+        name = os.path.basename(name)
+    n = 0
     mts_list = [f for f in os.listdir(mts_path) if os.path.isfile(os.path.join(mts_path, f))]
     if sys.version_info[0] == 2: # Python2 sorting
         mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))
     else: # Python3 sorting
         mts_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
     for mts_name in mts_list:  ### need to sort all files [1 - 998].mts in order
-        concat = ''
-        concat += '{file}|'.format(file=os.path.join(mts_path, mts_name))
+        concat = []
+        concat.append(os.path.join(mts_path, mts_name))
         if core.CONCAT:
-            combined += '{files}|'.format(files=concat)
+            combined.extend(concat)
             continue
-        new_files.append('concat:{0}'.format(concat[:-1]))
+        name = '{name}.cd{x}'.format(
+            name=name, x=n + 1
+        )
+        new_files.append({mts_path: {'name': name, 'files': concat}})
+        n += 1
     if core.CONCAT:
-        new_files.append('concat:{0}'.format(combined[:-1]))
+        new_files.append({mts_path: {'name': name, 'files': combined}})
     return new_files
 
 
@@ -856,7 +902,7 @@ def transcode_directory(dir_name):
     for file in file_list:
         if isinstance(file, string_types) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
             continue
-        command = build_commands(file, new_dir, movie_name, bitbucket)
+        command, file = build_commands(file, new_dir, movie_name, bitbucket)
         newfile_path = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
@@ -874,7 +920,7 @@ def transcode_directory(dir_name):
         logger.info('Transcoding video: {0}'.format(newfile_path))
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
-        try:
+        if True:
             if isinstance(file, string_types):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             else:
@@ -883,12 +929,13 @@ def transcode_directory(dir_name):
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
                     if procin:
+                        logger.debug('Feeding in file: {0} to Transcoder'.format(vob))
                         shutil.copyfileobj(procin.stdout, proc.stdin)
                         procin.stdout.close()
             proc.communicate()
             result = proc.returncode
-        except Exception:
-            logger.error('Transcoding of video {0} has failed'.format(newfile_path))
+        #except Exception:
+        #    logger.error('Transcoding of video {0} has failed'.format(newfile_path))
 
         if core.SUBSDIR and result == 0 and isinstance(file, string_types):
             for sub in get_subs(file):
@@ -915,10 +962,12 @@ def transcode_directory(dir_name):
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
     if core.MOUNTED: # In case we mounted an .iso file, unmount here.
-        cmd = ['umount', core.MOUNTED] # currently for Linux only.
+        cmd = ['umount', '-l', core.MOUNTED] # currently for Linux only.
         print_cmd(cmd)
+        time.sleep(5) # play it safe and avoid failing to unmount.
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
+        time.sleep(5)
         os.rmdir(core.MOUNTED)
         core.MOUNTED = None
     if final_result == 0 and not core.DUPLICATE:
