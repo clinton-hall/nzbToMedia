@@ -127,6 +127,7 @@ LOG_ENV = None
 LOG_GIT = None
 SYS_ENCODING = None
 FAILED = False
+SUDO_PASS = None
 
 AUTO_UPDATE = None
 NZBTOMEDIA_VERSION = __version__
@@ -365,6 +366,7 @@ def configure_general():
     global CHECK_MEDIA
     global SAFE_MODE
     global NOEXTRACTFAILED
+    global SUDO_PASS
 
     # Set Version and GIT variables
     VERSION_NOTIFY = int(CFG['General']['version_notify'])
@@ -378,6 +380,7 @@ def configure_general():
     CHECK_MEDIA = int(CFG['General']['check_media'])
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
+    SUDO_PASS = CFG['General']['sudo_password']
 
 
 def configure_updates():
