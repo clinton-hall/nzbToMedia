@@ -16,6 +16,13 @@ Example usage:
     download_location = client.core.get_config_value("download_location").get()
 """
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from .exceptions import DelugeRPCError
 
 

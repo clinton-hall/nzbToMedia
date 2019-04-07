@@ -1,6 +1,13 @@
 # coding=utf-8
 # code copied from http://www.doughellmann.com/PyMOTW/urllib2/
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import itertools
 import mimetypes
 from email.generator import _make_boundary as choose_boundary
