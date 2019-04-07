@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import eol
-eol.check()
-
-import cleanup
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
-
 import datetime
 import os
 import sys
+
+import eol
+import cleanup
+eol.check()
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
 import core
 from core import logger, main_db
@@ -18,7 +17,11 @@ from core.auto_process.common import ProcessResult
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
 from core.utils import char_replace, convert_to_ascii, replace_links
-from six import text_type
+
+try:
+    text_type = unicode
+except NameError:
+    text_type = str
 
 
 def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):

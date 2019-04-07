@@ -657,15 +657,15 @@
 
 from __future__ import print_function
 
-import eol
-eol.check()
-
-import cleanup
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
-
 import datetime
 import os
 import sys
+
+import eol
+import cleanup
+
+eol.check()
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
 import core
 from core import logger, main_db
