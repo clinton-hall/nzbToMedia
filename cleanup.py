@@ -25,6 +25,7 @@ FOLDER_STRUCTURE = {
 
 class WorkingDirectory(object):
     """Context manager for changing current working directory."""
+
     def __init__(self, new, original=None):
         self.working_directory = new
         self.original_directory = os.getcwd() if original is None else original
