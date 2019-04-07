@@ -18,7 +18,7 @@ RPC_EVENT = 3
 
 class DelugeClient(object):
     def __init__(self):
-        """A deluge client session."""
+        """Create a deluge client session."""
         self.transfer = DelugeTransfer()
         self.modules = []
         self._request_counter = 0
@@ -134,7 +134,7 @@ class DelugeClient(object):
         return response
 
     def connect(self, host="127.0.0.1", port=58846, username="", password=""):
-        """Connects to a daemon process.
+        """Connect to a daemon process.
 
         :param host: str, the hostname of the daemon
         :param port: int, the port of the daemon
