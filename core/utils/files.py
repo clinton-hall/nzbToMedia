@@ -88,7 +88,7 @@ def is_min_size(input_name, min_size):
 
 
 def is_archive_file(filename):
-    """Check if the filename is allowed for the Archive"""
+    """Check if the filename is allowed for the Archive."""
     for regext in core.COMPRESSED_CONTAINER:
         if regext.search(filename):
             return regext.split(filename)[0]

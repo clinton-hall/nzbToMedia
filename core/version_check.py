@@ -19,9 +19,7 @@ from core import github_api as github, logger
 
 
 class CheckVersion(object):
-    """
-    Version check class meant to run as a thread object with the SB scheduler.
-    """
+    """Version checker that runs in a thread with the SB scheduler."""
 
     def __init__(self):
         self.install_type = self.find_install_type()
@@ -40,14 +38,13 @@ class CheckVersion(object):
 
     def find_install_type(self):
         """
-        Determines how this copy of SB was installed.
+        Determine how this copy of SB was installed.
 
         returns: type of installation. Possible values are:
             'win': any compiled windows build
             'git': running from source using git
             'source': running from source without git
         """
-
         # check if we're a windows build
         if os.path.isdir(os.path.join(core.APP_ROOT, u'.git')):
             install_type = 'git'
@@ -58,13 +55,12 @@ class CheckVersion(object):
 
     def check_for_new_version(self, force=False):
         """
-        Checks the internet for a newer version.
+        Check the internet for a newer version.
 
         returns: bool, True for new version or False for no new version.
 
         force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
         """
-
         if not core.VERSION_NOTIFY and not force:
             logger.log(u'Version checking is disabled, not checking for the newest version')
             return False
@@ -211,13 +207,12 @@ class GitUpdateManager(UpdateManager):
 
     def _find_installed_version(self):
         """
-        Attempts to find the currently installed version of Sick Beard.
+        Attempt to find the currently installed version of Sick Beard.
 
         Uses git show to get commit version.
 
         Returns: True for success or False for failure
         """
-
         output, err, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')  # @UnusedVariable
 
         if exit_status == 0 and output:
@@ -244,10 +239,12 @@ class GitUpdateManager(UpdateManager):
 
     def _check_github_for_update(self):
         """
-        Uses git commands to check if there is a newer version that the provided
-        commit hash. If there is a newer version it sets _num_commits_behind.
-        """
+        Check Github for a new version.
 
+        Uses git commands to check if there is a newer version than
+        the provided commit hash. If there is a newer version it
+        sets _num_commits_behind.
+        """
         self._newest_commit_hash = None
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
@@ -324,10 +321,11 @@ class GitUpdateManager(UpdateManager):
 
     def update(self):
         """
-        Calls git pull origin <branch> in order to update Sick Beard. Returns a bool depending
-        on the call's success.
-        """
+        Check git for a new version.
 
+        Calls git pull origin <branch> in order to update Sick Beard.
+        Returns a bool depending on the call's success.
+        """
         output, err, exit_status = self._run_git(self._git_path, 'pull origin {branch}'.format(branch=self.branch))  # @UnusedVariable
 
         if exit_status == 0:
@@ -382,12 +380,14 @@ class SourceUpdateManager(UpdateManager):
 
     def _check_github_for_update(self):
         """
-        Uses pygithub to ask github if there is a newer version that the provided
-        commit hash. If there is a newer version it sets Sick Beard's version text.
+        Check Github for a new version.
+
+        Uses pygithub to ask github if there is a newer version than
+        the provided commit hash. If there is a newer version it sets
+        Sick Beard's version text.
 
         commit_hash: hash that we're checking against
         """
-
         self._num_commits_behind = 0
         self._newest_commit_hash = None
 
@@ -435,9 +435,7 @@ class SourceUpdateManager(UpdateManager):
             return
 
     def update(self):
-        """
-        Downloads the latest source tarball from github and installs it over the existing version.
-        """
+        """Download and install latest source tarball from github."""
         tar_download_url = 'https://github.com/{org}/{repo}/tarball/{branch}'.format(
             org=self.github_repo_user, repo=self.github_repo, branch=self.branch)
         version_path = os.path.join(core.APP_ROOT, u'version.txt')

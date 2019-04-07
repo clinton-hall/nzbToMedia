@@ -74,7 +74,7 @@ def get_dir_size(input_path):
 
 
 def remove_empty_folders(path, remove_root=True):
-    """Function to remove empty folders"""
+    """Remove empty folders."""
     if not os.path.isdir(path):
         return
 
