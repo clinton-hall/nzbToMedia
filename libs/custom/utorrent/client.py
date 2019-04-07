@@ -60,25 +60,25 @@ class UTorrentClient(object):
         return self._action(params)
 
     def start(self, *hashes):
-        params = [('action', 'start'), ]
+        params = [('action', 'start')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def stop(self, *hashes):
-        params = [('action', 'stop'), ]
+        params = [('action', 'stop')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def pause(self, *hashes):
-        params = [('action', 'pause'), ]
+        params = [('action', 'pause')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def forcestart(self, *hashes):
-        params = [('action', 'forcestart'), ]
+        params = [('action', 'forcestart')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
@@ -124,13 +124,13 @@ class UTorrentClient(object):
         self._action(params)
 
     def remove(self, *hashes):
-        params = [('action', 'remove'), ]
+        params = [('action', 'remove')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def removedata(self, *hashes):
-        params = [('action', 'removedata'), ]
+        params = [('action', 'removedata')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
