@@ -141,7 +141,6 @@ class DelugeClient(object):
         :param username: str, the username to login with
         :param password: str, the password to login with
         """
-
         # Connect transport
         self.transfer.connect((host, port))
 
