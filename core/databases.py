@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from core import logger, main_db
 from core.utils import backup_versioned_file
 
