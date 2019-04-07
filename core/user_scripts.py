@@ -47,7 +47,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                 logger.info('Corrupt video file found {0}. Deleting.'.format(video), 'USERSCRIPT')
                 os.unlink(video)
 
-    for dirpath, dirnames, filenames in os.walk(output_destination):
+    for dirpath, _, filenames in os.walk(output_destination):
         for file in filenames:
 
             file_path = core.os.path.join(dirpath, file)
@@ -102,7 +102,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                 final_result += result
 
     num_files_new = 0
-    for dirpath, dirnames, filenames in os.walk(output_destination):
+    for _, _, filenames in os.walk(output_destination):
         for file in filenames:
             file_name, file_extension = os.path.splitext(file)
 

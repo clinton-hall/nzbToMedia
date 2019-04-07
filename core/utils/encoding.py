@@ -68,14 +68,14 @@ def convert_to_ascii(input_name, dir_name):
         if 'NZBOP_SCRIPTDIR' in os.environ:
             print('[NZB] DIRECTORY={0}'.format(dir_name))
 
-    for dirname, dirnames, filenames in os.walk(dir_name, topdown=False):
+    for dirname, dirnames, _ in os.walk(dir_name, topdown=False):
         for subdirname in dirnames:
             encoded, subdirname2 = char_replace(subdirname)
             if encoded:
                 logger.info('Renaming directory to: {0}.'.format(subdirname2), 'ENCODER')
                 os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
 
-    for dirname, dirnames, filenames in os.walk(dir_name):
+    for dirname, _, filenames in os.walk(dir_name):
         for filename in filenames:
             encoded, filename2 = char_replace(filename)
             if encoded:
