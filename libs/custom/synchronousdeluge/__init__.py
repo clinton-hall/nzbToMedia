@@ -1,7 +1,7 @@
 # coding=utf-8
 """A synchronous implementation of the Deluge RPC protocol
    based on gevent-deluge by Christopher Rosell.
-   
+
    https://github.com/chrippa/gevent-deluge
 
 Example usage:
