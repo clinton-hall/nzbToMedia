@@ -259,7 +259,6 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     elif section_name == 'LazyLibrarian':
         result = books.process(section_name, output_destination, input_name, status, client_agent, input_category)
 
-
     plex_update(input_category)
 
     if result.status_code != 0:
