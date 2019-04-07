@@ -44,7 +44,7 @@ class WorkingDirectory(object):
                     original_directory=self.original_directory,
                     error=error,
                     working_directory=self.working_directory,
-                )
+                ),
             )
 
 

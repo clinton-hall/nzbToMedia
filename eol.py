@@ -157,7 +157,7 @@ def print_statuses(show_expired=False):
                     major=python_version[0],
                     minor=python_version[1],
                     remaining=days_left,
-                )
+                ),
             )
     if not show_expired:
         return
@@ -171,7 +171,7 @@ def print_statuses(show_expired=False):
                     major=python_version[0],
                     minor=python_version[1],
                     remaining=-days_left,
-                )
+                ),
             )
 
 
