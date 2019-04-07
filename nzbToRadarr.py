@@ -94,7 +94,7 @@
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## Extensions
 
@@ -129,7 +129,7 @@
 
 # subLanguages.
 #
-# subLanguages. create a list of languages in the order you want them in your subtitles. 
+# subLanguages. create a list of languages in the order you want them in your subtitles.
 #subLanguages = eng,spa,fra
 
 # Transcode (0, 1).
@@ -155,7 +155,7 @@
 # outputVideoPath.
 #
 # outputVideoPath. Set path you want transcoded videos moved to. Leave blank to disable.
-#outputVideoPath = 
+#outputVideoPath =
 
 # processOutput (0,1).
 #
@@ -211,20 +211,20 @@
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
-#VideoCodecAllow = 
+#VideoCodecAllow =
 #outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
 #outputVideoBitrate=800k
 #outputAudioCodec=libmp3lame
-#AudioCodecAllow = 
+#AudioCodecAllow =
 #outputAudioBitrate=128k
 #outputQualityPercent = 0
 #outputAudioTrack2Codec = libfaac
-#AudioCodec2Allow = 
+#AudioCodec2Allow =
 #outputAudioTrack2Bitrate = 128k
 #outputAudioOtherCodec = libmp3lame
-#AudioOtherCodecAllow = 
+#AudioOtherCodecAllow =
 #outputAudioOtherBitrate = 128k
 #outputSubtitleCodec =
 

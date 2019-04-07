@@ -9,7 +9,7 @@ from .exceptions import DelugeRPCError
 from .protocol import DelugeRPCRequest, DelugeRPCResponse
 from .transfer import DelugeTransfer
 
-__all__ = ["DelugeClient"]
+__all__ = ['DelugeClient']
 
 RPC_RESPONSE = 1
 RPC_ERROR = 2
@@ -18,41 +18,41 @@ RPC_EVENT = 3
 
 class DelugeClient(object):
     def __init__(self):
-        """A deluge client session."""
+        """Create a deluge client session."""
         self.transfer = DelugeTransfer()
         self.modules = []
         self._request_counter = 0
 
     def _get_local_auth(self):
-        username = password = ""
+        username = password = ''
         if platform.system() in ('Windows', 'Microsoft'):
-            app_data_path = os.environ.get("APPDATA")
+            app_data_path = os.environ.get('APPDATA')
             if not app_data_path:
                 from six.moves import winreg
                 hkey = winreg.OpenKey(
                     winreg.HKEY_CURRENT_USER,
-                    "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders",
+                    'Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Shell Folders',
                 )
-                app_data_reg = winreg.QueryValueEx(hkey, "AppData")
+                app_data_reg = winreg.QueryValueEx(hkey, 'AppData')
                 app_data_path = app_data_reg[0]
                 winreg.CloseKey(hkey)
 
-            auth_file = os.path.join(app_data_path, "deluge", "auth")
+            auth_file = os.path.join(app_data_path, 'deluge', 'auth')
         else:
             from xdg.BaseDirectory import save_config_path
             try:
-                auth_file = os.path.join(save_config_path("deluge"), "auth")
+                auth_file = os.path.join(save_config_path('deluge'), 'auth')
             except OSError:
                 return username, password
 
         if os.path.exists(auth_file):
             for line in open(auth_file):
-                if line.startswith("#"):
+                if line.startswith('#'):
                     # This is a comment line
                     continue
                 line = line.strip()
                 try:
-                    lsplit = line.split(":")
+                    lsplit = line.split(':')
                 except Exception:
                     continue
 
@@ -63,13 +63,13 @@ class DelugeClient(object):
                 else:
                     continue
 
-                if username == "localclient":
+                if username == 'localclient':
                     return username, password
 
-        return "", ""
+        return '', ''
 
     def _create_module_method(self, module, method):
-        fullname = "{0}.{1}".format(module, method)
+        fullname = '{0}.{1}'.format(module, method)
 
         def func(obj, *args, **kwargs):
             return self.remote_call(fullname, *args, **kwargs)
@@ -80,18 +80,18 @@ class DelugeClient(object):
 
     def _introspect(self):
         def splitter(value):
-            return value.split(".")
+            return value.split('.')
 
         self.modules = []
 
-        methods = self.remote_call("daemon.get_method_list").get()
+        methods = self.remote_call('daemon.get_method_list').get()
         methodmap = defaultdict(dict)
 
         for module, method in imap(splitter, methods):
             methodmap[module][method] = self._create_module_method(module, method)
 
         for module, methods in methodmap.items():
-            clsname = "DelugeModule{0}".format(module.capitalize())
+            clsname = 'DelugeModule{0}'.format(module.capitalize())
             cls = type(clsname, (), methods)
             setattr(self, module, cls())
             self.modules.append(module)
@@ -133,24 +133,23 @@ class DelugeClient(object):
         self._request_counter += 1
         return response
 
-    def connect(self, host="127.0.0.1", port=58846, username="", password=""):
-        """Connects to a daemon process.
+    def connect(self, host='127.0.0.1', port=58846, username='', password=''):
+        """Connect to a daemon process.
 
         :param host: str, the hostname of the daemon
         :param port: int, the port of the daemon
         :param username: str, the username to login with
         :param password: str, the password to login with
         """
-
         # Connect transport
         self.transfer.connect((host, port))
 
         # Attempt to fetch local auth info if needed
-        if not username and host in ("127.0.0.1", "localhost"):
+        if not username and host in ('127.0.0.1', 'localhost'):
             username, password = self._get_local_auth()
 
         # Authenticate
-        self.remote_call("daemon.login", username, password).get()
+        self.remote_call('daemon.login', username, password).get()
 
         # Introspect available methods
         self._introspect()
