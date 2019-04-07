@@ -281,7 +281,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             # remove torrent
             if core.USE_LINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
                 logger.debug('Checking for sym-links to re-direct in: {0}'.format(input_directory))
-                for dirpath, dirs, files in os.walk(input_directory):
+                for dirpath, _, files in os.walk(input_directory):
                     for file in files:
                         logger.debug('Checking symlink: {0}'.format(os.path.join(dirpath, file)))
                         replace_links(os.path.join(dirpath, file))
