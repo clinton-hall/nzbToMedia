@@ -713,7 +713,7 @@ def combine_vts(vts_path):
 
 def combine_cd(combine):
     new_files = []
-    for item in set([re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine]):
+    for item in {re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine}:
         concat = ''
         for n in range(99):
             files = [file for file in combine if
