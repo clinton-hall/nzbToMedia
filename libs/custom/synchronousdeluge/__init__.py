@@ -19,6 +19,6 @@ Example usage:
 from .exceptions import DelugeRPCError
 
 
-__title__ = "synchronous-deluge"
-__version__ = "0.1"
-__author__ = "Christian Dale"
+__title__ = 'synchronous-deluge'
+__version__ = '0.1'
+__author__ = 'Christian Dale'

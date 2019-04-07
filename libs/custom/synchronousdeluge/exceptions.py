@@ -8,4 +8,4 @@ class DelugeRPCError(Exception):
         self.traceback = traceback
 
     def __str__(self):
-        return "{0}: {1}: {2}".format(self.__class__.__name__, self.name, self.msg)
+        return '{0}: {1}: {2}'.format(self.__class__.__name__, self.name, self.msg)

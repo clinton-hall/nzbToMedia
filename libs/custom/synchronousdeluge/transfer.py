@@ -6,7 +6,7 @@ import zlib
 
 import rencode
 
-__all__ = ["DelugeTransfer"]
+__all__ = ['DelugeTransfer']
 
 
 class DelugeTransfer(object):
@@ -33,7 +33,7 @@ class DelugeTransfer(object):
         payload = zlib.compress(rencode.dumps(data))
         self.conn.sendall(payload)
 
-        buf = b""
+        buf = b''
 
         while True:
             data = self.conn.recv(1024)

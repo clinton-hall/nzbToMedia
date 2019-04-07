@@ -94,8 +94,8 @@ class UTorrentClient(object):
     def setprops(self, cur_hash, **kvpairs):
         params = [('action', 'setprops'), ('hash', cur_hash)]
         for k, v in iteritems(kvpairs):
-            params.append(("s", k))
-            params.append(("v", v))
+            params.append(('s', k))
+            params.append(('v', v))
 
         return self._action(params)
 
