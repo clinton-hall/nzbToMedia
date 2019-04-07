@@ -678,16 +678,10 @@ def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount wh
         return []
     mount_point = os.path.join(os.path.dirname(os.path.abspath(item)),'temp')
     make_dir(mount_point)
-    if core.SUDO_PASS:
-        cmd = ['sudo', '-S', 'mount', '-o', 'loop', item, mount_point]
-        print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=bitbucket)
-        out, err = proc.communicate(core.SUDO_PASS + '\n')
-    else:
-        cmd = ['mount', '-o', 'loop', item, mount_point]
-        print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=bitbucket)
-        out, err = proc.communicate()
+    cmd = ['mount', '-o', 'loop', item, mount_point]
+    print_cmd(cmd)
+    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+    out, err = proc.communicate()
     core.MOUNTED = mount_point # Allows us to verify this has been done and then cleanup.
     for root, dirs, files in os.walk(mount_point):
         for file in files:
@@ -969,16 +963,10 @@ def transcode_directory(dir_name):
         final_result = final_result + result
     if core.MOUNTED: # In case we mounted an .iso file, unmount here.
         time.sleep(5) # play it safe and avoid failing to unmount.
-        if core.SUDO_PASS:
-            cmd = ['sudo', '-S', 'umount', '-l', core.MOUNTED]
-            print_cmd(cmd)
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=bitbucket)
-            out, err = proc.communicate(core.SUDO_PASS + '\n')
-        else:
-            cmd = ['umount', '-l', core.MOUNTED]
-            print_cmd(cmd)
-            proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stderr=bitbucket)
-            out, err = proc.communicate()
+        cmd = ['umount', '-l', core.MOUNTED]
+        print_cmd(cmd)
+        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+        out, err = proc.communicate()
         time.sleep(5)
         os.rmdir(core.MOUNTED)
         core.MOUNTED = None

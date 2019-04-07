@@ -32,8 +32,6 @@
     safe_mode = 1
     # Turn this on to disable additional extraction attempts for failed downloads. Default = 0 will attempt to extract and verify if media is present.
     no_extract_failed = 0
-    # Set the sudo password for any functions that require root permissions (e.g. mounting .iso images for transcoding)
-    sudo_password =
 
 [Posix]
     ### Process priority setting for External commands (Extractor and Transcoder) on Posix (Unix/Linux/OSX) systems.
