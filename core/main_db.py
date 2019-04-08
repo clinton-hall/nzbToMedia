@@ -37,10 +37,7 @@ class DBConnection(object):
 
         self.filename = filename
         self.connection = sqlite3.connect(db_filename(filename), 20)
-        if row_type == 'dict':
-            self.connection.row_factory = self._dict_factory
-        else:
-            self.connection.row_factory = sqlite3.Row
+        self.connection.row_factory = sqlite3.Row
 
     def check_db_version(self):
         result = None
@@ -212,13 +209,6 @@ class DBConnection(object):
         return {
             column['name']: {'type': column['type']}
             for column in cursor
-        }
-
-    # http://stackoverflow.com/questions/3300464/how-can-i-get-dict-from-sqlite-query
-    def _dict_factory(self, cursor, row):
-        return {
-            col[0]: row[idx]
-            for idx, col in enumerate(cursor.description)
         }
 
 
