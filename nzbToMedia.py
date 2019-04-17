@@ -782,7 +782,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
             )
     except Exception:
         logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
-            core.get('remote_path'), section_name, input_category))
+            cfg.get('remote_path'), section_name, input_category))
 
     input_name, input_directory = convert_to_ascii(input_name, input_directory)
 
