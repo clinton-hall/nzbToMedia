@@ -59,6 +59,19 @@
 # set this to where your LazyLibrarian completed downloads are.
 #llwatch_dir=
 
+# LazyLibrarian and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#llremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints=
+
 ## Posix
 
 # Niceness for external tasks Extractor and Transcoder.
