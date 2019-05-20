@@ -791,7 +791,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     input_name, input_directory = convert_to_ascii(input_name, input_directory)
 
-    if extract == 1:
+    if extract == 1 and not (status > 0 and core.NOEXTRACTFAILED):
         logger.debug('Checking for archives to extract in directory: {0}'.format(input_directory))
         extract_files(input_directory)
 
