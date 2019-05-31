@@ -444,13 +444,18 @@
 # set this to where your LazyLibrarian completed downloads are.
 #llwatch_dir=
 
+# LazyLibrarian and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#llremote_path=0
+
 ## Network
 
 # Network Mount Points (Needed for remote path above)
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## Extensions
 
@@ -485,7 +490,7 @@
 
 # subLanguages.
 #
-# subLanguages. create a list of languages in the order you want them in your subtitles. 
+# subLanguages. create a list of languages in the order you want them in your subtitles.
 #subLanguages=eng,spa,fra
 
 # Transcode (0, 1).
@@ -567,7 +572,7 @@
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
-#VideoCodecAllow= 
+#VideoCodecAllow=
 #outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
@@ -578,7 +583,7 @@
 #outputAudioBitrate=640k
 #outputQualityPercent=
 #outputAudioTrack2Codec=libfaac
-#AudioCodec2Allow= 
+#AudioCodec2Allow=
 #outputAudioTrack2Channels=2
 #outputAudioTrack2Bitrate=160k
 #outputAudioOtherCodec=libmp3lame
@@ -655,17 +660,22 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-from __future__ import print_function
-
-import eol
-eol.check()
-
-import cleanup
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import datetime
 import os
 import sys
+
+import eol
+import cleanup
+
+eol.check()
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
 import core
 from core import logger, main_db
@@ -777,11 +787,11 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
             )
     except Exception:
         logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
-            core.get('remote_path'), section_name, input_category))
+            cfg.get('remote_path'), section_name, input_category))
 
     input_name, input_directory = convert_to_ascii(input_name, input_directory)
 
-    if extract == 1:
+    if extract == 1 and not (status > 0 and core.NOEXTRACTFAILED):
         logger.debug('Checking for archives to extract in directory: {0}'.format(input_directory))
         extract_files(input_directory)
 

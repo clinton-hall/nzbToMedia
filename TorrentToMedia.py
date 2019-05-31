@@ -1,15 +1,21 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import eol
-eol.check()
-
-import cleanup
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import datetime
 import os
 import sys
+
+import eol
+import cleanup
+eol.check()
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
 
 import core
 from core import logger, main_db
@@ -18,7 +24,11 @@ from core.auto_process.common import ProcessResult
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
 from core.utils import char_replace, convert_to_ascii, replace_links
-from six import text_type
+
+try:
+    text_type = unicode
+except NameError:
+    text_type = str
 
 
 def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):
@@ -60,13 +70,13 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_category = 'UNCAT'
 
     usercat = input_category
-    #try:
+    # try:
     #    input_name = input_name.encode(core.SYS_ENCODING)
-    #except UnicodeError:
+    # except UnicodeError:
     #    pass
-    #try:
+    # try:
     #    input_directory = input_directory.encode(core.SYS_ENCODING)
-    #except UnicodeError:
+    # except UnicodeError:
     #    pass
 
     logger.debug('Determined Directory: {0} | Name: {1} | Category: {2}'.format
@@ -125,9 +135,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     else:
         output_destination = os.path.normpath(
             core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
-    #try:
+    # try:
     #    output_destination = output_destination.encode(core.SYS_ENCODING)
-    #except UnicodeError:
+    # except UnicodeError:
     #    pass
 
     if output_destination in input_directory:
@@ -170,9 +180,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                     core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name)
                 logger.debug('Setting outputDestination to {0} to preserve folder structure'.format
                              (os.path.dirname(target_file)))
-        #try:
+        # try:
         #    target_file = target_file.encode(core.SYS_ENCODING)
-        #except UnicodeError:
+        # except UnicodeError:
         #    pass
         if root == 1:
             if not found_file:
@@ -259,7 +269,6 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     elif section_name == 'LazyLibrarian':
         result = books.process(section_name, output_destination, input_name, status, client_agent, input_category)
 
-
     plex_update(input_category)
 
     if result.status_code != 0:
@@ -279,7 +288,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             # remove torrent
             if core.USE_LINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
                 logger.debug('Checking for sym-links to re-direct in: {0}'.format(input_directory))
-                for dirpath, dirs, files in os.walk(input_directory):
+                for dirpath, _, files in os.walk(input_directory):
                     for file in files:
                         logger.debug('Checking symlink: {0}'.format(os.path.join(dirpath, file)))
                         replace_links(os.path.join(dirpath, file))
@@ -353,14 +362,14 @@ def main(args):
                     if client_agent.lower() not in core.TORRENT_CLIENTS:
                         continue
 
-                    #try:
+                    # try:
                     #    dir_name = dir_name.encode(core.SYS_ENCODING)
-                    #except UnicodeError:
+                    # except UnicodeError:
                     #    pass
                     input_name = os.path.basename(dir_name)
-                    #try:
+                    # try:
                     #    input_name = input_name.encode(core.SYS_ENCODING)
-                    #except UnicodeError:
+                    # except UnicodeError:
                     #    pass
 
                     results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,

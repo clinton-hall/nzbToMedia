@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import errno
 import json
 import sys
@@ -548,7 +555,7 @@ def get_subs(file):
     sub_ext = ['.srt', '.sub', '.idx']
     name = os.path.splitext(os.path.split(file)[1])[0]
     path = os.path.split(file)[0]
-    for directory, directories, filenames in os.walk(path):
+    for directory, _, filenames in os.walk(path):
         for filename in filenames:
             filepaths.extend([os.path.join(directory, filename)])
     subfiles = [item for item in filepaths if os.path.splitext(item)[1] in sub_ext and name in item]
@@ -854,7 +861,7 @@ def combine_mts(mts_path):
 
 def combine_cd(combine):
     new_files = []
-    for item in set([re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine]):
+    for item in {re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine}:
         concat = ''
         for n in range(99):
             files = [file for file in combine if
@@ -920,7 +927,7 @@ def transcode_directory(dir_name):
         logger.info('Transcoding video: {0}'.format(newfile_path))
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
-        if True:
+        try:
             if isinstance(file, string_types):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             else:
@@ -934,8 +941,8 @@ def transcode_directory(dir_name):
                         procin.stdout.close()
             proc.communicate()
             result = proc.returncode
-        #except Exception:
-        #    logger.error('Transcoding of video {0} has failed'.format(newfile_path))
+        except Exception:
+            logger.error('Transcoding of video {0} has failed'.format(newfile_path))
 
         if core.SUBSDIR and result == 0 and isinstance(file, string_types):
             for sub in get_subs(file):
@@ -979,7 +986,7 @@ def transcode_directory(dir_name):
     if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
         new_dir = dir_name
-    if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB 
+    if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB
         new_dir = dir_name
     bitbucket.close()
     return final_result, new_dir

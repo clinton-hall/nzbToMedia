@@ -1,6 +1,13 @@
 # coding=utf-8
 # code copied from http://www.doughellmann.com/PyMOTW/urllib2/
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import itertools
 import mimetypes
 from email.generator import _make_boundary as choose_boundary
@@ -36,7 +43,7 @@ class MultiPartForm(object):
         # Build a list of lists, each containing "lines" of the
         # request.  Each part is separated by a boundary string.
         # Once the list is built, return a string where each
-        # line is separated by '\r\n'.  
+        # line is separated by '\r\n'.
         parts = []
         part_boundary = '--' + self.boundary
 

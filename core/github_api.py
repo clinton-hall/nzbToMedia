@@ -1,12 +1,17 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import requests
 
 
 class GitHub(object):
-    """
-    Simple api wrapper for the Github API v3.
-    """
+    """Simple api wrapper for the Github API v3."""
 
     def __init__(self, github_repo_user, github_repo, branch='master'):
 
@@ -15,16 +20,14 @@ class GitHub(object):
         self.branch = branch
 
     def _access_api(self, path, params=None):
-        """
-        Access the API at the path given and with the optional params given.
-        """
+        """Access API at given an API path and optional parameters."""
         url = 'https://api.github.com/{path}'.format(path='/'.join(path))
         data = requests.get(url, params=params, verify=False)
         return data.json() if data.ok else []
 
     def commits(self):
         """
-        Uses the API to get a list of the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
+        Get the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
 
         user: The github username of the person whose repo you're querying
         repo: The repo name to query
@@ -39,7 +42,7 @@ class GitHub(object):
 
     def compare(self, base, head, per_page=1):
         """
-        Uses the API to get a list of compares between base and head.
+        Get compares between base and head.
 
         user: The github username of the person whose repo you're querying
         repo: The repo name to query

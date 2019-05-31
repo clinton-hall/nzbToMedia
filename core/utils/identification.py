@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 import re
 
@@ -5,7 +12,6 @@ import guessit
 import requests
 from six import text_type
 
-import core
 from core import logger
 from core.utils.naming import sanitize_name
 
@@ -90,13 +96,13 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 def category_search(input_directory, input_name, input_category, root, categories):
     tordir = False
 
-    #try:
+    # try:
     #    input_name = input_name.encode(core.SYS_ENCODING)
-    #except Exception:
+    # except Exception:
     #    pass
-    #try:
+    # try:
     #    input_directory = input_directory.encode(core.SYS_ENCODING)
-    #except Exception:
+    # except Exception:
     #    pass
 
     if input_directory is None:  # =Nothing to process here.

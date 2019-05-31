@@ -1,4 +1,12 @@
 # coding=utf-8
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import socket
 import ssl
 import struct
@@ -6,7 +14,7 @@ import zlib
 
 import rencode
 
-__all__ = ["DelugeTransfer"]
+__all__ = ['DelugeTransfer']
 
 
 class DelugeTransfer(object):
@@ -33,7 +41,7 @@ class DelugeTransfer(object):
         payload = zlib.compress(rencode.dumps(data))
         self.conn.sendall(payload)
 
-        buf = b""
+        buf = b''
 
         while True:
             data = self.conn.recv(1024)

@@ -92,7 +92,7 @@
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## WakeOnLan
 
@@ -112,6 +112,13 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 

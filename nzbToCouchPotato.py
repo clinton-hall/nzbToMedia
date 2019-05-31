@@ -99,7 +99,7 @@
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## Extensions
 
@@ -134,7 +134,7 @@
 
 # subLanguages.
 #
-# subLanguages. create a list of languages in the order you want them in your subtitles. 
+# subLanguages. create a list of languages in the order you want them in your subtitles.
 #subLanguages=eng,spa,fra
 
 # Transcode (0, 1).
@@ -216,7 +216,7 @@
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
-#VideoCodecAllow= 
+#VideoCodecAllow=
 #outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
@@ -227,7 +227,7 @@
 #outputAudioBitrate=640k
 #outputQualityPercent=
 #outputAudioTrack2Codec=libfaac
-#AudioCodec2Allow= 
+#AudioCodec2Allow=
 #outputAudioTrack2Channels=2
 #outputAudioTrack2Bitrate=160k
 #outputAudioOtherCodec=libmp3lame
@@ -254,6 +254,13 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 
