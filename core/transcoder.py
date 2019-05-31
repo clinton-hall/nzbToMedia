@@ -109,12 +109,11 @@ def get_video_details(videofile, img=None, bitbucket=None):
         result = proc.returncode
         video_details = json.loads(out.decode())
     except Exception:
-        pass
-    if not video_details:
-        try:
+        try: # try this again without -show error in case of ffmpeg limitation
             command = [core.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
+            print_cmd(command)
             if img:
-                procin = zip_out(file, img)
+                procin = zip_out(file, img, bitbucket)
                 proc = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=procin.stdout)
                 procin.stdout.close()
             else:
