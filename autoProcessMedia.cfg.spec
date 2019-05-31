@@ -418,7 +418,7 @@
     generalOptions =
     # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
     # If you want to use your own profile, leave this blank and set the remaining options below.
-    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release
+    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mkv-bluray, mp4-scene-release
     outputDefault =
     #### Define custom settings below.
     outputVideoExtension = .mp4
