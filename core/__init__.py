@@ -456,7 +456,10 @@ def configure_niceness():
     with open(os.devnull, 'w') as devnull:
         try:
             subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-            NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
+            if len(CFG['Posix']['niceness'].split(',')) > 1: #Allow passing of absolute command, not just value.
+                NICENESS.extend(CFG['Posix']['niceness'].split(','))
+            else:
+                NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
         except Exception:
             pass
         try:
