@@ -493,6 +493,8 @@ def build_commands(file, new_dir, movie_name, bitbucket):
 
     if core.OUTPUTFASTSTART:
         other_cmd.extend(['-movflags', '+faststart'])
+    if core.OTHEROPTS:
+        other_cmd.extend(core.OTHEROPTS)
 
     command = [core.FFMPEG, '-loglevel', 'warning']
 

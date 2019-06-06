@@ -211,6 +211,7 @@ VEXTENSION = None
 OUTPUTVIDEOPATH = None
 PROCESSOUTPUT = False
 GENERALOPTS = []
+OTHEROPTS = []
 ALANGUAGE = None
 AINCLUDE = False
 SLANGUAGES = []
@@ -513,6 +514,7 @@ def configure_transcoder():
     global IGNOREEXTENSIONS
     global OUTPUTFASTSTART
     global GENERALOPTS
+    global OTHEROPTS
     global OUTPUTQUALITYPERCENT
     global OUTPUTVIDEOPATH
     global PROCESSOUTPUT
@@ -568,6 +570,11 @@ def configure_transcoder():
         GENERALOPTS.append('-fflags')
     if '+genpts' not in GENERALOPTS:
         GENERALOPTS.append('+genpts')
+    OTHEROPTS = (CFG['Transcoder']['otherOptions'])
+    if isinstance(OTHEROPTS, str):
+        OTHEROPTS = OTHEROPTS.split(',')
+    if OTHEROPTS == ['']:
+        OTHEROPTS = []
     try:
         OUTPUTQUALITYPERCENT = int(CFG['Transcoder']['outputQualityPercent'])
     except Exception:
