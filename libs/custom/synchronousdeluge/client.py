@@ -82,13 +82,13 @@ class DelugeClient(object):
         def func(obj, *args, **kwargs):
             return self.remote_call(fullname, *args, **kwargs)
 
-        func.__name__ = method
+        func.__name__ = str(method)
 
         return func
 
     def _introspect(self):
         def splitter(value):
-            return value.split('.')
+            return value.split(b'.')
 
         self.modules = []
 
@@ -100,8 +100,8 @@ class DelugeClient(object):
 
         for module, methods in methodmap.items():
             clsname = 'DelugeModule{0}'.format(module.capitalize())
-            cls = type(clsname, (), methods)
-            setattr(self, module, cls())
+            cls = type(str(clsname), (), methods)
+            setattr(self, str(module), cls())
             self.modules.append(module)
 
     def remote_call(self, method, *args, **kwargs):
