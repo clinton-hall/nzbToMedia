@@ -88,11 +88,12 @@ class DelugeClient(object):
 
     def _introspect(self):
         def splitter(value):
-            return value.split(b'.')
+            return value.split('.')
 
         self.modules = []
 
         methods = self.remote_call('daemon.get_method_list').get()
+        methods = (x.decode() for x in methods)
         methodmap = defaultdict(dict)
 
         for module, method in imap(splitter, methods):
