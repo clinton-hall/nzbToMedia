@@ -928,7 +928,7 @@ def transcode_directory(dir_name):
         result = 1  # set result to failed in case call fails.
         try:
             if isinstance(file, string_types):
-                proc = subprocess.Popen(command, stdout=bitbucket, subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE)
             else:
                 img, data = next(iteritems(file))
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
