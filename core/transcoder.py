@@ -607,7 +607,7 @@ def extract_subs(file, newfile_path, bitbucket):
         result = 1  # set result to failed in case call fails.
         try:
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
-            proc.communicate()
+            out, err = proc.communicate()
             result = proc.returncode
         except Exception:
             logger.error('Extracting subtitle has failed')
@@ -930,17 +930,19 @@ def transcode_directory(dir_name):
         result = 1  # set result to failed in case call fails.
         try:
             if isinstance(file, string_types):
-                proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
+                proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE)
             else:
                 img, data = next(iteritems(file))
-                proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket, stdin=subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
                     if procin:
                         logger.debug('Feeding in file: {0} to Transcoder'.format(vob))
                         shutil.copyfileobj(procin.stdout, proc.stdin)
                         procin.stdout.close()
-            proc.communicate()
+            out, err = proc.communicate()
+            if err:
+                logger.error('Transcoder returned:{0} has failed'.format(err))
             result = proc.returncode
         except Exception:
             logger.error('Transcoding of video {0} has failed'.format(newfile_path))
