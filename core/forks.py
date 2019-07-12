@@ -114,11 +114,14 @@ def auto_fork(section, input_category):
                 else:
                     json_data = json_data.get('data', json_data)
 
-                optional_parameters = json_data['optionalParameters'].keys()
-                # Find excess parameters
-                excess_parameters = set(params).difference(optional_parameters)
-                logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
-                rem_params.extend(excess_parameters)
+                try:
+                    optional_parameters = json_data['optionalParameters'].keys()
+                    # Find excess parameters
+                    excess_parameters = set(params).difference(optional_parameters)
+                    logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+                    rem_params.extend(excess_parameters)
+                except:
+                    logger.error('Failed to identify optionalParameters')
             else:
                 # Find excess parameters
                 rem_params.extend(
