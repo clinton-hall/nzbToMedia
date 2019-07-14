@@ -13,7 +13,7 @@ from six import iteritems
 import core
 from core import logger
 
-def api_check(r, excess_parameters, rem_parameters):
+def api_check(r, params, rem_params):
     try:
         json_data = r.json()
     except ValueError:
@@ -36,10 +36,10 @@ def api_check(r, excess_parameters, rem_parameters):
         excess_parameters = set(params).difference(optional_parameters)
         logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
         rem_params.extend(excess_parameters)
-        return excess_parameters, rem_parameters, True
+        return rem_params, True
     except:
         logger.error('Failed to identify optionalParameters')
-        return excess_parameters, rem_parameters, False
+        return rem_params, False
 
 
 def auto_fork(section, input_category):
@@ -126,9 +126,9 @@ def auto_fork(section, input_category):
             r = []
         if r and r.ok:
             if apikey:
-                excess_parameters, rem_parameters, found = api_check(r, excess_parameters, rem_parameters)
+                rem_params, found = api_check(r, params, rem_params)
                 if not found: # try different api set for SickGear.
-                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&jsonp=foo&help=1'.format(
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&help=1'.format(
                         protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
                     )
                     try:
@@ -136,7 +136,7 @@ def auto_fork(section, input_category):
                     except requests.ConnectionError:
                         logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                                     (section=section, category=input_category))
-                    excess_parameters, rem_parameters, found = api_check(r, excess_parameters, rem_parameters)
+                    rem_params, found = api_check(r, params, rem_params)
             else:
                 # Find excess parameters
                 rem_params.extend(
