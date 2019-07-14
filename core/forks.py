@@ -13,6 +13,34 @@ from six import iteritems
 import core
 from core import logger
 
+def api_check(r, excess_parameters, rem_parameters):
+    try:
+        json_data = r.json()
+    except ValueError:
+        logger.error('Failed to get JSON data from response')
+        logger.debug('Response received')
+        raise
+
+    try:
+        json_data = json_data['data']
+    except KeyError:
+        logger.error('Failed to get data from JSON')
+        logger.debug('Response received: {}'.format(json_data))
+        raise
+    else:
+        json_data = json_data.get('data', json_data)
+
+    try:
+        optional_parameters = json_data['optionalParameters'].keys()
+        # Find excess parameters
+        excess_parameters = set(params).difference(optional_parameters)
+        logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+        rem_params.extend(excess_parameters)
+        return excess_parameters, rem_parameters, True
+    except:
+        logger.error('Failed to identify optionalParameters')
+        return excess_parameters, rem_parameters, False
+
 
 def auto_fork(section, input_category):
     # auto-detect correct section
@@ -98,30 +126,17 @@ def auto_fork(section, input_category):
             r = []
         if r and r.ok:
             if apikey:
-                try:
-                    json_data = r.json()
-                except ValueError:
-                    logger.error('Failed to get JSON data from response')
-                    logger.debug('Response received')
-                    raise
-
-                try:
-                    json_data = json_data['data']
-                except KeyError:
-                    logger.error('Failed to get data from JSON')
-                    logger.debug('Response received: {}'.format(json_data))
-                    raise
-                else:
-                    json_data = json_data.get('data', json_data)
-
-                try:
-                    optional_parameters = json_data['optionalParameters'].keys()
-                    # Find excess parameters
-                    excess_parameters = set(params).difference(optional_parameters)
-                    logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
-                    rem_params.extend(excess_parameters)
-                except:
-                    logger.error('Failed to identify optionalParameters')
+                excess_parameters, rem_parameters, found = api_check(r, excess_parameters, rem_parameters)
+                if not found: # try different api set for SickGear.
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&jsonp=foo&help=1'.format(
+                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
+                    )
+                    try:
+                        r = s.get(url, auth=(username, password), verify=False)
+                    except requests.ConnectionError:
+                        logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
+                                    (section=section, category=input_category))
+                    excess_parameters, rem_parameters, found = api_check(r, excess_parameters, rem_parameters)
             else:
                 # Find excess parameters
                 rem_params.extend(
