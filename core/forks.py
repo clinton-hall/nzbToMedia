@@ -43,6 +43,7 @@ def api_check(r, params, rem_params):
 
 
 def auto_fork(section, input_category):
+    global core.FORK_SET
     # auto-detect correct section
     # config settings
     if core.FORK_SET: # keep using determined fork for multiple (manual) post-processing
