@@ -864,7 +864,6 @@ def configure_passwords_file():
 def configure_sections(section):
     global SECTIONS
     global CATEGORIES
-    global FORK_SET
     # check for script-defied section and if None set to allow sections
     SECTIONS = CFG[
         tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled())
@@ -873,7 +872,6 @@ def configure_sections(section):
     for section, subsections in SECTIONS.items():
         CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
     CATEGORIES = list(set(CATEGORIES))
-    FORK_SET = []
 
 
 def configure_utility_locations():
