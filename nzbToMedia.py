@@ -973,15 +973,7 @@ def main(args, section=None):
                     if client_agent and client_agent.lower() not in core.NZB_CLIENTS:
                         continue
 
-                    try:
-                        dir_name = dir_name.encode(core.SYS_ENCODING)
-                    except:
-                        pass
                     input_name = os.path.basename(dir_name)
-                    try:
-                        input_name = input_name.encode(core.SYS_ENCODING)
-                    except:
-                        pass
 
                     results = process(dir_name, input_name, 0, client_agent=client_agent,
                                       download_id=download_id or None, input_category=subsection)
