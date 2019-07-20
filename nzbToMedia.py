@@ -975,12 +975,12 @@ def main(args, section=None):
 
                     try:
                         dir_name = dir_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
+                    except:
                         pass
                     input_name = os.path.basename(dir_name)
                     try:
                         input_name = input_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
+                    except:
                         pass
 
                     results = process(dir_name, input_name, 0, client_agent=client_agent,
