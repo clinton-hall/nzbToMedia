@@ -26,10 +26,6 @@ def sanitize_name(name):
 
     # remove leading/trailing periods and spaces
     name = name.strip(' .')
-    # try:
-    #    name = name.encode(core.SYS_ENCODING)
-    # except Exception:
-    #    pass
 
     return name
 

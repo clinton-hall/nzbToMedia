@@ -96,15 +96,6 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 def category_search(input_directory, input_name, input_category, root, categories):
     tordir = False
 
-    # try:
-    #    input_name = input_name.encode(core.SYS_ENCODING)
-    # except Exception:
-    #    pass
-    # try:
-    #    input_directory = input_directory.encode(core.SYS_ENCODING)
-    # except Exception:
-    #    pass
-
     if input_directory is None:  # =Nothing to process here.
         return input_directory, input_name, input_category, root
 

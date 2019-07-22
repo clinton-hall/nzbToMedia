@@ -45,6 +45,10 @@ def api_check(r, params, rem_params):
 def auto_fork(section, input_category):
     # auto-detect correct section
     # config settings
+    if core.FORK_SET: # keep using determined fork for multiple (manual) post-processing
+        logger.info('{section}:{category} fork already set to {fork}'.format
+                    (section=section, category=input_category, fork=core.FORK_SET[0]))
+        return core.FORK_SET[0], core.FORK_SET[1]
 
     cfg = dict(core.CFG[section][input_category])
 
@@ -168,4 +172,5 @@ def auto_fork(section, input_category):
 
     logger.info('{section}:{category} fork set to {fork}'.format
                 (section=section, category=input_category, fork=fork[0]))
+    core.FORK_SET = fork
     return fork[0], fork[1]
