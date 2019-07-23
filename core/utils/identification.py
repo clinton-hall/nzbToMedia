@@ -23,14 +23,14 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search(r'(tt\d{7,8})', dir_name + input_name)
+    m = re.search(r'\b(tt\d{7,8})\b', dir_name + input_name)
     if m:
         imdbid = m.group(1)
         logger.info('Found imdbID [{0}]'.format(imdbid))
         return imdbid
     if os.path.isdir(dir_name):
         for file in os.listdir(text_type(dir_name)):
-            m = re.search(r'(tt\d{7,8})', file)
+            m = re.search(r'\b(tt\d{7,8})\b', file)
             if m:
                 imdbid = m.group(1)
                 logger.info('Found imdbID [{0}] via file name'.format(imdbid))
