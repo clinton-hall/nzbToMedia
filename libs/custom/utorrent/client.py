@@ -59,7 +59,7 @@ class UTorrentClient(object):
         url = urljoin(self.base_url, 'token.html')
         response = self.opener.open(url)
         token_re = "<div id='token' style='display:none;'>([^<>]+)</div>"
-        match = re.search(token_re, response.read())
+        match = re.search(token_re, str(response.read()))
         return match.group(1)
 
     def list(self, **kwargs):
