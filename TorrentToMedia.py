@@ -76,16 +76,19 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     # auto-detect section
     section = core.CFG.findsection(input_category).isenabled()
-    if section is None:
-        section = core.CFG.findsection('ALL').isenabled()
-        if section is None:
-            logger.error('Category:[{0}] is not defined or is not enabled. '
-                         'Please rename it or ensure it is enabled for the appropriate section '
-                         'in your autoProcessMedia.cfg and try again.'.format
-                         (input_category))
-            return [-1, '']
+    if section is None: #Check for user_scripts for 'ALL' and 'UNCAT'
+        if usercat in core.CATEGORIES:
+            section = core.CFG.findsection('ALL').isenabled()
+            usercat = 'ALL'  
         else:
-            usercat = 'ALL'
+            section = core.CFG.findsection('UNCAT').isenabled()
+            usercat = 'UNCAT'
+    if section is None: # We haven't found any categories to process.
+        logger.error('Category:[{0}] is not defined or is not enabled. '
+                     'Please rename it or ensure it is enabled for the appropriate section '
+                     'in your autoProcessMedia.cfg and try again.'.format
+                     (input_category))
+        return [-1, '']
 
     if len(section) > 1:
         logger.error('Category:[{0}] is not unique, {1} are using it. '
