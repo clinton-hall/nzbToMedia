@@ -14,6 +14,10 @@ import core
 from core import logger, transcoder
 from core.plugins.subtitles import import_subs
 from core.utils import list_media_files, remove_dir
+from core.auto_process.common import (
+    ProcessResult,
+)
+
 
 
 def external_script(output_destination, torrent_name, torrent_label, settings):
@@ -29,7 +33,10 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
     core.USER_SCRIPT = settings.get('user_script_path')
 
     if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':  # do nothing and return success.
-        return [0, '']
+        return ProcessResult(
+            status_code=0,
+            message='',
+        )
     try:
         core.USER_SCRIPT_PARAM = settings['user_script_param']
         if isinstance(core.USER_SCRIPT_PARAM, str):
@@ -122,4 +129,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info('{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.'.format(
             num_files, num_files_new))
-    return [final_result, '']
+    return ProcessResult(
+        status_code=final_result,
+        message='',
+    )
