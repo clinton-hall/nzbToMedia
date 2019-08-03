@@ -112,7 +112,6 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     keep_archive = int(section.get('keep_archive', 0))
     extract = int(section.get('extract', 0))
     extensions = section.get('user_script_mediaExtensions', '')
-    print(extensions)
     unique_path = int(section.get('unique_path', 1))
 
     if client_agent != 'manual':
