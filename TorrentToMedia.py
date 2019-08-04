@@ -281,7 +281,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                         replace_links(os.path.join(dirpath, file))
             core.remove_torrent(client_agent, input_hash, input_id, input_name)
 
-        if not section_name == 'UserScript':
+        if section_name != 'UserScript':
             # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories
             core.clean_dir(output_destination, section_name, input_category)

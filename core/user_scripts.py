@@ -23,28 +23,30 @@ from core.auto_process.common import (
 def external_script(output_destination, torrent_name, torrent_label, settings):
     final_result = 0  # start at 0.
     num_files = 0
+    core.USER_SCRIPT_MEDIAEXTENSIONS = settings.get('user_script_mediaExtensions', '')
     try:
-        core.USER_SCRIPT_MEDIAEXTENSIONS = settings['user_script_mediaExtensions'].lower()
         if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
-            core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
+            core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.lower().split(',')
     except Exception:
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
 
-    core.USER_SCRIPT = settings.get('user_script_path')
+    core.USER_SCRIPT = settings.get('user_script_path', '')
 
-    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':  # do nothing and return success.
+    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':  # do nothing and return failed.
         return ProcessResult(
-            status_code=0,
-            message='',
+            status_code=1,
+            message='No user script defined',
         )
+
+    core.USER_SCRIPT_PARAM = settings.get('user_script_param', '')
     try:
-        core.USER_SCRIPT_PARAM = settings['user_script_param']
         if isinstance(core.USER_SCRIPT_PARAM, str):
             core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
     except Exception:
         core.USER_SCRIPT_PARAM = []
+
+    core.USER_SCRIPT_SUCCESSCODES = settings.get('user_script_successCodes', 0)
     try:
-        core.USER_SCRIPT_SUCCESSCODES = settings['user_script_successCodes']
         if isinstance(core.USER_SCRIPT_SUCCESSCODES, str):
             core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
     except Exception:
@@ -131,5 +133,5 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
             num_files, num_files_new))
     return ProcessResult(
         status_code=final_result,
-        message='',
+        message='User Script Completed',
     )
