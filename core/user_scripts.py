@@ -33,9 +33,10 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
 
     core.USER_SCRIPT = settings.get('user_script_path', '')
 
-    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':  # do nothing and return failed.
+    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':
+        # do nothing and return success. This allows the user an option to Link files only and not run a script.
         return ProcessResult(
-            status_code=1,
+            status_code=0,
             message='No user script defined',
         )
 
