@@ -76,16 +76,19 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     # auto-detect section
     section = core.CFG.findsection(input_category).isenabled()
-    if section is None:
-        section = core.CFG.findsection('ALL').isenabled()
-        if section is None:
-            logger.error('Category:[{0}] is not defined or is not enabled. '
-                         'Please rename it or ensure it is enabled for the appropriate section '
-                         'in your autoProcessMedia.cfg and try again.'.format
-                         (input_category))
-            return [-1, '']
+    if section is None: #Check for user_scripts for 'ALL' and 'UNCAT'
+        if usercat in core.CATEGORIES:
+            section = core.CFG.findsection('ALL').isenabled()
+            usercat = 'ALL'  
         else:
-            usercat = 'ALL'
+            section = core.CFG.findsection('UNCAT').isenabled()
+            usercat = 'UNCAT'
+    if section is None: # We haven't found any categories to process.
+        logger.error('Category:[{0}] is not defined or is not enabled. '
+                     'Please rename it or ensure it is enabled for the appropriate section '
+                     'in your autoProcessMedia.cfg and try again.'.format
+                     (input_category))
+        return [-1, '']
 
     if len(section) > 1:
         logger.error('Category:[{0}] is not unique, {1} are using it. '
@@ -108,7 +111,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     torrent_no_link = int(section.get('Torrent_NoLink', 0))
     keep_archive = int(section.get('keep_archive', 0))
     extract = int(section.get('extract', 0))
-    extensions = section.get('user_script_mediaExtensions', '').lower().split(',')
+    extensions = section.get('user_script_mediaExtensions', '')
     unique_path = int(section.get('unique_path', 1))
 
     if client_agent != 'manual':
@@ -278,7 +281,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                         replace_links(os.path.join(dirpath, file))
             core.remove_torrent(client_agent, input_hash, input_id, input_name)
 
-        if not section_name == 'UserScript':
+        if section_name != 'UserScript':
             # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories
             core.clean_dir(output_destination, section_name, input_category)

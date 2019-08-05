@@ -14,33 +14,46 @@ import core
 from core import logger, transcoder
 from core.plugins.subtitles import import_subs
 from core.utils import list_media_files, remove_dir
+from core.auto_process.common import (
+    ProcessResult,
+)
+
 
 
 def external_script(output_destination, torrent_name, torrent_label, settings):
     final_result = 0  # start at 0.
     num_files = 0
+    core.USER_SCRIPT_MEDIAEXTENSIONS = settings.get('user_script_mediaExtensions', '')
     try:
-        core.USER_SCRIPT_MEDIAEXTENSIONS = settings['user_script_mediaExtensions'].lower()
         if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
-            core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.split(',')
+            core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.lower().split(',')
     except Exception:
+        logger.error('user_script_mediaExtensions could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
 
-    core.USER_SCRIPT = settings.get('user_script_path')
+    core.USER_SCRIPT = settings.get('user_script_path', '')
 
-    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':  # do nothing and return success.
-        return [0, '']
+    if not core.USER_SCRIPT or core.USER_SCRIPT == 'None':
+        # do nothing and return success. This allows the user an option to Link files only and not run a script.
+        return ProcessResult(
+            status_code=0,
+            message='No user script defined',
+        )
+
+    core.USER_SCRIPT_PARAM = settings.get('user_script_param', '')
     try:
-        core.USER_SCRIPT_PARAM = settings['user_script_param']
         if isinstance(core.USER_SCRIPT_PARAM, str):
             core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
     except Exception:
+        logger.error('user_script_params could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_PARAM = []
+
+    core.USER_SCRIPT_SUCCESSCODES = settings.get('user_script_successCodes', 0)
     try:
-        core.USER_SCRIPT_SUCCESSCODES = settings['user_script_successCodes']
         if isinstance(core.USER_SCRIPT_SUCCESSCODES, str):
             core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
     except Exception:
+        logger.error('user_script_successCodes could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_SUCCESSCODES = 0
 
     core.USER_SCRIPT_CLEAN = int(settings.get('user_script_clean', 1))
@@ -59,6 +72,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
 
             file_path = core.os.path.join(dirpath, file)
             file_name, file_extension = os.path.splitext(file)
+            logger.debug('Checking file {0} to see if this should be processed.'.format(file), 'USERSCRIPT')
 
             if file_extension in core.USER_SCRIPT_MEDIAEXTENSIONS or 'all' in core.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files += 1
@@ -122,4 +136,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
         logger.info('{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.'.format(
             num_files, num_files_new))
-    return [final_result, '']
+    return ProcessResult(
+        status_code=final_result,
+        message='User Script Completed',
+    )
