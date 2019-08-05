@@ -28,6 +28,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
         if isinstance(core.USER_SCRIPT_MEDIAEXTENSIONS, str):
             core.USER_SCRIPT_MEDIAEXTENSIONS = core.USER_SCRIPT_MEDIAEXTENSIONS.lower().split(',')
     except Exception:
+        logger.error('user_script_mediaExtensions could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_MEDIAEXTENSIONS = []
 
     core.USER_SCRIPT = settings.get('user_script_path', '')
@@ -43,6 +44,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
         if isinstance(core.USER_SCRIPT_PARAM, str):
             core.USER_SCRIPT_PARAM = core.USER_SCRIPT_PARAM.split(',')
     except Exception:
+        logger.error('user_script_params could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_PARAM = []
 
     core.USER_SCRIPT_SUCCESSCODES = settings.get('user_script_successCodes', 0)
@@ -50,6 +52,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
         if isinstance(core.USER_SCRIPT_SUCCESSCODES, str):
             core.USER_SCRIPT_SUCCESSCODES = core.USER_SCRIPT_SUCCESSCODES.split(',')
     except Exception:
+        logger.error('user_script_successCodes could not be set', 'USERSCRIPT')
         core.USER_SCRIPT_SUCCESSCODES = 0
 
     core.USER_SCRIPT_CLEAN = int(settings.get('user_script_clean', 1))
@@ -68,6 +71,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
 
             file_path = core.os.path.join(dirpath, file)
             file_name, file_extension = os.path.splitext(file)
+            logger.debug('Checking file {0} to see if this should be processed.'.format(file), 'USERSCRIPT')
 
             if file_extension in core.USER_SCRIPT_MEDIAEXTENSIONS or 'all' in core.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files += 1
