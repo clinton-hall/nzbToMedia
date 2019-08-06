@@ -4,7 +4,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to Gamez.
+# Post-Process to LazyLibrarian.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -26,43 +26,51 @@
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
 #safe_mode=1
 
-## Gamez
+## LazyLibrarian
 
-# Gamez script category.
+# LazyLibrarian script category.
 #
-# category that gets called for post-processing with Gamez.
-#gzCategory=games
+# category that gets called for post-processing with LazyLibrarian.
+#llCategory=books
 
-# Gamez api key.
-#gzapikey=
+# LazyLibrarian api key.
+#llapikey=
 
-# Gamez host.
+# LazyLibrarian host.
 #
-# The ipaddress for your Gamez server. e.g For the Same system use localhost or 127.0.0.1
-#gzhost=localhost
+# The ipaddress for your LazyLibrarian server. e.g For the Same system use localhost or 127.0.0.1
+#llhost=localhost
 
-# Gamez port.
-#gzport=8085
+# LazyLibrarian port.
+#llport=5299
 
-# Gamez uses ssl (0, 1).
+# LazyLibrarian uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#gzssl=0
+#llssl=0
 
-# Gamez library
-#
-# move downloaded games here.
-#gzlibrary
-
-# Gamez web_root
+# LazyLibrarian web_root
 #
 # set this if using a reverse proxy.
-#gzweb_root=
+#llweb_root=
 
-# Gamez watch directory.
+# LazyLibrarian watch directory.
 #
-# set this to where your Gamez completed downloads are.
-#gzwatch_dir=
+# set this to where your LazyLibrarian completed downloads are.
+#llwatch_dir=
+
+# LazyLibrarian and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#llremote_path=0
+
+## Network
+
+# Network Mount Points (Needed for remote path above)
+#
+# Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
+# e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
+#mountPoints=
 
 ## Posix
 
@@ -113,6 +121,6 @@ import sys
 
 import nzbToMedia
 
-section = 'Gamez'
+section = 'LazyLibrarian'
 result = nzbToMedia.main(sys.argv, section)
 sys.exit(result)

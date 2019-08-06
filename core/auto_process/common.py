@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import requests
 
 from core import logger
@@ -17,7 +24,7 @@ class ProcessResult(object):
     def __str__(self):
         return 'Processing {0}: {1}'.format(
             'succeeded' if bool(self) else 'failed',
-            self.message
+            self.message,
         )
 
     def __repr__(self):

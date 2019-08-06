@@ -82,8 +82,10 @@
 
 # Niceness for external tasks Extractor and Transcoder.
 #
-# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-#niceness=10
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process). 
+# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default). 
+# If entering a comma separated list e.g. 'niceness=nice,4' this will be passed as 'nice 4' (Safer).
+#niceness=nice,-n0
 
 # ionice scheduling class (0, 1, 2, 3).
 #
@@ -101,7 +103,7 @@
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## WakeOnLan
 
@@ -121,6 +123,13 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 

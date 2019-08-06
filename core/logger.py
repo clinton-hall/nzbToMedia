@@ -1,11 +1,19 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import logging
 import os
 import sys
 import threading
 
 import core
+import functools
 
 # number of log files to keep
 NUM_LOGS = 3
@@ -85,9 +93,9 @@ class NTMRotatingLogHandler(object):
                 console.setFormatter(DispatchingFormatter(
                     {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S')
+                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
                      },
-                    logging.Formatter('%(message)s'), ))
+                    logging.Formatter('%(message)s')))
 
                 # add the handler to the root logger
                 logging.getLogger('nzbtomedia').addHandler(console)
@@ -111,10 +119,7 @@ class NTMRotatingLogHandler(object):
             self.close_log(old_handler)
 
     def _config_handler(self):
-        """
-        Configure a file handler to log at file_name and return it.
-        """
-
+        """Configure a file handler to log at file_name and return it."""
         file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
 
         file_handler.setLevel(DB)
@@ -122,29 +127,29 @@ class NTMRotatingLogHandler(object):
         file_handler.setFormatter(DispatchingFormatter(
             {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S')
+             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
              },
-            logging.Formatter('%(message)s'), ))
+            logging.Formatter('%(message)s')))
 
         return file_handler
 
     def _log_file_name(self, i):
         """
-        Returns a numbered log file name depending on i. If i==0 it just uses logName, if not it appends
-        it to the extension (blah.log.3 for i == 3)
-        
+        Return a numbered log file name depending on i.
+
+        If i==0 it just uses logName, if not it appends it to the extension
+        e.g. (blah.log.3 for i == 3)
+
         i: Log number to ues
         """
-
         return self.log_file_path + ('.{0}'.format(i) if i else '')
 
     def _num_logs(self):
         """
-        Scans the log folder and figures out how many log files there are already on disk
+        Scan the log folder and figure out how many log files there are already on disk.
 
         Returns: The number of the last used file (eg. mylog.log.3 would return 3). If there are no logs it returns -1
         """
-
         cur_log = 0
         while os.path.isfile(self._log_file_name(cur_log)):
             cur_log += 1
@@ -202,9 +207,8 @@ class NTMRotatingLogHandler(object):
             ntm_logger = logging.getLogger('nzbtomedia')
             pp_logger = logging.getLogger('postprocess')
             db_logger = logging.getLogger('db')
-            setattr(pp_logger, 'postprocess', lambda *args: pp_logger.log(POSTPROCESS, *args))
-            setattr(db_logger, 'db', lambda *args: db_logger.log(DB, *args))
-
+            pp_logger.postprocess = functools.partial(pp_logger.log, POSTPROCESS)
+            db_logger.db = functools.partial(db_logger.log, DB)
             try:
                 if log_level == DEBUG:
                     if core.LOG_DEBUG == 1:

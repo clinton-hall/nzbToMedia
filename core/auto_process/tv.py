@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import copy
 import errno
 import json
@@ -266,7 +273,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
         if apikey:
             url = '{0}{1}:{2}{3}/api/{4}/?cmd=postprocess'.format(protocol, host, port, web_root, apikey)
         elif fork == 'Stheno':
-            url = "{0}{1}:{2}{3}/home/postprocess/process_episode".format(protocol, host, port, web_root)
+            url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
         else:
             url = '{0}{1}:{2}{3}/home/postprocess/processEpisode'.format(protocol, host, port, web_root)
     elif section == 'NzbDrone':

@@ -36,7 +36,9 @@
 [Posix]
     ### Process priority setting for External commands (Extractor and Transcoder) on Posix (Unix/Linux/OSX) systems.
     # Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-    niceness = 0
+    # If entering an integer e.g 'niceness = 4', this is added to the nice command and passed as 'nice -n4' (Default). 
+    # If entering a comma separated list e.g. 'niceness = nice,4' this will be passed as 'nice 4' (Safer).
+    niceness = nice,-n0
     # Set the ionice scheduling class. 0 for none, 1 for real time, 2 for best-effort, 3 for idle.
     ionice_class = 0
     # Set the ionice scheduling class data. This defines the class data, if the class accepts an argument. For real time and best-effort, 0-7 is valid data.
@@ -282,6 +284,31 @@
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
+[LazyLibrarian]
+    #### autoProcessing for LazyLibrarian
+    #### books - category that gets called for post-processing with LazyLibrarian
+    [[books]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 5299
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        ssl = 0
+        web_root =
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if LazyLibrarian is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+
+
 [Network]
     # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
     # e.g. MountPoints = /volume1/Public/,E:\|/volume2/share/,\\NAS\
@@ -389,11 +416,13 @@
     externalSubDir =
     # hwAccel. 1 will set ffmpeg to enable hardware acceleration (this requires a recent ffmpeg)
     hwAccel = 0
-    # generalOptions. Enter your additional ffmpeg options here with commas to separate each option/value (i.e replace spaces with commas).
+    # generalOptions. Enter your additional ffmpeg options (these insert before the '-i' input files) here with commas to separate each option/value (i.e replace spaces with commas).
     generalOptions =
+    # otherOptions. Enter your additional ffmpeg options (these insert after the '-i' input files and before the output file) here with commas to separate each option/value (i.e replace spaces with commas).
+    otherOptions =
     # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
     # If you want to use your own profile, leave this blank and set the remaining options below.
-    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release
+    # outputDefault profiles allowed: iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mkv-bluray, mp4-scene-release
     outputDefault =
     #### Define custom settings below.
     outputVideoExtension = .mp4

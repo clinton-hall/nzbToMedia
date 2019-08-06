@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 import socket
 import subprocess
@@ -47,7 +54,7 @@ class PosixProcess(object):
             self.lasterror = False
             return self.lasterror
         except socket.error as e:
-            if 'Address already in use' in e:
+            if 'Address already in use' in str(e):
                 self.lasterror = True
                 return self.lasterror
         except AttributeError:

@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 
 import requests
@@ -60,7 +67,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         logger.error('Unable to open URL', section)
         return ProcessResult(
             message='{0}: Failed to post-process - Unable to connect to {0}'.format(section),
-            status_code=1
+            status_code=1,
         )
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error('Server returned status {0}'.format(r.status_code), section)

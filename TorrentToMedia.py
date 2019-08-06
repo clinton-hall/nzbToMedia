@@ -1,24 +1,34 @@
 #!/usr/bin/env python
 # coding=utf-8
 
-import eol
-eol.check()
-
-import cleanup
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import datetime
 import os
 import sys
 
+import eol
+import cleanup
+eol.check()
+cleanup.clean(cleanup.FOLDER_STRUCTURE)
+
 import core
 from core import logger, main_db
-from core.auto_process import comics, games, movies, music, tv
+from core.auto_process import comics, games, movies, music, tv, books
 from core.auto_process.common import ProcessResult
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
 from core.utils import char_replace, convert_to_ascii, replace_links
-from six import text_type
+
+try:
+    text_type = unicode
+except NameError:
+    text_type = str
 
 
 def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):
@@ -60,30 +70,25 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_category = 'UNCAT'
 
     usercat = input_category
-    try:
-        input_name = input_name.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
-    try:
-        input_directory = input_directory.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
 
     logger.debug('Determined Directory: {0} | Name: {1} | Category: {2}'.format
                  (input_directory, input_name, input_category))
 
     # auto-detect section
     section = core.CFG.findsection(input_category).isenabled()
-    if section is None:
-        section = core.CFG.findsection('ALL').isenabled()
-        if section is None:
-            logger.error('Category:[{0}] is not defined or is not enabled. '
-                         'Please rename it or ensure it is enabled for the appropriate section '
-                         'in your autoProcessMedia.cfg and try again.'.format
-                         (input_category))
-            return [-1, '']
+    if section is None: #Check for user_scripts for 'ALL' and 'UNCAT'
+        if usercat in core.CATEGORIES:
+            section = core.CFG.findsection('ALL').isenabled()
+            usercat = 'ALL'  
         else:
-            usercat = 'ALL'
+            section = core.CFG.findsection('UNCAT').isenabled()
+            usercat = 'UNCAT'
+    if section is None: # We haven't found any categories to process.
+        logger.error('Category:[{0}] is not defined or is not enabled. '
+                     'Please rename it or ensure it is enabled for the appropriate section '
+                     'in your autoProcessMedia.cfg and try again.'.format
+                     (input_category))
+        return [-1, '']
 
     if len(section) > 1:
         logger.error('Category:[{0}] is not unique, {1} are using it. '
@@ -106,7 +111,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     torrent_no_link = int(section.get('Torrent_NoLink', 0))
     keep_archive = int(section.get('keep_archive', 0))
     extract = int(section.get('extract', 0))
-    extensions = section.get('user_script_mediaExtensions', '').lower().split(',')
+    extensions = section.get('user_script_mediaExtensions', '')
     unique_path = int(section.get('unique_path', 1))
 
     if client_agent != 'manual':
@@ -125,10 +130,6 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     else:
         output_destination = os.path.normpath(
             core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
-    try:
-        output_destination = output_destination.encode(core.SYS_ENCODING)
-    except UnicodeError:
-        pass
 
     if output_destination in input_directory:
         output_destination = input_directory
@@ -170,10 +171,6 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                     core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name)
                 logger.debug('Setting outputDestination to {0} to preserve folder structure'.format
                              (os.path.dirname(target_file)))
-        try:
-            target_file = target_file.encode(core.SYS_ENCODING)
-        except UnicodeError:
-            pass
         if root == 1:
             if not found_file:
                 logger.debug('Looking for {0} in: {1}'.format(input_name, inputFile))
@@ -256,6 +253,8 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         result = comics.process(section_name, output_destination, input_name, status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = games.process(section_name, output_destination, input_name, status, client_agent, input_category)
+    elif section_name == 'LazyLibrarian':
+        result = books.process(section_name, output_destination, input_name, status, client_agent, input_category)
 
     plex_update(input_category)
 
@@ -276,13 +275,13 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             # remove torrent
             if core.USE_LINK == 'move-sym' and not core.DELETE_ORIGINAL == 1:
                 logger.debug('Checking for sym-links to re-direct in: {0}'.format(input_directory))
-                for dirpath, dirs, files in os.walk(input_directory):
+                for dirpath, _, files in os.walk(input_directory):
                     for file in files:
                         logger.debug('Checking symlink: {0}'.format(os.path.join(dirpath, file)))
                         replace_links(os.path.join(dirpath, file))
             core.remove_torrent(client_agent, input_hash, input_id, input_name)
 
-        if not section_name == 'UserScript':
+        if section_name != 'UserScript':
             # for user script, we assume this is cleaned by the script or option USER_SCRIPT_CLEAN
             # cleanup our processing folders of any misc unwanted files and empty directories
             core.clean_dir(output_destination, section_name, input_category)
@@ -350,15 +349,7 @@ def main(args):
                     if client_agent.lower() not in core.TORRENT_CLIENTS:
                         continue
 
-                    try:
-                        dir_name = dir_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
-                        pass
                     input_name = os.path.basename(dir_name)
-                    try:
-                        input_name = input_name.encode(core.SYS_ENCODING)
-                    except UnicodeError:
-                        pass
 
                     results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,
                                               client_agent)

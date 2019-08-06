@@ -1,4 +1,10 @@
-from __future__ import absolute_import
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 
 from qbittorrent import Client as qBittorrentClient
 
@@ -14,7 +20,7 @@ def configure_client():
     password = core.QBITTORRENT_PASSWORD
 
     logger.debug(
-        'Connecting to {0}: http://{1}:{2}'.format(agent, host, port)
+        'Connecting to {0}: http://{1}:{2}'.format(agent, host, port),
     )
     client = qBittorrentClient('http://{0}:{1}/'.format(host, port))
     try:

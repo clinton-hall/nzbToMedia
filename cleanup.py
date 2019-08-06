@@ -1,6 +1,11 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import os
 import subprocess
@@ -25,6 +30,7 @@ FOLDER_STRUCTURE = {
 
 class WorkingDirectory(object):
     """Context manager for changing current working directory."""
+
     def __init__(self, new, original=None):
         self.working_directory = new
         self.original_directory = os.getcwd() if original is None else original
@@ -43,7 +49,7 @@ class WorkingDirectory(object):
                     original_directory=self.original_directory,
                     error=error,
                     working_directory=self.working_directory,
-                )
+                ),
             )
 
 

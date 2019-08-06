@@ -1,4 +1,12 @@
 # coding=utf8
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import re
 
 from six import StringIO, iteritems
@@ -31,8 +39,7 @@ class UTorrentClient(object):
         # TODO refresh token, when necessary
 
     def _make_opener(self, realm, base_url, username, password):
-        """uTorrent API need HTTP Basic Auth and cookie support for token verify."""
-
+        """HTTP Basic Auth and cookie support for token verification."""
         auth_handler = HTTPBasicAuthHandler()
         auth_handler.add_password(realm=realm,
                                   uri=base_url,
@@ -52,7 +59,7 @@ class UTorrentClient(object):
         url = urljoin(self.base_url, 'token.html')
         response = self.opener.open(url)
         token_re = "<div id='token' style='display:none;'>([^<>]+)</div>"
-        match = re.search(token_re, response.read())
+        match = re.search(token_re, str(response.read()))
         return match.group(1)
 
     def list(self, **kwargs):
@@ -61,25 +68,25 @@ class UTorrentClient(object):
         return self._action(params)
 
     def start(self, *hashes):
-        params = [('action', 'start'), ]
+        params = [('action', 'start')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def stop(self, *hashes):
-        params = [('action', 'stop'), ]
+        params = [('action', 'stop')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def pause(self, *hashes):
-        params = [('action', 'pause'), ]
+        params = [('action', 'pause')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def forcestart(self, *hashes):
-        params = [('action', 'forcestart'), ]
+        params = [('action', 'forcestart')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
@@ -95,8 +102,8 @@ class UTorrentClient(object):
     def setprops(self, cur_hash, **kvpairs):
         params = [('action', 'setprops'), ('hash', cur_hash)]
         for k, v in iteritems(kvpairs):
-            params.append(("s", k))
-            params.append(("v", v))
+            params.append(('s', k))
+            params.append(('v', v))
 
         return self._action(params)
 
@@ -125,13 +132,13 @@ class UTorrentClient(object):
         self._action(params)
 
     def remove(self, *hashes):
-        params = [('action', 'remove'), ]
+        params = [('action', 'remove')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
 
     def removedata(self, *hashes):
-        params = [('action', 'removedata'), ]
+        params = [('action', 'removedata')]
         for cur_hash in hashes:
             params.append(('hash', cur_hash))
         return self._action(params)
