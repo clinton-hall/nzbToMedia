@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 
 import core
@@ -120,7 +127,11 @@ def parse_qbittorrent(args):
     except Exception:
         input_directory = ''
     try:
-        input_name = cur_input[1].replace('\'', '')
+        input_name = cur_input[1]
+        if input_name[0] == '\'':
+            input_name = input_name[1:]
+        if input_name[-1] == '\'':
+            input_name = input_name[:-1]
     except Exception:
         input_name = ''
     try:

@@ -4,7 +4,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to CouchPotato, SickBeard, NzbDrone, Mylar, Gamez, HeadPhones.
+# Post-Process to CouchPotato.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -99,7 +99,7 @@
 #
 # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
 # e.g. mountPoints=/volume1/Public/,E:\|/volume2/share/,\\NAS\
-#mountPoints= 
+#mountPoints=
 
 ## Extensions
 
@@ -112,8 +112,10 @@
 
 # Niceness for external tasks Extractor and Transcoder.
 #
-# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
-#niceness=10
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process). 
+# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default). 
+# If entering a comma separated list e.g. 'niceness=nice,4' this will be passed as 'nice 4' (Safer).
+#niceness=nice,-n0
 
 # ionice scheduling class (0, 1, 2, 3).
 #
@@ -134,7 +136,7 @@
 
 # subLanguages.
 #
-# subLanguages. create a list of languages in the order you want them in your subtitles. 
+# subLanguages. create a list of languages in the order you want them in your subtitles.
 #subLanguages=eng,spa,fra
 
 # Transcode (0, 1).
@@ -202,7 +204,7 @@
 # externalSubDir. set the directory where subs should be saved (if not the same directory as the video)
 #externalSubDir=
 
-# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mp4-scene-release, MKV-SD).
+# outputDefault (None, iPad, iPad-1080p, iPad-720p, Apple-TV2, iPod, iPhone, PS3, xbox, Roku-1080p, Roku-720p, Roku-480p, mkv, mkv-bluray, mp4-scene-release, MKV-SD).
 #
 # outputDefault. Loads default configs for the selected device. The remaining options below are ignored.
 # If you want to use your own profile, set None and set the remaining options below.
@@ -216,7 +218,7 @@
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
-#VideoCodecAllow= 
+#VideoCodecAllow=
 #outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
@@ -227,7 +229,7 @@
 #outputAudioBitrate=640k
 #outputQualityPercent=
 #outputAudioTrack2Codec=libfaac
-#AudioCodec2Allow= 
+#AudioCodec2Allow=
 #outputAudioTrack2Channels=2
 #outputAudioTrack2Bitrate=160k
 #outputAudioOtherCodec=libmp3lame
@@ -254,6 +256,13 @@
 
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
+
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import sys
 

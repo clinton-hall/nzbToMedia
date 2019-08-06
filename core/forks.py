@@ -1,15 +1,54 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import requests
 from six import iteritems
 
 import core
 from core import logger
 
+def api_check(r, params, rem_params):
+    try:
+        json_data = r.json()
+    except ValueError:
+        logger.error('Failed to get JSON data from response')
+        logger.debug('Response received')
+        raise
+
+    try:
+        json_data = json_data['data']
+    except KeyError:
+        logger.error('Failed to get data from JSON')
+        logger.debug('Response received: {}'.format(json_data))
+        raise
+    else:
+        json_data = json_data.get('data', json_data)
+
+    try:
+        optional_parameters = json_data['optionalParameters'].keys()
+        # Find excess parameters
+        excess_parameters = set(params).difference(optional_parameters)
+        logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+        rem_params.extend(excess_parameters)
+        return rem_params, True
+    except:
+        logger.error('Failed to identify optionalParameters')
+        return rem_params, False
+
 
 def auto_fork(section, input_category):
     # auto-detect correct section
     # config settings
+    if core.FORK_SET: # keep using determined fork for multiple (manual) post-processing
+        logger.info('{section}:{category} fork already set to {fork}'.format
+                    (section=section, category=input_category, fork=core.FORK_SET[0]))
+        return core.FORK_SET[0], core.FORK_SET[1]
 
     cfg = dict(core.CFG[section][input_category])
 
@@ -42,7 +81,8 @@ def auto_fork(section, input_category):
         logger.info('Attempting to verify {category} fork'.format
                     (category=input_category))
         url = '{protocol}{host}:{port}{root}/api/rootfolder'.format(
-                    protocol=protocol, host=host, port=port, root=web_root)
+            protocol=protocol, host=host, port=port, root=web_root,
+        )
         headers = {'X-Api-Key': apikey}
         try:
             r = requests.get(url, headers=headers, stream=True, verify=False)
@@ -65,10 +105,12 @@ def auto_fork(section, input_category):
 
         if apikey:
             url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
-                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey)
+                protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
+            )
         else:
             url = '{protocol}{host}:{port}{root}/home/postprocess/'.format(
-                        protocol=protocol, host=host, port=port, root=web_root)
+                protocol=protocol, host=host, port=port, root=web_root,
+            )
 
         # attempting to auto-detect fork
         try:
@@ -88,27 +130,17 @@ def auto_fork(section, input_category):
             r = []
         if r and r.ok:
             if apikey:
-                try:
-                    json_data = r.json()
-                except ValueError:
-                    logger.error('Failed to get JSON data from response')
-                    logger.debug('Response received')
-                    raise
-
-                try:
-                    json_data = json_data['data']
-                except KeyError:
-                    logger.error('Failed to get data from JSON')
-                    logger.debug('Response received: {}'.format(json_data))
-                    raise
-                else:
-                    json_data = json_data.get('data', json_data)
-
-                optional_parameters = json_data['optionalParameters'].keys()
-                # Find excess parameters
-                excess_parameters = set(params).difference(optional_parameters)
-                logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
-                rem_params.extend(excess_parameters)
+                rem_params, found = api_check(r, params, rem_params)
+                if not found: # try different api set for SickGear.
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&help=1'.format(
+                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
+                    )
+                    try:
+                        r = s.get(url, auth=(username, password), verify=False)
+                    except requests.ConnectionError:
+                        logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
+                                    (section=section, category=input_category))
+                    rem_params, found = api_check(r, params, rem_params)
             else:
                 # Find excess parameters
                 rem_params.extend(
@@ -140,4 +172,5 @@ def auto_fork(section, input_category):
 
     logger.info('{section}:{category} fork set to {fork}'.format
                 (section=section, category=input_category, fork=fork[0]))
+    core.FORK_SET = fork
     return fork[0], fork[1]

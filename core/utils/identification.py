@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 import re
 
@@ -5,7 +12,6 @@ import guessit
 import requests
 from six import text_type
 
-import core
 from core import logger
 from core.utils.naming import sanitize_name
 
@@ -17,14 +23,14 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
-    m = re.search(r'(tt\d{7})', dir_name + input_name)
+    m = re.search(r'\b(tt\d{7,8})\b', dir_name + input_name)
     if m:
         imdbid = m.group(1)
         logger.info('Found imdbID [{0}]'.format(imdbid))
         return imdbid
     if os.path.isdir(dir_name):
         for file in os.listdir(text_type(dir_name)):
-            m = re.search(r'(tt\d{7})', file)
+            m = re.search(r'\b(tt\d{7,8})\b', file)
             if m:
                 imdbid = m.group(1)
                 logger.info('Found imdbID [{0}] via file name'.format(imdbid))
@@ -89,15 +95,6 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
 def category_search(input_directory, input_name, input_category, root, categories):
     tordir = False
-
-    try:
-        input_name = input_name.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
-    try:
-        input_directory = input_directory.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
 
     if input_directory is None:  # =Nothing to process here.
         return input_directory, input_name, input_category, root

@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 
 class DelugeRPCRequest(object):
     def __init__(self, request_id, method, *args, **kwargs):

@@ -1,5 +1,12 @@
 #!/usr/bin/env python
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import datetime
 import sys
 import warnings
@@ -157,7 +164,7 @@ def print_statuses(show_expired=False):
                     major=python_version[0],
                     minor=python_version[1],
                     remaining=days_left,
-                )
+                ),
             )
     if not show_expired:
         return
@@ -171,7 +178,7 @@ def print_statuses(show_expired=False):
                     major=python_version[0],
                     minor=python_version[1],
                     remaining=-days_left,
-                )
+                ),
             )
 
 

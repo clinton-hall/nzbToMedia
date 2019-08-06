@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 from core import logger, main_db
 from core.utils import backup_versioned_file
 
@@ -33,7 +40,7 @@ class InitialSchema(main_db.SchemaUpgrade):
             queries = [
                 'CREATE TABLE db_version (db_version INTEGER);',
                 'CREATE TABLE downloads (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));',
-                'INSERT INTO db_version (db_version) VALUES (2);'
+                'INSERT INTO db_version (db_version) VALUES (2);',
             ]
             for query in queries:
                 self.connection.action(query)
@@ -59,7 +66,7 @@ class InitialSchema(main_db.SchemaUpgrade):
                     'INSERT INTO downloads2 SELECT * FROM downloads;',
                     'DROP TABLE IF EXISTS downloads;',
                     'ALTER TABLE downloads2 RENAME TO downloads;',
-                    'INSERT INTO db_version (db_version) VALUES (2);'
+                    'INSERT INTO db_version (db_version) VALUES (2);',
                 ]
                 for query in queries:
                     self.connection.action(query)

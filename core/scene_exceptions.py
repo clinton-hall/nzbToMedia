@@ -1,5 +1,12 @@
 # coding=utf-8
 
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import os
 import platform
 import re
@@ -25,7 +32,7 @@ media_list = [r'\.s\d{2}e\d{2}\.', r'\.1080[pi]\.', r'\.720p\.', r'\.576[pi]', r
               r'\.internal\.', r'\bac3\b', r'\.ntsc\.', r'\.pal\.', r'\.secam\.', r'\bdivx\b', r'\bxvid\b']
 media_pattern = re.compile('|'.join(media_list), flags=re.IGNORECASE)
 garbage_name = re.compile(r'^[a-zA-Z0-9]*$')
-char_replace = [[r'(\w)1\.(\w)', r'\1i\2']
+char_replace = [[r'(\w)1\.(\w)', r'\1i\2'],
                 ]
 
 
@@ -121,7 +128,7 @@ def reverse_filename(filename, dirname, name):
 
 def rename_script(dirname):
     rename_file = ''
-    for directory, directories, files in os.walk(dirname):
+    for directory, _, files in os.walk(dirname):
         for file in files:
             if re.search(r'(rename\S*\.(sh|bat)$)', file, re.IGNORECASE):
                 rename_file = os.path.join(directory, file)
@@ -171,7 +178,7 @@ def par2(dirname):
         cmd = ''
         for item in command:
             cmd = '{cmd} {item}'.format(cmd=cmd, item=item)
-        logger.debug('calling command:{0}'.format(cmd), 'PAR2')    
+        logger.debug('calling command:{0}'.format(cmd), 'PAR2')
         try:
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             proc.communicate()

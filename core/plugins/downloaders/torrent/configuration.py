@@ -1,3 +1,10 @@
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
+
 import core
 from core.plugins.downloaders.torrent.utils import create_torrent_class
 

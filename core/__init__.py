@@ -1,6 +1,11 @@
 # coding=utf-8
 
-from __future__ import print_function
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import itertools
 import locale
@@ -78,7 +83,7 @@ from core.utils import (
     wake_up,
 )
 
-__version__ = '12.0.10'
+__version__ = '12.1.00'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -94,10 +99,12 @@ FORK_FAILED = 'failed'
 FORK_FAILED_TORRENT = 'failed-torrent'
 FORK_SICKRAGE = 'SickRage'
 FORK_SICKCHILL = 'SickChill'
+FORK_SICKCHILL_API = 'SickChill-api'
 FORK_SICKBEARD_API = 'SickBeard-api'
 FORK_MEDUSA = 'Medusa'
 FORK_MEDUSA_API = 'Medusa-api'
 FORK_SICKGEAR = 'SickGear'
+FORK_SICKGEAR_API = 'SickGear-api'
 FORK_STHENO = 'Stheno'
 
 FORKS = {
@@ -106,11 +113,13 @@ FORKS = {
     FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
     FORK_SICKRAGE: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None},
     FORK_SICKCHILL: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None},
+    FORK_SICKCHILL_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'is_priority': None},
     FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None},
     FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
-    FORK_MEDUSA_API:    {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None},
+    FORK_MEDUSA_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None},
     FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
-    FORK_STHENO: {"proc_dir": None, "failed": None, "process_method": None, "force": None, "delete_on": None, "ignore_subs": None}
+    FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is priority': None},
+    FORK_STHENO: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
 }
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
 
@@ -193,7 +202,9 @@ META_CONTAINER = []
 
 SECTIONS = []
 CATEGORIES = []
+FORK_SET = []
 
+MOUNTED = None
 GETSUBS = False
 TRANSCODE = None
 CONCAT = None
@@ -205,6 +216,7 @@ VEXTENSION = None
 OUTPUTVIDEOPATH = None
 PROCESSOUTPUT = False
 GENERALOPTS = []
+OTHEROPTS = []
 ALANGUAGE = None
 AINCLUDE = False
 SLANGUAGES = []
@@ -450,7 +462,10 @@ def configure_niceness():
     with open(os.devnull, 'w') as devnull:
         try:
             subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-            NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
+            if len(CFG['Posix']['niceness'].split(',')) > 1: #Allow passing of absolute command, not just value.
+                NICENESS.extend(CFG['Posix']['niceness'].split(','))
+            else:
+                NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
         except Exception:
             pass
         try:
@@ -499,6 +514,7 @@ def configure_containers():
 
 
 def configure_transcoder():
+    global MOUNTED
     global GETSUBS
     global TRANSCODE
     global DUPLICATE
@@ -506,6 +522,7 @@ def configure_transcoder():
     global IGNOREEXTENSIONS
     global OUTPUTFASTSTART
     global GENERALOPTS
+    global OTHEROPTS
     global OUTPUTQUALITYPERCENT
     global OUTPUTVIDEOPATH
     global PROCESSOUTPUT
@@ -543,6 +560,7 @@ def configure_transcoder():
     global ALLOWSUBS
     global DEFAULTS
 
+    MOUNTED = None
     GETSUBS = int(CFG['Transcoder']['getSubs'])
     TRANSCODE = int(CFG['Transcoder']['transcode'])
     DUPLICATE = int(CFG['Transcoder']['duplicate'])
@@ -560,6 +578,11 @@ def configure_transcoder():
         GENERALOPTS.append('-fflags')
     if '+genpts' not in GENERALOPTS:
         GENERALOPTS.append('+genpts')
+    OTHEROPTS = (CFG['Transcoder']['otherOptions'])
+    if isinstance(OTHEROPTS, str):
+        OTHEROPTS = OTHEROPTS.split(',')
+    if OTHEROPTS == ['']:
+        OTHEROPTS = []
     try:
         OUTPUTQUALITYPERCENT = int(CFG['Transcoder']['outputQualityPercent'])
     except Exception:
@@ -653,7 +676,7 @@ def configure_transcoder():
     codec_alias = {
         'libx264': ['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'],
         'libmp3lame': ['libmp3lame', 'mp3'],
-        'libfaac': ['libfaac', 'aac', 'faac']
+        'libfaac': ['libfaac', 'aac', 'faac'],
     }
     transcode_defaults = {
         'iPad': {
@@ -662,7 +685,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'iPad-1080p': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -670,7 +693,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'iPad-720p': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -678,7 +701,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'Apple-TV': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -686,7 +709,7 @@ def configure_transcoder():
             'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
             'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'iPod': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -694,7 +717,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
             'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'iPhone': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -702,7 +725,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
             'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'PS3': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -710,7 +733,7 @@ def configure_transcoder():
             'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
             'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'xbox': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -718,7 +741,7 @@ def configure_transcoder():
             'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6,
             'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'Roku-480p': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -726,7 +749,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'Roku-720p': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -734,7 +757,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'Roku-1080p': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -742,7 +765,7 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 160000, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'mkv': {
             'VEXTENSION': '.mkv', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -752,13 +775,21 @@ def configure_transcoder():
             'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8,
             'SCODEC': 'mov_text'
         },
+        'mkv-bluray': {
+            'VEXTENSION': '.mkv', 'VCODEC': 'libx265', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
+            'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'hevc', 'h265', 'libx265', 'h.265', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
+            'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8,
+            'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
+            'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8,
+            'SCODEC': 'mov_text',
+        },
         'mp4-scene-release': {
             'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': 19, 'VLEVEL': '3.1',
             'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'],
             'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8,
             'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
             'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'MKV-SD': {
             'VEXTENSION': '.mkv', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': '1200k', 'VCRF': None, 'VLEVEL': None,
@@ -766,8 +797,8 @@ def configure_transcoder():
             'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2,
             'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6,
             'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None,
-            'SCODEC': 'mov_text'
-        }
+            'SCODEC': 'mov_text',
+        },
     }
     if DEFAULTS and DEFAULTS in transcode_defaults:
         VEXTENSION = transcode_defaults[DEFAULTS]['VEXTENSION']
@@ -870,7 +901,7 @@ def configure_utility_locations():
 
     else:
         if SYS_PATH:
-            os.environ['PATH'] += ':'+SYS_PATH
+            os.environ['PATH'] += ':' + SYS_PATH
         try:
             SEVENZIP = subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
@@ -957,7 +988,7 @@ def check_python():
             major=sys.version_info[0],
             minor=sys.version_info[1],
             x=days_left,
-        )
+        ),
     )
     if days_left <= grace_period:
         logger.warning('Please upgrade to a more recent Python version.')
