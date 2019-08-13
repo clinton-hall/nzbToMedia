@@ -923,7 +923,7 @@ def main(args, section=None):
         # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
         client_agent = 'sabnzbd'
         logger.info('Script triggered from SABnzbd')
-        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], client_agent=client_agent,
+        result = process(args[1], input_name=args[2], status=int(args[7]), input_category=args[5], client_agent=client_agent,
                          download_id='')
     # SABnzbd 0.7.17+
     elif len(args) >= core.SABNZB_0717_NO_OF_ARGUMENTS:
@@ -938,7 +938,7 @@ def main(args, section=None):
         # 8 Failure URL
         client_agent = 'sabnzbd'
         logger.info('Script triggered from SABnzbd 0.7.17+')
-        result = process(args[1], input_name=args[2], status=args[7], input_category=args[5], client_agent=client_agent,
+        result = process(args[1], input_name=args[2], status=int(args[7]), input_category=args[5], client_agent=client_agent,
                          download_id='', failure_link=''.join(args[8:]))
     # Generic program
     elif len(args) > 5 and args[5] == 'generic':
