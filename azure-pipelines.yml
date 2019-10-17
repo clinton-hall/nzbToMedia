@@ -26,11 +26,9 @@ jobs:
     maxParallel: 4
 
   steps:
-  - script: |
+  #- script: |
       # Make sure all packages are pulled from latest
-      sudo add-apt-repository ppa:deadsnakes/ppa
-      sudo apt-get update
-      sudo apt-get install python3.8
+      #sudo apt-get update
 
       # Fail out if any setups fail
       #set -e
@@ -62,7 +60,7 @@ jobs:
           #./$(basename $setup);
           #cd $original_directory;
       #done;
-    displayName: 'Workaround: update apt and install Python versions'
+    #displayName: 'Workaround: update apt and install Python versions'
 
   - task: UsePythonVersion@0
     inputs:
