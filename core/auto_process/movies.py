@@ -256,8 +256,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
                 scan_id = None
-        elif section == 'Watcher3' and result['status'] == 'finished'
-            logger.postprocess('Watcher3 updated status to : {0}'.format(result['tasks']['update_movie_status']))
+        elif section == 'Watcher3' and result['status'] == 'finished':
+            logger.postprocess('Watcher3 updated status to {0}'.format(result['tasks']['update_movie_status']))
             if result['tasks']['update_movie_status'] == 'Finished':
                 return ProcessResult(
                     message='{0}: Successfully post-processed {1}'.format(section, input_name),
