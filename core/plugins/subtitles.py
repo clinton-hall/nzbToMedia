@@ -11,6 +11,10 @@ import subliminal
 import core
 from core import logger
 
+for provider in subliminal.provider_manager.internal_extensions:
+    if provider not in [str(x) for x in subliminal.provider_manager.list_entry_points()]:
+        subliminal.provider_manager.register(str(provider))
+
 
 def import_subs(filename):
     if not core.GETSUBS:
