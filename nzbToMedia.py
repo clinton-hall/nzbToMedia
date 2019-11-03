@@ -5,7 +5,7 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
 # Post-Process to CouchPotato, SickBeard, Sonarr, Mylar, Gamez, HeadPhones,
-# LazyLibrarian, Radarr, Lidarr
+# LazyLibrarian, Radarr, Lidarr, Watcher3
 #
 # This script sends the download to your automated media management servers.
 #
@@ -799,7 +799,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     logger.info('Calling {0}:{1} to post-process:{2}'.format(section_name, input_category, input_name))
 
-    if section_name in ['CouchPotato', 'Radarr']:
+    if section_name in ['CouchPotato', 'Radarr', 'Watcher3']:
         result = movies.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         result = tv.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
