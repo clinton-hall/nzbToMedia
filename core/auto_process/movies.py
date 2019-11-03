@@ -213,6 +213,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             logger.postprocess('Starting DownloadedMoviesScan scan for {0}'.format(input_name), section)
 
         if section == 'Watcher3':
+            if input_name and os.path.isfile(os.path.join(dir_name, input_name)):
+                params['media_folder'] = os.path.join(params['media_folder'], input_name)
             payload = {'apikey': apikey, 'path': params['media_folder'], 'guid': download_id, 'mode': 'complete'}
             if not download_id:
                 payload.pop('guid')
@@ -290,6 +292,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         elif section == 'Watcher3':
             logger.postprocess('Sending failed download to {0} for CDH processing'.format(section), section)
             path = remote_dir(dir_name) if remote_path else dir_name
+            if input_name and os.path.isfile(os.path.join(dir_name, input_name)):
+                path = os.path.join(path, input_name)
             payload = {'apikey': apikey, 'path': path, 'guid': download_id, 'mode': 'failed'}
             r = requests.post(base_url, data=payload, verify=False, timeout=(30, 1800))
             result = r.json()
