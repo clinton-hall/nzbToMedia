@@ -150,7 +150,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():
-                if option in ['category', 'cpsCategory', 'sbCategory', 'hpCategory', 'mlCategory', 'gzCategory', 'raCategory', 'ndCategory']:
+                if option in ['category', 'cpsCategory', 'sbCategory', 'hpCategory', 'mlCategory', 'gzCategory', 'raCategory', 'ndCategory', 'W3Category']:
                     if not isinstance(value, list):
                         value = [value]
 
@@ -271,6 +271,16 @@ class ConfigObj(configobj.ConfigObj, Section):
                     logger.warning('{x} category is set for CouchPotato and Radarr. '
                                    'Please check your config in NZBGet'.format
                                    (x=os.environ['NZBPO_RACATEGORY']))
+            if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_W3CATEGORY' in os.environ:
+                if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_W3CATEGORY']:
+                    logger.warning('{x} category is set for Watcher3 and Radarr. '
+                                   'Please check your config in NZBGet'.format
+                                   (x=os.environ['NZBPO_RACATEGORY']))
+            if 'NZBPO_W3CATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
+                if os.environ['NZBPO_W3CATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
+                    logger.warning('{x} category is set for CouchPotato and Watcher3. '
+                                   'Please check your config in NZBGet'.format
+                                   (x=os.environ['NZBPO_W3CATEGORY']))
             if 'NZBPO_LICATEGORY' in os.environ and 'NZBPO_HPCATEGORY' in os.environ:
                 if os.environ['NZBPO_LICATEGORY'] == os.environ['NZBPO_HPCATEGORY']:
                     logger.warning('{x} category is set for HeadPhones and Lidarr. '
@@ -321,6 +331,29 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
                 if os.environ[env_cat_key] in cfg_new['Radarr'].sections:
                     cfg_new['Radarr'][env_cat_key]['enabled'] = 0
+                if os.environ[env_cat_key] in cfg_new['Watcher3'].sections:
+                    cfg_new['Watcher3'][env_cat_key]['enabled'] = 0
+
+            section = 'Watcher3'
+            env_cat_key = 'NZBPO_W3CATEGORY'
+            env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
+                        'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
+            cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
+                        'wait_for', 'watch_dir', 'omdbapikey']
+            if env_cat_key in os.environ:
+                for index in range(len(env_keys)):
+                    key = 'NZBPO_W3{index}'.format(index=env_keys[index])
+                    if key in os.environ:
+                        option = cfg_keys[index]
+                        value = os.environ[key]
+                        if os.environ[env_cat_key] not in cfg_new[section].sections:
+                            cfg_new[section][os.environ[env_cat_key]] = {}
+                        cfg_new[section][os.environ[env_cat_key]][option] = value
+                cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
+                if os.environ[env_cat_key] in cfg_new['Radarr'].sections:
+                    cfg_new['Radarr'][env_cat_key]['enabled'] = 0
+                if os.environ[env_cat_key] in cfg_new['CouchPotato'].sections:
+                    cfg_new['CouchPotato'][env_cat_key]['enabled'] = 0
 
             section = 'SickBeard'
             env_cat_key = 'NZBPO_SBCATEGORY'
@@ -444,6 +477,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
                 if os.environ[env_cat_key] in cfg_new['CouchPotato'].sections:
                     cfg_new['CouchPotato'][env_cat_key]['enabled'] = 0
+                if os.environ[env_cat_key] in cfg_new['Wacther3'].sections:
+                    cfg_new['Watcher3'][env_cat_key]['enabled'] = 0
 
             section = 'Lidarr'
             env_cat_key = 'NZBPO_LICATEGORY'

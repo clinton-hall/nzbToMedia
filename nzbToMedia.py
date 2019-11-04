@@ -142,6 +142,54 @@
 # Enable to replace local path with the path as per the mountPoints below.
 #raremote_path=0
 
+## Watcher3
+
+# Wather3 script category.
+#
+# category that gets called for post-processing with Watcher3.
+#W3Category=movie
+
+# Watcher3 api key.
+#W3apikey=
+
+# Watcher3 host.
+#
+# The ipaddress for your Watcher3 server. e.g For the Same system use localhost or 127.0.0.1
+#W3host=localhost
+
+# Watcher3 port.
+#W3port=9090
+
+# Watcher3 uses ssl (0, 1).
+#
+# Set to 1 if using ssl, else set to 0.
+#W3ssl=0
+
+# Watcher3 URL_Base
+#
+# set this if using a reverse proxy.
+#W3web_root=
+
+# OMDB API Key.
+#
+# api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
+#W3omdbapikey=
+
+# Wacther3 Delete Failed Downloads (0, 1).
+#
+# set to 1 to delete failed, or 0 to leave files in place.
+#W3delete_failed=0
+
+# Wacther3 wait_for
+#
+# Set the number of minutes to wait after calling the renamer, to check the movie has changed status.
+#W3wait_for=2
+
+# Watcher3 and NZBGet are a different system (0, 1).
+#
+# Enable to replace local path with the path as per the mountPoints below.
+#W3remote_path=0
+
 ## SickBeard
 
 # SickBeard script category.
