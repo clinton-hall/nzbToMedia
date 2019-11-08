@@ -8,27 +8,15 @@ trigger:
 
 jobs:
 
-- job: 'Test'
+- job: 'Configure'
   pool:
     vmImage: 'Ubuntu-16.04'
-  strategy:
-    matrix:
-      Python27:
-        python.version: '2.7'
-      Python35:
-        python.version: '3.5'
-      Python36:
-        python.version: '3.6'
-      Python37:
-        python.version: '3.7'
-      Python38:
-        python.version: '3.8'
-    maxParallel: 5
 
   steps:
   #Install ffmpeg (and any common tools) outside of Python version tasks
   - script: sudo apt-get install ffmpeg
     displayName: 'Install ffmpeg'
+    
   #- script: |
       # Make sure all packages are pulled from latest
       #sudo apt-get update
@@ -64,6 +52,24 @@ jobs:
           #cd $original_directory;
       #done;
     #displayName: 'Workaround: update apt and install Python versions'
+
+- job: 'Test'
+  dependsOn: 'Configure'
+  pool:
+    vmImage: 'Ubuntu-16.04'
+  strategy:
+    matrix:
+      Python27:
+        python.version: '2.7'
+      Python35:
+        python.version: '3.5'
+      Python36:
+        python.version: '3.6'
+      Python37:
+        python.version: '3.7'
+      Python38:
+        python.version: '3.8'
+    maxParallel: 5
 
   - task: UsePythonVersion@0
     inputs:
