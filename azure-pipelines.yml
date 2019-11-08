@@ -23,9 +23,12 @@ jobs:
         python.version: '3.7'
       Python38:
         python.version: '3.8'
-    maxParallel: 4
+    maxParallel: 5
 
   steps:
+  #Install ffmpeg (and any common tools) outside of Python version tasks
+  - script: sudo apt-get install ffmpeg
+    displayName: 'Install ffmpeg'
   #- script: |
       # Make sure all packages are pulled from latest
       #sudo apt-get update
@@ -69,9 +72,6 @@ jobs:
 
   - script: python -m pip install --upgrade pip
     displayName: 'Install dependencies'
-
-  - script: sudo apt-get install ffmpeg
-    displayName: 'Install ffmpeg'
 
   - script: |
       pip install pytest
