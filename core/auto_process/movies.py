@@ -252,8 +252,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         elif section == 'Radarr':
             logger.postprocess('Radarr response: {0}'.format(result['state']))
             try:
-                res = json.loads(r.content)
-                scan_id = int(res['id'])
+                scan_id = int(result['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
