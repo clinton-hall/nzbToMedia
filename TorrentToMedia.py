@@ -79,7 +79,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if section is None: #Check for user_scripts for 'ALL' and 'UNCAT'
         if usercat in core.CATEGORIES:
             section = core.CFG.findsection('ALL').isenabled()
-            usercat = 'ALL'  
+            usercat = 'ALL'
         else:
             section = core.CFG.findsection('UNCAT').isenabled()
             usercat = 'UNCAT'
@@ -213,7 +213,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         core.flatten(output_destination)
 
     # Now check if video files exist in destination:
-    if section_name in ['SickBeard', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr']:
+    if section_name in ['SickBeard', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr', 'Watcher3']:
         num_videos = len(
             core.list_media_files(output_destination, media=True, audio=False, meta=False, archives=False))
         if num_videos > 0:
@@ -227,7 +227,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     # Only these sections can handling failed downloads
     # so make sure everything else gets through without the check for failed
-    if section_name not in ['CouchPotato', 'Radarr', 'SickBeard', 'NzbDrone', 'Sonarr']:
+    if section_name not in ['CouchPotato', 'Radarr', 'SickBeard', 'NzbDrone', 'Sonarr', 'Watcher3']:
         status = 0
 
     logger.info('Calling {0}:{1} to post-process:{2}'.format(section_name, usercat, input_name))
@@ -241,7 +241,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     )
     if section_name == 'UserScript':
         result = external_script(output_destination, input_name, input_category, section)
-    elif section_name in ['CouchPotato', 'Radarr']:
+    elif section_name in ['CouchPotato', 'Radarr', 'Watcher3']:
         result = movies.process(section_name, output_destination, input_name, status, client_agent, input_hash, input_category)
     elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
         if input_hash:

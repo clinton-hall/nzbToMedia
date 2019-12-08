@@ -53,10 +53,11 @@ def move_file(mediafile, path, link):
         title = os.path.splitext(os.path.basename(mediafile))[0]
         new_path = os.path.join(path, sanitize_name(title))
 
-    try:
-        new_path = new_path.encode(core.SYS_ENCODING)
-    except Exception:
-        pass
+    # Removed as encoding of directory no-longer required
+    #try:
+    #    new_path = new_path.encode(core.SYS_ENCODING)
+    #except Exception:
+    #    pass
 
     # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
     if os.path.isfile(new_path):

@@ -53,7 +53,7 @@ class CheckVersion(object):
             'source': running from source without git
         """
         # check if we're a windows build
-        if os.path.isdir(os.path.join(core.APP_ROOT, u'.git')):
+        if os.path.exists(os.path.join(core.APP_ROOT, u'.git')):
             install_type = 'git'
         else:
             install_type = 'source'
