@@ -65,7 +65,7 @@ def parse_deluge(args):
     input_hash = args[1]
     input_id = args[1]
     try:
-        input_category = core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get()['label']
+        input_category = core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get()[b'label'].decode()
     except Exception:
         input_category = ''
     return input_directory, input_name, input_category, input_hash, input_id
