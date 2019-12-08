@@ -12,6 +12,8 @@ import subprocess
 import sys
 import shutil
 
+sys.dont_write_bytecode = True
+
 FOLDER_STRUCTURE = {
     'libs': [
         'common',

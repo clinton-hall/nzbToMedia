@@ -72,6 +72,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         base_url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
         url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
         headers = {'X-Api-Key': apikey}
+    if section == 'Watcher3':
+        base_url = '{0}{1}:{2}{3}/postprocessing'.format(protocol, host, port, web_root)
     if not apikey:
         logger.info('No CouchPotato or Radarr apikey entered. Performing transcoder functions only')
         release = None
@@ -178,7 +180,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                     os.rename(video, video2)
 
         if not apikey:  # If only using Transcoder functions, exit here.
-            logger.info('No CouchPotato or Radarr apikey entered. Processing completed.')
+            logger.info('No CouchPotato or Radarr or Watcher3 apikey entered. Processing completed.')
             return ProcessResult(
                 message='{0}: Successfully post-processed {1}'.format(section, input_name),
                 status_code=0,
@@ -210,9 +212,20 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             logger.debug('Opening URL: {0} with PARAMS: {1}'.format(base_url, payload), section)
             logger.postprocess('Starting DownloadedMoviesScan scan for {0}'.format(input_name), section)
 
+        if section == 'Watcher3':
+            if input_name and os.path.isfile(os.path.join(dir_name, input_name)):
+                params['media_folder'] = os.path.join(params['media_folder'], input_name)
+            payload = {'apikey': apikey, 'path': params['media_folder'], 'guid': download_id, 'mode': 'complete'}
+            if not download_id:
+                payload.pop('guid')
+            logger.debug('Opening URL: {0} with PARAMS: {1}'.format(base_url, payload), section)
+            logger.postprocess('Starting postprocessing scan for {0}'.format(input_name), section)
+
         try:
             if section == 'CouchPotato':
                 r = requests.get(url, params=params, verify=False, timeout=(30, 1800))
+            elif section == 'Watcher3':
+                r = requests.post(base_url, data=payload, verify=False, timeout=(30, 1800))
             else:
                 r = requests.post(base_url, data=json.dumps(payload), headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
@@ -239,12 +252,23 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         elif section == 'Radarr':
             logger.postprocess('Radarr response: {0}'.format(result['state']))
             try:
-                res = json.loads(r.content)
-                scan_id = int(res['id'])
+                scan_id = int(result['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
                 scan_id = None
+        elif section == 'Watcher3' and result['status'] == 'finished':
+            logger.postprocess('Watcher3 updated status to {0}'.format(result['tasks']['update_movie_status']))
+            if result['tasks']['update_movie_status'] == 'Finished':
+                return ProcessResult(
+                    message='{0}: Successfully post-processed {1}'.format(section, input_name),
+                    status_code=status,
+                )
+            else:
+                return ProcessResult(
+                    message='{0}: Failed to post-process - changed status to {1}'.format(section, result['tasks']['update_movie_status']),
+                    status_code=1,
+                )
         else:
             logger.error('FAILED: {0} scan was unable to finish for folder {1}. exiting!'.format(method, dir_name),
                          section)
@@ -264,6 +288,20 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 message='{0}: Sending failed download back to {0}'.format(section),
                 status_code=1,  # Return as failed to flag this in the downloader.
             )  # Return failed flag, but log the event as successful.
+        elif section == 'Watcher3':
+            logger.postprocess('Sending failed download to {0} for CDH processing'.format(section), section)
+            path = remote_dir(dir_name) if remote_path else dir_name
+            if input_name and os.path.isfile(os.path.join(dir_name, input_name)):
+                path = os.path.join(path, input_name)
+            payload = {'apikey': apikey, 'path': path, 'guid': download_id, 'mode': 'failed'}
+            r = requests.post(base_url, data=payload, verify=False, timeout=(30, 1800))
+            result = r.json()
+            logger.postprocess('Watcher3 response: {0}'.format(result))
+            if result['status'] == 'finished':
+                return ProcessResult(
+                    message='{0}: Sending failed download back to {0}'.format(section),
+                    status_code=1,  # Return as failed to flag this in the downloader.
+                )  # Return failed flag, but log the event as successful.
 
         if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
             logger.postprocess('Deleting failed files and folder {0}'.format(dir_name), section)

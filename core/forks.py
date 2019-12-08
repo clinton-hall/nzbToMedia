@@ -168,7 +168,8 @@ def auto_fork(section, input_category):
         else:
             logger.info('{section}:{category} fork auto-detection failed'.format
                         (section=section, category=input_category))
-            fork = core.FORKS.items()[core.FORKS.keys().index(core.FORK_DEFAULT)]
+            fork = list(core.FORKS.items())[list(core.FORKS.keys()).index(core.FORK_DEFAULT)]
+
 
     logger.info('{section}:{category} fork set to {fork}'.format
                 (section=section, category=input_category, fork=fork[0]))
