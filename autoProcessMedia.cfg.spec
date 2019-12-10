@@ -355,7 +355,7 @@
     default_downloadDirectory =
 
 [Torrent]
-    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, other
+    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, synods, other
     clientAgent = other
     ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, move-sym to move and link back, and no to not use links (copy)
     useLink = hard
