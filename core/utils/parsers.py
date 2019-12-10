@@ -81,6 +81,16 @@ def parse_transmission(args):
     return input_directory, input_name, input_category, input_hash, input_id
 
 
+def parse_synods(args):
+    # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
+    input_directory = os.path.join(os.path.normpath(os.getenv('TR_TORRENT_DIR')), '..', os.getenv('TR_TORRENT_NAME')) 
+    input_name = os.getenv('TR_TORRENT_NAME')
+    input_category = ''  # We dont have a category yet
+    input_hash = os.getenv('TR_TORRENT_HASH')
+    input_id = os.getenv('TR_TORRENT_ID')
+    return input_directory, input_name, input_category, input_hash, input_id
+
+
 def parse_vuze(args):
     # vuze usage: C:\full\path\to\nzbToMedia\TorrentToMedia.py '%D%N%L%I%K%F'
     try:
@@ -159,6 +169,7 @@ def parse_args(client_agent, args):
         'transmission': parse_transmission,
         'qbittorrent': parse_qbittorrent,
         'vuze': parse_vuze,
+        'synods': parse_synods,
     }
 
     try:
