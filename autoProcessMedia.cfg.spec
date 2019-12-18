@@ -386,6 +386,11 @@
     qBittorrentPort = 8080
     qBittorrentUSR = your username
     qBittorrentPWD = your password
+    ###### Synology Download Station (You must edit this if you're using TorrentToMedia.py with Synology DS)
+    synoHost = localhost
+    synoPort = 9091
+    synoUSR = your username
+    synoPWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
     chmodDirectory = 0

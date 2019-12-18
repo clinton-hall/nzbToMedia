@@ -82,12 +82,14 @@ def parse_transmission(args):
 
 
 def parse_synods(args):
-    # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
-    input_directory = os.path.join(os.path.normpath(os.getenv('TR_TORRENT_DIR')), '..', os.getenv('TR_TORRENT_NAME')) 
+    # Synology/Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
+    #input_directory =os.path.normpath(os.getenv('TR_TORRENT_DIR')) 
     input_name = os.getenv('TR_TORRENT_NAME')
     input_category = ''  # We dont have a category yet
     input_hash = os.getenv('TR_TORRENT_HASH')
     input_id = os.getenv('TR_TORRENT_ID')
+    res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
+    input_directory = res.json()['tasks'][0]['additional']['detail']['destination']
     return input_directory, input_name, input_category, input_hash, input_id
 
 
