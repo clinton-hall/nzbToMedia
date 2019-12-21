@@ -174,7 +174,7 @@ def parse_args(client_agent, args):
         'synods': parse_synods,
     }
 
-    try:
-        return clients[client_agent](args)
-    except Exception:
-        return None, None, None, None, None
+    #try:
+    return clients[client_agent](args)
+    #except Exception:
+    #    return None, None, None, None, None
