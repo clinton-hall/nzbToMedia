@@ -309,11 +309,11 @@ def main(args):
         status_code=0,
     )
 
-    try:
-        input_directory, input_name, input_category, input_hash, input_id = core.parse_args(client_agent, args)
-    except Exception:
-        logger.error('There was a problem loading variables')
-        return -1
+    #try:
+    input_directory, input_name, input_category, input_hash, input_id = core.parse_args(client_agent, args)
+    #except Exception:
+        #logger.error('There was a problem loading variables')
+        #return -1
 
     if input_directory and input_name and input_hash and input_id:
         result = process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent)
