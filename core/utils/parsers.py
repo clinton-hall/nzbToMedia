@@ -8,6 +8,7 @@ from __future__ import (
 import os
 
 import core
+from core import logger
 
 
 def parse_other(args):
@@ -89,7 +90,13 @@ def parse_synods(args):
     input_hash = os.getenv('TR_TORRENT_HASH')
     input_id = os.getenv('TR_TORRENT_ID')
     res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
-    input_directory = res['tasks'][0]['additional']['detail']['destination']
+    try:
+        input_directory = res['tasks'][0]['additional']['detail']['destination']
+    except:
+        logger.error('result keys are {0}'.format(res.keys()))
+        logger.info('result from syno {0}'.format(res))
+        input_directory = ''
+
     return input_directory, input_name, input_category, input_hash, input_id
 
 
@@ -174,7 +181,7 @@ def parse_args(client_agent, args):
         'synods': parse_synods,
     }
 
-    #try:
-    return clients[client_agent](args)
-    #except Exception:
-    #    return None, None, None, None, None
+    try:
+        return clients[client_agent](args)
+    except Exception:
+        return None, None, None, None, None
