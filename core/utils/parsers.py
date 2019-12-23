@@ -89,7 +89,7 @@ def parse_synods(args):
     input_hash = os.getenv('TR_TORRENT_HASH')
     input_id = os.getenv('TR_TORRENT_ID')
     res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
-    input_directory = res.json()['tasks'][0]['additional']['detail']['destination']
+    input_directory = res['tasks'][0]['additional']['detail']['destination']
     return input_directory, input_name, input_category, input_hash, input_id
 
 
