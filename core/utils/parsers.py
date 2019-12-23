@@ -84,19 +84,21 @@ def parse_transmission(args):
 
 def parse_synods(args):
     # Synology/Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
-    #input_directory =os.path.normpath(os.getenv('TR_TORRENT_DIR')) 
+    input_directory = ''
+    input_id = ''
+    input_category = ''
     input_name = os.getenv('TR_TORRENT_NAME')
-    input_category = ''  # We dont have a category yet
     input_hash = os.getenv('TR_TORRENT_HASH')
-    input_id = os.getenv('TR_TORRENT_ID')
-    res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
-    try:
-        input_directory = res['tasks'][0]['additional']['detail']['destination']
-    except:
-        logger.error('result keys are {0}'.format(res.keys()))
-        logger.info('result from syno {0}'.format(res))
-        input_directory = ''
-
+    res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
+    logger.debug('result from syno {0}'.format(res))
+    if res['success']:
+        try:
+            tasks = res['data']['tasks']
+            task = [ task for task in tasks if task['title'] == input_name ][0]
+            input_id = task['id']
+            input_directory = task['additional']['detail']['destination']
+        except:
+            logger.error('unable to find download details in Synology DS')
     return input_directory, input_name, input_category, input_hash, input_id
 
 
