@@ -1,2 +1,2 @@
-synchronousdeluge
+deluge_client
 utorrent
