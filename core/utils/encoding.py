@@ -27,13 +27,13 @@ def char_replace(name_in):
     encoded = False
     encoding = None
     if isinstance(name_in, text_type):
-        return encoded, name_in.encode(core.SYS_ENCODING)
+        return encoded, str(name_in.encode(core.SYS_ENCODING))
     if PY2:
         name = name_in
     else:
         name = bytes(name_in)
     for Idx in range(len(name)):
-        print('Trying to intuit the encoding')
+        # print('Trying to intuit the encoding')
         # /!\ detection is done 2char by 2char for UTF-8 special character
         if (len(name) != 1) & (Idx < (len(name) - 1)):
             # Detect UTF-8
@@ -61,7 +61,7 @@ def char_replace(name_in):
     if encoding and not encoding == core.SYS_ENCODING:
         encoded = True
         name = name.decode(encoding).encode(core.SYS_ENCODING)
-    return encoded, name
+    return encoded, str(name)
 
 
 def convert_to_ascii(input_name, dir_name):
