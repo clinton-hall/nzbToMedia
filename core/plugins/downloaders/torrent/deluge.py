@@ -5,7 +5,7 @@ from __future__ import (
     unicode_literals,
 )
 
-from synchronousdeluge.client import DelugeClient
+from deluge_client.client import DelugeRPCClient
 
 import core
 from core import logger
@@ -19,9 +19,9 @@ def configure_client():
     password = core.DELUGE_PASSWORD
 
     logger.debug('Connecting to {0}: http://{1}:{2}'.format(agent, host, port))
-    client = DelugeClient()
+    client = DelugeRPCClient(host, port, user, password)
     try:
-        client.connect(host, port, user, password)
+        client.connect()
     except Exception:
         logger.error('Failed to connect to Deluge')
     else:

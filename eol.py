@@ -96,7 +96,7 @@ def check(version=None, grace_period=0):
     :return: None
     """
     try:
-        raise_for_status(version, grace_period)
+        warn_for_status(version, grace_period)
     except LifetimeError as error:
         print('Please use a newer version of Python.')
         print_statuses()
