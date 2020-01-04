@@ -5,14 +5,16 @@ from __future__ import (
     unicode_literals,
 )
 
-from builtins import bytes
-
 import os
 
 from six import text_type
+from six import PY2
 
 import core
 from core import logger
+
+if not PY2:
+    from builtins import bytes
 
 
 def char_replace(name_in):
@@ -26,7 +28,10 @@ def char_replace(name_in):
     encoding = None
     if isinstance(name_in, text_type):
         return encoded, name_in.encode(core.SYS_ENCODING)
-    name=bytes(name_in)
+    if PY2:
+        name = name_in
+    else:
+        name = bytes(name_in)
     for Idx in range(len(name)):
         print('Trying to intuit the encoding')
         # /!\ detection is done 2char by 2char for UTF-8 special character
