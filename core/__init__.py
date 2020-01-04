@@ -983,13 +983,22 @@ def check_python():
 
     # Log warning if within grace period
     days_left = eol.lifetime()
-    logger.info(
-        'Python v{major}.{minor} will reach end of life in {x} days.'.format(
-            major=sys.version_info[0],
-            minor=sys.version_info[1],
-            x=days_left,
-        ),
-    )
+    if days_left > 0:
+        logger.info(
+            'Python v{major}.{minor} will reach end of life in {x} days.'.format(
+                major=sys.version_info[0],
+                minor=sys.version_info[1],
+                x=days_left,
+            ),
+        )
+    else:
+        logger.info(
+            'Python v{major}.{minor} reached end of life {x} days ago.'.format(
+                major=sys.version_info[0],
+                minor=sys.version_info[1],
+                x=-days_left,
+            ),
+        )
     if days_left <= grace_period:
         logger.warning('Please upgrade to a more recent Python version.')
 

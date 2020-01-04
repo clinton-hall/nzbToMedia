@@ -26,7 +26,9 @@ jobs:
     maxParallel: 5
 
   steps:
-  - script: sudo apt-get install ffmpeg
+  - script: |
+      sudo apt-get update
+      sudo apt-get install ffmpeg
     displayName: 'Install ffmpeg'
   
   - task: UsePythonVersion@0
