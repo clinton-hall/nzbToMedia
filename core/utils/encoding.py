@@ -55,7 +55,7 @@ def char_replace(name_in):
                 break
     if encoding and not encoding == core.SYS_ENCODING:
         encoded = True
-        name_enc = name.decode(encoding).encode(core.SYS_ENCODING)
+        name = name.decode(encoding).encode(core.SYS_ENCODING)
     return encoded, name
 
 
