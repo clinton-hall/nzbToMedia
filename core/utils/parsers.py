@@ -89,19 +89,26 @@ def parse_synods(args):
     input_category = ''
     input_name = os.getenv('TR_TORRENT_NAME')
     input_hash = os.getenv('TR_TORRENT_HASH')
-    res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
+    if not input_name: # No info passed. Assume manual download.
+        return input_directory, input_name, input_category, input_hash, input_id
+    input_id = 'dbid_'.format(os.getenv('TR_TORRENT_ID'))
+    #res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
+    res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
     logger.debug('result from syno {0}'.format(res))
     if res['success']:
         try:
             tasks = res['data']['tasks']
-            task = [ task for task in tasks if task['title'] == input_name ][0]
+            task = [ task for task in tasks if task['id'] == input_id ][0]
             input_id = task['id']
             input_directory = task['additional']['detail']['destination']
         except:
             logger.error('unable to find download details in Synology DS')
         #Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
-        if not os.path.isdir(input_directory) and os.path.isdir(os.path.join('/volume1/', input_directory)):
-            input_directory = os.path.join('/volume1/', input_directory)
+        if not os.path.isdir(input_directory):
+            for root in ['/volume1/', '/volume2/', '/volume3/', '/volume4/']:
+                if os.path.isdir(os.path.join(root, input_directory)):
+                    input_directory = os.path.join(root, input_directory)
+                    break
     return input_directory, input_name, input_category, input_hash, input_id
 
 
