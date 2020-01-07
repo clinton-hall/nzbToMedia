@@ -343,7 +343,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             time.sleep(60)
     elif section == 'NzbDrone':
         try:
-            res = json.loads(r.content)
+            res = r.json()
             scan_id = int(res['id'])
             logger.debug('Scan started with id: {0}'.format(scan_id), section)
             started = True
