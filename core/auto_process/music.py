@@ -125,7 +125,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             )
 
         try:
-            res = json.loads(r.content)
+            res = r.json()
             scan_id = int(res['id'])
             logger.debug('Scan started with id: {0}'.format(scan_id), section)
         except Exception as e:
