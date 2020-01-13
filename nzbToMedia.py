@@ -959,6 +959,13 @@ def main(args, section=None):
         result = process(os.environ['NZBPP_DIRECTORY'], input_name=os.environ['NZBPP_NZBNAME'], status=status,
                          client_agent=client_agent, download_id=download_id, input_category=os.environ['NZBPP_CATEGORY'],
                          failure_link=failure_link)
+    # SABnzbd
+    elif 'SAB_SCRIPT' in os.environ:
+        client_agent = 'sabnzbd'
+        logger.info('Script triggered from SABnzbd Version {0}.'.format(os.environ['SAB_VERSION']))
+        result = process(os.environ['SAB_COMPLETE_DIR'], input_name=os.environ['SAB_FINAL_NAME'], status=int(os.environ['SAB_PP_STATUS']),
+                         client_agent=client_agent, download_id=os.environ['SAB_NZO_ID'], input_category=os.environ['SAB_CAT'],
+                         failure_link=os.environ['SAB_FAILURE_URL'])
     # SABnzbd Pre 0.7.17
     elif len(args) == core.SABNZB_NO_OF_ARGUMENTS:
         # SABnzbd argv:
