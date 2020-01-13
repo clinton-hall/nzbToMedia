@@ -63,7 +63,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
         url = 'http://www.omdbapi.com'
 
         if not omdb_api_key:
-            logger.info('Unable to determine imdbID: No api key provided for ombdapi.com.')
+            logger.info('Unable to determine imdbID: No api key provided for omdbapi.com.')
             return
 
         logger.debug('Opening URL: {0}'.format(url))
