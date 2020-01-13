@@ -95,12 +95,13 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     # Attempt to create the directory if it doesn't exist and ignore any
     # error stating that it already exists. This fixes a bug where SickRage
     # won't process the directory because it doesn't exist.
-    try:
-        os.makedirs(dir_name)  # Attempt to create the directory
-    except OSError as e:
-        # Re-raise the error if it wasn't about the directory not existing
-        if e.errno != errno.EEXIST:
-            raise
+    if dir_name:
+        try:
+            os.makedirs(dir_name)  # Attempt to create the directory
+        except OSError as e:
+            # Re-raise the error if it wasn't about the directory not existing
+            if e.errno != errno.EEXIST:
+                raise
 
     if 'process_method' not in fork_params or (client_agent in ['nzbget', 'sabnzbd'] and nzb_extraction_by != 'Destination'):
         if input_name:
@@ -343,7 +344,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             time.sleep(60)
     elif section == 'NzbDrone':
         try:
-            res = json.loads(r.content)
+            res = r.json()
             scan_id = int(res['id'])
             logger.debug('Scan started with id: {0}'.format(scan_id), section)
             started = True
