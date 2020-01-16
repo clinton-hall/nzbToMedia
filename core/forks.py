@@ -120,7 +120,7 @@ def auto_fork(section, input_category):
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
                 r = s.get(login, verify=False, timeout=(30, 60))
-                if r.status_code == 401 and r.cookies.get('_xsrf'):
+                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
             r = s.get(url, auth=(username, password), verify=False)
