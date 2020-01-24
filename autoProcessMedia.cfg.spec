@@ -382,7 +382,7 @@
     DelugeUSR = your username
     DelugePWD = your password
     ###### qBittorrent (You must edit this if you're using TorrentToMedia.py with qBittorrent)
-    qBittorrenHost = localhost
+    qBittorrentHost = localhost
     qBittorrentPort = 8080
     qBittorrentUSR = your username
     qBittorrentPWD = your password

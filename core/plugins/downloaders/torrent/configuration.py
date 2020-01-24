@@ -85,7 +85,7 @@ def configure_deluge(config):
 
 
 def configure_qbittorrent(config):
-    core.QBITTORRENT_HOST = config['qBittorrenHost']  # localhost
+    core.QBITTORRENT_HOST = config['qBittorrentHost']  # localhost
     core.QBITTORRENT_PORT = int(config['qBittorrentPort'])  # 8080
     core.QBITTORRENT_USER = config['qBittorrentUSR']  # mysecretusr
     core.QBITTORRENT_PASSWORD = config['qBittorrentPWD']  # mysecretpwr
