@@ -191,6 +191,9 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == 'forceClean':
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
+                    if option == 'qBittorrenHost': #We had a typo that is now fixed.
+                        CFG_NEW['Torrent']['qBittorrentHost'] = value
+                        values.pop(option)
                 if section in ['Transcoder']:
                     if option in ['niceness']:
                         CFG_NEW['Posix'][option] = value
