@@ -271,10 +271,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     url = None
     if section == 'SickBeard':
-        if apikey and fork == 'SickGear':
-            url = '{0}{1}:{2}{3}/api/{4}/?cmd=sg.postprocess'.format(protocol, host, port, web_root, apikey)
-        elif apikey:
-            url = '{0}{1}:{2}{3}/api/{4}/?cmd=postprocess'.format(protocol, host, port, web_root, apikey)
+        if apikey:
+            url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
         elif fork == 'Stheno':
             url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
         else:
