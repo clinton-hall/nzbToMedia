@@ -132,7 +132,7 @@ def auto_fork(section, input_category):
             if apikey:
                 rem_params, found = api_check(r, params, rem_params)
                 if not found: # try different api set for SickGear.
-                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&help=1'.format(
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=sg.postprocess&help=1'.format(
                         protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
                     )
                     try:
