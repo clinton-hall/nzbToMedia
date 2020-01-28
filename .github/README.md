@@ -32,7 +32,7 @@ Installation instructions for this are available in the [wiki](https://github.co
 	
 Contribution
 ------------
-We who have developed nzbToMedia believe in the openness of open-source, and as such we hope that any modifications will lead back to the [orignal repo](https://github.com/clinton-hall/nzbToMedia "orignal repo") via pull requests.
+We who have developed nzbToMedia believe in the openness of open-source, and as such we hope that any modifications will lead back to the [original repo](https://github.com/clinton-hall/nzbToMedia "orignal repo") via pull requests.
 
 Founder: [clinton-hall](https://github.com/clinton-hall "clinton-hall")
 
