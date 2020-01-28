@@ -175,12 +175,12 @@
 # api key for www.omdbapi.com (used as alternative to imdb to assist with movie identification).
 #W3omdbapikey=
 
-# Wacther3 Delete Failed Downloads (0, 1).
+# Watcher3 Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
 #W3delete_failed=0
 
-# Wacther3 wait_for
+# Watcher3 wait_for
 #
 # Set the number of minutes to wait after calling the renamer, to check the movie has changed status.
 #W3wait_for=2
