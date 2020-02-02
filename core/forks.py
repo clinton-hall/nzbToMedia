@@ -104,7 +104,7 @@ def auto_fork(section, input_category):
         # then in order of most unique parameters.
 
         if apikey:
-            url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
+            url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=sg.postprocess&help=1'.format(
                 protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
             )
         else:
@@ -132,9 +132,9 @@ def auto_fork(section, input_category):
             if apikey:
                 rem_params, found = api_check(r, params, rem_params)
                 if found:
-                    params['cmd'] = 'postprocess'
-                else: # try different api set for SickGear.
-                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=sg.postprocess&help=1'.format(
+                    params['cmd'] = 'sg.postprocess'
+                else: # try different api set for non-SickGear forks.
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
                         protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
                     )
                     try:
@@ -143,7 +143,7 @@ def auto_fork(section, input_category):
                         logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                                     (section=section, category=input_category))
                     rem_params, found = api_check(r, params, rem_params)
-                    params['cmd'] = 'sg.postprocess'
+                    params['cmd'] = 'postprocess'
             else:
                 # Find excess parameters
                 rem_params.extend(
