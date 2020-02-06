@@ -131,14 +131,15 @@ def extract(file_path, output_destination):
         else:
             cmd = core.NICENESS + cmd
         cmd2 = cmd
-        cmd2.append('-p-')  # don't prompt for password.
+        if not 'gunzip' in cmd: #gunzip doesn't support password
+            cmd2.append('-p-')  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
         if res == 0:  # Both Linux and Windows return 0 for successful.
             core.logger.info('EXTRACTOR: Extraction was successful for {file} to {destination}'.format
                              (file=file_path, destination=output_destination))
             success = 1
-        elif len(passwords) > 0:
+        elif len(passwords) > 0 and not 'gunzip' in cmd:
             core.logger.info('EXTRACTOR: Attempting to extract with passwords')
             for password in passwords:
                 if password == '':  # if edited in windows or otherwise if blank lines.
