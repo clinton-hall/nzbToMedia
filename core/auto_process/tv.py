@@ -273,6 +273,11 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     if section == 'SickBeard':
         if apikey:
             url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
+            if not 'cmd' in fork_params:
+                if 'SickGear' in fork:
+                    fork_params['cmd'] = 'sg.postprocess'
+                else:
+                    fork_params['cmd'] = 'postprocess'
         elif fork == 'Stheno':
             url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
         else:
