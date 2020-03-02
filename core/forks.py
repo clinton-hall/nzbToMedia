@@ -104,7 +104,7 @@ def auto_fork(section, input_category):
         # then in order of most unique parameters.
 
         if apikey:
-            url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
+            url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=sg.postprocess&help=1'.format(
                 protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
             )
         else:
@@ -120,7 +120,7 @@ def auto_fork(section, input_category):
                     protocol=protocol, host=host, port=port, root=web_root)
                 login_params = {'username': username, 'password': password}
                 r = s.get(login, verify=False, timeout=(30, 60))
-                if r.status_code == 401 and r.cookies.get('_xsrf'):
+                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
             r = s.get(url, auth=(username, password), verify=False)
@@ -131,8 +131,10 @@ def auto_fork(section, input_category):
         if r and r.ok:
             if apikey:
                 rem_params, found = api_check(r, params, rem_params)
-                if not found: # try different api set for SickGear.
-                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=postprocess&help=1'.format(
+                if found:
+                    params['cmd'] = 'sg.postprocess'
+                else: # try different api set for non-SickGear forks.
+                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
                         protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
                     )
                     try:
@@ -141,6 +143,7 @@ def auto_fork(section, input_category):
                         logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                                     (section=section, category=input_category))
                     rem_params, found = api_check(r, params, rem_params)
+                    params['cmd'] = 'postprocess'
             else:
                 # Find excess parameters
                 rem_params.extend(
