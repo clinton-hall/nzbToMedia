@@ -21,6 +21,9 @@ def api_check(r, params, rem_params):
         logger.debug('Response received')
         raise
 
+    if isinstance(json_data, str):
+        return rem_params, False
+
     try:
         json_data = json_data['data']
     except KeyError:
