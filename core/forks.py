@@ -28,7 +28,11 @@ def api_check(r, params, rem_params):
         logger.debug('Response received: {}'.format(json_data))
         raise
     else:
-        if isinstance(json_data, str):
+        if six.PY3:
+            str_type = (str)
+        else:
+            str_type = (str, unicode)
+        if isinstance(json_data, str_type):
             return rem_params, False
         json_data = json_data.get('data', json_data)
 
