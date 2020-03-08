@@ -8,6 +8,7 @@ from __future__ import (
 )
 
 import requests
+import six
 from six import iteritems
 
 import core
