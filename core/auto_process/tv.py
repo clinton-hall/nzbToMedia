@@ -272,7 +272,12 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     url = None
     if section == 'SickBeard':
         if apikey:
-            url = '{0}{1}:{2}{3}/api/{4}/?cmd=postprocess'.format(protocol, host, port, web_root, apikey)
+            url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
+            if not 'cmd' in fork_params:
+                if 'SickGear' in fork:
+                    fork_params['cmd'] = 'sg.postprocess'
+                else:
+                    fork_params['cmd'] = 'postprocess'
         elif fork == 'Stheno':
             url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
         else:
@@ -300,7 +305,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
                 login = '{0}{1}:{2}{3}/login'.format(protocol, host, port, web_root)
                 login_params = {'username': username, 'password': password}
                 r = s.get(login, verify=False, timeout=(30, 60))
-                if r.status_code == 401 and r.cookies.get('_xsrf'):
+                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
             r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
