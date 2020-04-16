@@ -83,7 +83,7 @@ from core.utils import (
     wake_up,
 )
 
-__version__ = '12.1.04'
+__version__ = '12.1.05'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -177,6 +177,11 @@ TRANSMISSION_HOST = None
 TRANSMISSION_PORT = None
 TRANSMISSION_USER = None
 TRANSMISSION_PASSWORD = None
+
+SYNO_HOST = None
+SYNO_PORT = None
+SYNO_USER = None
+SYNO_PASSWORD = None
 
 DELUGE_HOST = None
 DELUGE_PORT = None

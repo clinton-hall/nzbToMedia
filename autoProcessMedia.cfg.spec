@@ -355,7 +355,7 @@
     default_downloadDirectory =
 
 [Torrent]
-    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, other
+    ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, synods, other
     clientAgent = other
     ###### useLink - Set to hard for physical links, sym for symbolic links, move to move, move-sym to move and link back, and no to not use links (copy)
     useLink = hard
@@ -382,10 +382,15 @@
     DelugeUSR = your username
     DelugePWD = your password
     ###### qBittorrent (You must edit this if you're using TorrentToMedia.py with qBittorrent)
-    qBittorrenHost = localhost
+    qBittorrentHost = localhost
     qBittorrentPort = 8080
     qBittorrentUSR = your username
     qBittorrentPWD = your password
+    ###### Synology Download Station (You must edit this if you're using TorrentToMedia.py with Synology DS)
+    synoHost = localhost
+    synoPort = 5000
+    synoUSR = your username
+    synoPWD = your password
     ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
     deleteOriginal = 0
     chmodDirectory = 0

@@ -11,7 +11,7 @@ from core.plugins.downloaders.torrent.utils import create_torrent_class
 
 def configure_torrents(config):
     torrent_config = config['Torrent']
-    core.TORRENT_CLIENT_AGENT = torrent_config['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent |other
+    core.TORRENT_CLIENT_AGENT = torrent_config['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
     core.OUTPUT_DIRECTORY = torrent_config['outputDirectory']  # /abs/path/to/complete/
     core.TORRENT_DEFAULT_DIRECTORY = torrent_config['default_downloadDirectory']
 
@@ -25,6 +25,7 @@ def configure_torrents(config):
     configure_transmission(torrent_config)
     configure_deluge(torrent_config)
     configure_qbittorrent(torrent_config)
+    configure_syno(torrent_config)
 
 
 def configure_torrent_linking(config):
@@ -69,6 +70,13 @@ def configure_transmission(config):
     core.TRANSMISSION_PASSWORD = config['TransmissionPWD']  # mysecretpwr
 
 
+def configure_syno(config):
+    core.SYNO_HOST = config['synoHost']  # localhost
+    core.SYNO_PORT = int(config['synoPort'])
+    core.SYNO_USER = config['synoUSR']  # mysecretusr
+    core.SYNO_PASSWORD = config['synoPWD']  # mysecretpwr
+
+
 def configure_deluge(config):
     core.DELUGE_HOST = config['DelugeHost']  # localhost
     core.DELUGE_PORT = int(config['DelugePort'])  # 8084
@@ -77,7 +85,7 @@ def configure_deluge(config):
 
 
 def configure_qbittorrent(config):
-    core.QBITTORRENT_HOST = config['qBittorrenHost']  # localhost
+    core.QBITTORRENT_HOST = config['qBittorrentHost']  # localhost
     core.QBITTORRENT_PORT = int(config['qBittorrentPort'])  # 8080
     core.QBITTORRENT_USER = config['qBittorrentUSR']  # mysecretusr
     core.QBITTORRENT_PASSWORD = config['qBittorrentPWD']  # mysecretpwr
