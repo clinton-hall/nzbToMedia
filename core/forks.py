@@ -139,6 +139,8 @@ def auto_fork(section, input_category):
             if apikey:
                 rem_params, found = api_check(r, params, rem_params)
                 if found:
+                    if 'cmd' in rem_params:
+                        rem_params.pop('cmd') # Don't remove this param.
                     params['cmd'] = 'sg.postprocess'
                 else: # try different api set for non-SickGear forks.
                     url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
@@ -150,6 +152,8 @@ def auto_fork(section, input_category):
                         logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                                     (section=section, category=input_category))
                     rem_params, found = api_check(r, params, rem_params)
+                    if 'cmd' in rem_params:
+                        rem_params.pop('cmd') # Don't remove this param.
                     params['cmd'] = 'postprocess'
             else:
                 # Find excess parameters
