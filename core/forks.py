@@ -41,6 +41,7 @@ def api_check(r, params, rem_params):
         optional_parameters = json_data['optionalParameters'].keys()
         # Find excess parameters
         excess_parameters = set(params).difference(optional_parameters)
+        excess_parameters.remove('cmd') # Don't remove cmd from api params
         logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
         rem_params.extend(excess_parameters)
         return rem_params, True
