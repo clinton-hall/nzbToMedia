@@ -107,8 +107,8 @@
 
 # Niceness for external tasks Extractor and Transcoder.
 #
-# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process). 
-# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default). 
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
+# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default).
 # If entering a comma separated list e.g. 'niceness=nice,4' this will be passed as 'nice 4' (Safer).
 #niceness=nice,-n0
 
@@ -213,22 +213,25 @@
 # ffmpeg output settings.
 #outputVideoExtension=.mp4
 #outputVideoCodec=libx264
-#VideoCodecAllow =
+#VideoCodecAllow=
 #outputVideoResolution=720:-1
 #outputVideoPreset=medium
 #outputVideoFramerate=24
 #outputVideoBitrate=800k
-#outputAudioCodec=libmp3lame
-#AudioCodecAllow =
-#outputAudioBitrate=128k
-#outputQualityPercent = 0
-#outputAudioTrack2Codec = libfaac
-#AudioCodec2Allow =
-#outputAudioTrack2Bitrate = 128k
-#outputAudioOtherCodec = libmp3lame
-#AudioOtherCodecAllow =
-#outputAudioOtherBitrate = 128k
-#outputSubtitleCodec =
+#outputAudioCodec=ac3
+#AudioCodecAllow=
+#outputAudioChannels=6
+#outputAudioBitrate=640k
+#outputQualityPercent=
+#outputAudioTrack2Codec=libfaac
+#AudioCodec2Allow=
+#outputAudioTrack2Channels=2
+#outputAudioTrack2Bitrate=160k
+#outputAudioOtherCodec=libmp3lame
+#AudioOtherCodecAllow=
+#outputAudioOtherChannels=2
+#outputAudioOtherBitrate=128k
+#outputSubtitleCodec=
 
 ## WakeOnLan
 

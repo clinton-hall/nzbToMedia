@@ -41,6 +41,7 @@ def api_check(r, params, rem_params):
         optional_parameters = json_data['optionalParameters'].keys()
         # Find excess parameters
         excess_parameters = set(params).difference(optional_parameters)
+        excess_parameters.remove('cmd') # Don't remove cmd from api params
         logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
         rem_params.extend(excess_parameters)
         return rem_params, True
@@ -111,13 +112,15 @@ def auto_fork(section, input_category):
         # then in order of most unique parameters.
 
         if apikey:
-            url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=sg.postprocess&help=1'.format(
+            url = '{protocol}{host}:{port}{root}/api/{apikey}/'.format(
                 protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
             )
+            api_params = {'cmd': 'sg.postprocess', 'help': '1'}
         else:
             url = '{protocol}{host}:{port}{root}/home/postprocess/'.format(
                 protocol=protocol, host=host, port=port, root=web_root,
             )
+            api_params = {}
 
         # attempting to auto-detect fork
         try:
@@ -130,7 +133,7 @@ def auto_fork(section, input_category):
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
-            r = s.get(url, auth=(username, password), verify=False)
+            r = s.get(url, auth=(username, password), params=api_params, verify=False)
         except requests.ConnectionError:
             logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                         (section=section, category=input_category))
@@ -141,11 +144,9 @@ def auto_fork(section, input_category):
                 if found:
                     params['cmd'] = 'sg.postprocess'
                 else: # try different api set for non-SickGear forks.
-                    url = '{protocol}{host}:{port}{root}/api/{apikey}/?cmd=help&subject=postprocess'.format(
-                        protocol=protocol, host=host, port=port, root=web_root, apikey=apikey,
-                    )
+                    api_params = {'cmd': 'help', 'subject': 'postprocess'}
                     try:
-                        r = s.get(url, auth=(username, password), verify=False)
+                        r = s.get(url, auth=(username, password), params=api_params, verify=False)
                     except requests.ConnectionError:
                         logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
                                     (section=section, category=input_category))
