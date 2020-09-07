@@ -127,7 +127,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(core.CONFIG_SPEC_FILE, core.CONFIG_FILE)
             CFG_OLD = config(core.CONFIG_FILE)
         except Exception as error:
-            logger.debug('Error {msg} when copying to .cfg'.format(msg=error))
+            logger.error('Error {msg} when copying to .cfg'.format(msg=error))
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
@@ -135,7 +135,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(core.CONFIG_FILE, core.CONFIG_SPEC_FILE)
             CFG_NEW = config(core.CONFIG_SPEC_FILE)
         except Exception as error:
-            logger.debug('Error {msg} when copying to .spec'.format(msg=error))
+            logger.error('Error {msg} when copying to .spec'.format(msg=error))
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
