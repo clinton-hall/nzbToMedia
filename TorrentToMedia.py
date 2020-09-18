@@ -333,9 +333,9 @@ def main(args):
                                 (os.path.basename(dir_name)))
                     core.DOWNLOAD_INFO = core.get_download_info(os.path.basename(dir_name), 0)
                     if core.DOWNLOAD_INFO:
-                        client_agent = text_type(core.DOWNLOAD_INFO[0].get('client_agent', 'manual'))
-                        input_hash = text_type(core.DOWNLOAD_INFO[0].get('input_hash', ''))
-                        input_id = text_type(core.DOWNLOAD_INFO[0].get('input_id', ''))
+                        client_agent = text_type(core.DOWNLOAD_INFO[0]['client_agent']) else 'manual'
+                        input_hash = text_type(core.DOWNLOAD_INFO[0]['input_hash']) else ''
+                        input_id = text_type(core.DOWNLOAD_INFO[0]['input_id']) else ''
                         logger.info('Found download info for {0}, '
                                     'setting variables now ...'.format(os.path.basename(dir_name)))
                     else:
