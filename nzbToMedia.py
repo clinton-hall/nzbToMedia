@@ -1016,8 +1016,8 @@ def main(args, section=None):
                         logger.info('Found download info for {0}, '
                                     'setting variables now ...'.format
                                     (os.path.basename(dir_name)))
-                        client_agent = text_type(core.DOWNLOAD_INFO[0].get('client_agent', 'manual'))
-                        download_id = text_type(core.DOWNLOAD_INFO[0].get('input_id', ''))
+                        client_agent = text_type(core.DOWNLOAD_INFO[0]['client_agent']) or 'manual'
+                        download_id = text_type(core.DOWNLOAD_INFO[0]['input_id']) or ''
                     else:
                         logger.info('Unable to locate download info for {0}, '
                                     'continuing to try and process this release ...'.format

@@ -188,6 +188,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     for param in copy.copy(fork_params):
         if param == 'failed':
+            if failed > 1:
+                failed = 1
             fork_params[param] = failed
             if 'proc_type' in fork_params:
                 del fork_params['proc_type']

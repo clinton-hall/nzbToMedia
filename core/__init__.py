@@ -83,7 +83,7 @@ from core.utils import (
     wake_up,
 )
 
-__version__ = '12.1.06'
+__version__ = '12.1.07'
 
 # Client Agents
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
@@ -118,7 +118,7 @@ FORKS = {
     FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
     FORK_MEDUSA_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None, 'cmd': 'postprocess'},
     FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
-    FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is priority': None, 'cmd': 'sg.postprocess'},
+    FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is priority': None, 'failed': None, 'cmd': 'sg.postprocess'},
     FORK_STHENO: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
 }
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}

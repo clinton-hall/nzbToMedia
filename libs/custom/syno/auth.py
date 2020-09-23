@@ -97,7 +97,7 @@ class Authentication:
 
         req_param['_sid'] = self._sid
 
-        if method is 'get':
+        if method == 'get':
             url = ('%s%s' % (self._base_url, api_path)) + '?api=' + api_name
             response = requests.get(url, req_param)
 
@@ -106,7 +106,7 @@ class Authentication:
             else:
                 return response
 
-        elif method is 'post':
+        elif method == 'post':
             url = ('%s%s' % (self._base_url, api_path)) + '?api=' + api_name
             response = requests.post(url, req_param)
 
