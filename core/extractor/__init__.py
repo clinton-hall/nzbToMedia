@@ -28,11 +28,11 @@ def extract(file_path, output_destination):
         wscriptlocation = os.path.join(os.environ['WINDIR'], 'system32', 'wscript.exe')
         invislocation = os.path.join(core.APP_ROOT, 'core', 'extractor', 'bin', 'invisible.vbs')
         cmd_7zip = [wscriptlocation, invislocation, str(core.SHOWEXTRACT), core.SEVENZIP, 'x', '-y']
-        ext_7zip = ['.rar', '.zip', '.tar.gz', 'tgz', '.tar.bz2', '.tbz', '.tar.lzma', '.tlz', '.7z', '.xz']
+        ext_7zip = ['.rar', '.zip', '.tar.gz', 'tgz', '.tar.bz2', '.tbz', '.tar.lzma', '.tlz', '.7z', '.xz', '.gz']
         extract_commands = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
     else:
-        required_cmds = ['unrar', 'unzip', 'tar', 'unxz', 'unlzma', '7zr', 'bunzip2']
+        required_cmds = ['unrar', 'unzip', 'tar', 'unxz', 'unlzma', '7zr', 'bunzip2', 'gunzip']
         # ## Possible future suport:
         # gunzip: gz (cmd will delete original archive)
         # ## the following do not extract to dest dir
@@ -49,6 +49,7 @@ def extract(file_path, output_destination):
             '.tar.lzma': ['tar', '--lzma', '-xf'], '.tlz': ['tar', '--lzma', '-xf'],
             '.tar.xz': ['tar', '--xz', '-xf'], '.txz': ['tar', '--xz', '-xf'],
             '.7z': ['7zr', 'x'],
+            '.gz': ['gunzip'],
         }
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
@@ -82,6 +83,8 @@ def extract(file_path, output_destination):
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == '.tar':
             cmd = extract_commands['.tar{ext}'.format(ext=ext[1])]
+        else: # Try gunzip
+            cmd = extract_commands[ext[1]]
     elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in ('.rar', '.zip', '.7z'):
         cmd = extract_commands[os.path.splitext(ext[0])[1]]
     elif ext[1] in ('.cb7', '.cba', '.cbr', '.cbt', '.cbz'):  # don't extract these comic book archives.
@@ -128,14 +131,15 @@ def extract(file_path, output_destination):
         else:
             cmd = core.NICENESS + cmd
         cmd2 = cmd
-        cmd2.append('-p-')  # don't prompt for password.
+        if not 'gunzip' in cmd: #gunzip doesn't support password
+            cmd2.append('-p-')  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
         if res == 0:  # Both Linux and Windows return 0 for successful.
             core.logger.info('EXTRACTOR: Extraction was successful for {file} to {destination}'.format
                              (file=file_path, destination=output_destination))
             success = 1
-        elif len(passwords) > 0:
+        elif len(passwords) > 0 and not 'gunzip' in cmd:
             core.logger.info('EXTRACTOR: Attempting to extract with passwords')
             for password in passwords:
                 if password == '':  # if edited in windows or otherwise if blank lines.
