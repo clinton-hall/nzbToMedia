@@ -68,6 +68,8 @@
         method = renamer
         delete_failed = 0
         wait_for = 2
+        # Set this to supress error if no status change after rename called.
+        no_status_check = 0
         extract = 1
         # Set this to minimum required size to consider a media file valid (in MB)
         minSize = 0
