@@ -59,6 +59,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     remote_path = int(cfg.get('remote_path', 0))
     protocol = 'https://' if ssl else 'http://'
     omdbapikey = cfg.get('omdbapikey', '')
+    no_status_check = int(cfg.get('no_status_check', 0))
     status = int(status)
     if status > 0 and core.NOEXTRACTFAILED:
         extract = 0
@@ -465,6 +466,11 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         '{0} does not appear to have changed status after {1} minutes, Please check your logs.'.format(input_name, wait_for),
         section,
     )
+    if no_status_check:
+        return ProcessResult(
+            status_code=0,
+            message='{0}: Successfully processed but no change in status confirmed'.format(section),
+        )    
     return ProcessResult(
         status_code=1,
         message='{0}: Failed to post-process - No change in status'.format(section),
