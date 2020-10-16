@@ -387,6 +387,12 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     if not release:
         download_id = None  # we don't want to filter new releases based on this.
 
+    if no_status_check:
+        return ProcessResult(
+            status_code=0,
+            message='{0}: Successfully processed but no change in status confirmed'.format(section),
+        ) 
+
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     timeout = time.time() + 60 * wait_for
     while time.time() < timeout:  # only wait 2 (default) minutes, then return.
@@ -466,11 +472,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         '{0} does not appear to have changed status after {1} minutes, Please check your logs.'.format(input_name, wait_for),
         section,
     )
-    if no_status_check:
-        return ProcessResult(
-            status_code=0,
-            message='{0}: Successfully processed but no change in status confirmed'.format(section),
-        )    
+   
     return ProcessResult(
         status_code=1,
         message='{0}: Failed to post-process - No change in status'.format(section),
