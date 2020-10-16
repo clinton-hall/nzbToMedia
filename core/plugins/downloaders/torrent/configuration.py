@@ -14,6 +14,7 @@ def configure_torrents(config):
     core.TORRENT_CLIENT_AGENT = torrent_config['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
     core.OUTPUT_DIRECTORY = torrent_config['outputDirectory']  # /abs/path/to/complete/
     core.TORRENT_DEFAULT_DIRECTORY = torrent_config['default_downloadDirectory']
+    core.TORRENT_NO_MANUAL = int(torrent_config['no_manuall'])
 
     configure_torrent_linking(torrent_config)
     configure_flattening(torrent_config)
