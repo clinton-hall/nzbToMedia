@@ -355,6 +355,8 @@
     sabnzbd_apikey =
     ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.
     default_downloadDirectory =
+    # enable this option to prevent nzbToMedia from running in manual mode and scanning an entire directory.
+    no_manual = 0    
 
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, synods, other
@@ -398,6 +400,8 @@
     chmodDirectory = 0
     resume = 1
     resumeOnFailure = 1
+    # enable this option to prevent TorrentToMedia from running in manual mode and scanning an entire directory.
+    no_manual = 0  
 
 [Extensions]
     compressedExtensions = .zip,.rar,.7z,.gz,.bz,.tar,.arj,.1,.01,.001
