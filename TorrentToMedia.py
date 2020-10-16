@@ -317,6 +317,8 @@ def main(args):
 
     if input_directory and input_name and input_hash and input_id:
         result = process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent)
+    elif core.TORRENT_NO_MANUAL:
+        logger.warning('Invalid number of arguments received from client, and no_manual set')
     else:
         # Perform Manual Post-Processing
         logger.warning('Invalid number of arguments received from client, Switching to manual run mode ...')
