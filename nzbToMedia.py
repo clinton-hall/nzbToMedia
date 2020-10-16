@@ -999,6 +999,8 @@ def main(args, section=None):
     elif len(args) > 5 and args[5] == 'generic':
         logger.info('Script triggered from generic program')
         result = process(args[1], input_name=args[2], input_category=args[3], download_id=args[4])
+    elif core.NZB_NO_MANUAL:
+        logger.warning('Invalid number of arguments received from client, and no_manual set')
     else:
         # Perform Manual Post-Processing
         logger.warning('Invalid number of arguments received from client, Switching to manual run mode ...')
