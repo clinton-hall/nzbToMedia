@@ -144,6 +144,15 @@ def category_search(input_directory, input_name, input_category, root, categorie
         input_directory = os.path.join(input_directory, sanitize_name(input_name))
         logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
         tordir = True
+    elif input_name and os.path.isdir(input_directory):
+        for file in os.listdir(text_type(input_directory)):
+            if os.path.splitext(file)[0] in [input_name, sanitize_name(input_name)]:
+                logger.info('SEARCH: Found torrent file {0} in input directory directory {1}'.format(file, input_directory))
+                input_directory = os.path.join(input_directory, file)
+                logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+                input_name = file
+                tordir = True
+                break
 
     imdbid = [item for item in pathlist if '.cp(tt' in item]  # This looks for the .cp(tt imdb id in the path.
     if imdbid and '.cp(tt' not in input_name:
