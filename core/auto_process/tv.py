@@ -14,6 +14,8 @@ import os
 import time
 
 import requests
+from oauthlib.oauth2 import LegacyApplicationClient
+from requests_oauthlib import OAuth2Session
 
 import core
 from core import logger, transcoder
@@ -39,7 +41,6 @@ requests.packages.urllib3.disable_warnings()
 
 
 def process(section, dir_name, input_name=None, failed=False, client_agent='manual', download_id=None, input_category=None, failure_link=None):
-
     cfg = dict(core.CFG[section][input_category])
 
     host = cfg['host']
@@ -50,12 +51,15 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     username = cfg.get('username', '')
     password = cfg.get('password', '')
     apikey = cfg.get('apikey', '')
+    api_version = int(cfg.get('api_version', 2))
+    sso_username = cfg.get('sso_username', '')
+    sso_password = cfg.get('sso_password', '')
 
     if server_responding('{0}{1}:{2}{3}'.format(protocol, host, port, web_root)):
         # auto-detect correct fork
         fork, fork_params = auto_fork(section, input_category)
-    elif not username and not apikey:
-        logger.info('No SickBeard username or Sonarr apikey entered. Performing transcoder functions only')
+    elif not username and not apikey and not sso_username:
+        logger.info('No SickBeard / SiCKRAGE username or Sonarr apikey entered. Performing transcoder functions only')
         fork, fork_params = 'None', {}
     else:
         logger.error('Server did not respond. Exiting', section)
@@ -202,7 +206,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
                 del fork_params['quiet']
 
         if param == 'type':
-            if 'type' in fork_params: # only set if we haven't already deleted for 'failed' above.
+            if 'type' in fork_params:  # only set if we haven't already deleted for 'failed' above.
                 fork_params[param] = 'manual'
             if 'proc_type' in fork_params:
                 del fork_params['proc_type']
@@ -285,6 +289,11 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
         else:
             url = '{0}{1}:{2}{3}/home/postprocess/processEpisode'.format(protocol, host, port, web_root)
+    elif section == 'SiCKRAGE':
+        if api_version >= 2:
+            url = '{0}{1}:{2}{3}/api/v{4}/postprocess'.format(protocol, host, port, web_root, api_version)
+        else:
+            url = '{0}{1}:{2}{3}/api/v{4}/{5}/'.format(protocol, host, port, web_root, api_version, apikey)
     elif section == 'NzbDrone':
         url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
         url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
@@ -302,8 +311,9 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     try:
         if section == 'SickBeard':
-            logger.debug('Opening URL: {0} with params: {1}'.format(url, fork_params), section)
             s = requests.Session()
+
+            logger.debug('Opening URL: {0} with params: {1}'.format(url, fork_params), section)
             if not apikey and username and password:
                 login = '{0}{1}:{2}{3}/login'.format(protocol, host, port, web_root)
                 login_params = {'username': username, 'password': password}
@@ -312,6 +322,31 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
             r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
+        elif section == 'SiCKRAGE':
+            s = requests.Session()
+
+            if api_version >= 2 and sso_username and sso_password:
+                oauth = OAuth2Session(client=LegacyApplicationClient(client_id=core.SICKRAGE_OAUTH_CLIENT_ID))
+                oauth_token = oauth.fetch_token(client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                                                token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
+                                                username=sso_username,
+                                                password=sso_password)
+                s.headers.update({'Authorization': 'Bearer ' + oauth_token['access_token']})
+
+                params = {
+                    'path': fork_params['path'],
+                    'failed': str(bool(fork_params['failed'])).lower(),
+                    'processMethod': 'move',
+                    'forceReplace': str(bool(fork_params['force_replace'])).lower(),
+                    'returnData': str(bool(fork_params['return_data'])).lower(),
+                    'delete': str(bool(fork_params['delete'])).lower(),
+                    'forceNext': str(bool(fork_params['force_next'])).lower(),
+                    'nzbName': fork_params['nzbName']
+                }
+            else:
+                params = fork_params
+
+            r = s.get(url, params=params, stream=True, verify=False, timeout=(30, 1800))
         elif section == 'NzbDrone':
             logger.debug('Opening URL: {0} with data: {1}'.format(url, data), section)
             r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
@@ -350,6 +385,12 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
         if queued:
             time.sleep(60)
+    elif section == 'SiCKRAGE':
+        if api_version >= 2:
+            success = True
+        else:
+            if r.json()['result'] == 'success':
+                success = True
     elif section == 'NzbDrone':
         try:
             res = r.json()
@@ -401,7 +442,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             #     status_code=1,
             # )
         if completed_download_handling(url2, headers, section=section):
-            logger.debug('The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.'.format(section), section)
+            logger.debug('The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.'.format(section),
+                         section)
             return ProcessResult(
                 message='{0}: Complete DownLoad Handling is enabled. Passing back to {0}'.format(section),
                 status_code=status,

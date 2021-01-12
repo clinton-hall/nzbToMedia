@@ -4,7 +4,7 @@
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 
-# Post-Process to SickBeard.
+# Post-Process to SiCKRAGE.
 #
 # This script sends the download to your automated media management servers.
 #
@@ -35,64 +35,67 @@
 # Turn this on to disable additional extraction attempts for failed downloads. Default = 0 this will attempt to extract and verify if media is present.
 #no_extract_failed = 0
 
-## SickBeard
+## SiCKRAGE
 
-# SickBeard script category.
+# SiCKRAGE script category.
 #
-# category that gets called for post-processing with SickBeard.
-#sbCategory=tv
+# category that gets called for post-processing with SiCKRAGE.
+#srCategory=tv
 
-# SickBeard host.
+# SiCKRAGE host.
 #
-# The ipaddress for your SickBeard server. e.g For the Same system use localhost or 127.0.0.1
-#sbhost=localhost
+# The ipaddress for your SiCKRAGE server. e.g For the Same system use localhost or 127.0.0.1
+#srhost=localhost
 
-# SickBeard port.
-#sbport=8081
+# SiCKRAGE port.
+#srport=8081
 
-# SickBeard api key. For SickChill and Medusa only.
-#sbapikey=
+# SiCKRAGE API v1 key.
+#srapikey=
 
-# SickBeard username.
-#sbusername=
+# SiCKRAGE API version.
+#sapi_version=2
 
-# SickBeard password.
-#sbpassword=
+# SiCKRAGE oauth username.
+#srsso_username=
 
-# SickBeard uses ssl (0, 1).
+# SiCKRAGE oauth password.
+#srsso_password=
+
+# SiCKRAGE uses ssl (0, 1).
 #
 # Set to 1 if using ssl, else set to 0.
-#sbssl=0
+#srssl=0
 
-# SickBeard web_root
+# SiCKRAGE web_root
 #
 # set this if using a reverse proxy.
-#sbweb_root=
+#srweb_root=
 
-# SickBeard watch directory.
+# SiCKRAGE watch directory.
 #
-# set this to where your SickBeard completed downloads are.
-#sbwatch_dir=
+# set this to where your SiCKRAGE completed downloads are.
+#srwatch_dir=
 
-# SickBeard fork.
+# SiCKRAGE fork.
 #
 # set to default or auto to auto-detect the custom fork type.
-#sbfork=auto
+#srfork=auto
 
-# SickBeard Delete Failed Downloads (0, 1).
+# SiCKRAGE Delete Failed Downloads (0, 1).
 #
 # set to 1 to delete failed, or 0 to leave files in place.
-#sbdelete_failed=0
+#srdelete_failed=0
 
-# SickBeard process method.
+# SiCKRAGE process method.
 #
 # set this to move, copy, hardlink, symlink as appropriate if you want to over-ride SB defaults. Leave blank to use SB default.
-#sbprocess_method=
+#srprocess_method=
 
-# SickBeard and NZBGet are a different system (0, 1).
+# SiCKRAGE and NZBGet are a different system (0, 1).
 #
 # Enable to replace local path with the path as per the mountPoints below.
-#sbremote_path=0
+#srremote_path=0
 
 ## Network
 
@@ -167,7 +170,7 @@
 
 # processOutput (0,1).
 #
-# processOutput. 1 will send the outputVideoPath to SickBeard/CouchPotato. 0 will send original files.
+# processOutput. 1 will send the outputVideoPath to SiCKRAGE. 0 will send original files.
 #processOutput=0
 
 # audioLanguage.
@@ -269,6 +272,6 @@ import sys
 
 import nzbToMedia
 
-section = 'SickBeard'
+section = 'SiCKRAGE'
 result = nzbToMedia.main(sys.argv, section)
 sys.exit(result)

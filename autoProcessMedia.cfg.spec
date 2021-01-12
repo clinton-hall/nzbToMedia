@@ -181,6 +181,47 @@
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
 
+[SiCKRAGE]
+    #### autoProcessing for TV Series
+    #### tv - category that gets called for post-processing with SR
+    [[tv]]
+        enabled = 0
+        host = localhost
+        port = 8081
+        apikey =
+        # api version 1 uses api keys
+        # api version 2 uses SSO user/pass
+        api_version = 2
+        # SSO login requires API v2 to be set
+        sso_username =
+        sso_password =
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        process_method =
+        # force processing of already processed content when running a manual scan.
+        force = 0
+        # tell SickRage/Medusa to delete all source files after processing.
+        delete_on = 0
+        # tell Medusa to ignore check for associated subtitle check when postponing release
+        ignore_subs = 0
+        extract = 1
+        nzbExtractionBy = Downloader
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid media files)
+        delete_ignored = 0
+        ##### Enable if SickBeard is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+        ##### Set the recursive directory permissions to the following (0 to disable)
+        chmodDirectory = 0
+
 [NzbDrone]
     #### Formerly known as NzbDrone this is now Sonarr
     #### autoProcessing for TV Series
@@ -356,7 +397,7 @@
     ###### Enter the default path to your default download directory (non-category downloads). this directory is protected by safe_mode.
     default_downloadDirectory =
     # enable this option to prevent nzbToMedia from running in manual mode and scanning an entire directory.
-    no_manual = 0    
+    no_manual = 0
 
 [Torrent]
     ###### clientAgent - Supported clients: utorrent, transmission, deluge, rtorrent, vuze, qbittorrent, synods, other
@@ -401,7 +442,7 @@
     resume = 1
     resumeOnFailure = 1
     # enable this option to prevent TorrentToMedia from running in manual mode and scanning an entire directory.
-    no_manual = 0  
+    no_manual = 0
 
 [Extensions]
     compressedExtensions = .zip,.rar,.7z,.gz,.bz,.tar,.arj,.1,.01,.001

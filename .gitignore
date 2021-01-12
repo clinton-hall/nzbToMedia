@@ -10,5 +10,6 @@
 /userscripts/
 /logs/
 /.idea/
+/venv/
 *.dist-info
 *.egg-info

@@ -516,8 +516,8 @@
 
 # Niceness for external tasks Extractor and Transcoder.
 #
-# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process). 
-# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default). 
+# Set the Niceness value for the nice command. These range from -20 (most favorable to the process) to 19 (least favorable to the process).
+# If entering an integer e.g 'niceness=4', this is added to the nice command and passed as 'nice -n4' (Default).
 # If entering a comma separated list e.g. 'niceness=nice,4' this will be passed as 'nice 4' (Safer).
 #niceness=nice,-n0
 
@@ -849,7 +849,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     if section_name in ['CouchPotato', 'Radarr', 'Watcher3']:
         result = movies.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
-    elif section_name in ['SickBeard', 'NzbDrone', 'Sonarr']:
+    elif section_name in ['SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr']:
         result = tv.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
     elif section_name in ['HeadPhones', 'Lidarr']:
         result = music.process(section_name, input_directory, input_name, status, client_agent, input_category)

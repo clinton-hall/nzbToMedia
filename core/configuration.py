@@ -146,11 +146,21 @@ class ConfigObj(configobj.ConfigObj, Section):
         for newsection in CFG_NEW:
             if CFG_NEW[newsection].sections:
                 subsections.update({newsection: CFG_NEW[newsection].sections})
+
         for section in CFG_OLD:
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():
-                if option in ['category', 'cpsCategory', 'sbCategory', 'hpCategory', 'mlCategory', 'gzCategory', 'raCategory', 'ndCategory', 'W3Category']:
+                if option in ['category',
+                              'cpsCategory',
+                              'sbCategory',
+                              'srCategory',
+                              'hpCategory',
+                              'mlCategory',
+                              'gzCategory',
+                              'raCategory',
+                              'ndCategory',
+                              'W3Category']:
                     if not isinstance(value, list):
                         value = [value]
 
@@ -191,7 +201,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == 'forceClean':
                         CFG_NEW['General']['force_clean'] = value
                         values.pop(option)
-                    if option == 'qBittorrenHost': #We had a typo that is now fixed.
+                    if option == 'qBittorrenHost':  # We had a typo that is now fixed.
                         CFG_NEW['Torrent']['qBittorrentHost'] = value
                         values.pop(option)
                 if section in ['Transcoder']:
@@ -204,6 +214,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     elif not value:
                         value = 0
                     values[option] = value
+
                 # remove any options that we no longer need so they don't migrate into our new config
                 if not list(ConfigObj.find_key(CFG_NEW, option)):
                     try:
@@ -247,6 +258,20 @@ class ConfigObj(configobj.ConfigObj, Section):
                 process_section(section, subsection)
             elif section in CFG_OLD.keys():
                 process_section(section, subsection)
+
+        # migrate SiCRKAGE settings from SickBeard section to new dedicated SiCRKAGE section
+        if CFG_OLD['SickBeard']['tv']['enabled'] and CFG_OLD['SickBeard']['tv']['fork'] == 'sickrage-api':
+            for option, value in iteritems(CFG_OLD['SickBeard']['tv']):
+                if option in CFG_NEW['SiCKRAGE']['tv']:
+                    CFG_NEW['SiCKRAGE']['tv'][option] = value
+
+            # set API version to 1 if API key detected and no SSO username is set
+            if CFG_NEW['SiCKRAGE']['tv']['apikey'] and not CFG_NEW['SiCKRAGE']['tv']['sso_username']:
+                CFG_NEW['SiCKRAGE']['tv']['api_version'] = 1
+
+            # disable SickBeard section
+            CFG_NEW['SickBeard']['tv']['enabled'] = 0
+            CFG_NEW['SickBeard']['tv']['fork'] = 'auto'
 
         # create a backup of our old config
         CFG_OLD.filename = '{config}.old'.format(config=core.CONFIG_FILE)
@@ -360,10 +385,10 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'SickBeard'
             env_cat_key = 'NZBPO_SBCATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
-                        'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
-            cfg_keys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork',
-                        'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
+            env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK',
+                        'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
+            cfg_keys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink',
+                        'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = 'NZBPO_SB{index}'.format(index=env_keys[index])
@@ -374,6 +399,29 @@ class ConfigObj(configobj.ConfigObj, Section):
                             cfg_new[section][os.environ[env_cat_key]] = {}
                         cfg_new[section][os.environ[env_cat_key]][option] = value
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
+                if os.environ[env_cat_key] in cfg_new['SiCKRAGE'].sections:
+                    cfg_new['SiCKRAGE'][env_cat_key]['enabled'] = 0
+                if os.environ[env_cat_key] in cfg_new['NzbDrone'].sections:
+                    cfg_new['NzbDrone'][env_cat_key]['enabled'] = 0
+
+            section = 'SiCKRAGE'
+            env_cat_key = 'NZBPO_SRCATEGORY'
+            env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'API_VERSION', 'SSO_USERNAME', 'SSO_PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
+                        'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
+            cfg_keys = ['enabled', 'host', 'port', 'apikey', 'api_version', 'sso_username', 'sso_password', 'ssl', 'web_root', 'watch_dir', 'fork',
+                        'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
+            if env_cat_key in os.environ:
+                for index in range(len(env_keys)):
+                    key = 'NZBPO_SR{index}'.format(index=env_keys[index])
+                    if key in os.environ:
+                        option = cfg_keys[index]
+                        value = os.environ[key]
+                        if os.environ[env_cat_key] not in cfg_new[section].sections:
+                            cfg_new[section][os.environ[env_cat_key]] = {}
+                        cfg_new[section][os.environ[env_cat_key]][option] = value
+                cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
+                if os.environ[env_cat_key] in cfg_new['SickBeard'].sections:
+                    cfg_new['SickBeard'][env_cat_key]['enabled'] = 0
                 if os.environ[env_cat_key] in cfg_new['NzbDrone'].sections:
                     cfg_new['NzbDrone'][env_cat_key]['enabled'] = 0
 
@@ -460,6 +508,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
                 if os.environ[env_cat_key] in cfg_new['SickBeard'].sections:
                     cfg_new['SickBeard'][env_cat_key]['enabled'] = 0
+                if os.environ[env_cat_key] in cfg_new['SiCKRAGE'].sections:
+                    cfg_new['SiCKRAGE'][env_cat_key]['enabled'] = 0
 
             section = 'Radarr'
             env_cat_key = 'NZBPO_RACATEGORY'
