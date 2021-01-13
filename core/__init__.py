@@ -97,7 +97,6 @@ SABNZB_0717_NO_OF_ARGUMENTS = 9
 FORK_DEFAULT = 'default'
 FORK_FAILED = 'failed'
 FORK_FAILED_TORRENT = 'failed-torrent'
-FORK_SICKRAGE = 'SickRage'
 FORK_SICKCHILL = 'SickChill'
 FORK_SICKCHILL_API = 'SickChill-api'
 FORK_SICKBEARD_API = 'SickBeard-api'
@@ -111,7 +110,6 @@ FORKS = {
     FORK_DEFAULT: {'dir': None},
     FORK_FAILED: {'dirName': None, 'failed': None},
     FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
-    FORK_SICKRAGE: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None},
     FORK_SICKCHILL: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None},
     FORK_SICKCHILL_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'is_priority': None, 'cmd': 'postprocess'},
     FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'cmd': 'postprocess'},
@@ -122,6 +120,10 @@ FORKS = {
     FORK_STHENO: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
 }
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
+
+# SiCKRAGE OAuth2
+SICKRAGE_OAUTH_CLIENT_ID = 'nzbtomedia'
+SICKRAGE_OAUTH_TOKEN_URL = 'https://auth.sickrage.ca/auth/realms/sickrage/protocol/openid-connect/token'
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PAR_CHECK = 92
