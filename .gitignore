@@ -13,3 +13,4 @@
 /venv/
 *.dist-info
 *.egg-info
+/.vscode
