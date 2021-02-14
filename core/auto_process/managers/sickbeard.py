@@ -1,15 +1,23 @@
-import core
-from .pymedusa import PyMedusa
+# coding=utf-8
 
-
-import requests
-import six
-from oauthlib.oauth2 import LegacyApplicationClient
-from requests_oauthlib import OAuth2Session
-from six import iteritems
+from __future__ import (
+    absolute_import,
+    division,
+    print_function,
+    unicode_literals,
+)
 
 import core
 from core import logger
+
+from oauthlib.oauth2 import LegacyApplicationClient
+
+import requests
+
+from requests_oauthlib import OAuth2Session
+
+import six
+from six import iteritems
 
 
 class InitSickBeard(object):
@@ -17,6 +25,7 @@ class InitSickBeard(object):
 
     Used to determin which sickbeard fork object to initialize.
     """
+
     def __init__(self, cfg, section, input_category):
         # As a bonus let's also put the config on self.
         self.config = cfg
@@ -35,8 +44,33 @@ class InitSickBeard(object):
         self.sso_username = cfg.get('sso_username', '')
         self.sso_password = cfg.get('sso_password', '')
 
-
         self.fork = 'auto'
+
+        replace = {
+            'medusa': 'Medusa',
+            'medusa-api': 'Medusa-api',
+            'sickbeard-api': 'SickBeard-api',
+            'sickgear': 'SickGear',
+            'sickchill': 'SickChill',
+            'stheno': 'Stheno',
+        }
+        _val = cfg.get('fork', 'auto')
+        f1 = replace.get(_val, _val)
+        try:
+            self.fork = f1, core.FORKS[f1]
+        except KeyError:
+            self.fork = 'auto'
+            self.protocol = 'https://' if self.ssl else 'http://'
+
+    def auto_fork(self):
+        # auto-detect correct section
+        # config settings
+        if core.FORK_SET:  # keep using determined fork for multiple (manual) post-processing
+            logger.info('{section}:{category} fork already set to {fork}'.format
+                        (section=self.section, category=self.input_category, fork=core.FORK_SET[0]))
+            return core.FORK_SET[0], core.FORK_SET[1]
+
+        cfg = dict(core.CFG[self.section][self.input_category])
 
         replace = {
             'medusa': 'Medusa',
@@ -52,7 +86,82 @@ class InitSickBeard(object):
             fork = f1, core.FORKS[f1]
         except KeyError:
             fork = 'auto'
-            protocol = 'https://' if self.ssl else 'http://'
+        protocol = 'https://' if self.ssl else 'http://'
+
+        if self.section == 'NzbDrone':
+            logger.info('Attempting to verify {category} fork'.format
+                        (category=self.input_category))
+            url = '{protocol}{host}:{port}{root}/api/rootfolder'.format(
+                protocol=protocol, host=self.host, port=self.port, root=self.web_root,
+            )
+            headers = {'X-Api-Key': self.apikey}
+            try:
+                r = requests.get(url, headers=headers, stream=True, verify=False)
+            except requests.ConnectionError:
+                logger.warning('Could not connect to {0}:{1} to verify fork!'.format(self.section, self.input_category))
+
+            if not r.ok:
+                logger.warning('Connection to {section}:{category} failed! '
+                               'Check your configuration'.format
+                               (section=self.section, category=self.input_category))
+
+            fork = ['default', {}]
+
+        elif self.section == 'SiCKRAGE':
+            logger.info('Attempting to verify {category} fork'.format
+                        (category=self.input_category))
+
+            if self.api_version >= 2:
+                url = '{protocol}{host}:{port}{root}/api/v{api_version}/ping'.format(
+                    protocol=protocol, host=self.host, port=self.port, root=self.web_root, api_version=self.api_version
+                )
+                api_params = {}
+            else:
+                url = '{protocol}{host}:{port}{root}/api/v{api_version}/{apikey}/'.format(
+                    protocol=protocol, host=self.host, port=self.port, root=self.web_root, api_version=self.api_version, apikey=self.apikey,
+                )
+                api_params = {'cmd': 'postprocess', 'help': '1'}
+
+            try:
+                if self.api_version >= 2 and self.sso_username and self.sso_password:
+                    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=core.SICKRAGE_OAUTH_CLIENT_ID))
+                    oauth_token = oauth.fetch_token(client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                                                    token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
+                                                    username=self.sso_username,
+                                                    password=self.sso_password)
+                    r = requests.get(url, headers={'Authorization': 'Bearer ' + oauth_token['access_token']}, stream=True, verify=False)
+                else:
+                    r = requests.get(url, params=api_params, stream=True, verify=False)
+
+                if not r.ok:
+                    logger.warning('Connection to {section}:{category} failed! '
+                                   'Check your configuration'.format(
+                                       section=self.section, category=self.input_category
+                                   ))
+            except requests.ConnectionError:
+                logger.warning('Could not connect to {0}:{1} to verify API version!'.format(self.section, self.input_category))
+
+            params = {
+                'path': None,
+                'failed': None,
+                'process_method': None,
+                'force_replace': None,
+                'return_data': None,
+                'type': None,
+                'delete': None,
+                'force_next': None,
+                'is_priority': None
+            }
+
+            fork = ['default', params]
+
+        elif fork == 'auto':
+            fork = self.detect_fork()
+
+        logger.info('{section}:{category} fork set to {fork}'.format
+                    (section=self.section, category=self.input_category, fork=fork[0]))
+        core.FORK_SET = fork
+        return fork[0], fork[1]
 
     @staticmethod
     def _api_check(r, params, rem_params):
@@ -92,7 +201,7 @@ class InitSickBeard(object):
 
     def detect_fork(self):
         """Try to detect a specific fork."""
-
+        detected = False
         params = core.ALL_FORKS
         rem_params = []
         logger.info('Attempting to auto-detect {category} fork'.format(category=self.input_category))
