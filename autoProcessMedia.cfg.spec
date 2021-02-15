@@ -164,6 +164,9 @@
         process_method =
         # force processing of already processed content when running a manual scan.
         force = 0
+        # Additionally to force, handle the download as a priority downlaod.
+        # The processed files will always replace existing qualities, also if this is a lower quality.
+        is_priority = 0
         # tell SickRage/Medusa to delete all source files after processing.
         delete_on = 0
         # tell Medusa to ignore check for associated subtitle check when postponing release
