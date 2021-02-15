@@ -1,14 +1,11 @@
-import requests
-
-from core import logger
 import time
 
-from .sickbeard import SickBeard
-from core.auto_process.common import (
-    ProcessResult,
-    command_complete,
-    completed_download_handling,
-)
+from core import logger
+from core.auto_process.common import ProcessResult
+from core.auto_process.managers.sickbeard import SickBeard
+
+import requests
+
 
 class PyMedusa(SickBeard):
     """PyMedusa class."""

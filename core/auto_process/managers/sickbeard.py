@@ -7,22 +7,14 @@ from __future__ import (
     unicode_literals,
 )
 
-
 import copy
-from core.auto_process.common import (
-    ProcessResult,
-)
 
 import core
 from core import logger
-from core.utils import (
-    convert_to_ascii,
-    flatten,
-    list_media_files,
-    remote_dir,
-    remove_dir,
-    server_responding,
+from core.auto_process.common import (
+    ProcessResult,
 )
+from core.utils import remote_dir
 
 from oauthlib.oauth2 import LegacyApplicationClient
 
@@ -354,7 +346,6 @@ class SickBeard(object):
 
         # Keep track of result state
         self.success = False
-        self.error_message = ''
 
     def initialize(self, dir_name, input_name=None, failed=False, client_agent='manual'):
         """We need to call this explicitely because we need some variables.
