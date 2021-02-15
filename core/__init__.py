@@ -102,6 +102,7 @@ FORK_SICKCHILL_API = 'SickChill-api'
 FORK_SICKBEARD_API = 'SickBeard-api'
 FORK_MEDUSA = 'Medusa'
 FORK_MEDUSA_API = 'Medusa-api'
+FORK_MEDUSA_APIV2 = 'Medusa-apiv2'
 FORK_SICKGEAR = 'SickGear'
 FORK_SICKGEAR_API = 'SickGear-api'
 FORK_STHENO = 'Stheno'
@@ -115,6 +116,7 @@ FORKS = {
     FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'cmd': 'postprocess'},
     FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
     FORK_MEDUSA_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None, 'cmd': 'postprocess'},
+    FORK_MEDUSA_APIV2: {'proc_dir': None, 'resource': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'is_priority': None},
     FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
     FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is priority': None, 'failed': None, 'cmd': 'sg.postprocess'},
     FORK_STHENO: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},

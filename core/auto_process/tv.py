@@ -24,7 +24,7 @@ from core.auto_process.common import (
     command_complete,
     completed_download_handling,
 )
-from core.forks import auto_fork
+from core.auto_process.managers.sickbeard import InitSickBeard
 from core.plugins.downloaders.nzb.utils import report_nzb
 from core.plugins.subtitles import import_subs
 from core.scene_exceptions import process_all_exceptions
@@ -36,6 +36,7 @@ from core.utils import (
     remove_dir,
     server_responding,
 )
+
 
 requests.packages.urllib3.disable_warnings()
 
@@ -55,9 +56,15 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     sso_username = cfg.get('sso_username', '')
     sso_password = cfg.get('sso_password', '')
 
+    # Refactor into an OO structure.
+    # For now let's do botch the OO and the serialized code, until everything has been migrated.
+    init_sickbeard = InitSickBeard(cfg, section, input_category)
+
     if server_responding('{0}{1}:{2}{3}'.format(protocol, host, port, web_root)):
         # auto-detect correct fork
-        fork, fork_params = auto_fork(section, input_category)
+        # During reactor we also return fork, fork_params. But these are also stored in the object.
+        # Should be changed after refactor.
+        fork, fork_params = init_sickbeard.auto_fork()
     elif not username and not apikey and not sso_username:
         logger.info('No SickBeard / SiCKRAGE username or Sonarr apikey entered. Performing transcoder functions only')
         fork, fork_params = 'None', {}
@@ -183,6 +190,9 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
                 message='{0}: Failed to post-process - Transcoding failed'.format(section),
                 status_code=1,
             )
+
+    # Part of the refactor
+    init_sickbeard.fork.initialize(dir_name, input_name, failed, client_agent='manual')
 
     # configure SB params to pass
     fork_params['quiet'] = 1
@@ -311,17 +321,20 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     try:
         if section == 'SickBeard':
-            s = requests.Session()
+            if init_sickbeard.fork:
+                r = init_sickbeard.fork.api_call()
+            else:
+                s = requests.Session()
 
-            logger.debug('Opening URL: {0} with params: {1}'.format(url, fork_params), section)
-            if not apikey and username and password:
-                login = '{0}{1}:{2}{3}/login'.format(protocol, host, port, web_root)
-                login_params = {'username': username, 'password': password}
-                r = s.get(login, verify=False, timeout=(30, 60))
-                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
-                    login_params['_xsrf'] = r.cookies.get('_xsrf')
-                s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
-            r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
+                logger.debug('Opening URL: {0} with params: {1}'.format(url, fork_params), section)
+                if not apikey and username and password:
+                    login = '{0}{1}:{2}{3}/login'.format(protocol, host, port, web_root)
+                    login_params = {'username': username, 'password': password}
+                    r = s.get(login, verify=False, timeout=(30, 60))
+                    if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
+                        login_params['_xsrf'] = r.cookies.get('_xsrf')
+                    s.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
+                r = s.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
         elif section == 'SiCKRAGE':
             s = requests.Session()
 
