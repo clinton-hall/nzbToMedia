@@ -192,7 +192,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             )
 
     # Part of the refactor
-    init_sickbeard.fork.initialize(dir_name, input_name, failed, client_agent='manual')
+    if init_sickbeard.fork_obj:
+        init_sickbeard.fork_obj.initialize(dir_name, input_name, failed, client_agent='manual')
 
     # configure SB params to pass
     fork_params['quiet'] = 1
@@ -321,8 +322,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     try:
         if section == 'SickBeard':
-            if init_sickbeard.fork:
-                r = init_sickbeard.fork.api_call()
+            if init_sickbeard.fork_obj:
+                r = init_sickbeard.fork_obj.api_call()
             else:
                 s = requests.Session()
 
