@@ -196,66 +196,69 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
         init_sickbeard.fork_obj.initialize(dir_name, input_name, failed, client_agent='manual')
 
     # configure SB params to pass
-    fork_params['quiet'] = 1
-    fork_params['proc_type'] = 'manual'
-    if input_name is not None:
-        fork_params['nzbName'] = input_name
+    # We don't want to remove params, for the Forks that have been refactored.
+    # As we don't want to duplicate this part of the code.
+    if not init_sickbeard.fork_obj:
+        fork_params['quiet'] = 1
+        fork_params['proc_type'] = 'manual'
+        if input_name is not None:
+            fork_params['nzbName'] = input_name
 
-    for param in copy.copy(fork_params):
-        if param == 'failed':
-            if failed > 1:
-                failed = 1
-            fork_params[param] = failed
-            if 'proc_type' in fork_params:
-                del fork_params['proc_type']
-            if 'type' in fork_params:
-                del fork_params['type']
+        for param in copy.copy(fork_params):
+            if param == 'failed':
+                if failed > 1:
+                    failed = 1
+                fork_params[param] = failed
+                if 'proc_type' in fork_params:
+                    del fork_params['proc_type']
+                if 'type' in fork_params:
+                    del fork_params['type']
 
-        if param == 'return_data':
-            fork_params[param] = 0
-            if 'quiet' in fork_params:
-                del fork_params['quiet']
+            if param == 'return_data':
+                fork_params[param] = 0
+                if 'quiet' in fork_params:
+                    del fork_params['quiet']
 
-        if param == 'type':
-            if 'type' in fork_params:  # only set if we haven't already deleted for 'failed' above.
-                fork_params[param] = 'manual'
-            if 'proc_type' in fork_params:
-                del fork_params['proc_type']
+            if param == 'type':
+                if 'type' in fork_params:  # only set if we haven't already deleted for 'failed' above.
+                    fork_params[param] = 'manual'
+                if 'proc_type' in fork_params:
+                    del fork_params['proc_type']
 
-        if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
-            fork_params[param] = dir_name
-            if remote_path:
-                fork_params[param] = remote_dir(dir_name)
+            if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
+                fork_params[param] = dir_name
+                if remote_path:
+                    fork_params[param] = remote_dir(dir_name)
 
-        if param == 'process_method':
-            if process_method:
-                fork_params[param] = process_method
-            else:
-                del fork_params[param]
+            if param == 'process_method':
+                if process_method:
+                    fork_params[param] = process_method
+                else:
+                    del fork_params[param]
 
-        if param in ['force', 'force_replace']:
-            if force:
-                fork_params[param] = force
-            else:
-                del fork_params[param]
+            if param in ['force', 'force_replace']:
+                if force:
+                    fork_params[param] = force
+                else:
+                    del fork_params[param]
 
-        if param in ['delete_on', 'delete']:
-            if delete_on:
-                fork_params[param] = delete_on
-            else:
-                del fork_params[param]
+            if param in ['delete_on', 'delete']:
+                if delete_on:
+                    fork_params[param] = delete_on
+                else:
+                    del fork_params[param]
 
-        if param == 'ignore_subs':
-            if ignore_subs:
-                fork_params[param] = ignore_subs
-            else:
-                del fork_params[param]
+            if param == 'ignore_subs':
+                if ignore_subs:
+                    fork_params[param] = ignore_subs
+                else:
+                    del fork_params[param]
 
-        if param == 'force_next':
-            fork_params[param] = 1
+            if param == 'force_next':
+                fork_params[param] = 1
 
-    # delete any unused params so we don't pass them to SB by mistake
-    [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
+        # delete any unused params so we don't pass them to SB by mistake
+        [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
 
     if status == 0:
         if section == 'NzbDrone' and not apikey:
@@ -323,7 +326,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     try:
         if section == 'SickBeard':
             if init_sickbeard.fork_obj:
-                r = init_sickbeard.fork_obj.api_call()
+                return init_sickbeard.fork_obj.api_call()
             else:
                 s = requests.Session()
 
