@@ -183,6 +183,8 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
+        ##### pyMedusa (fork=medusa-apiv2) uses async postprocessing. Wait a maximum of x minutes for a pp result
+        wait_for = 10
 
 [SiCKRAGE]
     #### autoProcessing for TV Series
@@ -224,8 +226,6 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
-        ##### pyMedusa (fork=medusa-apiv2) uses async postprocessing. Wait a maximum of x minutes for a pp result
-        wait_for = 10
 
 [NzbDrone]
     #### Formerly known as NzbDrone this is now Sonarr
