@@ -224,7 +224,7 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
-        ##### pyMedusa (fork=medusa-apiv2) uses async postprocessing. Wait a maximum of minutes for a pp result
+        ##### pyMedusa (fork=medusa-apiv2) uses async postprocessing. Wait a maximum of x minutes for a pp result
         wait_for = 10
 
 [NzbDrone]
