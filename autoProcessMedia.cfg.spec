@@ -224,6 +224,7 @@
         watch_dir =
         ##### Set the recursive directory permissions to the following (0 to disable)
         chmodDirectory = 0
+        wait_for = 10
 
 [NzbDrone]
     #### Formerly known as NzbDrone this is now Sonarr

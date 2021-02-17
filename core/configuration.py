@@ -178,7 +178,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 if section in ['CouchPotato', 'HeadPhones', 'Gamez', 'Mylar']:
                     if option in ['username', 'password']:
                         values.pop(option)
-                if section in ['SickBeard', 'Mylar']:
+                if section in ['Mylar']:
                     if option == 'wait_for':  # remove old format
                         values.pop(option)
                 if section in ['SickBeard', 'NzbDrone']:

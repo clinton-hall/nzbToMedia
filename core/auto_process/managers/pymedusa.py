@@ -120,7 +120,7 @@ class PyMedusaApiV2(SickBeard):
 
         queueitem_identifier = jdata['queueItem']['identifier']
 
-        wait_for = self.sb_init.config.get('wait_for', 2)
+        wait_for = int(self.sb_init.config.get('wait_for', 2))
         n = 0
         response = {}
         url = '{0}/{1}'.format(url, queueitem_identifier)
