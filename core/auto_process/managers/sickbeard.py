@@ -7,19 +7,14 @@ from __future__ import (
     unicode_literals,
 )
 
-
 import copy
 
 import core
 from core import logger
-from core.utils import (
-    convert_to_ascii,
-    flatten,
-    list_media_files,
-    remote_dir,
-    remove_dir,
-    server_responding,
+from core.auto_process.common import (
+    ProcessResult,
 )
+from core.utils import remote_dir
 
 from oauthlib.oauth2 import LegacyApplicationClient
 
@@ -88,13 +83,15 @@ class InitSickBeard(object):
         replace = {
             'medusa': 'Medusa',
             'medusa-api': 'Medusa-api',
+            'medusa-apiv1': 'Medusa-api',
+            'medusa-apiv2': 'Medusa-apiv2',
             'sickbeard-api': 'SickBeard-api',
             'sickgear': 'SickGear',
             'sickchill': 'SickChill',
             'stheno': 'Stheno',
         }
         _val = cfg.get('fork', 'auto')
-        f1 = replace.get(_val, _val)
+        f1 = replace.get(_val.lower(), _val)
         try:
             fork = f1, core.FORKS[f1]
         except KeyError:
@@ -303,9 +300,13 @@ class InitSickBeard(object):
         return fork
 
     def _init_fork(self):
-        from .pymedusa import PyMedusa
+        # These need to be imported here, to prevent a circular import.
+        from .pymedusa import PyMedusa, PyMedusaApiV1, PyMedusaApiV2
+
         mapped_forks = {
-            'Medusa': PyMedusa
+            'Medusa': PyMedusa,
+            'Medusa-api': PyMedusaApiV1,
+            'Medusa-apiv2': PyMedusaApiV2
         }
         logger.debug('Create object for fork {fork}'.format(fork=self.fork))
         if self.fork and mapped_forks.get(self.fork):
@@ -323,6 +324,8 @@ class SickBeard(object):
     def __init__(self, sb_init):
         """SB constructor."""
         self.sb_init = sb_init
+        self.session = requests.Session()
+
         self.failed = None
         self.status = None
         self.input_name = None
@@ -336,9 +339,13 @@ class SickBeard(object):
         self.force = int(self.sb_init.config.get('force', 0))
         self.delete_on = int(self.sb_init.config.get('delete_on', 0))
         self.ignore_subs = int(self.sb_init.config.get('ignore_subs', 0))
+        self.is_priority = int(self.sb_init.config.get('is_priority', 0))
 
         # get importmode, default to 'Move' for consistency with legacy
         self.import_mode = self.sb_init.config.get('importMode', 'Move')
+
+        # Keep track of result state
+        self.success = False
 
     def initialize(self, dir_name, input_name=None, failed=False, client_agent='manual'):
         """We need to call this explicitely because we need some variables.
@@ -419,8 +426,74 @@ class SickBeard(object):
                 else:
                     del fork_params[param]
 
+            if param == 'is_priority':
+                if self.is_priority:
+                    fork_params[param] = self.is_priority
+                else:
+                    del fork_params[param]
+
             if param == 'force_next':
                 fork_params[param] = 1
 
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
+
+    def api_call(self):
+        """Perform a base sickbeard api call."""
+        self._process_fork_prarams()
+        url = self._create_url()
+
+        logger.debug('Opening URL: {0} with params: {1}'.format(url, self.sb_init.fork_params), self.sb_init.section)
+        try:
+            if not self.sb_init.apikey and self.sb_init.username and self.sb_init.password:
+                # If not using the api, we need to login using user/pass first.
+                login = '{0}{1}:{2}{3}/login'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
+                login_params = {'username': self.sb_init.username, 'password': self.sb_init.password}
+                r = self.session.get(login, verify=False, timeout=(30, 60))
+                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
+                    login_params['_xsrf'] = r.cookies.get('_xsrf')
+                self.session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
+            response = self.session.get(url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+        except requests.ConnectionError:
+            logger.error('Unable to open URL: {0}'.format(url), self.sb_init.section)
+            return ProcessResult(
+                message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
+                status_code=1,
+            )
+
+        if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+            logger.error('Server returned status {0}'.format(response.status_code), self.sb_init.section)
+            return ProcessResult(
+                message='{0}: Failed to post-process - Server returned status {1}'.format(self.sb_init.section, response.status_code),
+                status_code=1,
+            )
+
+        return self.process_response(response)
+
+    def process_response(self, response):
+        """Iterate over the lines returned, and log.
+
+        :param response: Streamed Requests response object.
+        This method will need to be overwritten in the forks, for alternative response handling.
+        """
+        for line in response.iter_lines():
+            if line:
+                line = line.decode('utf-8')
+                logger.postprocess('{0}'.format(line), self.sb_init.section)
+                # if 'Moving file from' in line:
+                #     input_name = os.path.split(line)[1]
+                # if 'added to the queue' in line:
+                #     queued = True
+                # For the refactoring i'm only considering vanilla sickbeard, as for the base class.
+                if 'Processing succeeded' in line or 'Successfully processed' in line:
+                    self.success = True
+
+        if self.success:
+            return ProcessResult(
+                message='{0}: Successfully post-processed {1}'.format(self.sb_init.section, self.input_name),
+                status_code=0,
+            )
+        return ProcessResult(
+            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(self.sb_init.section),
+            status_code=1,  # We did not receive Success confirmation.
+        )
