@@ -402,7 +402,7 @@ class SickBeard(object):
                 if self.remote_path:
                     fork_params[param] = remote_dir(self.dir_name)
                 # SickChill allows multiple path types. Only retunr 'path'
-                if param == 'path' and 'proc_dir' in fork_params:
+                if param == 'proc_dir' and 'path' in fork_params:
                     del fork_params['proc_dir']
 
             if param == 'process_method':
