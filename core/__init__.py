@@ -112,7 +112,7 @@ FORKS = {
     FORK_FAILED: {'dirName': None, 'failed': None},
     FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
     FORK_SICKCHILL: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'force_next': None},
-    FORK_SICKCHILL_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'is_priority': None, 'cmd': 'postprocess'},
+    FORK_SICKCHILL_API: {'path': None, 'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'is_priority': None, 'cmd': 'postprocess'},
     FORK_SICKBEARD_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete': None, 'force_next': None, 'cmd': 'postprocess'},
     FORK_MEDUSA: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
     FORK_MEDUSA_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None, 'cmd': 'postprocess'},
