@@ -405,9 +405,9 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         if release:
             try:
                 release_id = list(release.keys())[0]
-                title = release[release_id]['title']
                 release_status_new = release[release_id]['status']
                 if release_status_old is None:  # we didn't have a release before, but now we do.
+                    title = release[release_id]['title']
                     logger.postprocess('SUCCESS: Movie {0} has now been added to CouchPotato with release status of [{1}]'.format(
                         title, str(release_status_new).upper()), section)
                     return ProcessResult(
@@ -416,8 +416,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                     )
 
                 if release_status_new != release_status_old:
-                    logger.postprocess('SUCCESS: Release for {0} has now been marked with a status of [{1}]'.format(
-                        title, str(release_status_new).upper()), section)
+                    logger.postprocess('SUCCESS: Release {0} has now been marked with a status of [{1}]'.format(
+                        release_id, str(release_status_new).upper()), section)
                     return ProcessResult(
                         message='{0}: Successfully post-processed {1}'.format(section, input_name),
                         status_code=0,
