@@ -76,7 +76,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             status_code=1,
         )
 
-    result = r.content
+    result = r.text
     if not type(result) == list:
         result = result.split('\n')
     for line in result:
