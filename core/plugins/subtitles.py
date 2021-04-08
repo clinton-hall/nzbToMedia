@@ -92,6 +92,7 @@ def rename_subs(path):
                 if '{new_sub}.{i}{ext}'.format(new_sub=new_sub, i=i, ext=ext) in renamed:
                     continue
                 new_sub = '{new_sub}.{i}'.format(new_sub=new_sub, i=i)
+                break
         new_sub = '{new_sub}{ext}'.format(new_sub=new_sub, ext=ext) # add extension now
         if os.path.isfile(new_sub): # Don't copy over existing - final check.
             logger.debug('Unable to rename sub file {old} as destination {new} already exists'.format(old=sub, new=new_sub))
