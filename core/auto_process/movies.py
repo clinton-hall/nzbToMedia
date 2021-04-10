@@ -21,7 +21,7 @@ from core.auto_process.common import (
     completed_download_handling,
 )
 from core.plugins.downloaders.nzb.utils import report_nzb
-from core.plugins.subtitles import import_subs
+from core.plugins.subtitles import import_subs, rename_subs
 from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
@@ -130,6 +130,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         num_files += 1
         if transcoder.is_video_good(video, status):
             import_subs(video)
+            rename_subs(dir_name)
             good_files += 1
     if num_files and good_files == num_files:
         if status:
