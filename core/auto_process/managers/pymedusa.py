@@ -64,6 +64,10 @@ class PyMedusaApiV2(SickBeard):
     def __init__(self, sb_init):
         super(PyMedusaApiV2, self).__init__(sb_init)
 
+        # Check for an apikey, as this is required with using fork = medusa-apiv2
+        if not sb_init.apikey:
+            raise Exception('For the section SickBeard `fork = medusa-apiv2` you also need to configure an `apikey`')
+
     def _create_url(self):
         return '{0}{1}:{2}{3}/api/v2/postprocess'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
 
