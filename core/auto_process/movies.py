@@ -70,8 +70,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     if section == 'CouchPotato':
         base_url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
     if section == 'Radarr':
-        base_url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
-        url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
+        base_url = '{0}{1}:{2}{3}/api/v3/command'.format(protocol, host, port, web_root)
+        url2 = '{0}{1}:{2}{3}/api/v3/config/downloadClient'.format(protocol, host, port, web_root)
         headers = {'X-Api-Key': apikey}
     if section == 'Watcher3':
         base_url = '{0}{1}:{2}{3}/postprocessing'.format(protocol, host, port, web_root)
