@@ -252,7 +252,6 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                     status_code=0,
                 )
         elif section == 'Radarr':
-            logger.postprocess('Radarr response: {0}'.format(result['state']))
             try:
                 scan_id = int(result['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
