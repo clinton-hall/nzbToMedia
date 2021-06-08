@@ -45,7 +45,7 @@ def command_complete(url, params, headers, section):
         return None
     else:
         try:
-            return r.json()['state']
+            return r.json()['status']
         except (ValueError, KeyError):
             # ValueError catches simplejson's JSONDecodeError and json's ValueError
             logger.error('{0} did not return expected json data.'.format(section), section)
