@@ -166,12 +166,12 @@ class InitSickBeard(object):
             fork = ['default', params]
 
         elif fork == 'auto':
-            fork = self.detect_fork()
+            self.detect_fork()
 
         logger.info('{section}:{category} fork set to {fork}'.format
-                    (section=self.section, category=self.input_category, fork=fork[0]))
-        core.FORK_SET = fork
-        self.fork, self.fork_params = fork[0], fork[1]
+                    (section=self.section, category=self.input_category, self.fork[0]))
+        core.FORK_SET = self.fork
+        self.fork, self.fork_params = self.fork[0], self.fork[1]
         # This will create the fork object, and attach to self.fork_obj.
         self._init_fork()
         return self.fork, self.fork_params
@@ -296,8 +296,6 @@ class InitSickBeard(object):
             logger.info('{section}:{category} fork auto-detection failed'.format
                         (section=self.section, category=self.input_category))
             self.fork = list(core.FORKS.items())[list(core.FORKS.keys()).index(core.FORK_DEFAULT)]
-
-        return fork
 
     def _init_fork(self):
         # These need to be imported here, to prevent a circular import.
