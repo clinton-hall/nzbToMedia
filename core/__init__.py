@@ -118,7 +118,7 @@ FORKS = {
     FORK_MEDUSA_API: {'path': None, 'failed': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'delete_files': None, 'is_priority': None, 'cmd': 'postprocess'},
     FORK_MEDUSA_APIV2: {'proc_dir': None, 'resource': None, 'failed': None, 'process_method': None, 'force': None, 'type': None, 'delete_on': None, 'is_priority': None},
     FORK_SICKGEAR: {'dir': None, 'failed': None, 'process_method': None, 'force': None},
-    FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is priority': None, 'failed': None, 'cmd': 'sg.postprocess'},
+    FORK_SICKGEAR_API: {'path': None, 'process_method': None, 'force_replace': None, 'return_data': None, 'type': None, 'is_priority': None, 'failed': None, 'cmd': 'sg.postprocess'},
     FORK_STHENO: {'proc_dir': None, 'failed': None, 'process_method': None, 'force': None, 'delete_on': None, 'ignore_subs': None},
 }
 ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].keys() for x in FORKS.keys()])))}
