@@ -169,7 +169,7 @@ class InitSickBeard(object):
             self.detect_fork()
 
         logger.info('{section}:{category} fork set to {fork}'.format
-                    (section=self.section, category=self.input_category, self.fork[0]))
+                    (section=self.section, category=self.input_category, fork=self.fork[0]))
         core.FORK_SET = self.fork
         self.fork, self.fork_params = self.fork[0], self.fork[1]
         # This will create the fork object, and attach to self.fork_obj.
