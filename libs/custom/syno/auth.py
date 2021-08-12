@@ -15,7 +15,7 @@ class Authentication:
         self.app_api_list = {}
 
     def login(self, application):
-        get_api_list('SYNO.API.Auth')
+        self.get_api_list('SYNO.API.Auth')
         login_api = 'auth.cgi?api=SYNO.API.Auth'
         param = {'version': self.app_api_list['SYNO.API.Auth']['maxVersion'], 'method': 'login', 'account': self._username,
                  'passwd': self._password, 'session': application, 'format': 'cookie'}
