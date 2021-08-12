@@ -12,7 +12,7 @@ class DownloadStation:
         self.session.get_api_list('DownloadStation')
 
         self.request_data = self.session.request_data
-        self.download_list = self.session.app_api_list
+        self.download_list = self.session.full_api_list
         self._sid = self.session.sid
         self.base_url = self.session.base_url
 
