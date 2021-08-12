@@ -93,9 +93,9 @@ class InitSickBeard(object):
         _val = cfg.get('fork', 'auto')
         f1 = replace.get(_val.lower(), _val)
         try:
-            fork = f1, core.FORKS[f1]
+            self.fork = f1, core.FORKS[f1]
         except KeyError:
-            fork = 'auto'
+            self.fork = 'auto'
         protocol = 'https://' if self.ssl else 'http://'
 
         if self.section == 'NzbDrone':
@@ -115,7 +115,7 @@ class InitSickBeard(object):
                                'Check your configuration'.format
                                (section=self.section, category=self.input_category))
 
-            fork = ['default', {}]
+            self.fork = ['default', {}]
 
         elif self.section == 'SiCKRAGE':
             logger.info('Attempting to verify {category} fork'.format
@@ -163,9 +163,9 @@ class InitSickBeard(object):
                 'is_priority': None
             }
 
-            fork = ['default', params]
+            self.fork = ['default', params]
 
-        elif fork == 'auto':
+        elif self.fork == 'auto':
             self.detect_fork()
 
         logger.info('{section}:{category} fork set to {fork}'.format
