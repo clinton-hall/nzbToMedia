@@ -15,8 +15,9 @@ class Authentication:
         self.app_api_list = {}
 
     def login(self, application):
+        get_api_list('SYNO.API.Auth')
         login_api = 'auth.cgi?api=SYNO.API.Auth'
-        param = {'version': '2', 'method': 'login', 'account': self._username,
+        param = {'version': self.app_api_list['SYNO.API.Auth']['maxVersion'], 'method': 'login', 'account': self._username,
                  'passwd': self._password, 'session': application, 'format': 'cookie'}
 
         if not self._session_expire:
@@ -31,7 +32,7 @@ class Authentication:
 
     def logout(self, application):
         logout_api = 'auth.cgi?api=SYNO.API.Auth'
-        param = {'version': '2', 'method': 'logout', 'session': application}
+        param = {'version': self.app_api_list['SYNO.API.Auth']['maxVersion'], 'method': 'logout', 'session': application}
 
         response = requests.get(self._base_url + logout_api, param)
         if response.json()['success'] is True:
