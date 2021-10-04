@@ -322,8 +322,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][option] = value
 
             section = 'General'
-            env_keys = ['AUTO_UPDATE', 'CHECK_MEDIA', 'SAFE_MODE', 'NO_EXTRACT_FAILED']
-            cfg_keys = ['auto_update', 'check_media', 'safe_mode', 'no_extract_failed']
+            env_keys = ['AUTO_UPDATE', 'CHECK_MEDIA', 'REQUIRE_LAN', 'SAFE_MODE', 'NO_EXTRACT_FAILED']
+            cfg_keys = ['auto_update', 'check_media', 'require_lan', 'safe_mode', 'no_extract_failed']
             for index in range(len(env_keys)):
                 key = 'NZBPO_{index}'.format(index=env_keys[index])
                 if key in os.environ:
