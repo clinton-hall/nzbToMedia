@@ -265,6 +265,7 @@ SHOWEXTRACT = 0
 PAR2CMD = None
 FFPROBE = None
 CHECK_MEDIA = None
+REQUIRE_LAN = None
 NICENESS = []
 HWACCEL = False
 
@@ -396,6 +397,7 @@ def configure_general():
     FFMPEG_PATH = CFG['General']['ffmpeg_path']
     SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
+    REQUIRE_LAN = CFG['General']['require_lan'] or 'all'
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
 
