@@ -25,6 +25,11 @@
 # Enable/Disable media file checking using ffprobe.
 #check_media=1
 
+# Required Language
+#
+# Required Language for media to be deemed valid e.g. = eng will only accept a video as valid if it contains englisg audio. Enter 'all' to disregard.
+#require_lan=all
+
 # Safe Mode protection of DestDir (0, 1).
 #
 # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectory by mistake.
