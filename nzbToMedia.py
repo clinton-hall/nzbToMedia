@@ -28,7 +28,7 @@
 
 # Required Language
 #
-# Required Aduio Language for media to be deemed valid e.g. = eng will only accept a video as valid if it contains English audio. Leave blank to disregard.
+# Required Audio Language for media to be deemed valid e.g. = eng will only accept a video as valid if it contains English audio. Leave blank to disregard.
 #require_lan=
 
 # Safe Mode protection of DestDir (0, 1).
