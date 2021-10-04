@@ -131,25 +131,28 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
     # Check video files for corruption
     good_files = 0
+    valid_files = 0
     num_files = 0
     for video in list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
         num_files += 1
         if transcoder.is_video_good(video, status):
             good_files += 1
-            import_subs(video)
-            rename_subs(dir_name)
+            if not core.REQUIRE_LAN or transcoder.is_video_good(video, status, require_lan=core.REQUIRE_LAN):
+                valid_files += 1
+                import_subs(video)
+                rename_subs(dir_name)
     if num_files > 0:
-        if good_files == num_files and not status == 0:
+        if valid_files == num_files and not status == 0:
             logger.info('Found Valid Videos. Setting status Success')
             status = 0
             failed = 0
-        if good_files < num_files and status == 0:
+        if valid_files < num_files and status == 0:
             logger.info('Found corrupt videos. Setting status Failed')
             status = 1
             failed = 1
             if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
                 print('[NZB] MARK=BAD')
-            if failure_link:
+            if good_files < num_files and failure_link: # don't mark corrupt if failed due to require_lan
                 failure_link += '&corrupt=true'
     elif client_agent == 'manual':
         logger.warning('No media files found in directory {0} to manually process.'.format(dir_name), section)
