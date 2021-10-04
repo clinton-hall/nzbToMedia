@@ -27,7 +27,7 @@ from core.utils import make_dir
 __author__ = 'Justin'
 
 
-def is_video_good(videofile, status):
+def is_video_good(videofile, status, require_lan=None):
     file_name_ext = os.path.basename(videofile)
     file_name, file_ext = os.path.splitext(file_name_ext)
     disable = False
@@ -63,7 +63,11 @@ def is_video_good(videofile, status):
     if video_details.get('streams'):
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
-        if len(video_streams) > 0 and len(audio_streams) > 0:
+        if require_lan:
+            valid_audio = [item for item in audio_streams if audio_streams['tags']['language'] == require_lan ]
+        else:
+            valid_audio = audio_streams
+        if len(video_streams) > 0 and len(valid_audio) > 0:
             logger.info('SUCCESS: [{0}] has no corruption.'.format(file_name_ext), 'TRANSCODER')
             return True
         else:
