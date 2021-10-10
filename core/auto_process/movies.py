@@ -141,11 +141,15 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
             status = 0
     elif num_files and valid_files < num_files:
         logger.info('Status shown as success from Downloader, but corrupt video files found. Setting as failed.', section)
+        status = 1
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
-        if good_files < num_files and failure_link: # don't mark corrupt if failed due to require_lan
+        if good_files == num_files:
+            logger.debug('Video marked as failed due to missing required language: {0}'.format(core.REQUIRE_LAN), section)
+        else:
+            logger.debug('Video marked as failed due to missing playable audio or video', section)
+        if good_files < num_files and failure_link: # only report corrupt files
             failure_link += '&corrupt=true'
-        status = 1
     elif client_agent == 'manual':
         logger.warning('No media files found in directory {0} to manually process.'.format(dir_name), section)
         return ProcessResult(
