@@ -124,25 +124,32 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
     good_files = 0
+    valid_files = 0
     num_files = 0
     # Check video files for corruption
     for video in list_media_files(dir_name, media=True, audio=False, meta=False, archives=False):
         num_files += 1
         if transcoder.is_video_good(video, status):
-            import_subs(video)
-            rename_subs(dir_name)
             good_files += 1
-    if num_files and good_files == num_files:
+            if not core.REQUIRE_LAN or transcoder.is_video_good(video, status, require_lan=core.REQUIRE_LAN):
+                valid_files += 1
+                import_subs(video)
+                rename_subs(dir_name)
+    if num_files and valid_files == num_files:
         if status:
             logger.info('Status shown as failed from Downloader, but {0} valid video files found. Setting as success.'.format(good_files), section)
             status = 0
-    elif num_files and good_files < num_files:
+    elif num_files and valid_files < num_files:
         logger.info('Status shown as success from Downloader, but corrupt video files found. Setting as failed.', section)
+        status = 1
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
-        if failure_link:
+        if good_files == num_files:
+            logger.debug('Video marked as failed due to missing required language: {0}'.format(core.REQUIRE_LAN), section)
+        else:
+            logger.debug('Video marked as failed due to missing playable audio or video', section)
+        if good_files < num_files and failure_link: # only report corrupt files
             failure_link += '&corrupt=true'
-        status = 1
     elif client_agent == 'manual':
         logger.warning('No media files found in directory {0} to manually process.'.format(dir_name), section)
         return ProcessResult(
