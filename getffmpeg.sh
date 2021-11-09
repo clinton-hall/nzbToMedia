@@ -3,7 +3,7 @@
 # get ffmpeg/yasm/x264
 git clone git://source.ffmpeg.org/ffmpeg.git FFmpeg
 git clone git://github.com/yasm/yasm.git FFmpeg/yasm
-git clone git://git.videolan.org/x264.git FFmpeg/x264
+git clone https://code.videolan.org/videolan/x264.git FFmpeg/x264
 
 # compile/install yasm
 cd FFmpeg/yasm
