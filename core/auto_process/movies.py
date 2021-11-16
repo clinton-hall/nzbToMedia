@@ -72,7 +72,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     if section == 'Radarr':
         base_url = '{0}{1}:{2}{3}/api/v3/command'.format(protocol, host, port, web_root)
         url2 = '{0}{1}:{2}{3}/api/v3/config/downloadClient'.format(protocol, host, port, web_root)
-        headers = {'X-Api-Key': apikey}
+        headers = {'X-Api-Key': apikey, 'Content-Type': 'application/json'}
     if section == 'Watcher3':
         base_url = '{0}{1}:{2}{3}/postprocessing'.format(protocol, host, port, web_root)
     if not apikey:
