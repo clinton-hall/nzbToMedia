@@ -28,6 +28,7 @@ def date(string, fmt='%Y-%m-%d'):
 # https://devguide.python.org/
 # https://devguide.python.org/devcycle/#devcycle
 PYTHON_EOL = {
+    (3, 10): date('2026-10-01'),
     (3, 9): date('2025-10-05'),
     (3, 8): date('2024-10-14'),
     (3, 7): date('2023-06-27'),
