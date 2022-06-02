@@ -125,7 +125,7 @@ ALL_FORKS = {k: None for k in set(list(itertools.chain.from_iterable([FORKS[x].k
 
 # SiCKRAGE OAuth2
 SICKRAGE_OAUTH_CLIENT_ID = 'nzbtomedia'
-SICKRAGE_OAUTH_TOKEN_URL = 'https://auth.sickrage.ca/auth/realms/sickrage/protocol/openid-connect/token'
+SICKRAGE_OAUTH_TOKEN_URL = 'https://auth.sickrage.ca/realms/sickrage/protocol/openid-connect/token'
 
 # NZBGet Exit Codes
 NZBGET_POSTPROCESS_PAR_CHECK = 92
