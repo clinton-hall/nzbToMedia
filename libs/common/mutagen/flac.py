@@ -281,7 +281,7 @@ class SeekPoint(tuple):
     """
 
     def __new__(cls, first_sample, byte_offset, num_samples):
-        return super(cls, SeekPoint).__new__(
+        return super(SeekPoint, cls).__new__(
             cls, (first_sample, byte_offset, num_samples))
 
     first_sample = property(lambda self: self[0])
