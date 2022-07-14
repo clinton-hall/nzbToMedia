@@ -398,7 +398,7 @@ def configure_general():
     FFMPEG_PATH = CFG['General']['ffmpeg_path']
     SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
-    REQUIRE_LAN = CFG['General']['require_lan'] or None
+    REQUIRE_LAN = CFG['General']['require_lan'].split(',') or None
     SAFE_MODE = int(CFG['General']['safe_mode'])
     NOEXTRACTFAILED = int(CFG['General']['no_extract_failed'])
 

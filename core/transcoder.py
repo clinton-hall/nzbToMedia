@@ -64,7 +64,7 @@ def is_video_good(videofile, status, require_lan=None):
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         if require_lan:
-            valid_audio = [item for item in audio_streams if 'tags' in item and 'language' in item['tags'] and item['tags']['language'] == require_lan ]
+            valid_audio = [item for item in audio_streams if 'tags' in item and 'language' in item['tags'] and item['tags']['language'] in require_lan ]
         else:
             valid_audio = audio_streams
         if len(video_streams) > 0 and len(valid_audio) > 0:
