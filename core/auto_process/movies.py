@@ -563,12 +563,12 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
 
     # Narrow results by removing old releases by comparing their last_edit field
     if len(results) > 1:
-        rem_id = []
+        rem_id = set()
         for id1, x1 in results.items():
             for x2 in results.values():
                 try:
                     if x2['last_edit'] > x1['last_edit']:
-                        rem_id.append(id1)
+                        rem_id.add(id1)
                 except Exception:
                     continue
         for id in rem_id:
@@ -576,11 +576,11 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
 
     # Search downloads on clients for a match to try and narrow our results down to 1
     if len(results) > 1:
-        rem_id = []
+        rem_id = set()
         for cur_id, x in results.items():
             try:
                 if not find_download(str(x['download_info']['downloader']).lower(), x['download_info']['id']):
-                    rem_id.append(cur_id)
+                    rem_id.add(cur_id)
             except Exception:
                 continue
         for id in rem_id:
