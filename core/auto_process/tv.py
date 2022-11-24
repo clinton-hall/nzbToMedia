@@ -316,6 +316,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             url = '{0}{1}:{2}{3}/api/v{4}/postprocess'.format(protocol, host, port, web_root, api_version)
         else:
             url = '{0}{1}:{2}{3}/api/v{4}/{5}/'.format(protocol, host, port, web_root, api_version, apikey)
+            fork_params['cmd'] = 'postprocess'
     elif section == 'NzbDrone':
         url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
         url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
@@ -371,6 +372,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             else:
                 params = fork_params
 
+            logger.debug('Opening URL: {0} with params: {1}'.format(url, params), section)
             r = s.get(url, params=params, stream=True, verify=False, timeout=(30, 1800))
         elif section == 'NzbDrone':
             logger.debug('Opening URL: {0} with data: {1}'.format(url, data), section)
