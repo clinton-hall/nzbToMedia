@@ -30,13 +30,12 @@ def parse_failure_link():
 
 
 def _parse_total_status():
-    status = 0
-    if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
-        logger.info('Download failed with status {0}.'.format(
-            os.environ['NZBPP_STATUS']))
-        status = 1
-        return status
-    return status
+    status_summary = os.environ['NZBPP_TOTALSTATUS']
+    if status_summary != 'SUCCESS':
+        status = os.environ['NZBPP_STATUS']
+        logger.info('Download failed with status {0}.'.format(status))
+        return 1
+    return 0
 
 
 def parse_status():
