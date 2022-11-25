@@ -29,17 +29,7 @@ def parse_failure_link():
     return failure_link
 
 
-def process():
-    # Check if the script is called from nzbget 11.0 or later
-    if os.environ['NZBOP_VERSION'][0:5] < '11.0':
-        logger.error(
-            'NZBGet Version {0} is not supported. Please update NZBGet.'.format(
-                os.environ['NZBOP_VERSION']))
-        sys.exit(core.NZBGET_POSTPROCESS_ERROR)
-
-    logger.info('Script triggered from NZBGet Version {0}.'.format(
-        os.environ['NZBOP_VERSION']))
-
+def parse_status():
     status = 0
     # Check if the script is called from nzbget 13.0 or later
     if 'NZBPP_TOTALSTATUS' in os.environ:
@@ -76,7 +66,21 @@ def process():
                     'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
                 logger.info(
                     'Please check your Par-check/repair settings for future downloads.')
+    return status
 
+
+def process():
+    # Check if the script is called from nzbget 11.0 or later
+    if os.environ['NZBOP_VERSION'][0:5] < '11.0':
+        logger.error(
+            'NZBGet Version {0} is not supported. Please update NZBGet.'.format(
+                os.environ['NZBOP_VERSION']))
+        sys.exit(core.NZBGET_POSTPROCESS_ERROR)
+
+    logger.info('Script triggered from NZBGet Version {0}.'.format(
+        os.environ['NZBOP_VERSION']))
+
+    status = parse_status()
     download_id = parse_download_id()
     failure_link = parse_failure_link()
 
