@@ -29,15 +29,21 @@ def parse_failure_link():
     return os.environ.get('NZBPR__DNZB_FAILURE')
 
 
+def _parse_total_status():
+    status = 0
+    if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
+        logger.info('Download failed with status {0}.'.format(
+            os.environ['NZBPP_STATUS']))
+        status = 1
+        return status
+    return status
+
+
 def parse_status():
     status = 0
     # Check if the script is called from nzbget 13.0 or later
     if 'NZBPP_TOTALSTATUS' in os.environ:
-        if not os.environ['NZBPP_TOTALSTATUS'] == 'SUCCESS':
-            logger.info('Download failed with status {0}.'.format(
-                os.environ['NZBPP_STATUS']))
-            status = 1
-
+        status = _parse_total_status()
     else:
         # Check par status
         if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ[
