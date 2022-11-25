@@ -55,6 +55,28 @@ def _parse_unpack_status():
     return status
 
 
+def _parse_health_status():
+    """Parse nzbget download health from environment."""
+    status = 0
+    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ[
+        'NZBPP_PARSTATUS'] == '0':
+        # Unpack was skipped due to nzb-file properties or due to errors during par-check
+
+        if os.environ['NZBPP_HEALTH'] < 1000:
+            logger.warning(
+                'Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
+            logger.info(
+                'Please check your Par-check/repair settings for future downloads.')
+            status = 1
+
+        else:
+            logger.info(
+                'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
+            logger.info(
+                'Please check your Par-check/repair settings for future downloads.')
+    return status
+
+
 def parse_status():
     status = 0
     # Check if the script is called from nzbget 13.0 or later
@@ -67,23 +89,10 @@ def parse_status():
         # Check unpack status
         unpack_status = _parse_unpack_status()
 
-        if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ[
-            'NZBPP_PARSTATUS'] == '0':
-            # Unpack was skipped due to nzb-file properties or due to errors during par-check
+        # Check download health
+        health_status = _parse_health_status()
 
-            if os.environ['NZBPP_HEALTH'] < 1000:
-                logger.warning(
-                    'Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
-                logger.info(
-                    'Please check your Par-check/repair settings for future downloads.')
-                status = 1
-
-            else:
-                logger.info(
-                    'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
-                logger.info(
-                    'Please check your Par-check/repair settings for future downloads.')
-        return par_status or unpack_status or status
+        return par_status or unpack_status or health_status or status
     return status
 
 
