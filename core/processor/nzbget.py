@@ -25,10 +25,8 @@ def parse_download_id():
 
 
 def parse_failure_link():
-    failure_link = None
-    if 'NZBPR__DNZB_FAILURE' in os.environ:
-        failure_link = os.environ['NZBPR__DNZB_FAILURE']
-    return failure_link
+    """Parse nzbget failure_link from environment."""
+    return os.environ.get('NZBPR__DNZB_FAILURE')
 
 
 def parse_status():
