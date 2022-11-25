@@ -22,6 +22,13 @@ def parse_download_id():
     return download_id
 
 
+def parse_failure_link():
+    failure_link = None
+    if 'NZBPR__DNZB_FAILURE' in os.environ:
+        failure_link = os.environ['NZBPR__DNZB_FAILURE']
+    return failure_link
+
+
 def process():
     # Check if the script is called from nzbget 11.0 or later
     if os.environ['NZBOP_VERSION'][0:5] < '11.0':
@@ -71,9 +78,7 @@ def process():
                     'Please check your Par-check/repair settings for future downloads.')
 
     download_id = parse_download_id()
-    failure_link = None
-    if 'NZBPR__DNZB_FAILURE' in os.environ:
-        failure_link = os.environ['NZBPR__DNZB_FAILURE']
+    failure_link = parse_failure_link()
 
     # All checks done, now launching the script.
     client_agent = 'nzbget'
