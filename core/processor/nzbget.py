@@ -72,21 +72,13 @@ def _parse_health_status():
 
 
 def parse_status():
-    status = 0
-    # Check if the script is called from nzbget 13.0 or later
-    if 'NZBPP_TOTALSTATUS' in os.environ:
+    if 'NZBPP_TOTALSTATUS' in os.environ:  # Called from nzbget 13.0 or later
         status = _parse_total_status()
     else:
-        # Check par status
         par_status = _parse_par_status()
-
-        # Check unpack status
         unpack_status = _parse_unpack_status()
-
-        # Check download health
         health_status = _parse_health_status()
-
-        return par_status or unpack_status or health_status or status
+        status = par_status or unpack_status or health_status
     return status
 
 
