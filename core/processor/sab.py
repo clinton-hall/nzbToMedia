@@ -3,6 +3,9 @@ import os
 from core import logger
 from core.processor import nzb
 
+# Constants
+MINIMUM_ARGUMENTS = 8
+
 
 def process_script():
     client_agent = 'sabnzbd'
@@ -19,49 +22,30 @@ def process_script():
     )
 
 
-def process_legacy(args):
-    # SABnzbd argv:
-    # 1 The final directory of the job (full path)
-    # 2 The original name of the NZB file
-    # 3 Clean version of the job name (no path info and '.nzb' removed)
-    # 4 Indexer's report number (if supported)
-    # 5 User-defined category
-    # 6 Group that the NZB was posted in e.g. alt.binaries.x
-    # 7 Status of post processing.
-    #   0 = OK
-    #   1 = failed verification
-    #   2 = failed unpack
-    #   3 = 1+2
-    client_agent = 'sabnzbd'
-    logger.info('Script triggered from SABnzbd')
+def process(args):
+    """
+    SABnzbd arguments:
+    1. The final directory of the job (full path)
+    2. The original name of the NZB file
+    3. Clean version of the job name (no path info and '.nzb' removed)
+    4. Indexer's report number (if supported)
+    5. User-defined category
+    6. Group that the NZB was posted in e.g. alt.binaries.x
+    7. Status of post processing:
+        0 = OK
+        1 = failed verification
+        2 = failed unpack
+        3 = 1+2
+    8. Failure URL
+    """
+    version = '0.7.17+' if len(args) > MINIMUM_ARGUMENTS else ''
+    logger.info('Script triggered from SABnzbd {}'.format(version))
     return nzb.process(
-        args[1],
+        input_directory=args[1],
         input_name=args[2],
         status=int(args[7]),
         input_category=args[5],
-        client_agent=client_agent,
-        download_id='',
-    )
-
-
-def process_0717(args):
-    # SABnzbd argv:
-    # 1 The final directory of the job (full path)
-    # 2 The original name of the NZB file
-    # 3 Clean version of the job name (no path info and '.nzb' removed)
-    # 4 Indexer's report number (if supported)
-    # 5 User-defined category
-    # 6 Group that the NZB was posted in e.g. alt.binaries.x
-    # 7 Status of post processing. 0 = OK, 1=failed verification, 2=failed unpack, 3=1+2
-    # 8 Failure URL
-    client_agent = 'sabnzbd'
-    logger.info('Script triggered from SABnzbd 0.7.17+')
-    return nzb.process(
-        args[1],
-        input_name=args[2],
-        status=int(args[7]),
-        input_category=args[5],
-        client_agent=client_agent,
+        client_agent='sabnzbd',
         download_id='',
         failure_link=''.join(args[8:]),
     )
