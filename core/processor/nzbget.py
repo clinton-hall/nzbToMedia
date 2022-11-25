@@ -70,15 +70,13 @@ def parse_status():
 
 
 def check_version():
+    """Check nzbget version and if version is unsupported, exit."""
+    version = os.environ['NZBOP_VERSION']
     # Check if the script is called from nzbget 11.0 or later
-    if os.environ['NZBOP_VERSION'][0:5] < '11.0':
-        logger.error(
-            'NZBGet Version {0} is not supported. Please update NZBGet.'.format(
-                os.environ['NZBOP_VERSION']))
+    if version[0:5] < '11.0':
+        logger.error('NZBGet Version {0} is not supported. Please update NZBGet.'.format(version))
         sys.exit(core.NZBGET_POSTPROCESS_ERROR)
-
-    logger.info('Script triggered from NZBGet Version {0}.'.format(
-        os.environ['NZBOP_VERSION']))
+    logger.info('Script triggered from NZBGet Version {0}.'.format(version))
 
 
 def process():
