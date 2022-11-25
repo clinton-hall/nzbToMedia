@@ -86,14 +86,11 @@ def process():
     status = parse_status()
     download_id = parse_download_id()
     failure_link = parse_failure_link()
-
-    # All checks done, now launching the script.
-    client_agent = 'nzbget'
     return nzb.process(
-        os.environ['NZBPP_DIRECTORY'],
+        input_directory=os.environ['NZBPP_DIRECTORY'],
         input_name=os.environ['NZBPP_NZBNAME'],
         status=status,
-        client_agent=client_agent,
+        client_agent='nzbget',
         download_id=download_id,
         input_category=os.environ['NZBPP_CATEGORY'],
         failure_link=failure_link,
