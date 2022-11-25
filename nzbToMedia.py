@@ -762,11 +762,8 @@ def main(args, section=None):
     elif 'SAB_SCRIPT' in os.environ:
         result = sab.process_script()
     # SABnzbd Pre 0.7.17
-    elif len(args) == core.SABNZB_NO_OF_ARGUMENTS:
-        result = sab.process_legacy(args)
-    # SABnzbd 0.7.17+
-    elif len(args) >= core.SABNZB_0717_NO_OF_ARGUMENTS:
-        result = sab.process_0717(args)
+    elif len(args) >= sab.MINIMUM_ARGUMENTS:
+        result = sab.process(args)
     # Generic program
     elif len(args) > 5 and args[5] == 'generic':
         logger.info('Script triggered from generic program')
