@@ -6,6 +6,22 @@ from core import logger
 from core.processor import nzb
 
 
+def parse_download_id():
+    # Check for download_id to pass to CouchPotato
+    download_id = ''
+    if 'NZBPR_COUCHPOTATO' in os.environ:
+        download_id = os.environ['NZBPR_COUCHPOTATO']
+    elif 'NZBPR_DRONE' in os.environ:
+        download_id = os.environ['NZBPR_DRONE']
+    elif 'NZBPR_SONARR' in os.environ:
+        download_id = os.environ['NZBPR_SONARR']
+    elif 'NZBPR_RADARR' in os.environ:
+        download_id = os.environ['NZBPR_RADARR']
+    elif 'NZBPR_LIDARR' in os.environ:
+        download_id = os.environ['NZBPR_LIDARR']
+    return download_id
+
+
 def process():
     # Check if the script is called from nzbget 11.0 or later
     if os.environ['NZBOP_VERSION'][0:5] < '11.0':
@@ -54,19 +70,8 @@ def process():
                 logger.info(
                     'Please check your Par-check/repair settings for future downloads.')
 
-    # Check for download_id to pass to CouchPotato
-    download_id = ''
+    download_id = parse_download_id()
     failure_link = None
-    if 'NZBPR_COUCHPOTATO' in os.environ:
-        download_id = os.environ['NZBPR_COUCHPOTATO']
-    elif 'NZBPR_DRONE' in os.environ:
-        download_id = os.environ['NZBPR_DRONE']
-    elif 'NZBPR_SONARR' in os.environ:
-        download_id = os.environ['NZBPR_SONARR']
-    elif 'NZBPR_RADARR' in os.environ:
-        download_id = os.environ['NZBPR_RADARR']
-    elif 'NZBPR_LIDARR' in os.environ:
-        download_id = os.environ['NZBPR_LIDARR']
     if 'NZBPR__DNZB_FAILURE' in os.environ:
         failure_link = os.environ['NZBPR__DNZB_FAILURE']
 
