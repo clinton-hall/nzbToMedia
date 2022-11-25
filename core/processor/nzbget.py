@@ -40,12 +40,11 @@ def _parse_total_status():
 
 def _parse_par_status():
     """Parse nzbget par status from environment."""
-    status = 0
-    if os.environ['NZBPP_PARSTATUS'] == '1' or os.environ[
-        'NZBPP_PARSTATUS'] == '4':
+    par_status = os.environ['NZBPP_PARSTATUS']
+    if par_status == '1' or par_status == '4':
         logger.warning('Par-repair failed, setting status \'failed\'')
-        status = 1
-    return status
+        return 1
+    return 0
 
 
 def parse_status():
