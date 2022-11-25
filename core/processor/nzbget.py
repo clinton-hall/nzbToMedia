@@ -48,11 +48,10 @@ def _parse_par_status():
 
 
 def _parse_unpack_status():
-    status = 0
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
         logger.warning('Unpack failed, setting status \'failed\'')
-        status = 1
-    return status
+        return 1
+    return 0
 
 
 def _parse_health_status():
