@@ -69,7 +69,7 @@ def parse_status():
     return status
 
 
-def process():
+def check_version():
     # Check if the script is called from nzbget 11.0 or later
     if os.environ['NZBOP_VERSION'][0:5] < '11.0':
         logger.error(
@@ -80,6 +80,9 @@ def process():
     logger.info('Script triggered from NZBGet Version {0}.'.format(
         os.environ['NZBOP_VERSION']))
 
+
+def process():
+    check_version()
     status = parse_status()
     download_id = parse_download_id()
     failure_link = parse_failure_link()
