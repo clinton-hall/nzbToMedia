@@ -58,22 +58,17 @@ def _parse_unpack_status():
 def _parse_health_status():
     """Parse nzbget download health from environment."""
     status = 0
-    if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ[
-        'NZBPP_PARSTATUS'] == '0':
-        # Unpack was skipped due to nzb-file properties or due to errors during par-check
-
-        if os.environ['NZBPP_HEALTH'] < 1000:
-            logger.warning(
-                'Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
-            logger.info(
-                'Please check your Par-check/repair settings for future downloads.')
+    unpack_status_value = os.environ['NZBPP_UNPACKSTATUS']
+    par_status_value = os.environ['NZBPP_PARSTATUS']
+    if unpack_status_value == '0' and par_status_value == '0':
+        # Unpack was skipped due to nzb-file properties
+        # or due to errors during par-check
+        if int(os.environ['NZBPP_HEALTH']) < 1000:
+            logger.warning('Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
             status = 1
-
         else:
-            logger.info(
-                'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
-            logger.info(
-                'Please check your Par-check/repair settings for future downloads.')
+            logger.info('Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
+        logger.info('Please check your Par-check/repair settings for future downloads.')
     return status
 
 
