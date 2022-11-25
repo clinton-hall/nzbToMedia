@@ -7,19 +7,21 @@ from core.processor import nzb
 
 
 def parse_download_id():
-    # Check for download_id to pass to CouchPotato
-    download_id = ''
-    if 'NZBPR_COUCHPOTATO' in os.environ:
-        download_id = os.environ['NZBPR_COUCHPOTATO']
-    elif 'NZBPR_DRONE' in os.environ:
-        download_id = os.environ['NZBPR_DRONE']
-    elif 'NZBPR_SONARR' in os.environ:
-        download_id = os.environ['NZBPR_SONARR']
-    elif 'NZBPR_RADARR' in os.environ:
-        download_id = os.environ['NZBPR_RADARR']
-    elif 'NZBPR_LIDARR' in os.environ:
-        download_id = os.environ['NZBPR_LIDARR']
-    return download_id
+    """Parse nzbget download_id from environment."""
+    download_id_keys = [
+        'NZBPR_COUCHPOTATO',
+        'NZBPR_DRONE',
+        'NZBPR_SONARR',
+        'NZBPR_RADARR',
+        'NZBPR_LIDARR',
+    ]
+    for download_id_key in download_id_keys:
+        try:
+            return os.environ[download_id_key]
+        except KeyError:
+            pass
+    else:
+        return ''
 
 
 def parse_failure_link():
