@@ -47,6 +47,14 @@ def _parse_par_status():
     return 0
 
 
+def _parse_unpack_status():
+    status = 0
+    if os.environ['NZBPP_UNPACKSTATUS'] == '1':
+        logger.warning('Unpack failed, setting status \'failed\'')
+        status = 1
+    return status
+
+
 def parse_status():
     status = 0
     # Check if the script is called from nzbget 13.0 or later
@@ -57,9 +65,7 @@ def parse_status():
         par_status = _parse_par_status()
 
         # Check unpack status
-        if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-            logger.warning('Unpack failed, setting status \'failed\'')
-            status = 1
+        unpack_status = _parse_unpack_status()
 
         if os.environ['NZBPP_UNPACKSTATUS'] == '0' and os.environ[
             'NZBPP_PARSTATUS'] == '0':
@@ -77,7 +83,7 @@ def parse_status():
                     'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
                 logger.info(
                     'Please check your Par-check/repair settings for future downloads.')
-        return par_status or status
+        return par_status or unpack_status or status
     return status
 
 
