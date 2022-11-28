@@ -89,10 +89,6 @@ __version__ = '12.1.10'
 NZB_CLIENTS = ['sabnzbd', 'nzbget', 'manual']
 TORRENT_CLIENTS = ['transmission', 'deluge', 'utorrent', 'rtorrent', 'qbittorrent', 'other', 'manual']
 
-# sabnzbd constants
-SABNZB_NO_OF_ARGUMENTS = 8
-SABNZB_0717_NO_OF_ARGUMENTS = 9
-
 # sickbeard fork/branch constants
 FORK_DEFAULT = 'default'
 FORK_FAILED = 'failed'
