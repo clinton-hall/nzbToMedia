@@ -1,151 +1,156 @@
-from __future__ import absolute_import, unicode_literals
-
 import numbers
 from functools import reduce
 
 
 def get_bit_values(number, size=32):
-	"""
-	Get bit values as a list for a given number
+    """
+    Get bit values as a list for a given number
 
-	>>> get_bit_values(1) == [0]*31 + [1]
-	True
+    >>> get_bit_values(1) == [0]*31 + [1]
+    True
 
-	>>> get_bit_values(0xDEADBEEF)
-	[1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1]
+    >>> get_bit_values(0xDEADBEEF)
+    [1, 1, 0, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, 1, 0, 1, \
+1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1]
 
-	You may override the default word size of 32-bits to match your actual
-	application.
+    You may override the default word size of 32-bits to match your actual
+    application.
 
-	>>> get_bit_values(0x3, 2)
-	[1, 1]
+    >>> get_bit_values(0x3, 2)
+    [1, 1]
 
-	>>> get_bit_values(0x3, 4)
-	[0, 0, 1, 1]
-	"""
-	number += 2**size
-	return list(map(int, bin(number)[-size:]))
+    >>> get_bit_values(0x3, 4)
+    [0, 0, 1, 1]
+    """
+    number += 2 ** size
+    return list(map(int, bin(number)[-size:]))
 
 
 def gen_bit_values(number):
-	"""
-	Return a zero or one for each bit of a numeric value up to the most
-	significant 1 bit, beginning with the least significant bit.
+    """
+    Return a zero or one for each bit of a numeric value up to the most
+    significant 1 bit, beginning with the least significant bit.
 
-	>>> list(gen_bit_values(16))
-	[0, 0, 0, 0, 1]
-	"""
-	digits = bin(number)[2:]
-	return map(int, reversed(digits))
+    >>> list(gen_bit_values(16))
+    [0, 0, 0, 0, 1]
+    """
+    digits = bin(number)[2:]
+    return map(int, reversed(digits))
 
 
 def coalesce(bits):
-	"""
-	Take a sequence of bits, most significant first, and
-	coalesce them into a number.
+    """
+    Take a sequence of bits, most significant first, and
+    coalesce them into a number.
 
-	>>> coalesce([1,0,1])
-	5
-	"""
-	operation = lambda a, b: (a << 1 | b)
-	return reduce(operation, bits)
+    >>> coalesce([1,0,1])
+    5
+    """
+
+    def operation(a, b):
+        return a << 1 | b
+
+    return reduce(operation, bits)
 
 
-class Flags(object):
-	"""
-	Subclasses should define _names, a list of flag names beginning
-	with the least-significant bit.
+class Flags:
+    """
+    Subclasses should define _names, a list of flag names beginning
+    with the least-significant bit.
 
-	>>> class MyFlags(Flags):
-	...     _names = 'a', 'b', 'c'
-	>>> mf = MyFlags.from_number(5)
-	>>> mf['a']
-	1
-	>>> mf['b']
-	0
-	>>> mf['c'] == mf[2]
-	True
-	>>> mf['b'] = 1
-	>>> mf['a'] = 0
-	>>> mf.number
-	6
-	"""
-	def __init__(self, values):
-		self._values = list(values)
-		if hasattr(self, '_names'):
-			n_missing_bits = len(self._names) - len(self._values)
-			self._values.extend([0] * n_missing_bits)
+    >>> class MyFlags(Flags):
+    ...     _names = 'a', 'b', 'c'
+    >>> mf = MyFlags.from_number(5)
+    >>> mf['a']
+    1
+    >>> mf['b']
+    0
+    >>> mf['c'] == mf[2]
+    True
+    >>> mf['b'] = 1
+    >>> mf['a'] = 0
+    >>> mf.number
+    6
+    """
 
-	@classmethod
-	def from_number(cls, number):
-		return cls(gen_bit_values(number))
+    def __init__(self, values):
+        self._values = list(values)
+        if hasattr(self, '_names'):
+            n_missing_bits = len(self._names) - len(self._values)
+            self._values.extend([0] * n_missing_bits)
 
-	@property
-	def number(self):
-		return coalesce(reversed(self._values))
+    @classmethod
+    def from_number(cls, number):
+        return cls(gen_bit_values(number))
 
-	def __setitem__(self, key, value):
-		# first try by index, then by name
-		try:
-			self._values[key] = value
-		except TypeError:
-			index = self._names.index(key)
-			self._values[index] = value
+    @property
+    def number(self):
+        return coalesce(reversed(self._values))
 
-	def __getitem__(self, key):
-		# first try by index, then by name
-		try:
-			return self._values[key]
-		except TypeError:
-			index = self._names.index(key)
-			return self._values[index]
+    def __setitem__(self, key, value):
+        # first try by index, then by name
+        try:
+            self._values[key] = value
+        except TypeError:
+            index = self._names.index(key)
+            self._values[index] = value
+
+    def __getitem__(self, key):
+        # first try by index, then by name
+        try:
+            return self._values[key]
+        except TypeError:
+            index = self._names.index(key)
+            return self._values[index]
 
 
 class BitMask(type):
-	"""
-	A metaclass to create a bitmask with attributes. Subclass an int and
-	set this as the metaclass to use.
+    """
+    A metaclass to create a bitmask with attributes. Subclass an int and
+    set this as the metaclass to use.
 
-	Here's how to create such a class on Python 3:
+    Construct such a class:
 
-	class MyBits(int, metaclass=BitMask):
-		a = 0x1
-		b = 0x4
-		c = 0x3
+    >>> class MyBits(int, metaclass=BitMask):
+    ...     a = 0x1
+    ...     b = 0x4
+    ...     c = 0x3
 
-	For testing purposes, construct explicitly to support Python 2
+    >>> b1 = MyBits(3)
+    >>> b1.a, b1.b, b1.c
+    (True, False, True)
+    >>> b2 = MyBits(8)
+    >>> any([b2.a, b2.b, b2.c])
+    False
 
-	>>> ns = dict(a=0x1, b=0x4, c=0x3)
-	>>> MyBits = BitMask(str('MyBits'), (int,), ns)
+    If the instance defines methods, they won't be wrapped in
+    properties.
 
-	>>> b1 = MyBits(3)
-	>>> b1.a, b1.b, b1.c
-	(True, False, True)
-	>>> b2 = MyBits(8)
-	>>> any([b2.a, b2.b, b2.c])
-	False
+    >>> class MyBits(int, metaclass=BitMask):
+    ...     a = 0x1
+    ...     b = 0x4
+    ...     c = 0x3
+    ...
+    ...     @classmethod
+    ...     def get_value(cls):
+    ...         return 'some value'
+    ...
+    ...     @property
+    ...     def prop(cls):
+    ...         return 'a property'
+    >>> MyBits(3).get_value()
+    'some value'
+    >>> MyBits(3).prop
+    'a property'
+    """
 
-	If the instance defines methods, they won't be wrapped in
-	properties.
+    def __new__(cls, name, bases, attrs):
+        def make_property(name, value):
+            if name.startswith('_') or not isinstance(value, numbers.Number):
+                return value
+            return property(lambda self, value=value: bool(self & value))
 
-	>>> ns['get_value'] = classmethod(lambda cls: 'some value')
-	>>> ns['prop'] = property(lambda self: 'a property')
-	>>> MyBits = BitMask(str('MyBits'), (int,), ns)
-
-	>>> MyBits(3).get_value()
-	'some value'
-	>>> MyBits(3).prop
-	'a property'
-	"""
-
-	def __new__(cls, name, bases, attrs):
-		def make_property(name, value):
-			if name.startswith('_') or not isinstance(value, numbers.Number):
-				return value
-			return property(lambda self, value=value: bool(self & value))
-
-		newattrs = dict(
-			(name, make_property(name, value))
-			for name, value in attrs.items()
-		)
-		return type.__new__(cls, name, bases, newattrs)
+        newattrs = dict(
+            (name, make_property(name, value)) for name, value in attrs.items()
+        )
+        return type.__new__(cls, name, bases, newattrs)

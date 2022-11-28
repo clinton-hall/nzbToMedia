@@ -1,39 +1,40 @@
 import ctypes.wintypes
+
 BOOL = ctypes.wintypes.BOOL
 
 
 class SHELLSTATE(ctypes.Structure):
-	_fields_ = [
-		('show_all_objects', BOOL, 1),
-		('show_extensions', BOOL, 1),
-		('no_confirm_recycle', BOOL, 1),
-		('show_sys_files', BOOL, 1),
-		('show_comp_color', BOOL, 1),
-		('double_click_in_web_view', BOOL, 1),
-		('desktop_HTML', BOOL, 1),
-		('win95_classic', BOOL, 1),
-		('dont_pretty_path', BOOL, 1),
-		('show_attrib_col', BOOL, 1),
-		('map_network_drive_button', BOOL, 1),
-		('show_info_tip', BOOL, 1),
-		('hide_icons', BOOL, 1),
-		('web_view', BOOL, 1),
-		('filter', BOOL, 1),
-		('show_super_hidden', BOOL, 1),
-		('no_net_crawling', BOOL, 1),
-		('win95_unused', ctypes.wintypes.DWORD),
-		('param_sort', ctypes.wintypes.LONG),
-		('sort_direction', ctypes.c_int),
-		('version', ctypes.wintypes.UINT),
-		('not_used', ctypes.wintypes.UINT),
-		('sep_process', BOOL, 1),
-		('start_panel_on', BOOL, 1),
-		('show_start_page', BOOL, 1),
-		('auto_check_select', BOOL, 1),
-		('icons_only', BOOL, 1),
-		('show_type_overlay', BOOL, 1),
-		('spare_flags', ctypes.wintypes.UINT, 13),
-	]
+    _fields_ = [
+        ('show_all_objects', BOOL, 1),
+        ('show_extensions', BOOL, 1),
+        ('no_confirm_recycle', BOOL, 1),
+        ('show_sys_files', BOOL, 1),
+        ('show_comp_color', BOOL, 1),
+        ('double_click_in_web_view', BOOL, 1),
+        ('desktop_HTML', BOOL, 1),
+        ('win95_classic', BOOL, 1),
+        ('dont_pretty_path', BOOL, 1),
+        ('show_attrib_col', BOOL, 1),
+        ('map_network_drive_button', BOOL, 1),
+        ('show_info_tip', BOOL, 1),
+        ('hide_icons', BOOL, 1),
+        ('web_view', BOOL, 1),
+        ('filter', BOOL, 1),
+        ('show_super_hidden', BOOL, 1),
+        ('no_net_crawling', BOOL, 1),
+        ('win95_unused', ctypes.wintypes.DWORD),
+        ('param_sort', ctypes.wintypes.LONG),
+        ('sort_direction', ctypes.c_int),
+        ('version', ctypes.wintypes.UINT),
+        ('not_used', ctypes.wintypes.UINT),
+        ('sep_process', BOOL, 1),
+        ('start_panel_on', BOOL, 1),
+        ('show_start_page', BOOL, 1),
+        ('auto_check_select', BOOL, 1),
+        ('icons_only', BOOL, 1),
+        ('show_type_overlay', BOOL, 1),
+        ('spare_flags', ctypes.wintypes.UINT, 13),
+    ]
 
 
 SSF_SHOWALLOBJECTS = 0x00000001
@@ -123,8 +124,8 @@ SSF_SHOWTYPEOVERLAY = 0x02000000
 
 SHGetSetSettings = ctypes.windll.shell32.SHGetSetSettings
 SHGetSetSettings.argtypes = [
-	ctypes.POINTER(SHELLSTATE),
-	ctypes.wintypes.DWORD,
-	ctypes.wintypes.BOOL,  # get or set (True: set)
+    ctypes.POINTER(SHELLSTATE),
+    ctypes.wintypes.DWORD,
+    ctypes.wintypes.BOOL,  # get or set (True: set)
 ]
 SHGetSetSettings.restype = None
