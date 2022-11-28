@@ -40,11 +40,10 @@ is_py3 = (_ver[0] == 3)
 if is_py2:
 	from StringIO import StringIO
 	from urllib2 import HTTPPasswordMgr, HTTPDigestAuthHandler, Request,\
-						HTTPHandler, build_opener, HTTPError, URLError,\
-						build_opener
+						HTTPHandler, build_opener, HTTPError, URLError
 	from httplib import BadStatusLine, HTTPException
 	from urlparse import urlunparse
-	from urllib import urlencode
+	from urllib import urlencode, quote_plus
 
 	bytes = str
 	unicode = unicode
@@ -55,7 +54,7 @@ elif is_py3:
 								HTTPHandler, build_opener
 	from urllib.error import HTTPError, URLError
 	from http.client import HTTPException, BadStatusLine
-	from urllib.parse import urlunparse, urlencode
+	from urllib.parse import urlunparse, urlencode, quote_plus
 
 	unicode = str
 	bytes = bytes

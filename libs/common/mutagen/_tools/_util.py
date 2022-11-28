@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2015 Christoph Reiter
 #
 # This program is free software; you can redistribute it and/or modify
@@ -11,8 +10,7 @@ import signal
 import contextlib
 import optparse
 
-from mutagen._senf import print_
-from mutagen._compat import text_type, iterbytes
+from mutagen._util import iterbytes
 
 
 def split_escape(string, sep, maxsplit=None, escape_char="\\"):
@@ -25,7 +23,7 @@ def split_escape(string, sep, maxsplit=None, escape_char="\\"):
     assert len(escape_char) == 1
 
     if isinstance(string, bytes):
-        if isinstance(escape_char, text_type):
+        if isinstance(escape_char, str):
             escape_char = escape_char.encode("ascii")
         iter_ = iterbytes
     else:
@@ -88,8 +86,4 @@ class SignalHandler(object):
             raise SystemExit("Aborted...")
 
 
-class OptionParser(optparse.OptionParser):
-    """OptionParser subclass which supports printing Unicode under Windows"""
-
-    def print_help(self, file=None):
-        print_(self.format_help(), file=file)
+OptionParser = optparse.OptionParser

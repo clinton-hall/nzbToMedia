@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2016, Adrian Sampson.
 #
@@ -14,19 +13,18 @@
 # included in all copies or substantial portions of the Software.
 
 """Adds Discogs album search support to the autotagger. Requires the
-discogs-client library.
+python3-discogs-client library.
 """
-from __future__ import division, absolute_import, print_function
 
 import beets.ui
 from beets import config
-from beets.autotag.hooks import AlbumInfo, TrackInfo, Distance
-from beets.plugins import BeetsPlugin
-from beets.util import confit
+from beets.autotag.hooks import AlbumInfo, TrackInfo
+from beets.plugins import MetadataSourcePlugin, BeetsPlugin, get_distance
+import confuse
 from discogs_client import Release, Master, Client
 from discogs_client.exceptions import DiscogsAPIError
 from requests.exceptions import ConnectionError
-from six.moves import http_client
+import http.client
 import beets
 import re
 import time
@@ -37,10 +35,12 @@ import traceback
 from string import ascii_lowercase
 
 
-USER_AGENT = u'beets/{0} +http://beets.io/'.format(beets.__version__)
+USER_AGENT = f'beets/{beets.__version__} +https://beets.io/'
+API_KEY = 'rAzVUQYRaoFjeBjyWuWZ'
+API_SECRET = 'plxtUTqoCzwxZpqdPysCwGuBSmZNdZVy'
 
 # Exceptions that discogs_client should really handle but does not.
-CONNECTION_ERRORS = (ConnectionError, socket.error, http_client.HTTPException,
+CONNECTION_ERRORS = (ConnectionError, socket.error, http.client.HTTPException,
                      ValueError,  # JSON decoding raises a ValueError.
                      DiscogsAPIError)
 
@@ -48,13 +48,15 @@ CONNECTION_ERRORS = (ConnectionError, socket.error, http_client.HTTPException,
 class DiscogsPlugin(BeetsPlugin):
 
     def __init__(self):
-        super(DiscogsPlugin, self).__init__()
+        super().__init__()
         self.config.add({
-            'apikey': 'rAzVUQYRaoFjeBjyWuWZ',
-            'apisecret': 'plxtUTqoCzwxZpqdPysCwGuBSmZNdZVy',
+            'apikey': API_KEY,
+            'apisecret': API_SECRET,
             'tokenfile': 'discogs_token.json',
             'source_weight': 0.5,
             'user_token': '',
+            'separator': ', ',
+            'index_tracks': False,
         })
         self.config['apikey'].redact = True
         self.config['apisecret'].redact = True
@@ -71,6 +73,8 @@ class DiscogsPlugin(BeetsPlugin):
         # Try using a configured user token (bypassing OAuth login).
         user_token = self.config['user_token'].as_str()
         if user_token:
+            # The rate limit for authenticated users goes up to 60
+            # requests per minute.
             self.discogs_client = Client(USER_AGENT, user_token=user_token)
             return
 
@@ -78,7 +82,7 @@ class DiscogsPlugin(BeetsPlugin):
         try:
             with open(self._tokenfile()) as f:
                 tokendata = json.load(f)
-        except IOError:
+        except OSError:
             # No token yet. Generate one.
             token, secret = self.authenticate(c_key, c_secret)
         else:
@@ -97,7 +101,7 @@ class DiscogsPlugin(BeetsPlugin):
     def _tokenfile(self):
         """Get the path to the JSON file for storing the OAuth token.
         """
-        return self.config['tokenfile'].get(confit.Filename(in_app_dir=True))
+        return self.config['tokenfile'].get(confuse.Filename(in_app_dir=True))
 
     def authenticate(self, c_key, c_secret):
         # Get the link for the OAuth page.
@@ -105,24 +109,24 @@ class DiscogsPlugin(BeetsPlugin):
         try:
             _, _, url = auth_client.get_authorize_url()
         except CONNECTION_ERRORS as e:
-            self._log.debug(u'connection error: {0}', e)
-            raise beets.ui.UserError(u'communication with Discogs failed')
+            self._log.debug('connection error: {0}', e)
+            raise beets.ui.UserError('communication with Discogs failed')
 
-        beets.ui.print_(u"To authenticate with Discogs, visit:")
+        beets.ui.print_("To authenticate with Discogs, visit:")
         beets.ui.print_(url)
 
         # Ask for the code and validate it.
-        code = beets.ui.input_(u"Enter the code:")
+        code = beets.ui.input_("Enter the code:")
         try:
             token, secret = auth_client.get_access_token(code)
         except DiscogsAPIError:
-            raise beets.ui.UserError(u'Discogs authorization failed')
+            raise beets.ui.UserError('Discogs authorization failed')
         except CONNECTION_ERRORS as e:
-            self._log.debug(u'connection error: {0}', e)
-            raise beets.ui.UserError(u'Discogs token request failed')
+            self._log.debug('connection error: {0}', e)
+            raise beets.ui.UserError('Discogs token request failed')
 
         # Save the token for later use.
-        self._log.debug(u'Discogs token {0}, secret {1}', token, secret)
+        self._log.debug('Discogs token {0}, secret {1}', token, secret)
         with open(self._tokenfile(), 'w') as f:
             json.dump({'token': token, 'secret': secret}, f)
 
@@ -131,12 +135,22 @@ class DiscogsPlugin(BeetsPlugin):
     def album_distance(self, items, album_info, mapping):
         """Returns the album distance.
         """
-        dist = Distance()
-        if album_info.data_source == 'Discogs':
-            dist.add('source', self.config['source_weight'].as_number())
-        return dist
+        return get_distance(
+            data_source='Discogs',
+            info=album_info,
+            config=self.config
+        )
 
-    def candidates(self, items, artist, album, va_likely):
+    def track_distance(self, item, track_info):
+        """Returns the track distance.
+        """
+        return get_distance(
+            data_source='Discogs',
+            info=track_info,
+            config=self.config
+        )
+
+    def candidates(self, items, artist, album, va_likely, extra_tags=None):
         """Returns a list of AlbumInfo objects for discogs search results
         matching an album and artist (if not various).
         """
@@ -146,19 +160,44 @@ class DiscogsPlugin(BeetsPlugin):
         if va_likely:
             query = album
         else:
-            query = '%s %s' % (artist, album)
+            query = f'{artist} {album}'
         try:
             return self.get_albums(query)
         except DiscogsAPIError as e:
-            self._log.debug(u'API Error: {0} (query: {1})', e, query)
+            self._log.debug('API Error: {0} (query: {1})', e, query)
             if e.status_code == 401:
                 self.reset_auth()
                 return self.candidates(items, artist, album, va_likely)
             else:
                 return []
         except CONNECTION_ERRORS:
-            self._log.debug(u'Connection error in album search', exc_info=True)
+            self._log.debug('Connection error in album search', exc_info=True)
             return []
+
+    @staticmethod
+    def extract_release_id_regex(album_id):
+        """Returns the Discogs_id or None."""
+        # Discogs-IDs are simple integers. In order to avoid confusion with
+        # other metadata plugins, we only look for very specific formats of the
+        # input string:
+        # - plain integer, optionally wrapped in brackets and prefixed by an
+        #   'r', as this is how discogs displays the release ID on its webpage.
+        # - legacy url format: discogs.com/<name of release>/release/<id>
+        # - current url format: discogs.com/release/<id>-<name of release>
+        # See #291, #4080 and #4085 for the discussions leading up to these
+        # patterns.
+        # Regex has been tested here https://regex101.com/r/wyLdB4/2
+
+        for pattern in [
+                r'^\[?r?(?P<id>\d+)\]?$',
+                r'discogs\.com/release/(?P<id>\d+)-',
+                r'discogs\.com/[^/]+/release/(?P<id>\d+)',
+        ]:
+            match = re.search(pattern, album_id)
+            if match:
+                return int(match.group('id'))
+
+        return None
 
     def album_for_id(self, album_id):
         """Fetches an album by its Discogs ID and returns an AlbumInfo object
@@ -167,28 +206,28 @@ class DiscogsPlugin(BeetsPlugin):
         if not self.discogs_client:
             return
 
-        self._log.debug(u'Searching for release {0}', album_id)
-        # Discogs-IDs are simple integers. We only look for those at the end
-        # of an input string as to avoid confusion with other metadata plugins.
-        # An optional bracket can follow the integer, as this is how discogs
-        # displays the release ID on its webpage.
-        match = re.search(r'(^|\[*r|discogs\.com/.+/release/)(\d+)($|\])',
-                          album_id)
-        if not match:
+        self._log.debug('Searching for release {0}', album_id)
+
+        discogs_id = self.extract_release_id_regex(album_id)
+
+        if not discogs_id:
             return None
-        result = Release(self.discogs_client, {'id': int(match.group(2))})
+
+        result = Release(self.discogs_client, {'id': discogs_id})
         # Try to obtain title to verify that we indeed have a valid Release
         try:
             getattr(result, 'title')
         except DiscogsAPIError as e:
             if e.status_code != 404:
-                self._log.debug(u'API Error: {0} (query: {1})', e, result._uri)
+                self._log.debug('API Error: {0} (query: {1})', e,
+                                result.data['resource_url'])
                 if e.status_code == 401:
                     self.reset_auth()
                     return self.album_for_id(album_id)
             return None
         except CONNECTION_ERRORS:
-            self._log.debug(u'Connection error in album lookup', exc_info=True)
+            self._log.debug('Connection error in album lookup',
+                            exc_info=True)
             return None
         return self.get_album_info(result)
 
@@ -199,18 +238,17 @@ class DiscogsPlugin(BeetsPlugin):
         # cause a query to return no results, even if they match the artist or
         # album title. Use `re.UNICODE` flag to avoid stripping non-english
         # word characters.
-        # FIXME: Encode as ASCII to work around a bug:
-        # https://github.com/beetbox/beets/issues/1051
-        # When the library is fixed, we should encode as UTF-8.
-        query = re.sub(r'(?u)\W+', ' ', query).encode('ascii', "replace")
+        query = re.sub(r'(?u)\W+', ' ', query)
         # Strip medium information from query, Things like "CD1" and "disk 1"
         # can also negate an otherwise positive result.
-        query = re.sub(br'(?i)\b(CD|disc)\s*\d+', b'', query)
+        query = re.sub(r'(?i)\b(CD|disc)\s*\d+', '', query)
+
         try:
             releases = self.discogs_client.search(query,
                                                   type='release').page(1)
+
         except CONNECTION_ERRORS:
-            self._log.debug(u"Communication error while searching for {0!r}",
+            self._log.debug("Communication error while searching for {0!r}",
                             query, exc_info=True)
             return []
         return [album for album in map(self.get_album_info, releases[:5])
@@ -220,20 +258,22 @@ class DiscogsPlugin(BeetsPlugin):
         """Fetches a master release given its Discogs ID and returns its year
         or None if the master release is not found.
         """
-        self._log.debug(u'Searching for master release {0}', master_id)
+        self._log.debug('Searching for master release {0}', master_id)
         result = Master(self.discogs_client, {'id': master_id})
+
         try:
             year = result.fetch('year')
             return year
         except DiscogsAPIError as e:
             if e.status_code != 404:
-                self._log.debug(u'API Error: {0} (query: {1})', e, result._uri)
+                self._log.debug('API Error: {0} (query: {1})', e,
+                                result.data['resource_url'])
                 if e.status_code == 401:
                     self.reset_auth()
                     return self.get_master_year(master_id)
             return None
         except CONNECTION_ERRORS:
-            self._log.debug(u'Connection error in master release lookup',
+            self._log.debug('Connection error in master release lookup',
                             exc_info=True)
             return None
 
@@ -252,10 +292,12 @@ class DiscogsPlugin(BeetsPlugin):
         # https://www.discogs.com/help/doc/submission-guidelines-general-rules
         if not all([result.data.get(k) for k in ['artists', 'title', 'id',
                                                  'tracklist']]):
-            self._log.warn(u"Release does not contain the required fields")
+            self._log.warning("Release does not contain the required fields")
             return None
 
-        artist, artist_id = self.get_artist([a.data for a in result.artists])
+        artist, artist_id = MetadataSourcePlugin.get_artist(
+            [a.data for a in result.artists]
+        )
         album = re.sub(r' +', ' ', result.title)
         album_id = result.data['id']
         # Use `.data` to access the tracklist directly instead of the
@@ -270,10 +312,13 @@ class DiscogsPlugin(BeetsPlugin):
         mediums = [t.medium for t in tracks]
         country = result.data.get('country')
         data_url = result.data.get('uri')
+        style = self.format(result.data.get('styles'))
+        genre = self.format(result.data.get('genres'))
+        discogs_albumid = self.extract_release_id(result.data.get('uri'))
 
         # Extract information for the optional AlbumInfo fields that are
         # contained on nested discogs fields.
-        albumtype = media = label = catalogno = None
+        albumtype = media = label = catalogno = labelid = None
         if result.data.get('formats'):
             albumtype = ', '.join(
                 result.data['formats'][0].get('descriptions', [])) or None
@@ -281,12 +326,13 @@ class DiscogsPlugin(BeetsPlugin):
         if result.data.get('labels'):
             label = result.data['labels'][0].get('name')
             catalogno = result.data['labels'][0].get('catno')
+            labelid = result.data['labels'][0].get('id')
 
         # Additional cleanups (various artists name, catalog number, media).
         if va:
             artist = config['va_name'].as_str()
         if catalogno == 'none':
-                catalogno = None
+            catalogno = None
         # Explicitly set the `media` for the tracks, since it is expected by
         # `autotag.apply_metadata`, and set `medium_total`.
         for track in tracks:
@@ -302,36 +348,29 @@ class DiscogsPlugin(BeetsPlugin):
         # a master release, otherwise fetch the master release.
         original_year = self.get_master_year(master_id) if master_id else year
 
-        return AlbumInfo(album, album_id, artist, artist_id, tracks, asin=None,
-                         albumtype=albumtype, va=va, year=year, month=None,
-                         day=None, label=label, mediums=len(set(mediums)),
-                         artist_sort=None, releasegroup_id=master_id,
-                         catalognum=catalogno, script=None, language=None,
-                         country=country, albumstatus=None, media=media,
-                         albumdisambig=None, artist_credit=None,
-                         original_year=original_year, original_month=None,
-                         original_day=None, data_source='Discogs',
-                         data_url=data_url)
+        return AlbumInfo(album=album, album_id=album_id, artist=artist,
+                         artist_id=artist_id, tracks=tracks,
+                         albumtype=albumtype, va=va, year=year,
+                         label=label, mediums=len(set(mediums)),
+                         releasegroup_id=master_id, catalognum=catalogno,
+                         country=country, style=style, genre=genre,
+                         media=media, original_year=original_year,
+                         data_source='Discogs', data_url=data_url,
+                         discogs_albumid=discogs_albumid,
+                         discogs_labelid=labelid, discogs_artistid=artist_id)
 
-    def get_artist(self, artists):
-        """Returns an artist string (all artists) and an artist_id (the main
-        artist) for a list of discogs album or track artists.
-        """
-        artist_id = None
-        bits = []
-        for i, artist in enumerate(artists):
-            if not artist_id:
-                artist_id = artist['id']
-            name = artist['name']
-            # Strip disambiguation number.
-            name = re.sub(r' \(\d+\)$', '', name)
-            # Move articles to the front.
-            name = re.sub(r'(?i)^(.*?), (a|an|the)$', r'\2 \1', name)
-            bits.append(name)
-            if artist['join'] and i < len(artists) - 1:
-                bits.append(artist['join'])
-        artist = ' '.join(bits).replace(' ,', ',') or None
-        return artist, artist_id
+    def format(self, classification):
+        if classification:
+            return self.config['separator'].as_str() \
+                .join(sorted(classification))
+        else:
+            return None
+
+    def extract_release_id(self, uri):
+        if uri:
+            return uri.split("/")[-1]
+        else:
+            return None
 
     def get_tracks(self, tracklist):
         """Returns a list of TrackInfo objects for a discogs tracklist.
@@ -342,20 +381,34 @@ class DiscogsPlugin(BeetsPlugin):
             # FIXME: this is an extra precaution for making sure there are no
             # side effects after #2222. It should be removed after further
             # testing.
-            self._log.debug(u'{}', traceback.format_exc())
-            self._log.error(u'uncaught exception in coalesce_tracks: {}', exc)
+            self._log.debug('{}', traceback.format_exc())
+            self._log.error('uncaught exception in coalesce_tracks: {}', exc)
             clean_tracklist = tracklist
         tracks = []
         index_tracks = {}
         index = 0
+        # Distinct works and intra-work divisions, as defined by index tracks.
+        divisions, next_divisions = [], []
         for track in clean_tracklist:
             # Only real tracks have `position`. Otherwise, it's an index track.
             if track['position']:
                 index += 1
-                track_info = self.get_track_info(track, index)
+                if next_divisions:
+                    # End of a block of index tracks: update the current
+                    # divisions.
+                    divisions += next_divisions
+                    del next_divisions[:]
+                track_info = self.get_track_info(track, index, divisions)
                 track_info.track_alt = track['position']
                 tracks.append(track_info)
             else:
+                next_divisions.append(track['title'])
+                # We expect new levels of division at the beginning of the
+                # tracklist (and possibly elsewhere).
+                try:
+                    divisions.pop()
+                except IndexError:
+                    pass
                 index_tracks[index + 1] = track['title']
 
         # Fix up medium and medium_index for each track. Discogs position is
@@ -367,7 +420,7 @@ class DiscogsPlugin(BeetsPlugin):
         # If a medium has two sides (ie. vinyl or cassette), each pair of
         # consecutive sides should belong to the same medium.
         if all([track.medium is not None for track in tracks]):
-            m = sorted(set([track.medium.lower() for track in tracks]))
+            m = sorted({track.medium.lower() for track in tracks})
             # If all track.medium are single consecutive letters, assume it is
             # a 2-sided medium.
             if ''.join(m) in ascii_lowercase:
@@ -426,7 +479,7 @@ class DiscogsPlugin(BeetsPlugin):
             # Calculate position based on first subtrack, without subindex.
             idx, medium_idx, sub_idx = \
                 self.get_track_index(subtracks[0]['position'])
-            position = '%s%s' % (idx or '', medium_idx or '')
+            position = '{}{}'.format(idx or '', medium_idx or '')
 
             if tracklist and not tracklist[-1]['position']:
                 # Assume the previous index track contains the track title.
@@ -444,6 +497,12 @@ class DiscogsPlugin(BeetsPlugin):
                         for subtrack in subtracks:
                             if not subtrack.get('artists'):
                                 subtrack['artists'] = index_track['artists']
+                    # Concatenate index with track title when index_tracks
+                    # option is set
+                    if self.config['index_tracks']:
+                        for subtrack in subtracks:
+                            subtrack['title'] = '{}: {}'.format(
+                                index_track['title'], subtrack['title'])
                     tracklist.extend(subtracks)
             else:
                 # Merge the subtracks, pick a title, and append the new track.
@@ -490,18 +549,23 @@ class DiscogsPlugin(BeetsPlugin):
 
         return tracklist
 
-    def get_track_info(self, track, index):
+    def get_track_info(self, track, index, divisions):
         """Returns a TrackInfo object for a discogs track.
         """
         title = track['title']
+        if self.config['index_tracks']:
+            prefix = ', '.join(divisions)
+            if prefix:
+                title = f'{prefix}: {title}'
         track_id = None
         medium, medium_index, _ = self.get_track_index(track['position'])
-        artist, artist_id = self.get_artist(track.get('artists', []))
+        artist, artist_id = MetadataSourcePlugin.get_artist(
+            track.get('artists', [])
+        )
         length = self.get_track_length(track['duration'])
-        return TrackInfo(title, track_id, artist=artist, artist_id=artist_id,
-                         length=length, index=index,
-                         medium=medium, medium_index=medium_index,
-                         artist_sort=None, disctitle=None, artist_credit=None)
+        return TrackInfo(title=title, track_id=track_id, artist=artist,
+                         artist_id=artist_id, length=length, index=index,
+                         medium=medium, medium_index=medium_index)
 
     def get_track_index(self, position):
         """Returns the medium, medium index and subtrack index for a discogs
@@ -528,7 +592,7 @@ class DiscogsPlugin(BeetsPlugin):
             if subindex and subindex.startswith('.'):
                 subindex = subindex[1:]
         else:
-            self._log.debug(u'Invalid position: {0}', position)
+            self._log.debug('Invalid position: {0}', position)
             medium = index = subindex = None
         return medium or None, index or None, subindex or None
 

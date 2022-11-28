@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2006 Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
@@ -50,17 +49,22 @@ class OggTheoraInfo(StreamInfo):
 
     def __init__(self, fileobj):
         page = OggPage(fileobj)
-        while not page.packets[0].startswith(b"\x80theora"):
+        while not page.packets or \
+                not page.packets[0].startswith(b"\x80theora"):
             page = OggPage(fileobj)
         if not page.first:
             raise OggTheoraHeaderError(
                 "page has ID header, but doesn't start a stream")
         data = page.packets[0]
+        if len(data) < 42:
+            raise OggTheoraHeaderError("Truncated header")
         vmaj, vmin = struct.unpack("2B", data[7:9])
         if (vmaj, vmin) != (3, 2):
             raise OggTheoraHeaderError(
                 "found Theora version %d.%d != 3.2" % (vmaj, vmin))
         fps_num, fps_den = struct.unpack(">2I", data[22:30])
+        if not fps_den or not fps_num:
+            raise OggTheoraHeaderError("FRN or FRD is equal to zero")
         self.fps = fps_num / float(fps_den)
         self.bitrate = cdata.uint_be(b"\x00" + data[37:40])
         self.granule_shift = (cdata.ushort_be(data[40:42]) >> 5) & 0x1F
@@ -73,6 +77,7 @@ class OggTheoraInfo(StreamInfo):
         position = page.position
         mask = (1 << self.granule_shift) - 1
         frames = (position >> self.granule_shift) + (position & mask)
+        assert self.fps
         self.length = frames / float(self.fps)
 
     def pprint(self):
@@ -91,7 +96,10 @@ class OggTheoraCommentDict(VCommentDict):
             if page.serial == info.serial:
                 pages.append(page)
                 complete = page.complete or (len(page.packets) > 1)
-        data = OggPage.to_packets(pages)[0][7:]
+        packets = OggPage.to_packets(pages)
+        if not packets:
+            raise error("Missing metadata packet")
+        data = packets[0][7:]
         super(OggTheoraCommentDict, self).__init__(data, framing=False)
         self._padding = len(data) - self._size
 
@@ -100,7 +108,8 @@ class OggTheoraCommentDict(VCommentDict):
 
         fileobj.seek(0)
         page = OggPage(fileobj)
-        while not page.packets[0].startswith(b"\x81theora"):
+        while not page.packets or \
+                not page.packets[0].startswith(b"\x81theora"):
             page = OggPage(fileobj)
 
         old_pages = [page]
