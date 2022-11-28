@@ -36,7 +36,7 @@ reverseNames = {u'ERROR': ERROR,
                 u'DB': DB}
 
 
-class NTMRotatingLogHandler(object):
+class NTMRotatingLogHandler:
     def __init__(self, log_file, num_files, num_bytes):
         self.num_files = num_files
         self.num_bytes = num_bytes
@@ -240,7 +240,7 @@ class NTMRotatingLogHandler(object):
             sys.exit(1)
 
 
-class DispatchingFormatter(object):
+class DispatchingFormatter:
     def __init__(self, formatters, default_formatter):
         self._formatters = formatters
         self._default_formatter = default_formatter

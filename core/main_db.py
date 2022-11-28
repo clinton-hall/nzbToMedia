@@ -58,7 +58,7 @@ def db_filename(filename='nzbtomedia.db', suffix=None):
     return core.os.path.join(core.APP_ROOT, filename)
 
 
-class DBConnection(object):
+class DBConnection:
     def __init__(self, filename='nzbtomedia.db', suffix=None, row_type=None):
 
         self.filename = filename
@@ -242,7 +242,7 @@ def sanity_check_database(connection, sanity_check):
     sanity_check(connection).check()
 
 
-class DBSanityCheck(object):
+class DBSanityCheck:
     def __init__(self, connection):
         self.connection = connection
 
@@ -287,7 +287,7 @@ def _process_upgrade(connection, upgrade_class):
 
 
 # Base migration class. All future DB changes should be subclassed from this class
-class SchemaUpgrade(object):
+class SchemaUpgrade:
     def __init__(self, connection):
         self.connection = connection
 

@@ -30,7 +30,7 @@ FOLDER_STRUCTURE = {
 }
 
 
-class WorkingDirectory(object):
+class WorkingDirectory:
     """Context manager for changing current working directory."""
 
     def __init__(self, new, original=None):
