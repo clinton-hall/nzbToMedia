@@ -1,19 +1,12 @@
 from ctypes import windll, POINTER
-from ctypes.wintypes import (
-	LPWSTR, DWORD, LPVOID, HANDLE, BOOL,
-)
+from ctypes.wintypes import LPWSTR, DWORD, LPVOID, HANDLE, BOOL
 
 CreateEvent = windll.kernel32.CreateEventW
-CreateEvent.argtypes = (
-	LPVOID,  # LPSECURITY_ATTRIBUTES
-	BOOL,
-	BOOL,
-	LPWSTR,
-)
+CreateEvent.argtypes = (LPVOID, BOOL, BOOL, LPWSTR)  # LPSECURITY_ATTRIBUTES
 CreateEvent.restype = HANDLE
 
 SetEvent = windll.kernel32.SetEvent
-SetEvent.argtypes = HANDLE,
+SetEvent.argtypes = (HANDLE,)
 SetEvent.restype = BOOL
 
 WaitForSingleObject = windll.kernel32.WaitForSingleObject
@@ -26,11 +19,11 @@ _WaitForMultipleObjects.restype = DWORD
 
 
 def WaitForMultipleObjects(handles, wait_all=False, timeout=0):
-	n_handles = len(handles)
-	handle_array = (HANDLE * n_handles)()
-	for index, handle in enumerate(handles):
-		handle_array[index] = handle
-	return _WaitForMultipleObjects(n_handles, handle_array, wait_all, timeout)
+    n_handles = len(handles)
+    handle_array = (HANDLE * n_handles)()
+    for index, handle in enumerate(handles):
+        handle_array[index] = handle
+    return _WaitForMultipleObjects(n_handles, handle_array, wait_all, timeout)
 
 
 WAIT_OBJECT_0 = 0

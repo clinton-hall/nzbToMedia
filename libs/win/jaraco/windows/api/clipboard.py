@@ -30,16 +30,16 @@ CF_GDIOBJFIRST = 0x0300
 CF_GDIOBJLAST = 0x03FF
 
 RegisterClipboardFormat = ctypes.windll.user32.RegisterClipboardFormatW
-RegisterClipboardFormat.argtypes = ctypes.wintypes.LPWSTR,
+RegisterClipboardFormat.argtypes = (ctypes.wintypes.LPWSTR,)
 RegisterClipboardFormat.restype = ctypes.wintypes.UINT
 CF_HTML = RegisterClipboardFormat('HTML Format')
 
 EnumClipboardFormats = ctypes.windll.user32.EnumClipboardFormats
-EnumClipboardFormats.argtypes = ctypes.wintypes.UINT,
+EnumClipboardFormats.argtypes = (ctypes.wintypes.UINT,)
 EnumClipboardFormats.restype = ctypes.wintypes.UINT
 
 GetClipboardData = ctypes.windll.user32.GetClipboardData
-GetClipboardData.argtypes = ctypes.wintypes.UINT,
+GetClipboardData.argtypes = (ctypes.wintypes.UINT,)
 GetClipboardData.restype = ctypes.wintypes.HANDLE
 
 SetClipboardData = ctypes.windll.user32.SetClipboardData
@@ -47,7 +47,7 @@ SetClipboardData.argtypes = ctypes.wintypes.UINT, ctypes.wintypes.HANDLE
 SetClipboardData.restype = ctypes.wintypes.HANDLE
 
 OpenClipboard = ctypes.windll.user32.OpenClipboard
-OpenClipboard.argtypes = ctypes.wintypes.HANDLE,
+OpenClipboard.argtypes = (ctypes.wintypes.HANDLE,)
 OpenClipboard.restype = ctypes.wintypes.BOOL
 
 ctypes.windll.user32.CloseClipboard.restype = ctypes.wintypes.BOOL
