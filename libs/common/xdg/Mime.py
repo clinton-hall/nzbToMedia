@@ -749,14 +749,16 @@ def install_mime_info(application, package_file):
     file with the same name (if the contents are different)"""
     application += '.xml'
 
-    new_data = open(package_file).read()
+    with open(package_file) as f:
+        new_data = f.read()
 
     # See if the file is already installed
     package_dir = os.path.join('mime', 'packages')
     resource = os.path.join(package_dir, application)
     for x in BaseDirectory.load_data_paths(resource):
         try:
-            old_data = open(x).read()
+            with open(x) as f:
+                old_data = f.read()
         except:
             continue
         if old_data == new_data:
@@ -770,7 +772,8 @@ def install_mime_info(application, package_file):
     new_file = os.path.join(BaseDirectory.save_data_path(package_dir), application)
 
     # Write the file...
-    open(new_file, 'w').write(new_data)
+    with open(new_file, 'w') as f:
+        f.write(new_data)
 
     # Update the database...
     command = 'update-mime-database'
