@@ -1,5 +1,3 @@
-# coding=utf-8
-
 from core import logger, main_db
 from core.utils import backup_versioned_file
 

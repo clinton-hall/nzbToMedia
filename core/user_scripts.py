@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import os
 from subprocess import Popen
 
@@ -10,7 +8,6 @@ from core.utils import list_media_files, remove_dir
 from core.auto_process.common import (
     ProcessResult,
 )
-
 
 
 def external_script(output_destination, torrent_name, torrent_label, settings):
