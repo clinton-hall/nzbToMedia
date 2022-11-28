@@ -71,28 +71,27 @@ class RecentFiles:
         elif not filename:
             filename = self.filename
 
-        f = open(filename, "w")
-        fcntl.lockf(f, fcntl.LOCK_EX)
-        f.write('<?xml version="1.0"?>\n')
-        f.write("<RecentFiles>\n")
+        with open(filename, "w") as f:
+            fcntl.lockf(f, fcntl.LOCK_EX)
+            f.write('<?xml version="1.0"?>\n')
+            f.write("<RecentFiles>\n")
 
-        for r in self.RecentFiles:
-            f.write("  <RecentItem>\n")
-            f.write("    <URI>%s</URI>\n" % xml.sax.saxutils.escape(r.URI))
-            f.write("    <Mime-Type>%s</Mime-Type>\n" % r.MimeType)
-            f.write("    <Timestamp>%s</Timestamp>\n" % r.Timestamp)
-            if r.Private == True:
-                f.write("    <Private/>\n")
-            if len(r.Groups) > 0:
-                f.write("    <Groups>\n")
-                for group in r.Groups:
-                    f.write("      <Group>%s</Group>\n" % group)
-                f.write("    </Groups>\n")
-            f.write("  </RecentItem>\n")
+            for r in self.RecentFiles:
+                f.write("  <RecentItem>\n")
+                f.write("    <URI>%s</URI>\n" % xml.sax.saxutils.escape(r.URI))
+                f.write("    <Mime-Type>%s</Mime-Type>\n" % r.MimeType)
+                f.write("    <Timestamp>%s</Timestamp>\n" % r.Timestamp)
+                if r.Private == True:
+                    f.write("    <Private/>\n")
+                if len(r.Groups) > 0:
+                    f.write("    <Groups>\n")
+                    for group in r.Groups:
+                        f.write("      <Group>%s</Group>\n" % group)
+                    f.write("    </Groups>\n")
+                f.write("  </RecentItem>\n")
 
-        f.write("</RecentFiles>\n")
-        fcntl.lockf(f, fcntl.LOCK_UN)
-        f.close()
+            f.write("</RecentFiles>\n")
+            fcntl.lockf(f, fcntl.LOCK_UN)
 
     def getFiles(self, mimetypes=None, groups=None, limit=0):
         """Get a list of recently used files.

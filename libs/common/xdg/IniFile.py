@@ -56,38 +56,37 @@ class IniFile:
                 return
 
         # parse file
-        for line in fd:
-            line = line.strip()
-            # empty line
-            if not line:
-                continue
-            # comment
-            elif line[0] == '#':
-                continue
-            # new group
-            elif line[0] == '[':
-                currentGroup = line.lstrip("[").rstrip("]")
-                if debug and self.hasGroup(currentGroup):
-                    raise DuplicateGroupError(currentGroup, filename)
-                else:
-                    content[currentGroup] = {}
-            # key
-            else:
-                try:
-                    key, value = line.split("=", 1)
-                except ValueError:
-                    raise ParsingError("Invalid line: " + line, filename)
-                
-                key = key.strip() # Spaces before/after '=' should be ignored
-                try:
-                    if debug and self.hasKey(key, currentGroup):
-                        raise DuplicateKeyError(key, currentGroup, filename)
+        with fd:
+            for line in fd:
+                line = line.strip()
+                # empty line
+                if not line:
+                    continue
+                # comment
+                elif line[0] == '#':
+                    continue
+                # new group
+                elif line[0] == '[':
+                    currentGroup = line.lstrip("[").rstrip("]")
+                    if debug and self.hasGroup(currentGroup):
+                        raise DuplicateGroupError(currentGroup, filename)
                     else:
-                        content[currentGroup][key] = value.strip()
-                except (IndexError, UnboundLocalError):
-                    raise ParsingError("Parsing error on key, group missing", filename)
+                        content[currentGroup] = {}
+                # key
+                else:
+                    try:
+                        key, value = line.split("=", 1)
+                    except ValueError:
+                        raise ParsingError("Invalid line: " + line, filename)
 
-        fd.close()
+                    key = key.strip() # Spaces before/after '=' should be ignored
+                    try:
+                        if debug and self.hasKey(key, currentGroup):
+                            raise DuplicateKeyError(key, currentGroup, filename)
+                        else:
+                            content[currentGroup][key] = value.strip()
+                    except (IndexError, UnboundLocalError):
+                        raise ParsingError("Parsing error on key, group missing", filename)
 
         self.filename = filename
         self.tainted = False
