@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import re
 import sqlite3
 import time
@@ -34,7 +32,6 @@ if PY2:
             return super(Row, self).__getitem__(item)
 else:
     from sqlite3 import Row
-
 
 def db_filename(filename='nzbtomedia.db', suffix=None):
     """

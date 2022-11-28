@@ -1,5 +1,3 @@
-# coding=utf-8
-
 import requests
 
 from core.utils import shutil_custom
