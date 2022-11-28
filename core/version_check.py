@@ -25,7 +25,7 @@ import core
 from core import github_api as github, logger
 
 
-class CheckVersion(object):
+class CheckVersion:
     """Version checker that runs in a thread with the SB scheduler."""
 
     def __init__(self):
@@ -88,7 +88,7 @@ class CheckVersion(object):
             return result
 
 
-class UpdateManager(object):
+class UpdateManager:
     def get_github_repo_user(self):
         return core.GIT_USER
 

@@ -10,7 +10,7 @@ from __future__ import (
 import requests
 
 
-class GitHub(object):
+class GitHub:
     """Simple api wrapper for the Github API v3."""
 
     def __init__(self, github_repo_user, github_repo, branch='master'):

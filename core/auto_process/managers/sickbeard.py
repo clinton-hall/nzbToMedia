@@ -26,7 +26,7 @@ import six
 from six import iteritems
 
 
-class InitSickBeard(object):
+class InitSickBeard:
     """Sickbeard init class.
 
     Used to determin which sickbeard fork object to initialize.
@@ -316,7 +316,7 @@ class InitSickBeard(object):
             )
 
 
-class SickBeard(object):
+class SickBeard:
     """Sickbeard base class."""
 
     def __init__(self, sb_init):
