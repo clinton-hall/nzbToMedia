@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
@@ -17,10 +16,9 @@ True Audio files use ID3 tags.
 
 __all__ = ["TrueAudio", "Open", "delete", "EasyTrueAudio"]
 
-from ._compat import endswith
 from mutagen import StreamInfo
 from mutagen.id3 import ID3FileType, delete
-from mutagen._util import cdata, MutagenError, convert_error
+from mutagen._util import cdata, MutagenError, convert_error, endswith
 
 
 class error(MutagenError):
@@ -99,4 +97,4 @@ class EasyTrueAudio(TrueAudio):
     """
 
     from mutagen.easyid3 import EasyID3 as ID3
-    ID3 = ID3
+    ID3 = ID3  # type: ignore

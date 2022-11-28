@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2016, Malte Ried.
 #
@@ -16,7 +15,6 @@
 """Filter imported files using a regular expression.
 """
 
-from __future__ import division, absolute_import, print_function
 
 import re
 from beets import config
@@ -27,7 +25,7 @@ from beets.importer import SingletonImportTask
 
 class FileFilterPlugin(BeetsPlugin):
     def __init__(self):
-        super(FileFilterPlugin, self).__init__()
+        super().__init__()
         self.register_listener('import_task_created',
                                self.import_task_created_event)
         self.config.add({
@@ -43,8 +41,8 @@ class FileFilterPlugin(BeetsPlugin):
                 bytestring_path(self.config['album_path'].get()))
 
         if 'singleton_path' in self.config:
-                self.path_singleton_regex = re.compile(
-                    bytestring_path(self.config['singleton_path'].get()))
+            self.path_singleton_regex = re.compile(
+                bytestring_path(self.config['singleton_path'].get()))
 
     def import_task_created_event(self, session, task):
         if task.items and len(task.items) > 0:

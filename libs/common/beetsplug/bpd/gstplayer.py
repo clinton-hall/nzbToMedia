@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2016, Adrian Sampson.
 #
@@ -17,15 +16,13 @@
 music player.
 """
 
-from __future__ import division, absolute_import, print_function
 
-import six
 import sys
 import time
-from six.moves import _thread
+import _thread
 import os
 import copy
-from six.moves import urllib
+import urllib
 from beets import ui
 
 import gi
@@ -40,7 +37,7 @@ class QueryError(Exception):
     pass
 
 
-class GstPlayer(object):
+class GstPlayer:
     """A music player abstracting GStreamer's Playbin element.
 
     Create a player object, then call run() to start a thread with a
@@ -64,7 +61,8 @@ class GstPlayer(object):
         """
 
         # Set up the Gstreamer player. From the pygst tutorial:
-        # http://pygstdocs.berlios.de/pygst-tutorial/playbin.html
+        # https://pygstdocs.berlios.de/pygst-tutorial/playbin.html (gone)
+        # https://brettviren.github.io/pygst-tutorial-org/pygst-tutorial.html
         ####
         # Updated to GStreamer 1.0 with:
         # https://wiki.ubuntu.com/Novacut/GStreamer1.0
@@ -109,7 +107,7 @@ class GstPlayer(object):
             # error
             self.player.set_state(Gst.State.NULL)
             err, debug = message.parse_error()
-            print(u"Error: {0}".format(err))
+            print(f"Error: {err}")
             self.playing = False
 
     def _set_volume(self, volume):
@@ -129,7 +127,7 @@ class GstPlayer(object):
         path.
         """
         self.player.set_state(Gst.State.NULL)
-        if isinstance(path, six.text_type):
+        if isinstance(path, str):
             path = path.encode('utf-8')
         uri = 'file://' + urllib.parse.quote(path)
         self.player.set_property("uri", uri)
@@ -177,12 +175,12 @@ class GstPlayer(object):
             posq = self.player.query_position(fmt)
             if not posq[0]:
                 raise QueryError("query_position failed")
-            pos = posq[1] // (10 ** 9)
+            pos = posq[1] / (10 ** 9)
 
             lengthq = self.player.query_duration(fmt)
             if not lengthq[0]:
                 raise QueryError("query_duration failed")
-            length = lengthq[1] // (10 ** 9)
+            length = lengthq[1] / (10 ** 9)
 
             self.cached_time = (pos, length)
             return (pos, length)
@@ -214,6 +212,59 @@ class GstPlayer(object):
         """Block until playing finishes."""
         while self.playing:
             time.sleep(1)
+
+    def get_decoders(self):
+        return get_decoders()
+
+
+def get_decoders():
+    """Get supported audio decoders from GStreamer.
+    Returns a dict mapping decoder element names to the associated media types
+    and file extensions.
+    """
+    # We only care about audio decoder elements.
+    filt = (Gst.ELEMENT_FACTORY_TYPE_DEPAYLOADER |
+            Gst.ELEMENT_FACTORY_TYPE_DEMUXER |
+            Gst.ELEMENT_FACTORY_TYPE_PARSER |
+            Gst.ELEMENT_FACTORY_TYPE_DECODER |
+            Gst.ELEMENT_FACTORY_TYPE_MEDIA_AUDIO)
+
+    decoders = {}
+    mime_types = set()
+    for f in Gst.ElementFactory.list_get_elements(filt, Gst.Rank.NONE):
+        for pad in f.get_static_pad_templates():
+            if pad.direction == Gst.PadDirection.SINK:
+                caps = pad.static_caps.get()
+                mimes = set()
+                for i in range(caps.get_size()):
+                    struct = caps.get_structure(i)
+                    mime = struct.get_name()
+                    if mime == 'unknown/unknown':
+                        continue
+                    mimes.add(mime)
+                    mime_types.add(mime)
+                if mimes:
+                    decoders[f.get_name()] = (mimes, set())
+
+    # Check all the TypeFindFactory plugin features form the registry. If they
+    # are associated with an audio media type that we found above, get the list
+    # of corresponding file extensions.
+    mime_extensions = {mime: set() for mime in mime_types}
+    for feat in Gst.Registry.get().get_feature_list(Gst.TypeFindFactory):
+        caps = feat.get_caps()
+        if caps:
+            for i in range(caps.get_size()):
+                struct = caps.get_structure(i)
+                mime = struct.get_name()
+                if mime in mime_types:
+                    mime_extensions[mime].update(feat.get_extensions())
+
+    # Fill in the slot we left for file extensions.
+    for name, (mimes, exts) in decoders.items():
+        for mime in mimes:
+            exts.update(mime_extensions[mime])
+
+    return decoders
 
 
 def play_simple(paths):

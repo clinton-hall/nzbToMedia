@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,10 +18,14 @@ http://www.xiph.org/ogg/doc/rfc3533.txt.
 import struct
 import sys
 import zlib
+from io import BytesIO
+from typing import Type
 
 from mutagen import FileType
-from mutagen._util import cdata, resize_bytes, MutagenError, loadfile, seek_end
-from ._compat import cBytesIO, reraise, chr_, izip, xrange
+from mutagen._util import cdata, resize_bytes, MutagenError, loadfile, \
+    seek_end, bchr, reraise
+from mutagen._file import StreamInfo
+from mutagen._tags import Tags
 
 
 class error(MutagenError):
@@ -37,7 +40,7 @@ class OggPage(object):
     A page is a header of 26 bytes, followed by the length of the
     data, followed by the data.
 
-    The constructor is givin a file-like object pointing to the start
+    The constructor is given a file-like object pointing to the start
     of an Ogg page. After the constructor is finished it is pointing
     to the start of the next page.
 
@@ -50,7 +53,7 @@ class OggPage(object):
         offset (`int` or `None`): offset this page was read from (default None)
         complete (`bool`): if the last packet on this page is complete
             (default True)
-        packets (List[`bytes`]): list of raw packet data (default [])
+        packets (list[bytes]): list of raw packet data (default [])
 
     Note that if 'complete' is false, the next page's 'continued'
     property must be true (so set both when constructing pages).
@@ -145,11 +148,11 @@ class OggPage(object):
         lacing_data = []
         for datum in self.packets:
             quot, rem = divmod(len(datum), 255)
-            lacing_data.append(b"\xff" * quot + chr_(rem))
+            lacing_data.append(b"\xff" * quot + bchr(rem))
         lacing_data = b"".join(lacing_data)
         if not self.complete and lacing_data.endswith(b"\x00"):
             lacing_data = lacing_data[:-1]
-        data.append(chr_(len(lacing_data)))
+        data.append(bchr(len(lacing_data)))
         data.append(lacing_data)
         data.extend(self.packets)
         data = b"".join(data)
@@ -210,13 +213,13 @@ class OggPage(object):
         to logical stream 'serial'. Other pages will be ignored.
 
         fileobj must point to the start of a valid Ogg page; any
-        occuring after it and part of the specified logical stream
+        occurring after it and part of the specified logical stream
         will be numbered. No adjustment will be made to the data in
         the pages nor the granule position; only the page number, and
         so also the CRC.
 
         If an error occurs (e.g. non-Ogg data is found), fileobj will
-        be left pointing to the place in the stream the error occured,
+        be left pointing to the place in the stream the error occurred,
         but the invalid data will be left intact (since this function
         does not change the total file size).
         """
@@ -267,11 +270,12 @@ class OggPage(object):
             else:
                 sequence += 1
 
-            if page.continued:
-                packets[-1].append(page.packets[0])
-            else:
-                packets.append([page.packets[0]])
-            packets.extend([p] for p in page.packets[1:])
+            if page.packets:
+                if page.continued:
+                    packets[-1].append(page.packets[0])
+                else:
+                    packets.append([page.packets[0]])
+                packets.extend([p] for p in page.packets[1:])
 
         return [b"".join(p) for p in packets]
 
@@ -387,8 +391,8 @@ class OggPage(object):
 
         # Number the new pages starting from the first old page.
         first = old_pages[0].sequence
-        for page, seq in izip(new_pages,
-                              xrange(first, first + len(new_pages))):
+        for page, seq in zip(new_pages,
+                             range(first, first + len(new_pages))):
             page.sequence = seq
             page.serial = old_pages[0].serial
 
@@ -416,7 +420,7 @@ class OggPage(object):
         offset_adjust = 0
         new_data_end = None
         assert len(old_pages) == len(new_data)
-        for old_page, data in izip(old_pages, new_data):
+        for old_page, data in zip(old_pages, new_data):
             offset = old_page.offset + offset_adjust
             data_size = len(data)
             resize_bytes(fileobj, old_page.size, data_size, offset)
@@ -460,7 +464,7 @@ class OggPage(object):
             index = data.rindex(b"OggS")
         except ValueError:
             raise error("unable to find final Ogg header")
-        bytesobj = cBytesIO(data[index:])
+        bytesobj = BytesIO(data[index:])
 
         def is_valid(page):
             return not finishing or page.position != -1
@@ -506,9 +510,9 @@ class OggFileType(FileType):
         filething (filething)
     """
 
-    _Info = None
-    _Tags = None
-    _Error = None
+    _Info: Type[StreamInfo]
+    _Tags: Type[Tags]
+    _Error: Type[error]
     _mimes = ["application/ogg", "application/x-ogg"]
 
     @loadfile()
@@ -535,7 +539,7 @@ class OggFileType(FileType):
             raise self._Error("no appropriate stream found")
 
     @loadfile(writable=True)
-    def delete(self, filething):
+    def delete(self, filething=None):
         """delete(filething=None)
 
         Remove tags from a file.
@@ -567,7 +571,7 @@ class OggFileType(FileType):
         raise self._Error
 
     @loadfile(writable=True)
-    def save(self, filething, padding=None):
+    def save(self, filething=None, padding=None):
         """save(filething=None, padding=None)
 
         Save a tag to a file.

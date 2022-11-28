@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2015-2016, Ohm Patel.
 #
@@ -15,12 +14,13 @@
 
 """Fetch various AcousticBrainz metadata using MBID.
 """
-from __future__ import division, absolute_import, print_function
+
+from collections import defaultdict
 
 import requests
 
-from collections import defaultdict
 from beets import plugins, ui
+from beets.dbcore import types
 
 ACOUSTIC_BASE = "https://acousticbrainz.org/"
 LEVELS = ["/low-level", "/high-level"]
@@ -72,6 +72,9 @@ ABSCHEME = {
                 'sad': 'mood_sad'
             }
         },
+        'moods_mirex': {
+            'value': 'moods_mirex'
+        },
         'ismir04_rhythm': {
             'value': 'rhythm'
         },
@@ -79,6 +82,9 @@ ABSCHEME = {
             'all': {
                 'tonal': 'tonal'
             }
+        },
+        'timbre': {
+            'value': 'timbre'
         },
         'voice_instrumental': {
             'value': 'voice_instrumental'
@@ -104,8 +110,33 @@ ABSCHEME = {
 
 
 class AcousticPlugin(plugins.BeetsPlugin):
+    item_types = {
+        'average_loudness': types.Float(6),
+        'chords_changes_rate': types.Float(6),
+        'chords_key': types.STRING,
+        'chords_number_rate': types.Float(6),
+        'chords_scale': types.STRING,
+        'danceable': types.Float(6),
+        'gender': types.STRING,
+        'genre_rosamerica': types.STRING,
+        'initial_key': types.STRING,
+        'key_strength': types.Float(6),
+        'mood_acoustic': types.Float(6),
+        'mood_aggressive': types.Float(6),
+        'mood_electronic': types.Float(6),
+        'mood_happy': types.Float(6),
+        'mood_party': types.Float(6),
+        'mood_relaxed': types.Float(6),
+        'mood_sad': types.Float(6),
+        'moods_mirex': types.STRING,
+        'rhythm': types.Float(6),
+        'timbre': types.STRING,
+        'tonal': types.Float(6),
+        'voice_instrumental': types.STRING,
+    }
+
     def __init__(self):
-        super(AcousticPlugin, self).__init__()
+        super().__init__()
 
         self.config.add({
             'auto': True,
@@ -119,11 +150,11 @@ class AcousticPlugin(plugins.BeetsPlugin):
 
     def commands(self):
         cmd = ui.Subcommand('acousticbrainz',
-                            help=u"fetch metadata from AcousticBrainz")
+                            help="fetch metadata from AcousticBrainz")
         cmd.parser.add_option(
-            u'-f', u'--force', dest='force_refetch',
+            '-f', '--force', dest='force_refetch',
             action='store_true', default=False,
-            help=u're-download data when already present'
+            help='re-download data when already present'
         )
 
         def func(lib, opts, args):
@@ -142,22 +173,22 @@ class AcousticPlugin(plugins.BeetsPlugin):
     def _get_data(self, mbid):
         data = {}
         for url in _generate_urls(mbid):
-            self._log.debug(u'fetching URL: {}', url)
+            self._log.debug('fetching URL: {}', url)
 
             try:
                 res = requests.get(url)
             except requests.RequestException as exc:
-                self._log.info(u'request error: {}', exc)
+                self._log.info('request error: {}', exc)
                 return {}
 
             if res.status_code == 404:
-                self._log.info(u'recording ID {} not found', mbid)
+                self._log.info('recording ID {} not found', mbid)
                 return {}
 
             try:
                 data.update(res.json())
             except ValueError:
-                self._log.debug(u'Invalid Response: {}', res.text)
+                self._log.debug('Invalid Response: {}', res.text)
                 return {}
 
         return data
@@ -172,28 +203,28 @@ class AcousticPlugin(plugins.BeetsPlugin):
             # representative field name to check for previously fetched
             # data.
             if not force:
-                mood_str = item.get('mood_acoustic', u'')
+                mood_str = item.get('mood_acoustic', '')
                 if mood_str:
-                    self._log.info(u'data already present for: {}', item)
+                    self._log.info('data already present for: {}', item)
                     continue
 
             # We can only fetch data for tracks with MBIDs.
             if not item.mb_trackid:
                 continue
 
-            self._log.info(u'getting data for: {}', item)
+            self._log.info('getting data for: {}', item)
             data = self._get_data(item.mb_trackid)
             if data:
                 for attr, val in self._map_data_to_scheme(data, ABSCHEME):
                     if not tags or attr in tags:
-                        self._log.debug(u'attribute {} of {} set to {}',
+                        self._log.debug('attribute {} of {} set to {}',
                                         attr,
                                         item,
                                         val)
                         setattr(item, attr, val)
                     else:
-                        self._log.debug(u'skipping attribute {} of {}'
-                                        u' (value {}) due to config',
+                        self._log.debug('skipping attribute {} of {}'
+                                        ' (value {}) due to config',
                                         attr,
                                         item,
                                         val)
@@ -255,10 +286,9 @@ class AcousticPlugin(plugins.BeetsPlugin):
 
         # The recursive traversal.
         composites = defaultdict(list)
-        for attr, val in self._data_to_scheme_child(data,
-                                                    scheme,
-                                                    composites):
-            yield attr, val
+        yield from self._data_to_scheme_child(data,
+                                              scheme,
+                                              composites)
 
         # When composites has been populated, yield the composite attributes
         # by joining their parts.
@@ -278,10 +308,9 @@ class AcousticPlugin(plugins.BeetsPlugin):
         for k, v in subscheme.items():
             if k in subdata:
                 if type(v) == dict:
-                    for attr, val in self._data_to_scheme_child(subdata[k],
-                                                                v,
-                                                                composites):
-                        yield attr, val
+                    yield from self._data_to_scheme_child(subdata[k],
+                                                          v,
+                                                          composites)
                 elif type(v) == tuple:
                     composite_attribute, part_number = v
                     attribute_parts = composites[composite_attribute]
@@ -292,10 +321,10 @@ class AcousticPlugin(plugins.BeetsPlugin):
                 else:
                     yield v, subdata[k]
             else:
-                self._log.warning(u'Acousticbrainz did not provide info'
-                                  u'about {}', k)
-                self._log.debug(u'Data {} could not be mapped to scheme {} '
-                                u'because key {} was not found', subdata, v, k)
+                self._log.warning('Acousticbrainz did not provide info'
+                                  'about {}', k)
+                self._log.debug('Data {} could not be mapped to scheme {} '
+                                'because key {} was not found', subdata, v, k)
 
 
 def _generate_urls(mbid):
