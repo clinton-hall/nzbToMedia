@@ -61,6 +61,11 @@ else:
     integer_types = (int, long)  # noqa
 
 
+# We use this canary to detect whether the module has already been called,
+# in order to avoid recursion
+in_use = False
+
+
 def pbr(dist, attr, value):
     """Implements the actual pbr setup() keyword.
 
@@ -80,6 +85,16 @@ def pbr(dist, attr, value):
     will not play nicely with setup_requires; however, this implementation may
     not work well with distributions that do use a `Distribution` subclass.
     """
+
+    # Distribution.finalize_options() is what calls this method. That means
+    # there is potential for recursion here. Recursion seems to be an issue
+    # particularly when using PEP517 build-system configs without
+    # setup_requires in setup.py. We can avoid the recursion by setting
+    # this canary so we don't repeat ourselves.
+    global in_use
+    if in_use:
+        return
+    in_use = True
 
     if not value:
         return

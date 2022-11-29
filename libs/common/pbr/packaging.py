@@ -22,6 +22,16 @@ from __future__ import unicode_literals
 
 from distutils.command import install as du_install
 from distutils import log
+
+# (hberaud) do not use six here to import urlparse
+# to keep this module free from external dependencies
+# to avoid cross dependencies errors on minimal system
+# free from dependencies.
+try:
+    from urllib.parse import urlparse
+except ImportError:
+    from urlparse import urlparse
+
 import email
 import email.errors
 import os
@@ -98,18 +108,30 @@ def get_reqs_from_files(requirements_files):
     return []
 
 
+def egg_fragment(match):
+    return re.sub(r'(?P<PackageName>[\w.-]+)-'
+                  r'(?P<GlobalVersion>'
+                  r'(?P<VersionTripple>'
+                  r'(?P<Major>0|[1-9][0-9]*)\.'
+                  r'(?P<Minor>0|[1-9][0-9]*)\.'
+                  r'(?P<Patch>0|[1-9][0-9]*)){1}'
+                  r'(?P<Tags>(?:\-'
+                  r'(?P<Prerelease>(?:(?=[0]{1}[0-9A-Za-z-]{0})(?:[0]{1})|'
+                  r'(?=[1-9]{1}[0-9]*[A-Za-z]{0})(?:[0-9]+)|'
+                  r'(?=[0-9]*[A-Za-z-]+[0-9A-Za-z-]*)(?:[0-9A-Za-z-]+)){1}'
+                  r'(?:\.(?=[0]{1}[0-9A-Za-z-]{0})(?:[0]{1})|'
+                  r'\.(?=[1-9]{1}[0-9]*[A-Za-z]{0})(?:[0-9]+)|'
+                  r'\.(?=[0-9]*[A-Za-z-]+[0-9A-Za-z-]*)'
+                  r'(?:[0-9A-Za-z-]+))*){1}){0,1}(?:\+'
+                  r'(?P<Meta>(?:[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*))){0,1}))',
+                  r'\g<PackageName>>=\g<GlobalVersion>',
+                  match.groups()[-1])
+
+
 def parse_requirements(requirements_files=None, strip_markers=False):
 
     if requirements_files is None:
         requirements_files = get_requirements_files()
-
-    def egg_fragment(match):
-        # take a versioned egg fragment and return a
-        # versioned package requirement e.g.
-        # nova-1.2.3 becomes nova>=1.2.3
-        return re.sub(r'([\w.]+)-([\w.-]+)',
-                      r'\1>=\2',
-                      match.groups()[-1])
 
     requirements = []
     for line in get_reqs_from_files(requirements_files):
@@ -118,7 +140,8 @@ def parse_requirements(requirements_files=None, strip_markers=False):
             continue
 
         # Ignore index URL lines
-        if re.match(r'^\s*(-i|--index-url|--extra-index-url).*', line):
+        if re.match(r'^\s*(-i|--index-url|--extra-index-url|--find-links).*',
+                    line):
             continue
 
         # Handle nested requirements files such as:
@@ -140,16 +163,19 @@ def parse_requirements(requirements_files=None, strip_markers=False):
         # -e git://github.com/openstack/nova/master#egg=nova
         # -e git://github.com/openstack/nova/master#egg=nova-1.2.3
         # -e git+https://foo.com/zipball#egg=bar&subdirectory=baz
-        if re.match(r'\s*-e\s+', line):
-            line = re.sub(r'\s*-e\s+.*#egg=([^&]+).*$', egg_fragment, line)
-        # such as:
         # http://github.com/openstack/nova/zipball/master#egg=nova
         # http://github.com/openstack/nova/zipball/master#egg=nova-1.2.3
         # git+https://foo.com/zipball#egg=bar&subdirectory=baz
-        elif re.match(r'\s*(https?|git(\+(https|ssh))?):', line):
-            line = re.sub(r'\s*(https?|git(\+(https|ssh))?):.*#egg=([^&]+).*$',
-                          egg_fragment, line)
+        # git+[ssh]://github.com/openstack/nova/zipball/master#egg=nova-1.2.3
+        # hg+[ssh]://github.com/openstack/nova/zipball/master#egg=nova-1.2.3
+        # svn+[proto]://github.com/openstack/nova/zipball/master#egg=nova-1.2.3
         # -f lines are for index locations, and don't get used here
+        if re.match(r'\s*-e\s+', line):
+            extract = re.match(r'\s*-e\s+(.*)$', line)
+            line = extract.group(1)
+        egg = urlparse(line)
+        if egg.scheme:
+            line = re.sub(r'egg=([^&]+).*$', egg_fragment, egg.fragment)
         elif re.match(r'\s*-f\s+', line):
             line = None
             reason = 'Index Location'
@@ -183,7 +209,7 @@ def parse_dependency_links(requirements_files=None):
         if re.match(r'\s*-[ef]\s+', line):
             dependency_links.append(re.sub(r'\s*-[ef]\s+', '', line))
         # lines that are only urls can go in unmolested
-        elif re.match(r'\s*(https?|git(\+(https|ssh))?):', line):
+        elif re.match(r'^\s*(https?|git(\+(https|ssh))?|svn|hg)\S*:', line):
             dependency_links.append(line)
     return dependency_links
 
@@ -302,6 +328,7 @@ except ImportError:
 def have_nose():
     return _have_nose
 
+
 _wsgi_text = """#PBR Generated from %(group)r
 
 import threading
@@ -404,9 +431,13 @@ def generate_script(group, entry_point, header, template):
 
 
 def override_get_script_args(
-        dist, executable=os.path.normpath(sys.executable), is_wininst=False):
+        dist, executable=os.path.normpath(sys.executable)):
     """Override entrypoints console_script."""
-    header = easy_install.get_script_header("", executable, is_wininst)
+    # get_script_header() is deprecated since Setuptools 12.0
+    try:
+        header = easy_install.ScriptWriter.get_header("", executable)
+    except AttributeError:
+        header = easy_install.get_script_header("", executable)
     for group, template in ENTRY_POINTS_MAP.items():
         for name, ep in dist.get_entry_map(group).items():
             yield (name, generate_script(group, ep, header, template))
@@ -428,8 +459,12 @@ class LocalInstallScripts(install_scripts.install_scripts):
     """Intercepts console scripts entry_points."""
     command_name = 'install_scripts'
 
-    def _make_wsgi_scripts_only(self, dist, executable, is_wininst):
-        header = easy_install.get_script_header("", executable, is_wininst)
+    def _make_wsgi_scripts_only(self, dist, executable):
+        # get_script_header() is deprecated since Setuptools 12.0
+        try:
+            header = easy_install.ScriptWriter.get_header("", executable)
+        except AttributeError:
+            header = easy_install.get_script_header("", executable)
         wsgi_script_template = ENTRY_POINTS_MAP['wsgi_scripts']
         for name, ep in dist.get_entry_map('wsgi_scripts').items():
             content = generate_script(
@@ -455,16 +490,12 @@ class LocalInstallScripts(install_scripts.install_scripts):
         bs_cmd = self.get_finalized_command('build_scripts')
         executable = getattr(
             bs_cmd, 'executable', easy_install.sys_executable)
-        is_wininst = getattr(
-            self.get_finalized_command("bdist_wininst"), '_is_running', False
-        )
-
         if 'bdist_wheel' in self.distribution.have_run:
             # We're building a wheel which has no way of generating mod_wsgi
             # scripts for us. Let's build them.
             # NOTE(sigmavirus24): This needs to happen here because, as the
             # comment below indicates, no_ep is True when building a wheel.
-            self._make_wsgi_scripts_only(dist, executable, is_wininst)
+            self._make_wsgi_scripts_only(dist, executable)
 
         if self.no_ep:
             # no_ep is True if we're installing into an .egg file or building
@@ -478,7 +509,7 @@ class LocalInstallScripts(install_scripts.install_scripts):
             get_script_args = easy_install.get_script_args
             executable = '"%s"' % executable
 
-        for args in get_script_args(dist, executable, is_wininst):
+        for args in get_script_args(dist, executable):
             self.write_script(*args)
 
 
@@ -550,8 +581,9 @@ class LocalEggInfo(egg_info.egg_info):
         else:
             log.info("[pbr] Reusing existing SOURCES.txt")
             self.filelist = egg_info.FileList()
-            for entry in open(manifest_filename, 'r').read().split('\n'):
-                self.filelist.append(entry)
+            with open(manifest_filename, 'r') as fil:
+                for entry in fil.read().split('\n'):
+                    self.filelist.append(entry)
 
 
 def _from_git(distribution):
@@ -626,6 +658,7 @@ class LocalSDist(sdist.sdist):
             self.filelist.sort()
         sdist.sdist.make_distribution(self)
 
+
 try:
     from pbr import builddoc
     _have_sphinx = True
@@ -659,12 +692,14 @@ def _get_increment_kwargs(git_dir, tag):
     # git log output affecting out ability to have working sem ver headers.
     changelog = git._run_git_command(['log', '--pretty=%B', version_spec],
                                      git_dir)
-    header_len = len('sem-ver:')
-    commands = [line[header_len:].strip() for line in changelog.split('\n')
-                if line.lower().startswith('sem-ver:')]
     symbols = set()
-    for command in commands:
-        symbols.update([symbol.strip() for symbol in command.split(',')])
+    header = 'sem-ver:'
+    for line in changelog.split("\n"):
+        line = line.lower().strip()
+        if not line.lower().strip().startswith(header):
+            continue
+        new_symbols = line[len(header):].strip().split(",")
+        symbols.update([symbol.strip() for symbol in new_symbols])
 
     def _handle_symbol(symbol, symbols, impact):
         if symbol in symbols:
@@ -791,12 +826,9 @@ def _get_version_from_pkg_metadata(package_name):
     pkg_metadata = {}
     for filename in pkg_metadata_filenames:
         try:
-            pkg_metadata_file = open(filename, 'r')
-        except (IOError, OSError):
-            continue
-        try:
-            pkg_metadata = email.message_from_file(pkg_metadata_file)
-        except email.errors.MessageError:
+            with open(filename, 'r') as pkg_metadata_file:
+                pkg_metadata = email.message_from_file(pkg_metadata_file)
+        except (IOError, OSError, email.errors.MessageError):
             continue
 
     # Check to make sure we're in our own dir
