@@ -1,3 +1,5 @@
+from __future__ import unicode_literals, absolute_import
+
 import io
 import os
 import re
@@ -5,8 +7,6 @@ import abc
 import csv
 import sys
 import zipp
-import email
-import pathlib
 import operator
 import functools
 import itertools
@@ -14,16 +14,28 @@ import posixpath
 import collections
 
 from ._compat import (
-    NullFinder,
-    PyPy_repr,
     install,
-)
-
-from configparser import ConfigParser
-from contextlib import suppress
+    NullFinder,
+    ConfigParser,
+    suppress,
+    map,
+    FileNotFoundError,
+    IsADirectoryError,
+    NotADirectoryError,
+    PermissionError,
+    pathlib,
+    ModuleNotFoundError,
+    MetaPathFinder,
+    email_message_from_string,
+    PyPy_repr,
+    unique_ordered,
+    str,
+    )
 from importlib import import_module
-from importlib.abc import MetaPathFinder
 from itertools import starmap
+
+
+__metaclass__ = type
 
 
 __all__ = [
@@ -37,7 +49,7 @@ __all__ = [
     'metadata',
     'requires',
     'version',
-]
+    ]
 
 
 class PackageNotFoundError(ModuleNotFoundError):
@@ -49,13 +61,13 @@ class PackageNotFoundError(ModuleNotFoundError):
 
     @property
     def name(self):
-        (name,) = self.args
+        name, = self.args
         return name
 
 
 class EntryPoint(
-    PyPy_repr, collections.namedtuple('EntryPointBase', 'name value group')
-):
+        PyPy_repr,
+        collections.namedtuple('EntryPointBase', 'name value group')):
     """An entry point as defined by Python packaging conventions.
 
     See `the packaging docs on entry points
@@ -65,9 +77,9 @@ class EntryPoint(
 
     pattern = re.compile(
         r'(?P<module>[\w.]+)\s*'
-        r'(:\s*(?P<attr>[\w.]+))?\s*'
-        r'(?P<extras>\[.*\])?\s*$'
-    )
+        r'(:\s*(?P<attr>[\w.]+)\s*)?'
+        r'((?P<extras>\[.*\])\s*)?$'
+        )
     """
     A regular expression describing the syntax for an entry point,
     which might look like:
@@ -115,7 +127,7 @@ class EntryPoint(
             cls(name, value, group)
             for group in config.sections()
             for name, value in config.items(group)
-        ]
+            ]
 
     @classmethod
     def _from_text(cls, text):
@@ -139,7 +151,7 @@ class EntryPoint(
         return (
             self.__class__,
             (self.name, self.value, self.group),
-        )
+            )
 
 
 class PackagePath(pathlib.PurePosixPath):
@@ -217,8 +229,9 @@ class Distribution:
             raise ValueError("cannot accept context and kwargs")
         context = context or DistributionFinder.Context(**kwargs)
         return itertools.chain.from_iterable(
-            resolver(context) for resolver in cls._discover_resolvers()
-        )
+            resolver(context)
+            for resolver in cls._discover_resolvers()
+            )
 
     @staticmethod
     def at(path):
@@ -233,20 +246,20 @@ class Distribution:
     def _discover_resolvers():
         """Search the meta_path for resolvers."""
         declared = (
-            getattr(finder, 'find_distributions', None) for finder in sys.meta_path
-        )
+            getattr(finder, 'find_distributions', None)
+            for finder in sys.meta_path
+            )
         return filter(None, declared)
 
     @classmethod
     def _local(cls, root='.'):
         from pep517 import build, meta
-
         system = build.compat_system(root)
         builder = functools.partial(
             meta.build,
             source_dir=root,
             system=system,
-        )
+            )
         return PathDistribution(zipp.Path(meta.build_as_zip(builder)))
 
     @property
@@ -263,8 +276,8 @@ class Distribution:
             # effect is to just end up using the PathDistribution's self._path
             # (which points to the egg-info file) attribute unchanged.
             or self.read_text('')
-        )
-        return email.message_from_string(text)
+            )
+        return email_message_from_string(text)
 
     @property
     def version(self):
@@ -330,10 +343,9 @@ class Distribution:
         section_pairs = cls._read_sections(source.splitlines())
         sections = {
             section: list(map(operator.itemgetter('line'), results))
-            for section, results in itertools.groupby(
-                section_pairs, operator.itemgetter('section')
-            )
-        }
+            for section, results in
+            itertools.groupby(section_pairs, operator.itemgetter('section'))
+            }
         return cls._convert_egg_info_reqs_to_simple_reqs(sections)
 
     @staticmethod
@@ -357,7 +369,6 @@ class Distribution:
         requirement. This method converts the former to the
         latter. See _test_deps_from_requires_text for an example.
         """
-
         def make_condition(name):
             return name and 'extra == "{name}"'.format(name=name)
 
@@ -436,7 +447,7 @@ class FastPath:
 
     def children(self):
         with suppress(Exception):
-            return os.listdir(self.root or '')
+            return os.listdir(self.root or '.')
         with suppress(Exception):
             return self.zip_children()
         return []
@@ -446,21 +457,23 @@ class FastPath:
         names = zip_path.root.namelist()
         self.joinpath = zip_path.joinpath
 
-        return dict.fromkeys(child.split(posixpath.sep, 1)[0] for child in names)
+        return unique_ordered(
+            child.split(posixpath.sep, 1)[0]
+            for child in names
+            )
 
     def search(self, name):
         return (
             self.joinpath(child)
             for child in self.children()
             if name.matches(child, self.base)
-        )
+            )
 
 
 class Prepared:
     """
     A prepared search for metadata on a possibly-named package.
     """
-
     normalized = None
     suffixes = '.dist-info', '.egg-info'
     exact_matches = [''][:0]
@@ -470,7 +483,8 @@ class Prepared:
         if name is None:
             return
         self.normalized = self.normalize(name)
-        self.exact_matches = [self.normalized + suffix for suffix in self.suffixes]
+        self.exact_matches = [
+            self.normalized + suffix for suffix in self.suffixes]
 
     @staticmethod
     def normalize(name):
@@ -493,12 +507,13 @@ class Prepared:
         name, sep, rest = pre.partition('-')
         return (
             low in self.exact_matches
-            or ext in self.suffixes
-            and (not self.normalized or name.replace('.', '_') == self.normalized)
+            or ext in self.suffixes and (
+                not self.normalized or
+                name.replace('.', '_') == self.normalized
+                )
             # legacy case:
-            or self.is_egg(base)
-            and low == 'egg-info'
-        )
+            or self.is_egg(base) and low == 'egg-info'
+            )
 
     def is_egg(self, base):
         normalized = self.legacy_normalize(self.name or '')
@@ -507,8 +522,7 @@ class Prepared:
         return (
             base == versionless_egg_name
             or base.startswith(prefix)
-            and base.endswith('.egg')
-        )
+            and base.endswith('.egg'))
 
 
 @install
@@ -535,8 +549,9 @@ class MetadataPathFinder(NullFinder, DistributionFinder):
     def _search_paths(cls, name, paths):
         """Find metadata directories in paths heuristically."""
         return itertools.chain.from_iterable(
-            path.search(Prepared(name)) for path in map(FastPath, paths)
-        )
+            path.search(Prepared(name))
+            for path in map(FastPath, paths)
+            )
 
 
 class PathDistribution(Distribution):
@@ -549,15 +564,9 @@ class PathDistribution(Distribution):
         self._path = path
 
     def read_text(self, filename):
-        with suppress(
-            FileNotFoundError,
-            IsADirectoryError,
-            KeyError,
-            NotADirectoryError,
-            PermissionError,
-        ):
+        with suppress(FileNotFoundError, IsADirectoryError, KeyError,
+                      NotADirectoryError, PermissionError):
             return self._path.joinpath(filename).read_text(encoding='utf-8')
-
     read_text.__doc__ = Distribution.read_text.__doc__
 
     def locate_file(self, path):
@@ -605,11 +614,15 @@ def entry_points():
 
     :return: EntryPoint objects for all installed packages.
     """
-    eps = itertools.chain.from_iterable(dist.entry_points for dist in distributions())
+    eps = itertools.chain.from_iterable(
+        dist.entry_points for dist in distributions())
     by_group = operator.attrgetter('group')
     ordered = sorted(eps, key=by_group)
     grouped = itertools.groupby(ordered, by_group)
-    return {group: tuple(eps) for group, eps in grouped}
+    return {
+        group: tuple(eps)
+        for group, eps in grouped
+        }
 
 
 def files(distribution_name):
