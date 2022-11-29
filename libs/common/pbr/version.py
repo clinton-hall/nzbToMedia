@@ -15,12 +15,23 @@
 #    under the License.
 
 """
-Utilities for consuming the version from pkg_resources.
+Utilities for consuming the version from importlib-metadata.
 """
 
 import itertools
 import operator
 import sys
+
+# TODO(stephenfin): Remove this once we drop support for Python < 3.8
+if sys.version_info >= (3, 8):
+    from importlib import metadata as importlib_metadata
+    use_importlib = True
+else:
+    try:
+        import importlib_metadata
+        use_importlib = True
+    except ImportError:
+        use_importlib = False
 
 
 def _is_int(string):
@@ -323,8 +334,8 @@ class SemanticVersion(object):
             version number of the component to preserve sorting. (Used for
             rpm support)
         """
-        if ((self._prerelease_type or self._dev_count)
-                and pre_separator is None):
+        if ((self._prerelease_type or self._dev_count) and
+                pre_separator is None):
             segments = [self.decrement().brief_string()]
             pre_separator = "."
         else:
@@ -431,17 +442,39 @@ class VersionInfo(object):
         """Obtain a version from pkg_resources or setup-time logic if missing.
 
         This will try to get the version of the package from the pkg_resources
+        This will try to get the version of the package from the
         record associated with the package, and if there is no such record
+        importlib_metadata record associated with the package, and if there
         falls back to the logic sdist would use.
+
+        is no such record falls back to the logic sdist would use.
         """
-        # Lazy import because pkg_resources is costly to import so defer until
-        # we absolutely need it.
         import pkg_resources
+
         try:
             requirement = pkg_resources.Requirement.parse(self.package)
             provider = pkg_resources.get_provider(requirement)
             result_string = provider.version
         except pkg_resources.DistributionNotFound:
+            # The most likely cause for this is running tests in a tree
+            # produced from a tarball where the package itself has not been
+            # installed into anything. Revert to setup-time logic.
+            from pbr import packaging
+            result_string = packaging.get_version(self.package)
+
+        return SemanticVersion.from_pip_string(result_string)
+
+    def _get_version_from_importlib_metadata(self):
+        """Obtain a version from importlib or setup-time logic if missing.
+
+        This will try to get the version of the package from the
+        importlib_metadata record associated with the package, and if there
+        is no such record falls back to the logic sdist would use.
+        """
+        try:
+            distribution = importlib_metadata.distribution(self.package)
+            result_string = distribution.version
+        except importlib_metadata.PackageNotFoundError:
             # The most likely cause for this is running tests in a tree
             # produced from a tarball where the package itself has not been
             # installed into anything. Revert to setup-time logic.
@@ -459,7 +492,12 @@ class VersionInfo(object):
     def semantic_version(self):
         """Return the SemanticVersion object for this version."""
         if self._semantic is None:
-            self._semantic = self._get_version_from_pkg_resources()
+            # TODO(damami): simplify this once Python 3.8 is the oldest
+            # we support
+            if use_importlib:
+                self._semantic = self._get_version_from_importlib_metadata()
+            else:
+                self._semantic = self._get_version_from_pkg_resources()
         return self._semantic
 
     def version_string(self):
