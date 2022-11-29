@@ -13,12 +13,7 @@
 """Tests for stevedore.extension
 """
 
-try:
-    # For python 3.8 and later
-    import importlib.metadata as importlib_metadata
-except ImportError:
-    # For everyone else
-    import importlib_metadata
+import pkg_resources
 
 from stevedore import driver
 from stevedore import exception
@@ -73,15 +68,13 @@ class TestCallback(utils.TestCase):
         extensions = [
             extension.Extension(
                 'backend',
-                importlib_metadata.EntryPoint(
-                    'backend', 'pkg1:driver', 'backend'),
+                pkg_resources.EntryPoint.parse('backend = pkg1:driver'),
                 'pkg backend',
                 None,
             ),
             extension.Extension(
                 'backend',
-                importlib_metadata.EntryPoint(
-                    'backend', 'pkg2:driver', 'backend'),
+                pkg_resources.EntryPoint.parse('backend = pkg2:driver'),
                 'pkg backend',
                 None,
             ),

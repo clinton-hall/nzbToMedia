@@ -1,17 +1,13 @@
-import abc
 import collections
 import re
-import threading
-from typing import MutableMapping
-from typing import MutableSet
 
-import stevedore
+from . import compat
 
 
 def coerce_string_conf(d):
     result = {}
     for k, v in d.items():
-        if not isinstance(v, str):
+        if not isinstance(v, compat.string_types):
             result[k] = v
             continue
 
@@ -29,26 +25,21 @@ def coerce_string_conf(d):
     return result
 
 
-class PluginLoader:
+class PluginLoader(object):
     def __init__(self, group):
         self.group = group
-        self.impls = {}  # loaded plugins
-        self._mgr = None  # lazily defined stevedore manager
-        self._unloaded = {}  # plugins registered but not loaded
+        self.impls = {}
 
     def load(self, name):
-        if name in self._unloaded:
-            self.impls[name] = self._unloaded[name]()
-            return self.impls[name]
         if name in self.impls:
-            return self.impls[name]
+            return self.impls[name]()
         else:  # pragma NO COVERAGE
-            if self._mgr is None:
-                self._mgr = stevedore.ExtensionManager(self.group)
-            try:
-                self.impls[name] = self._mgr[name].plugin
-                return self.impls[name]
-            except KeyError:
+            import pkg_resources
+
+            for impl in pkg_resources.iter_entry_points(self.group, name):
+                self.impls[name] = impl.load
+                return impl.load()
+            else:
                 raise self.NotFound(
                     "Can't load plugin %s %s" % (self.group, name)
                 )
@@ -58,13 +49,13 @@ class PluginLoader:
             mod = __import__(modulepath, fromlist=[objname])
             return getattr(mod, objname)
 
-        self._unloaded[name] = load
+        self.impls[name] = load
 
     class NotFound(Exception):
         """The specified plugin could not be found."""
 
 
-class memoized_property:
+class memoized_property(object):
     """A read-only @property that is only evaluated once."""
 
     def __init__(self, fget, doc=None):
@@ -89,23 +80,8 @@ def to_list(x, default=None):
         return x
 
 
-class Mutex(abc.ABC):
-    @abc.abstractmethod
-    def acquire(self, wait: bool = True) -> bool:
-        raise NotImplementedError()
-
-    @abc.abstractmethod
-    def release(self) -> None:
-        raise NotImplementedError()
-
-
-class KeyReentrantMutex:
-    def __init__(
-        self,
-        key: str,
-        mutex: Mutex,
-        keys: MutableMapping[int, MutableSet[str]],
-    ):
+class KeyReentrantMutex(object):
+    def __init__(self, key, mutex, keys):
         self.key = key
         self.mutex = mutex
         self.keys = keys
@@ -115,9 +91,7 @@ class KeyReentrantMutex:
         # this collection holds zero or one
         # thread idents as the key; a set of
         # keynames held as the value.
-        keystore: MutableMapping[
-            int, MutableSet[str]
-        ] = collections.defaultdict(set)
+        keystore = collections.defaultdict(set)
 
         def fac(key):
             return KeyReentrantMutex(key, mutex, keystore)
@@ -125,7 +99,7 @@ class KeyReentrantMutex:
         return fac
 
     def acquire(self, wait=True):
-        current_thread = threading.get_ident()
+        current_thread = compat.threading.current_thread().ident
         keys = self.keys.get(current_thread)
         if keys is not None and self.key not in keys:
             # current lockholder, new key. add it in
@@ -139,7 +113,7 @@ class KeyReentrantMutex:
             return False
 
     def release(self):
-        current_thread = threading.get_ident()
+        current_thread = compat.threading.current_thread().ident
         keys = self.keys.get(current_thread)
         assert keys is not None, "this thread didn't do the acquire"
         assert self.key in keys, "No acquire held for key '%s'" % self.key
@@ -149,10 +123,3 @@ class KeyReentrantMutex:
             # the thread ident and unlock.
             del self.keys[current_thread]
             self.mutex.release()
-
-    def locked(self):
-        current_thread = threading.get_ident()
-        keys = self.keys.get(current_thread)
-        if keys is None:
-            return False
-        return self.key in keys

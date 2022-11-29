@@ -10,10 +10,9 @@ places the value as given into the dictionary.
 
 """
 
-
 from ..api import CacheBackend
-from ..api import DefaultSerialization
 from ..api import NO_VALUE
+from ...util.compat import pickle
 
 
 class MemoryBackend(CacheBackend):
@@ -50,20 +49,36 @@ class MemoryBackend(CacheBackend):
 
     """
 
+    pickle_values = False
+
     def __init__(self, arguments):
         self._cache = arguments.pop("cache_dict", {})
 
     def get(self, key):
-        return self._cache.get(key, NO_VALUE)
+        value = self._cache.get(key, NO_VALUE)
+        if value is not NO_VALUE and self.pickle_values:
+            value = pickle.loads(value)
+        return value
 
     def get_multi(self, keys):
-        return [self._cache.get(key, NO_VALUE) for key in keys]
+        ret = [self._cache.get(key, NO_VALUE) for key in keys]
+        if self.pickle_values:
+            ret = [
+                pickle.loads(value) if value is not NO_VALUE else value
+                for value in ret
+            ]
+        return ret
 
     def set(self, key, value):
+        if self.pickle_values:
+            value = pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
         self._cache[key] = value
 
     def set_multi(self, mapping):
+        pickle_values = self.pickle_values
         for key, value in mapping.items():
+            if pickle_values:
+                value = pickle.dumps(value, pickle.HIGHEST_PROTOCOL)
             self._cache[key] = value
 
     def delete(self, key):
@@ -74,7 +89,7 @@ class MemoryBackend(CacheBackend):
             self._cache.pop(key, None)
 
 
-class MemoryPickleBackend(DefaultSerialization, MemoryBackend):
+class MemoryPickleBackend(MemoryBackend):
     """A backend that uses a plain dictionary, but serializes objects on
     :meth:`.MemoryBackend.set` and deserializes :meth:`.MemoryBackend.get`.
 
@@ -105,3 +120,5 @@ class MemoryPickleBackend(DefaultSerialization, MemoryBackend):
     .. versionadded:: 0.5.3
 
     """
+
+    pickle_values = True

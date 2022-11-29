@@ -9,18 +9,17 @@ Provides backends that deal with local filesystem access.
 from __future__ import with_statement
 
 from contextlib import contextmanager
-import dbm
 import os
-import threading
 
-from ..api import BytesBackend
+from ..api import CacheBackend
 from ..api import NO_VALUE
 from ... import util
+from ...util import compat
 
 __all__ = ["DBMBackend", "FileLock", "AbstractFileLock"]
 
 
-class DBMBackend(BytesBackend):
+class DBMBackend(CacheBackend):
     """A file-backend using a dbm file to store keys.
 
     Basic usage::
@@ -157,6 +156,12 @@ class DBMBackend(BytesBackend):
             util.KeyReentrantMutex.factory,
         )
 
+        # TODO: make this configurable
+        if compat.py3k:
+            import dbm
+        else:
+            import anydbm as dbm
+        self.dbmmodule = dbm
         self._init_dbm_file()
 
     def _init_lock(self, argument, suffix, basedir, basefile, wrapper=None):
@@ -180,7 +185,7 @@ class DBMBackend(BytesBackend):
                     exists = True
                     break
         if not exists:
-            fh = dbm.open(self.filename, "c")
+            fh = self.dbmmodule.open(self.filename, "c")
             fh.close()
 
     def get_mutex(self, key):
@@ -210,50 +215,57 @@ class DBMBackend(BytesBackend):
     @contextmanager
     def _dbm_file(self, write):
         with self._use_rw_lock(write):
-            with dbm.open(self.filename, "w" if write else "r") as dbm_obj:
-                yield dbm_obj
+            dbm = self.dbmmodule.open(self.filename, "w" if write else "r")
+            yield dbm
+            dbm.close()
 
-    def get_serialized(self, key):
-        with self._dbm_file(False) as dbm_obj:
-            if hasattr(dbm_obj, "get"):
-                value = dbm_obj.get(key, NO_VALUE)
+    def get(self, key):
+        with self._dbm_file(False) as dbm:
+            if hasattr(dbm, "get"):
+                value = dbm.get(key, NO_VALUE)
             else:
                 # gdbm objects lack a .get method
                 try:
-                    value = dbm_obj[key]
+                    value = dbm[key]
                 except KeyError:
                     value = NO_VALUE
+            if value is not NO_VALUE:
+                value = compat.pickle.loads(value)
             return value
 
-    def get_serialized_multi(self, keys):
-        return [self.get_serialized(key) for key in keys]
+    def get_multi(self, keys):
+        return [self.get(key) for key in keys]
 
-    def set_serialized(self, key, value):
-        with self._dbm_file(True) as dbm_obj:
-            dbm_obj[key] = value
+    def set(self, key, value):
+        with self._dbm_file(True) as dbm:
+            dbm[key] = compat.pickle.dumps(
+                value, compat.pickle.HIGHEST_PROTOCOL
+            )
 
-    def set_serialized_multi(self, mapping):
-        with self._dbm_file(True) as dbm_obj:
+    def set_multi(self, mapping):
+        with self._dbm_file(True) as dbm:
             for key, value in mapping.items():
-                dbm_obj[key] = value
+                dbm[key] = compat.pickle.dumps(
+                    value, compat.pickle.HIGHEST_PROTOCOL
+                )
 
     def delete(self, key):
-        with self._dbm_file(True) as dbm_obj:
+        with self._dbm_file(True) as dbm:
             try:
-                del dbm_obj[key]
+                del dbm[key]
             except KeyError:
                 pass
 
     def delete_multi(self, keys):
-        with self._dbm_file(True) as dbm_obj:
+        with self._dbm_file(True) as dbm:
             for key in keys:
                 try:
-                    del dbm_obj[key]
+                    del dbm[key]
                 except KeyError:
                     pass
 
 
-class AbstractFileLock:
+class AbstractFileLock(object):
     """Coordinate read/write access to a file.
 
     typically is a file-based lock but doesn't necessarily have to be.
@@ -385,7 +397,7 @@ class FileLock(AbstractFileLock):
     """
 
     def __init__(self, filename):
-        self._filedescriptor = threading.local()
+        self._filedescriptor = compat.threading.local()
         self.filename = filename
 
     @util.memoized_property

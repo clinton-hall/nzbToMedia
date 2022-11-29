@@ -15,7 +15,7 @@ class NeedRegenerationException(Exception):
 NOT_REGENERATED = object()
 
 
-class Lock:
+class Lock(object):
     """Dogpile lock class.
 
     Provides an interface around an arbitrary mutex
