@@ -1,6 +1,4 @@
-from __future__ import division, absolute_import, print_function
-
-from .util import BASESTRING, build_dict
+from .util import build_dict
 from . import yaml_util
 import os
 
@@ -27,8 +25,7 @@ class ConfigSource(dict):
         behavior.
         """
         super(ConfigSource, self).__init__(value)
-        if (filename is not None
-                and not isinstance(filename, BASESTRING)):
+        if filename is not None and not isinstance(filename, str):
             raise TypeError(u'filename must be a string or None')
         self.filename = filename
         self.default = default

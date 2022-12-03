@@ -1,10 +1,7 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.grant_types
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 """
-from __future__ import absolute_import, unicode_literals
-
 import base64
 import hashlib
 import json
@@ -275,6 +272,8 @@ class AuthorizationCodeGrant(GrantTypeBase):
         grant = self.create_authorization_code(request)
         for modifier in self._code_modifiers:
             grant = modifier(grant, token_handler, request)
+        if 'access_token' in grant:
+            self.request_validator.save_token(grant, request)
         log.debug('Saving grant %r for %r.', grant, request)
         self.request_validator.save_authorization_code(
             request.client_id, grant, request)
@@ -313,6 +312,7 @@ class AuthorizationCodeGrant(GrantTypeBase):
         self.request_validator.save_token(token, request)
         self.request_validator.invalidate_authorization_code(
             request.client_id, request.code, request)
+        headers.update(self._create_cors_headers(request))
         return headers, json.dumps(token), 200
 
     def validate_authorization_request(self, request):

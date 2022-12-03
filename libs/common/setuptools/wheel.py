@@ -1,24 +1,22 @@
 """Wheels support."""
 
-from distutils.util import get_platform
-from distutils import log
 import email
 import itertools
 import os
 import posixpath
 import re
 import zipfile
+import contextlib
+
+from distutils.util import get_platform
 
 import pkg_resources
 import setuptools
 from pkg_resources import parse_version
 from setuptools.extern.packaging.tags import sys_tags
 from setuptools.extern.packaging.utils import canonicalize_name
-from setuptools.extern.six import PY3
 from setuptools.command.egg_info import write_requirements
-
-
-__metaclass__ = type
+from setuptools.archive_util import _unpack_zipfile_obj
 
 
 WHEEL_NAME = re.compile(
@@ -27,12 +25,8 @@ WHEEL_NAME = re.compile(
     )\.whl$""",
     re.VERBOSE).match
 
-NAMESPACE_PACKAGE_INIT = '''\
-try:
-    __import__('pkg_resources').declare_namespace(__name__)
-except ImportError:
-    __path__ = __import__('pkgutil').extend_path(__path__, __name__)
-'''
+NAMESPACE_PACKAGE_INIT = \
+    "__import__('pkg_resources').declare_namespace(__name__)\n"
 
 
 def unpack(src_dir, dst_dir):
@@ -57,6 +51,19 @@ def unpack(src_dir, dst_dir):
         os.rmdir(dirpath)
 
 
+@contextlib.contextmanager
+def disable_info_traces():
+    """
+    Temporarily disable info traces.
+    """
+    from distutils import log
+    saved = log.set_threshold(log.WARN)
+    try:
+        yield
+    finally:
+        log.set_threshold(saved)
+
+
 class Wheel:
 
     def __init__(self, filename):
@@ -77,7 +84,8 @@ class Wheel:
 
     def is_compatible(self):
         '''Is the wheel is compatible with the current platform?'''
-        supported_tags = set((t.interpreter, t.abi, t.platform) for t in sys_tags())
+        supported_tags = set(
+            (t.interpreter, t.abi, t.platform) for t in sys_tags())
         return next((True for t in self.tags() if t in supported_tags), False)
 
     def egg_name(self):
@@ -115,7 +123,7 @@ class Wheel:
     def _convert_metadata(zf, destination_eggdir, dist_info, egg_info):
         def get_metadata(name):
             with zf.open(posixpath.join(dist_info, name)) as fp:
-                value = fp.read().decode('utf-8') if PY3 else fp.read()
+                value = fp.read().decode('utf-8')
                 return email.parser.Parser().parsestr(value)
 
         wheel_metadata = get_metadata('WHEEL')
@@ -128,8 +136,7 @@ class Wheel:
             raise ValueError(
                 'unsupported wheel format version: %s' % wheel_version)
         # Extract to target directory.
-        os.mkdir(destination_eggdir)
-        zf.extractall(destination_eggdir)
+        _unpack_zipfile_obj(zf, destination_eggdir)
         # Convert metadata.
         dist_info = os.path.join(destination_eggdir, dist_info)
         dist = pkg_resources.Distribution.from_location(
@@ -143,13 +150,13 @@ class Wheel:
         def raw_req(req):
             req.marker = None
             return str(req)
-        install_requires = list(sorted(map(raw_req, dist.requires())))
+        install_requires = list(map(raw_req, dist.requires()))
         extras_require = {
-            extra: sorted(
+            extra: [
                 req
                 for req in map(raw_req, dist.requires((extra,)))
                 if req not in install_requires
-            )
+            ]
             for extra in dist.extras
         }
         os.rename(dist_info, egg_info)
@@ -163,17 +170,12 @@ class Wheel:
                 extras_require=extras_require,
             ),
         )
-        # Temporarily disable info traces.
-        log_threshold = log._global_log.threshold
-        log.set_threshold(log.WARN)
-        try:
+        with disable_info_traces():
             write_requirements(
                 setup_dist.get_command_obj('egg_info'),
                 None,
                 os.path.join(egg_info, 'requires.txt'),
             )
-        finally:
-            log.set_threshold(log_threshold)
 
     @staticmethod
     def _move_data_entries(destination_eggdir, dist_data):
