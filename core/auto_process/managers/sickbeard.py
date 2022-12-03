@@ -15,9 +15,9 @@ from requests_oauthlib import OAuth2Session
 
 
 class InitSickBeard:
-    """Sickbeard init class.
+    """SickBeard init class.
 
-    Used to determin which sickbeard fork object to initialize.
+    Used to determine which SickBeard fork object to initialize.
     """
 
     def __init__(self, cfg, section, input_category):
