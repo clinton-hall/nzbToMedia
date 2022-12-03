@@ -432,7 +432,7 @@ class SickBeard:
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
 
-    def api_call(self):
+    def api_call(self) -> ProcessResult:
         """Perform a base sickbeard api call."""
         self._process_fork_prarams()
         logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
@@ -468,7 +468,7 @@ class SickBeard:
 
         return self.process_response(response)
 
-    def process_response(self, response):
+    def process_response(self, response: requests.Response) -> ProcessResult:
         """Iterate over the lines returned, and log.
 
         :param response: Streamed Requests response object.
