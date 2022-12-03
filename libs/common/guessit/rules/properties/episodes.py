@@ -338,7 +338,6 @@ def episodes(config):
 
     rebulk.defaults(private_names=['episodeSeparator', 'seasonSeparator'])
 
-    # TODO: List of words
     # detached of X count (season/episode)
     rebulk.regex(r'(?P<episode>\d+)-?' + build_or_pattern(of_words) +
                  r'-?(?P<count>\d+)-?' + build_or_pattern(episode_words) + '?',
@@ -479,7 +478,7 @@ class SeePatternRange(Rule):
     consequence = [RemoveMatch, AppendMatch]
 
     def __init__(self, range_separators):
-        super(SeePatternRange, self).__init__()
+        super().__init__()
         self.range_separators = range_separators
 
     def when(self, matches, context):
@@ -516,7 +515,7 @@ class AbstractSeparatorRange(Rule):
     consequence = [RemoveMatch, AppendMatch]
 
     def __init__(self, range_separators, property_name):
-        super(AbstractSeparatorRange, self).__init__()
+        super().__init__()
         self.range_separators = range_separators
         self.property_name = property_name
 
@@ -608,7 +607,7 @@ class EpisodeNumberSeparatorRange(AbstractSeparatorRange):
     """
 
     def __init__(self, range_separators):
-        super(EpisodeNumberSeparatorRange, self).__init__(range_separators, "episode")
+        super().__init__(range_separators, "episode")
 
 
 class SeasonSeparatorRange(AbstractSeparatorRange):
@@ -617,7 +616,7 @@ class SeasonSeparatorRange(AbstractSeparatorRange):
     """
 
     def __init__(self, range_separators):
-        super(SeasonSeparatorRange, self).__init__(range_separators, "season")
+        super().__init__(range_separators, "season")
 
 
 class RemoveWeakIfMovie(Rule):
@@ -662,7 +661,7 @@ class RemoveWeak(Rule):
     consequence = RemoveMatch, AppendMatch
 
     def __init__(self, episode_words):
-        super(RemoveWeak, self).__init__()
+        super().__init__()
         self.episode_words = episode_words
 
     def when(self, matches, context):
@@ -843,7 +842,7 @@ class RemoveDetachedEpisodeNumber(Rule):
                 episode_numbers[0].value < 10 and \
                 episode_numbers[1].value - episode_numbers[0].value != 1:
             parent = episode_numbers[0]
-            while parent:  # TODO: Add a feature in rebulk to avoid this ...
+            while parent:
                 ret.append(parent)
                 parent = parent.parent
         return ret

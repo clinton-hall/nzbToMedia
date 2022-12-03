@@ -10,8 +10,6 @@ import functools
 from importlib import import_module
 import inspect
 
-from setuptools.extern import six
-
 import setuptools
 
 __all__ = []
@@ -37,7 +35,7 @@ def _get_mro(cls):
 
 def get_unpatched(item):
     lookup = (
-        get_unpatched_class if isinstance(item, six.class_types) else
+        get_unpatched_class if isinstance(item, type) else
         get_unpatched_function if isinstance(item, types.FunctionType) else
         lambda item: None
     )
@@ -73,8 +71,6 @@ def patch_all():
         distutils.filelist.findall = setuptools.findall
 
     needs_warehouse = (
-        sys.version_info < (2, 7, 13)
-        or
         (3, 4) < sys.version_info < (3, 4, 6)
         or
         (3, 5) < sys.version_info <= (3, 5, 3)
@@ -138,14 +134,14 @@ def patch_for_msvc_specialized_compiler():
     msvc = import_module('setuptools.msvc')
 
     if platform.system() != 'Windows':
-        # Compilers only availables on Microsoft Windows
+        # Compilers only available on Microsoft Windows
         return
 
     def patch_params(mod_name, func_name):
         """
         Prepare the parameters for patch_func to patch indicated function.
         """
-        repl_prefix = 'msvc9_' if 'msvc9' in mod_name else 'msvc14_'
+        repl_prefix = 'msvc14_'
         repl_name = repl_prefix + func_name.lstrip('_')
         repl = getattr(msvc, repl_name)
         mod = import_module(mod_name)
@@ -153,18 +149,8 @@ def patch_for_msvc_specialized_compiler():
             raise ImportError(func_name)
         return repl, mod, func_name
 
-    # Python 2.7 to 3.4
-    msvc9 = functools.partial(patch_params, 'distutils.msvc9compiler')
-
     # Python 3.5+
     msvc14 = functools.partial(patch_params, 'distutils._msvccompiler')
-
-    try:
-        # Patch distutils.msvc9compiler
-        patch_func(*msvc9('find_vcvarsall'))
-        patch_func(*msvc9('query_vcvarsall'))
-    except ImportError:
-        pass
 
     try:
         # Patch distutils._msvccompiler._get_vc_env

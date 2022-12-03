@@ -13,10 +13,6 @@ jobs:
     vmImage: 'Ubuntu-latest'
   strategy:
     matrix:
-      Python27:
-        python.version: '2.7'
-      Python36:
-        python.version: '3.6'
       Python37:
         python.version: '3.7'
       Python38:
@@ -34,7 +30,7 @@ jobs:
       sudo apt-get update
       sudo apt-get install ffmpeg
     displayName: 'Install ffmpeg'
-  
+
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'

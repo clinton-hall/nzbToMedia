@@ -6,9 +6,7 @@ oauthlib.oauth2.rfc6749
 This module is an implementation of various logic needed
 for consuming and providing OAuth 2.0 RFC6749.
 """
-from __future__ import absolute_import, unicode_literals
-
-from ..parameters import parse_token_response, prepare_token_request
+from ..parameters import prepare_token_request
 from .base import Client
 
 
@@ -41,7 +39,7 @@ class BackendApplicationClient(Client):
         format per `Appendix B`_ in the HTTP request entity-body:
 
         :param body: Existing request body (URL encoded string) to embed parameters
-                     into. This may contain extra paramters. Default ''.
+                     into. This may contain extra parameters. Default ''.
         :param scope:   The scope of the access request as described by
                         `Section 3.3`_.
 

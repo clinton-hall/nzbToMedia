@@ -15,8 +15,6 @@
 
 """Worry-free YAML configuration files.
 """
-from __future__ import division, absolute_import, print_function
-
 import errno
 import os
 import yaml
@@ -165,23 +163,10 @@ class ConfigView(object):
     def __str__(self):
         """Get the value for this view as a bytestring.
         """
-        if util.PY3:
-            return self.__unicode__()
-        else:
-            return bytes(self.get())
-
-    def __unicode__(self):
-        """Get the value for this view as a Unicode string.
-        """
-        return util.STRING(self.get())
-
-    def __nonzero__(self):
-        """Gets the value for this view as a boolean. (Python 2 only.)
-        """
-        return self.__bool__()
+        return str(self.get())
 
     def __bool__(self):
-        """Gets the value for this view as a boolean. (Python 3 only.)
+        """Gets the value for this view as a bool.
         """
         return bool(self.get())
 
@@ -441,7 +426,7 @@ class Subview(ConfigView):
             self.name += u'#{0}'.format(self.key)
         elif isinstance(self.key, bytes):
             self.name += self.key.decode('utf-8')
-        elif isinstance(self.key, util.STRING):
+        elif isinstance(self.key, str):
             self.name += self.key
         else:
             self.name += repr(self.key)
