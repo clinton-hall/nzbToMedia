@@ -10,7 +10,14 @@ from core.utils import convert_to_ascii, remote_dir, server_responding
 requests.packages.urllib3.disable_warnings()
 
 
-def process(section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
+def process(
+    section,
+    dir_name,
+    input_name=None,
+    status=0,
+    client_agent='manual',
+    input_category=None,
+) -> ProcessResult:
     apc_version = '2.04'
     comicrn_version = '1.01'
 
