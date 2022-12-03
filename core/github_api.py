@@ -1,16 +1,7 @@
-# coding=utf-8
-
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
-
 import requests
 
 
-class GitHub(object):
+class GitHub:
     """Simple api wrapper for the Github API v3."""
 
     def __init__(self, github_repo_user, github_repo, branch='master'):

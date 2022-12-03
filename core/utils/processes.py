@@ -1,9 +1,3 @@
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
 
 import os
 import socket
@@ -19,7 +13,7 @@ if os.name == 'nt':
     from winerror import ERROR_ALREADY_EXISTS
 
 
-class WindowsProcess(object):
+class WindowsProcess:
     def __init__(self):
         self.mutex = None
         self.mutexname = 'nzbtomedia_{pid}'.format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}'
@@ -42,7 +36,7 @@ class WindowsProcess(object):
             self.CloseHandle(self.mutex)
 
 
-class PosixProcess(object):
+class PosixProcess:
     def __init__(self):
         self.pidpath = core.PID_FILE
         self.lock_socket = None
