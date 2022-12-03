@@ -1,8 +1,6 @@
 import os
 from builtins import bytes
 
-from six import text_type
-
 import core
 from core import logger
 
@@ -16,7 +14,7 @@ def char_replace(name_in):
     # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
     encoded = False
     encoding = None
-    if isinstance(name_in, text_type):
+    if isinstance(name_in, str):
         return encoded, name_in
     name = bytes(name_in)
     for Idx in range(len(name)):

@@ -9,7 +9,7 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import iteritems, string_types, text_type
+from six import iteritems, string_types
 
 import core
 from core import logger
@@ -511,7 +511,6 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                     continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
-            lan = text_type(lan)
             metlan = None
             try:
                 if len(lan) == 3:
@@ -981,7 +980,7 @@ def transcode_directory(dir_name):
                 os.unlink(file)
             except Exception:
                 pass
-    if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
+    if not os.listdir(new_dir):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
         new_dir = dir_name
     if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB
