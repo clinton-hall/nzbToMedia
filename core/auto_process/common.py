@@ -1,26 +1,28 @@
+import typing
+
 import requests
 
 from core import logger
 
 
 class ProcessResult:
-    def __init__(self, message, status_code):
+    def __init__(self, message: str, status_code: int):
         self.message = message
         self.status_code = status_code
 
-    def __iter__(self):
+    def __iter__(self) -> typing.Tuple[int, str]:
         return self.status_code, self.message
 
-    def __bool__(self):
+    def __bool__(self) -> bool:
         return not bool(self.status_code)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return 'Processing {0}: {1}'.format(
             'succeeded' if bool(self) else 'failed',
             self.message,
         )
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         return '<ProcessResult {0}: {1}>'.format(
             self.status_code,
             self.message,
