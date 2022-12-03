@@ -11,7 +11,8 @@ import requests
 class PyMedusa(SickBeard):
     """PyMedusa class."""
 
-    def _create_url(self):
+    @property
+    def url(self):
         route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
         return core.utils.common.create_url(
             self.sb_init.protocol,
@@ -24,7 +25,8 @@ class PyMedusa(SickBeard):
 class PyMedusaApiV1(SickBeard):
     """PyMedusa apiv1 class."""
 
-    def _create_url(self):
+    @property
+    def url(self) -> str:
         route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
         return core.utils.common.create_url(
             self.sb_init.protocol,
@@ -73,7 +75,8 @@ class PyMedusaApiV2(SickBeard):
         if not sb_init.apikey:
             raise Exception('For the section SickBeard `fork = medusa-apiv2` you also need to configure an `apikey`')
 
-    def _create_url(self):
+    @property
+    def url(self):
         route = f'{self.sb_init.web_root}/api/v2/postprocess'
         return core.utils.common.create_url(
             self.sb_init.protocol,

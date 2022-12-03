@@ -348,9 +348,6 @@ class SickBeard:
 
     @property
     def url(self) -> str:
-        return self._create_url()
-
-    def _create_url(self) -> str:
         if self.sb_init.apikey:
             route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
         else:
