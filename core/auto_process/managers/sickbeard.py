@@ -438,9 +438,7 @@ class SickBeard:
     def api_call(self):
         """Perform a base sickbeard api call."""
         self._process_fork_prarams()
-        url = self._create_url()
-
-        logger.debug('Opening URL: {0} with params: {1}'.format(url, self.sb_init.fork_params), self.sb_init.section)
+        logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
         try:
             if not self.sb_init.apikey and self.sb_init.username and self.sb_init.password:
                 # If not using the api, we need to login using user/pass first.
@@ -456,9 +454,9 @@ class SickBeard:
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 self.session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
-            response = self.session.get(url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+            response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error('Unable to open URL: {0}'.format(url), self.sb_init.section)
+            logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
             return ProcessResult(
                 message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
                 status_code=1,
