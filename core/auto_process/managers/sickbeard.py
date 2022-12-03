@@ -346,6 +346,10 @@ class SickBeard:
         if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
             self.process_method = 'symlink'
 
+    @property
+    def url(self):
+        return self._create_url()
+
     def _create_url(self) -> str:
         if self.sb_init.apikey:
             route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
