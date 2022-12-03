@@ -26,17 +26,15 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     delete_failed = int(cfg['delete_failed'])
     web_root = cfg.get('web_root', '')
     remote_path = int(cfg.get('remote_path', 0))
-    protocol = 'https://' if ssl else 'http://'
+    scheme = 'https' if ssl else 'http'
     status = int(status)
     if status > 0 and core.NOEXTRACTFAILED:
         extract = 0
     else:
         extract = int(cfg.get('extract', 0))
 
-    if section == 'Lidarr':
-        url = '{0}{1}:{2}{3}/api/v1'.format(protocol, host, port, web_root)
-    else:
-        url = '{0}{1}:{2}{3}/api'.format(protocol, host, port, web_root)
+    route = f'{web_root}/api/v1' if section == 'Lidarr' else f'{web_root}/api'
+    url = core.utils.common.create_url(scheme, host, port, route)
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult(
@@ -96,7 +94,8 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         )
 
     elif status == 0 and section == 'Lidarr':
-        url = '{0}{1}:{2}{3}/api/v1/command'.format(protocol, host, port, web_root)
+        route = f'{web_root}/api/v1/command'
+        url = core.utils.common.create_url(scheme, host, port, route)
         headers = {'X-Api-Key': apikey}
         if remote_path:
             logger.debug('remote_path: {0}'.format(remote_dir(dir_name)), section)

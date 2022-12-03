@@ -1,5 +1,6 @@
 import time
 
+import core.utils.common
 from core import logger
 from core.auto_process.common import ProcessResult
 from core.auto_process.managers.sickbeard import SickBeard
@@ -14,7 +15,13 @@ class PyMedusa(SickBeard):
         super(PyMedusa, self).__init__(sb_init)
 
     def _create_url(self):
-        return '{0}{1}:{2}{3}/home/postprocess/processEpisode'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
+        route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
+        return core.utils.common.create_url(
+            self.sb_init.protocol,
+            self.sb_init.host,
+            self.sb_init.port,
+            route,
+        )
 
 
 class PyMedusaApiV1(SickBeard):
@@ -24,7 +31,13 @@ class PyMedusaApiV1(SickBeard):
         super(PyMedusaApiV1, self).__init__(sb_init)
 
     def _create_url(self):
-        return '{0}{1}:{2}{3}/api/{4}/'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root, self.sb_init.apikey)
+        route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
+        return core.utils.common.create_url(
+            self.sb_init.protocol,
+            self.sb_init.host,
+            self.sb_init.port,
+            route,
+        )
 
     def api_call(self):
         self._process_fork_prarams()
@@ -69,7 +82,13 @@ class PyMedusaApiV2(SickBeard):
             raise Exception('For the section SickBeard `fork = medusa-apiv2` you also need to configure an `apikey`')
 
     def _create_url(self):
-        return '{0}{1}:{2}{3}/api/v2/postprocess'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
+        route = f'{self.sb_init.web_root}/api/v2/postprocess'
+        return core.utils.common.create_url(
+            self.sb_init.protocol,
+            self.sb_init.host,
+            self.sb_init.port,
+            route,
+        )
 
     def _get_identifier_status(self, url):
         # Loop through requesting medusa for the status on the queueitem.

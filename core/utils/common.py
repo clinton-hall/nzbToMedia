@@ -1,4 +1,6 @@
 import os.path
+import typing
+import urllib.parse
 
 import core
 from core import logger
@@ -109,3 +111,16 @@ def get_dirs(section, subsection, link='hard'):
         logger.debug('No directories identified in {0}:{1} for post-processing'.format(section, subsection))
 
     return list(set(to_return))
+
+
+def create_url(
+    scheme: str,
+    host: str,
+    port: typing.Optional[int] = None,
+    path: str = '',
+    query: str = '',
+) -> str:
+    """Create a url from its component parts."""
+    netloc = host if port is None else f'{host}:{port}'
+    fragments = ''
+    return urllib.parse.urlunsplit([scheme, netloc, path, query, fragments])

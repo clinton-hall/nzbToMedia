@@ -48,7 +48,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
     remote_path = int(cfg.get('remote_path', 0))
-    protocol = 'https://' if ssl else 'http://'
+    scheme = 'https' if ssl else 'http'
     omdbapikey = cfg.get('omdbapikey', '')
     no_status_check = int(cfg.get('no_status_check', 0))
     status = int(status)
@@ -59,13 +59,17 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
 
     imdbid = find_imdbid(dir_name, input_name, omdbapikey)
     if section == 'CouchPotato':
-        base_url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
-    if section == 'Radarr':
-        base_url = '{0}{1}:{2}{3}/api/v3/command'.format(protocol, host, port, web_root)
-        url2 = '{0}{1}:{2}{3}/api/v3/config/downloadClient'.format(protocol, host, port, web_root)
+        route = f'{web_root}/api/{apikey}/'
+    elif section == 'Radarr':
+        route = f'{web_root}/api/v3/command'
+        route2 = f'{web_root}/api/v3/config/downloadClient'
+        url2 = core.utils.common.create_url(scheme, host, port, route2)
         headers = {'X-Api-Key': apikey, 'Content-Type': 'application/json'}
-    if section == 'Watcher3':
-        base_url = '{0}{1}:{2}{3}/postprocessing'.format(protocol, host, port, web_root)
+    elif section == 'Watcher3':
+        route = f'{web_root}/postprocessing'
+    else:
+        route = web_root
+    base_url = core.utils.common.create_url(scheme, host, port, route)
     if not apikey:
         logger.info('No CouchPotato or Radarr apikey entered. Performing transcoder functions only')
         release = None
@@ -389,7 +393,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         return ProcessResult(
             status_code=0,
             message='{0}: Successfully processed but no change in status confirmed'.format(section),
-        ) 
+        )
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     timeout = time.time() + 60 * wait_for
@@ -470,7 +474,7 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
         '{0} does not appear to have changed status after {1} minutes, Please check your logs.'.format(input_name, wait_for),
         section,
     )
-   
+
     return ProcessResult(
         status_code=1,
         message='{0}: Failed to post-process - No change in status'.format(section),
