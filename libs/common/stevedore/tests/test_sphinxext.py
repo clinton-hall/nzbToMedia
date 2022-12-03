@@ -12,13 +12,16 @@
 """Tests for the sphinx extension
 """
 
-from unittest import mock
+try:
+    # For python 3.8 and later
+    import importlib.metadata as importlib_metadata
+except ImportError:
+    # For everyone else
+    import importlib_metadata
 
 from stevedore import extension
 from stevedore import sphinxext
 from stevedore.tests import utils
-
-import pkg_resources
 
 
 def _make_ext(name, docstring):
@@ -26,10 +29,9 @@ def _make_ext(name, docstring):
         pass
 
     inner.__doc__ = docstring
-    m1 = mock.Mock(spec=pkg_resources.EntryPoint)
-    m1.module_name = '%s_module' % name
-    s = mock.Mock(return_value='ENTRY_POINT(%s)' % name)
-    m1.__str__ = s
+    m1 = importlib_metadata.EntryPoint(
+        name, '{}_module:{}'.format(name, name), 'group',
+    )
     return extension.Extension(name, m1, inner, None)
 
 
@@ -111,7 +113,8 @@ class TestSphinxExt(utils.TestCase):
                 ('nodoc', 'nodoc_module'),
                 ('-----', 'nodoc_module'),
                 ('\n', 'nodoc_module'),
-                ('.. warning:: No documentation found in ENTRY_POINT(nodoc)',
+                (('.. warning:: No documentation found for '
+                 'nodoc in nodoc_module:nodoc'),
                  'nodoc_module'),
                 ('\n', 'nodoc_module'),
             ],

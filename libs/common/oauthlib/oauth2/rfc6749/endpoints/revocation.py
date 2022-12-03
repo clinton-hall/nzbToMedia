@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.endpoint.revocation
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,13 +6,11 @@ An implementation of the OAuth 2 `Token Revocation`_ spec (draft 11).
 
 .. _`Token Revocation`: https://tools.ietf.org/html/draft-ietf-oauth-revocation-11
 """
-from __future__ import absolute_import, unicode_literals
-
 import logging
 
 from oauthlib.common import Request
 
-from ..errors import OAuth2Error, UnsupportedTokenTypeError
+from ..errors import OAuth2Error
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)
@@ -45,7 +42,7 @@ class RevocationEndpoint(BaseEndpoint):
 
 
         The authorization server responds with HTTP status code 200 if the
-        token has been revoked sucessfully or if the client submitted an
+        token has been revoked successfully or if the client submitted an
         invalid token.
 
         Note: invalid tokens do not cause an error response since the client
@@ -73,7 +70,7 @@ class RevocationEndpoint(BaseEndpoint):
             log.debug('Client error during validation of %r. %r.', request, e)
             response_body = e.json
             if self.enable_jsonp and request.callback:
-                response_body = '%s(%s);' % (request.callback, response_body)
+                response_body = '{}({});'.format(request.callback, response_body)
             resp_headers.update(e.headers)
             return resp_headers, response_body, e.status_code
 
@@ -98,7 +95,7 @@ class RevocationEndpoint(BaseEndpoint):
         submitted for revocation.  Clients MAY pass this parameter in order to
         help the authorization server to optimize the token lookup.  If the
         server is unable to locate the token using the given hint, it MUST
-        extend its search accross all of its supported token types.  An
+        extend its search across all of its supported token types.  An
         authorization server MAY ignore this parameter, particularly if it is
         able to detect the token type automatically.  This specification
         defines two such values:

@@ -1,28 +1,11 @@
-from __future__ import division, absolute_import, print_function
-
 import os
 import re
-import sys
+import enum
+import pathlib
+from collections import abc
 
 from . import util
 from . import exceptions
-
-try:
-    import enum
-    SUPPORTS_ENUM = True
-except ImportError:
-    SUPPORTS_ENUM = False
-
-try:
-    import pathlib
-    SUPPORTS_PATHLIB = True
-except ImportError:
-    SUPPORTS_PATHLIB = False
-
-if sys.version_info >= (3, 3):
-    from collections import abc
-else:
-    import collections as abc
 
 
 REQUIRED = object()
@@ -130,7 +113,7 @@ class Number(Template):
     def convert(self, value, view):
         """Check that the value is an int or a float.
         """
-        if isinstance(value, util.NUMERIC_TYPES):
+        if isinstance(value, (int, float)):
             return value
         else:
             self.fail(
@@ -243,7 +226,7 @@ class String(Template):
     def convert(self, value, view):
         """Check that the value is a string and matches the pattern.
         """
-        if not isinstance(value, util.BASESTRING):
+        if not isinstance(value, str):
             self.fail(u'must be a string', view, True)
 
         if self.pattern and not self.regex.match(value):
@@ -278,7 +261,7 @@ class Choice(Template):
         """Ensure that the value is among the choices (and remap if the
         choices are a mapping).
         """
-        if (SUPPORTS_ENUM and isinstance(self.choices, type)
+        if (isinstance(self.choices, type)
                 and issubclass(self.choices, enum.Enum)):
             try:
                 return self.choices(value)
@@ -385,7 +368,7 @@ class StrSeq(Template):
         self.split = split
 
     def _convert_value(self, x, view):
-        if isinstance(x, util.STRING):
+        if isinstance(x, str):
             return x
         elif isinstance(x, bytes):
             return x.decode('utf-8', 'ignore')
@@ -396,7 +379,7 @@ class StrSeq(Template):
         if isinstance(value, bytes):
             value = value.decode('utf-8', 'ignore')
 
-        if isinstance(value, util.STRING):
+        if isinstance(value, str):
             if self.split:
                 value = value.split()
             else:
@@ -566,13 +549,13 @@ class Filename(Template):
         except exceptions.NotFoundError:
             return self.get_default_value(view.name)
 
-        if not isinstance(path, util.BASESTRING):
+        if not isinstance(path, str):
             self.fail(
                 u'must be a filename, not {0}'.format(type(path).__name__),
                 view,
                 True
             )
-        path = os.path.expanduser(util.STRING(path))
+        path = os.path.expanduser(str(path))
 
         if not os.path.isabs(path):
             if self.cwd is not None:
@@ -602,9 +585,6 @@ class Path(Filename):
 
     Filenames are parsed equivalent to the `Filename` template and then
     converted to `pathlib.Path` objects.
-
-    For Python 2 it returns the original path as returned by the `Filename`
-    template.
     """
     def value(self, view, template=None):
         value = super(Path, self).value(view, template)
@@ -709,15 +689,14 @@ def as_template(value):
         return Integer()
     elif isinstance(value, int):
         return Integer(value)
-    elif isinstance(value, type) and issubclass(value, util.BASESTRING):
+    elif isinstance(value, type) and issubclass(value, str):
         return String()
-    elif isinstance(value, util.BASESTRING):
+    elif isinstance(value, str):
         return String(value)
     elif isinstance(value, set):
         # convert to list to avoid hash related problems
         return Choice(list(value))
-    elif (SUPPORTS_ENUM and isinstance(value, type)
-            and issubclass(value, enum.Enum)):
+    elif isinstance(value, type) and issubclass(value, enum.Enum):
         return Choice(value)
     elif isinstance(value, list):
         return OneOf(value)
@@ -725,7 +704,7 @@ def as_template(value):
         return Number()
     elif isinstance(value, float):
         return Number(value)
-    elif SUPPORTS_PATHLIB and isinstance(value, pathlib.PurePath):
+    elif isinstance(value, pathlib.PurePath):
         return Path(value)
     elif value is None:
         return Template(None)

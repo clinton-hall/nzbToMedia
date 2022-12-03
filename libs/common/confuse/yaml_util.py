@@ -1,9 +1,6 @@
-from __future__ import division, absolute_import, print_function
-
 from collections import OrderedDict
 import yaml
 from .exceptions import ConfigReadError
-from .util import BASESTRING
 
 # YAML loading.
 
@@ -119,7 +116,7 @@ def parse_as_scalar(value, loader=Loader):
       - The empty string '' will return None
     """
     # We only deal with strings
-    if not isinstance(value, BASESTRING):
+    if not isinstance(value, str):
         return value
     try:
         loader = loader('')

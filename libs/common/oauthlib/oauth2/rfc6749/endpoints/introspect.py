@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 oauthlib.oauth2.rfc6749.endpoint.introspect
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -7,14 +6,12 @@ An implementation of the OAuth 2.0 `Token Introspection`.
 
 .. _`Token Introspection`: https://tools.ietf.org/html/rfc7662
 """
-from __future__ import absolute_import, unicode_literals
-
 import json
 import logging
 
 from oauthlib.common import Request
 
-from ..errors import OAuth2Error, UnsupportedTokenTypeError
+from ..errors import OAuth2Error
 from .base import BaseEndpoint, catch_errors_and_unavailability
 
 log = logging.getLogger(__name__)
@@ -89,9 +86,9 @@ class IntrospectEndpoint(BaseEndpoint):
         an HTTP POST request with parameters sent as
         "application/x-www-form-urlencoded".
 
-        token REQUIRED.  The string value of the token.
+        * token REQUIRED.  The string value of the token.
+        * token_type_hint OPTIONAL.
 
-        token_type_hint OPTIONAL.
         A hint about the type of the token submitted for
         introspection.  The protected resource MAY pass this parameter to
         help the authorization server optimize the token lookup.  If the
@@ -99,11 +96,9 @@ class IntrospectEndpoint(BaseEndpoint):
         extend its search across all of its supported token types.  An
         authorization server MAY ignore this parameter, particularly if it
         is able to detect the token type automatically.
-            *  access_token: An Access Token as defined in [`RFC6749`],
-                `section 1.4`_
 
-            *  refresh_token: A Refresh Token as defined in [`RFC6749`],
-                `section 1.5`_
+        *  access_token: An Access Token as defined in [`RFC6749`], `section 1.4`_
+        *  refresh_token: A Refresh Token as defined in [`RFC6749`], `section 1.5`_
 
         The introspection endpoint MAY accept other OPTIONAL
         parameters to provide further context to the query.  For
