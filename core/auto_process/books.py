@@ -23,10 +23,10 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
     apikey = cfg['apikey']
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    protocol = 'https://' if ssl else 'http://'
+    scheme = 'https' if ssl else 'http'
     remote_path = int(cfg.get('remote_path', 0))
 
-    url = '{0}{1}:{2}{3}/api'.format(protocol, host, port, web_root)
+    url = core.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult(

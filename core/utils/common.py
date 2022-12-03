@@ -116,9 +116,9 @@ def get_dirs(section, subsection, link='hard'):
 def create_url(
     scheme: str,
     host: str,
-    port: typing.Optional[int],
-    path: str,
-    query: str,
+    port: typing.Optional[int] = None,
+    path: str = '',
+    query: str = '',
 ) -> str:
     """Create a url from its component parts."""
     netloc = host if port is None else f'{host}:{port}'

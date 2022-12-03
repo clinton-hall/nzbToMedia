@@ -302,6 +302,7 @@ class InitSickBeard:
 
 class SickBeard:
     """Sickbeard base class."""
+    sb_init: InitSickBeard
 
     def __init__(self, sb_init):
         """SB constructor."""
@@ -345,10 +346,17 @@ class SickBeard:
         if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
             self.process_method = 'symlink'
 
-    def _create_url(self):
+    def _create_url(self) -> str:
         if self.sb_init.apikey:
-            return '{0}{1}:{2}{3}/api/{4}/'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root, self.sb_init.apikey)
-        return '{0}{1}:{2}{3}/home/postprocess/processEpisode'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
+            route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
+        else:
+            route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
+        return core.utils.common.create_url(
+            self.sb_init.protocol,
+            self.sb_init.host,
+            self.sb_init.port,
+            route
+        )
 
     def _process_fork_prarams(self):
         # configure SB params to pass
@@ -432,7 +440,13 @@ class SickBeard:
         try:
             if not self.sb_init.apikey and self.sb_init.username and self.sb_init.password:
                 # If not using the api, we need to login using user/pass first.
-                login = '{0}{1}:{2}{3}/login'.format(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, self.sb_init.web_root)
+                route = f'{self.sb_init.web_root}/login'
+                login = core.utils.common.create_url(
+                    self.sb_init.protocol,
+                    self.sb_init.host,
+                    self.sb_init.port,
+                    route,
+                )
                 login_params = {'username': self.sb_init.username, 'password': self.sb_init.password}
                 r = self.session.get(login, verify=False, timeout=(30, 60))
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):

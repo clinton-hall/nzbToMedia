@@ -39,7 +39,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     port = cfg['port']
     ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    protocol = 'https://' if ssl else 'http://'
+    scheme = 'https' if ssl else 'http'
     username = cfg.get('username', '')
     password = cfg.get('password', '')
     apikey = cfg.get('apikey', '')
@@ -51,7 +51,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
     # For now let's do botch the OO and the serialized code, until everything has been migrated.
     init_sickbeard = InitSickBeard(cfg, section, input_category)
 
-    if server_responding('{0}{1}:{2}{3}'.format(protocol, host, port, web_root)):
+    url = core.utils.common.create_url(scheme, host, port, web_root)
+    if server_responding(url):
         # auto-detect correct fork
         # During reactor we also return fork, fork_params. But these are also stored in the object.
         # Should be changed after refactor.
@@ -289,27 +290,25 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
                 status_code=1,  # Return as failed to flag this in the downloader.
             )
 
-    url = None
+    route = ''
     if section == 'SickBeard':
         if apikey:
-            url = '{0}{1}:{2}{3}/api/{4}/'.format(protocol, host, port, web_root, apikey)
-            if not 'cmd' in fork_params:
-                if 'SickGear' in fork:
-                    fork_params['cmd'] = 'sg.postprocess'
-                else:
-                    fork_params['cmd'] = 'postprocess'
+            route = f'{web_root}/api/{apikey}/'
+            if 'cmd' not in fork_params:
+                prefix = '' if 'SickGear' not in fork else 'sg.'
+                fork_params['cmd'] = f'{prefix}postprocess'
         elif fork == 'Stheno':
-            url = '{0}{1}:{2}{3}/home/postprocess/process_episode'.format(protocol, host, port, web_root)
+            route = f'{web_root}/home/postprocess/process_episode'
         else:
-            url = '{0}{1}:{2}{3}/home/postprocess/processEpisode'.format(protocol, host, port, web_root)
+            route = f'{web_root}/home/postprocess/processEpisode'
     elif section == 'SiCKRAGE':
         if api_version >= 2:
-            url = '{0}{1}:{2}{3}/api/v{4}/postprocess'.format(protocol, host, port, web_root, api_version)
+            route = f'{web_root}/api/v{api_version}/postprocess'
         else:
-            url = '{0}{1}:{2}{3}/api/v{4}/{5}/'.format(protocol, host, port, web_root, api_version, apikey)
+            route = f'{web_root}/api/v{api_version}/{apikey}/'
     elif section == 'NzbDrone':
-        url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
-        url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
+        route = f'{web_root}/api/command'
+        route2 = f'{web_root}/api/config/downloadClient'
         headers = {'X-Api-Key': apikey}
         # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
         if remote_path:
@@ -321,7 +320,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
         if not download_id:
             data.pop('downloadClientId')
         data = json.dumps(data)
-
+    url = core.utils.common.create_url(scheme, host, port, route)
     try:
         if section == 'SickBeard':
             if init_sickbeard.fork_obj:
@@ -331,7 +330,7 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
 
                 logger.debug('Opening URL: {0} with params: {1}'.format(url, fork_params), section)
                 if not apikey and username and password:
-                    login = '{0}{1}:{2}{3}/login'.format(protocol, host, port, web_root)
+                    login = f'{web_root}/login'
                     login_params = {'username': username, 'password': password}
                     r = s.get(login, verify=False, timeout=(30, 60))
                     if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
@@ -457,6 +456,8 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
             #     message='{0}: Failed to post-process {1}'.format(section, input_name),
             #     status_code=1,
             # )
+
+        url2 = core.utils.common.create_url(scheme, host, port, route)
         if completed_download_handling(url2, headers, section=section):
             logger.debug('The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.'.format(section),
                          section)
