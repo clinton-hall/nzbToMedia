@@ -13,8 +13,6 @@ import requests
 
 from requests_oauthlib import OAuth2Session
 
-import six
-
 
 class InitSickBeard:
     """Sickbeard init class.
@@ -182,11 +180,7 @@ class InitSickBeard:
             logger.debug('Response received: {}'.format(json_data))
             raise
         else:
-            if six.PY3:
-                str_type = (str)
-            else:
-                str_type = (str, unicode)
-            if isinstance(json_data, str_type):
+            if isinstance(json_data, str):
                 return rem_params, False
             json_data = json_data.get('data', json_data)
 

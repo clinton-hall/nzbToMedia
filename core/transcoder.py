@@ -9,7 +9,6 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import string_types
 
 import core
 from core import logger
@@ -137,7 +136,7 @@ def check_vid_file(video_details, result):
 
 
 def build_commands(file, new_dir, movie_name, bitbucket):
-    if isinstance(file, string_types):
+    if isinstance(file, str):
         input_file = file
         if 'concat:' in file:
             file = file.split('|')[0].replace('concat:', '')
@@ -659,7 +658,7 @@ def process_list(it, new_dir, bitbucket):
     if combine:
         new_list.extend(combine_cd(combine))
     for file in new_list:
-        if isinstance(file, string_types) and 'concat:' not in file and not os.path.isfile(file):
+        if isinstance(file, str) and 'concat:' not in file and not os.path.isfile(file):
             success = False
             break
     if success and new_list:
@@ -902,13 +901,13 @@ def transcode_directory(dir_name):
         return 1, dir_name
 
     for file in file_list:
-        if isinstance(file, string_types) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
+        if isinstance(file, str) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
             continue
         command, file = build_commands(file, new_dir, movie_name, bitbucket)
         newfile_path = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
-        if core.SEXTRACT and isinstance(file, string_types):
+        if core.SEXTRACT and isinstance(file, str):
             extract_subs(file, newfile_path, bitbucket)
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
@@ -923,7 +922,7 @@ def transcode_directory(dir_name):
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
-            if isinstance(file, string_types):
+            if isinstance(file, str):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE)
             else:
                 img, data = next(file.items())
@@ -941,7 +940,7 @@ def transcode_directory(dir_name):
         except Exception:
             logger.error('Transcoding of video {0} has failed'.format(newfile_path))
 
-        if core.SUBSDIR and result == 0 and isinstance(file, string_types):
+        if core.SUBSDIR and result == 0 and isinstance(file, str):
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]
