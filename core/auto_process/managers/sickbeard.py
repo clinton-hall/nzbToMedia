@@ -347,7 +347,7 @@ class SickBeard:
             self.process_method = 'symlink'
 
     @property
-    def url(self):
+    def url(self) -> str:
         return self._create_url()
 
     def _create_url(self) -> str:
