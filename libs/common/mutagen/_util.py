@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
@@ -19,20 +18,36 @@ import errno
 import decimal
 from io import BytesIO
 
-try:
-    import mmap
-except ImportError:
-    # Google App Engine has no mmap:
-    #   https://github.com/quodlibet/mutagen/issues/286
-    mmap = None
-
 from collections import namedtuple
 from contextlib import contextmanager
 from functools import wraps
 from fnmatch import fnmatchcase
 
-from ._compat import chr_, PY2, iteritems, iterbytes, integer_types, xrange, \
-    izip, text_type, reraise
+
+_DEFAULT_BUFFER_SIZE = 2 ** 20
+
+
+def endswith(text, end):
+    # usefull for paths which can be both, str and bytes
+    if isinstance(text, str):
+        if not isinstance(end, str):
+            end = end.decode("ascii")
+    else:
+        if not isinstance(end, bytes):
+            end = end.encode("ascii")
+    return text.endswith(end)
+
+
+def reraise(tp, value, tb):
+    raise tp(value).with_traceback(tb)
+
+
+def bchr(x):
+    return bytes([x])
+
+
+def iterbytes(b):
+    return (bytes([v]) for v in b)
 
 
 def intround(value):
@@ -50,7 +65,7 @@ def is_fileobj(fileobj):
             file object
     """
 
-    return not (isinstance(fileobj, (text_type, bytes)) or
+    return not (isinstance(fileobj, (str, bytes)) or
                 hasattr(fileobj, "__fspath__"))
 
 
@@ -105,8 +120,8 @@ def fileobj_name(fileobj):
     """
 
     value = getattr(fileobj, "name", u"")
-    if not isinstance(value, (text_type, bytes)):
-        value = text_type(value)
+    if not isinstance(value, (str, bytes)):
+        value = str(value)
     return value
 
 
@@ -212,7 +227,7 @@ def _openfile(instance, filething, filename, fileobj, writable, create):
             fileobj = filething
         elif hasattr(filething, "__fspath__"):
             filename = filething.__fspath__()
-            if not isinstance(filename, (bytes, text_type)):
+            if not isinstance(filename, (bytes, str)):
                 raise TypeError("expected __fspath__() to return a filename")
         else:
             filename = filething
@@ -302,9 +317,6 @@ def hashable(cls):
     Needs a working __eq__ and __hash__ and will add a __ne__.
     """
 
-    # py2
-    assert "__hash__" in cls.__dict__
-    # py3
     assert cls.__dict__["__hash__"] is not None
     assert "__eq__" in cls.__dict__
 
@@ -340,8 +352,8 @@ def enum(cls):
     new_type.__module__ = cls.__module__
 
     map_ = {}
-    for key, value in iteritems(d):
-        if key.upper() == key and isinstance(value, integer_types):
+    for key, value in d.items():
+        if key.upper() == key and isinstance(value, int):
             value_instance = new_type(value)
             setattr(new_type, key, value_instance)
             map_[value] = key
@@ -389,8 +401,8 @@ def flags(cls):
     new_type.__module__ = cls.__module__
 
     map_ = {}
-    for key, value in iteritems(d):
-        if key.upper() == key and isinstance(value, integer_types):
+    for key, value in d.items():
+        if key.upper() == key and isinstance(value, int):
             value_instance = new_type(value)
             setattr(new_type, key, value_instance)
             map_[value] = key
@@ -403,7 +415,7 @@ def flags(cls):
                 matches.append("%s.%s" % (type(self).__name__, v))
                 value &= ~k
         if value != 0 or not matches:
-            matches.append(text_type(value))
+            matches.append(str(value))
 
         return " | ".join(matches)
 
@@ -443,25 +455,13 @@ class DictMixin(object):
         else:
             return True
 
-    if PY2:
-        has_key = __has_key
-
     __contains__ = __has_key
-
-    if PY2:
-        iterkeys = lambda self: iter(self.keys())
 
     def values(self):
         return [self[k] for k in self.keys()]
 
-    if PY2:
-        itervalues = lambda self: iter(self.values())
-
     def items(self):
-        return list(izip(self.keys(), self.values()))
-
-    if PY2:
-        iteritems = lambda s: iter(s.items())
+        return list(zip(self.keys(), self.values()))
 
     def clear(self):
         for key in list(self.keys()):
@@ -591,7 +591,7 @@ def _fill_cdata(cls):
                 funcs["to_%s%s%s" % (prefix, name, esuffix)] = pack
                 funcs["to_%sint%s%s" % (prefix, bits, esuffix)] = pack
 
-    for key, func in iteritems(funcs):
+    for key, func in funcs.items():
         setattr(cls, key, staticmethod(func))
 
 
@@ -602,12 +602,11 @@ class cdata(object):
     uint32_le(data)/to_uint32_le(num)/uint32_le_from(data, offset=0)
     """
 
-    from struct import error
-    error = error
+    error = struct.error
 
     bitswap = b''.join(
-        chr_(sum(((val >> i) & 1) << (7 - i) for i in xrange(8)))
-        for val in xrange(256))
+        bchr(sum(((val >> i) & 1) << (7 - i) for i in range(8)))
+        for val in range(256))
 
     test_bit = staticmethod(lambda value, n: bool((value >> n) & 1))
 
@@ -683,65 +682,7 @@ def seek_end(fileobj, offset):
         fileobj.seek(-offset, 2)
 
 
-def mmap_move(fileobj, dest, src, count):
-    """Mmaps the file object if possible and moves 'count' data
-    from 'src' to 'dest'. All data has to be inside the file size
-    (enlarging the file through this function isn't possible)
-
-    Will adjust the file offset.
-
-    Args:
-        fileobj (fileobj)
-        dest (int): The destination offset
-        src (int): The source offset
-        count (int) The amount of data to move
-    Raises:
-        mmap.error: In case move failed
-        IOError: In case an operation on the fileobj fails
-        ValueError: In case invalid parameters were given
-    """
-
-    assert mmap is not None, "no mmap support"
-
-    if dest < 0 or src < 0 or count < 0:
-        raise ValueError("Invalid parameters")
-
-    try:
-        fileno = fileobj.fileno()
-    except (AttributeError, IOError):
-        raise mmap.error(
-            "File object does not expose/support a file descriptor")
-
-    fileobj.seek(0, 2)
-    filesize = fileobj.tell()
-    length = max(dest, src) + count
-
-    if length > filesize:
-        raise ValueError("Not in file size boundary")
-
-    offset = ((min(dest, src) // mmap.ALLOCATIONGRANULARITY) *
-              mmap.ALLOCATIONGRANULARITY)
-    assert dest >= offset
-    assert src >= offset
-    assert offset % mmap.ALLOCATIONGRANULARITY == 0
-
-    # Windows doesn't handle empty mappings, add a fast path here instead
-    if count == 0:
-        return
-
-    # fast path
-    if src == dest:
-        return
-
-    fileobj.flush()
-    file_map = mmap.mmap(fileno, length - offset, offset=offset)
-    try:
-        file_map.move(dest - offset, src - offset, count)
-    finally:
-        file_map.close()
-
-
-def resize_file(fobj, diff, BUFFER_SIZE=2 ** 16):
+def resize_file(fobj, diff, BUFFER_SIZE=_DEFAULT_BUFFER_SIZE):
     """Resize a file by `diff`.
 
     New space will be filled with zeros.
@@ -778,7 +719,7 @@ def resize_file(fobj, diff, BUFFER_SIZE=2 ** 16):
             raise
 
 
-def fallback_move(fobj, dest, src, count, BUFFER_SIZE=2 ** 16):
+def move_bytes(fobj, dest, src, count, BUFFER_SIZE=_DEFAULT_BUFFER_SIZE):
     """Moves data around using read()/write().
 
     Args:
@@ -821,12 +762,11 @@ def fallback_move(fobj, dest, src, count, BUFFER_SIZE=2 ** 16):
         fobj.flush()
 
 
-def insert_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
+def insert_bytes(fobj, size, offset, BUFFER_SIZE=_DEFAULT_BUFFER_SIZE):
     """Insert size bytes of empty space starting at offset.
 
     fobj must be an open file object, open rb+ or
-    equivalent. Mutagen tries to use mmap to resize the file, but
-    falls back to a significantly slower method if mmap fails.
+    equivalent.
 
     Args:
         fobj (fileobj)
@@ -847,22 +787,14 @@ def insert_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
         raise ValueError
 
     resize_file(fobj, size, BUFFER_SIZE)
-
-    if mmap is not None:
-        try:
-            mmap_move(fobj, offset + size, offset, movesize)
-        except mmap.error:
-            fallback_move(fobj, offset + size, offset, movesize, BUFFER_SIZE)
-    else:
-        fallback_move(fobj, offset + size, offset, movesize, BUFFER_SIZE)
+    move_bytes(fobj, offset + size, offset, movesize, BUFFER_SIZE)
 
 
-def delete_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
+def delete_bytes(fobj, size, offset, BUFFER_SIZE=_DEFAULT_BUFFER_SIZE):
     """Delete size bytes of empty space starting at offset.
 
     fobj must be an open file object, open rb+ or
-    equivalent. Mutagen tries to use mmap to resize the file, but
-    falls back to a significantly slower method if mmap fails.
+    equivalent.
 
     Args:
         fobj (fileobj)
@@ -882,14 +814,7 @@ def delete_bytes(fobj, size, offset, BUFFER_SIZE=2 ** 16):
     if movesize < 0:
         raise ValueError
 
-    if mmap is not None:
-        try:
-            mmap_move(fobj, offset, offset + size, movesize)
-        except mmap.error:
-            fallback_move(fobj, offset, offset + size, movesize, BUFFER_SIZE)
-    else:
-        fallback_move(fobj, offset, offset + size, movesize, BUFFER_SIZE)
-
+    move_bytes(fobj, offset, offset + size, movesize, BUFFER_SIZE)
     resize_file(fobj, -size, BUFFER_SIZE)
 
 
@@ -933,7 +858,7 @@ def dict_match(d, key, default=None):
     if key in d and "[" not in key:
         return d[key]
     else:
-        for pattern, value in iteritems(d):
+        for pattern, value in d.items():
             if fnmatchcase(key, pattern):
                 return value
     return default
@@ -1075,7 +1000,7 @@ class BitReader(object):
                 raise BitReaderError("not enough data")
             return data
 
-        return bytes(bytearray(self.bits(8) for _ in xrange(count)))
+        return bytes(bytearray(self.bits(8) for _ in range(count)))
 
     def skip(self, count):
         """Skip `count` bits.

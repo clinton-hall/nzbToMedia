@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2005  Michael Urman
 #
 # This program is free software; you can redistribute it and/or modify
@@ -8,6 +7,7 @@
 
 import zlib
 from struct import unpack
+from typing import Sequence
 
 from ._util import ID3JunkFrameError, ID3EncryptionUnsupportedError, unsynch, \
     ID3SaveConfig, error
@@ -17,9 +17,7 @@ from ._specs import BinaryDataSpec, StringSpec, Latin1TextSpec, \
     VolumeAdjustmentSpec, ChannelSpec, MultiSpec, SynchronizedTextSpec, \
     KeyEventSpec, TimeStampSpec, EncodedNumericPartTextSpec, \
     EncodedNumericTextSpec, SpecError, PictureTypeSpec, ID3FramesSpec, \
-    Latin1TextListSpec, CTOCFlagsSpec, FrameIDSpec, RVASpec
-from .._compat import text_type, string_types, swap_to_string, iteritems, \
-    izip, itervalues
+    Latin1TextListSpec, CTOCFlagsSpec, FrameIDSpec, RVASpec, Spec
 
 
 def _bytes2key(b):
@@ -51,8 +49,8 @@ class Frame(object):
     FLAG24_UNSYNCH = 0x0002
     FLAG24_DATALEN = 0x0001
 
-    _framespec = []
-    _optionalspec = []
+    _framespec: Sequence[Spec] = []
+    _optionalspec: Sequence[Spec] = []
 
     def __init__(self, *args, **kwargs):
         if len(args) == 1 and len(kwargs) == 0 and \
@@ -61,7 +59,7 @@ class Frame(object):
             # ask the sub class to fill in our data
             other._to_other(self)
         else:
-            for checker, val in izip(self._framespec, args):
+            for checker, val in zip(self._framespec, args):
                 setattr(self, checker.name, val)
             for checker in self._framespec[len(args):]:
                 setattr(self, checker.name,
@@ -277,6 +275,8 @@ class Frame(object):
 
         elif header.version >= header._V23:
             if tflags & Frame.FLAG23_COMPRESS:
+                if len(data) < 4:
+                    raise ID3JunkFrameError('frame too small: %r' % data)
                 usize, = unpack('>L', data[:4])
                 data = data[4:]
             if tflags & Frame.FLAG23_ENCRYPT:
@@ -291,7 +291,7 @@ class Frame(object):
         frame._readData(header, data)
         return frame
 
-    def __hash__(self):
+    def __hash__(self: object):
         raise TypeError("Frame objects are unhashable")
 
 
@@ -330,7 +330,7 @@ class CHAP(Frame):
 
     def _pprint(self):
         frame_pprint = u""
-        for frame in itervalues(self.sub_frames):
+        for frame in self.sub_frames.values():
             for line in frame.pprint().splitlines():
                 frame_pprint += "\n" + " " * 4 + line
         return u"%s time=%d..%d offset=%d..%d%s" % (
@@ -377,7 +377,6 @@ class CTOC(Frame):
             u",".join(self.child_element_ids), frame_pprint)
 
 
-@swap_to_string
 class TextFrame(Frame):
     """Text strings.
 
@@ -399,7 +398,7 @@ class TextFrame(Frame):
     ]
 
     def __bytes__(self):
-        return text_type(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
     def __str__(self):
         return u'\u0000'.join(self.text)
@@ -407,8 +406,8 @@ class TextFrame(Frame):
     def __eq__(self, other):
         if isinstance(other, bytes):
             return bytes(self) == other
-        elif isinstance(other, text_type):
-            return text_type(self) == other
+        elif isinstance(other, str):
+            return str(self) == other
         return self.text == other
 
     __hash__ = Frame.__hash__
@@ -481,7 +480,6 @@ class NumericPartTextFrame(TextFrame):
         return int(self.text[0].split("/")[0])
 
 
-@swap_to_string
 class TimeStampTextFrame(TextFrame):
     """A list of time stamps.
 
@@ -495,7 +493,7 @@ class TimeStampTextFrame(TextFrame):
     ]
 
     def __bytes__(self):
-        return text_type(self).encode('utf-8')
+        return str(self).encode('utf-8')
 
     def __str__(self):
         return u','.join([stamp.text for stamp in self.text])
@@ -504,7 +502,6 @@ class TimeStampTextFrame(TextFrame):
         return u" / ".join([stamp.text for stamp in self.text])
 
 
-@swap_to_string
 class UrlFrame(Frame):
     """A frame containing a URL string.
 
@@ -517,7 +514,7 @@ class UrlFrame(Frame):
     ASCII.
     """
 
-    _framespec = [
+    _framespec: Sequence[Spec] = [
         Latin1TextSpec('url'),
     ]
 
@@ -587,7 +584,7 @@ class TCON(TextFrame):
                 if genreid:
                     for gid in genreid[1:-1].split(")("):
                         if gid.isdigit() and int(gid) < len(self.GENRES):
-                            gid = text_type(self.GENRES[int(gid)])
+                            gid = str(self.GENRES[int(gid)])
                             newgenres.append(gid)
                         elif gid == "CR":
                             newgenres.append(u"Cover")
@@ -608,7 +605,7 @@ class TCON(TextFrame):
         return genres
 
     def __set_genres(self, genres):
-        if isinstance(genres, string_types):
+        if isinstance(genres, str):
             genres = [genres]
         self.text = [self.__decode(g) for g in genres]
 
@@ -1044,7 +1041,6 @@ class SYTC(Frame):
     __hash__ = Frame.__hash__
 
 
-@swap_to_string
 class USLT(Frame):
     """Unsynchronised lyrics/text transcription.
 
@@ -1078,7 +1074,6 @@ class USLT(Frame):
         return "%s=%s=%s" % (self.desc, self.lang, self.text)
 
 
-@swap_to_string
 class SYLT(Frame):
     """Synchronised lyrics/text."""
 
@@ -1095,16 +1090,21 @@ class SYLT(Frame):
     def HashKey(self):
         return '%s:%s:%s' % (self.FrameID, self.desc, self.lang)
 
+    def _pprint(self):
+        return str(self)
+
     def __eq__(self, other):
         return str(self) == other
 
     __hash__ = Frame.__hash__
 
     def __str__(self):
-        return u"".join(text for (text, time) in self.text)
+        unit = 'fr' if self.format == 1 else 'ms'
+        return u"\n".join("[{0}{1}]: {2}".format(time, unit, text)
+                          for (text, time) in self.text)
 
     def __bytes__(self):
-        return text_type(self).encode("utf-8")
+        return str(self).encode("utf-8")
 
 
 class COMM(TextFrame):
@@ -1279,7 +1279,7 @@ class APIC(Frame):
         return other
 
     def _pprint(self):
-        type_desc = text_type(self.type)
+        type_desc = str(self.type)
         if hasattr(self.type, "_pprint"):
             type_desc = self.type._pprint()
 
@@ -1309,7 +1309,7 @@ class PCNT(Frame):
         return self.count
 
     def _pprint(self):
-        return text_type(self.count)
+        return str(self.count)
 
 
 class PCST(Frame):
@@ -1328,7 +1328,7 @@ class PCST(Frame):
         return self.value
 
     def _pprint(self):
-        return text_type(self.value)
+        return str(self.value)
 
 
 class POPM(Frame):
@@ -1432,7 +1432,6 @@ class RBUF(Frame):
         return self.size
 
 
-@swap_to_string
 class AENC(Frame):
     """Audio encryption.
 
@@ -1549,7 +1548,6 @@ class UFID(Frame):
         return "%s=%r" % (self.owner, self.data)
 
 
-@swap_to_string
 class USER(Frame):
     """Terms of use.
 
@@ -1585,7 +1583,6 @@ class USER(Frame):
         return "%r=%s" % (self.lang, self.text)
 
 
-@swap_to_string
 class OWNE(Frame):
     """Ownership frame."""
 
@@ -1636,7 +1633,6 @@ class COMR(Frame):
     __hash__ = Frame.__hash__
 
 
-@swap_to_string
 class ENCR(Frame):
     """Encryption method registration.
 
@@ -1663,7 +1659,6 @@ class ENCR(Frame):
     __hash__ = Frame.__hash__
 
 
-@swap_to_string
 class GRID(Frame):
     """Group identification registration."""
 
@@ -1692,7 +1687,6 @@ class GRID(Frame):
     __hash__ = Frame.__hash__
 
 
-@swap_to_string
 class PRIV(Frame):
     """Private frame."""
 
@@ -1718,7 +1712,6 @@ class PRIV(Frame):
     __hash__ = Frame.__hash__
 
 
-@swap_to_string
 class SIGN(Frame):
     """Signature frame."""
 
@@ -2130,7 +2123,7 @@ Frames_2_2 = {}
 
 
 k, v = None, None
-for k, v in iteritems(globals()):
+for k, v in globals().items():
     if isinstance(v, type) and issubclass(v, Frame):
         v.__module__ = "mutagen.id3"
 

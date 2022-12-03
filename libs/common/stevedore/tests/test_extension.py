@@ -14,8 +14,7 @@
 """
 
 import operator
-
-import mock
+from unittest import mock
 
 from stevedore import exception
 from stevedore import extension

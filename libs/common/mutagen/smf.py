@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright 2015 Christoph Reiter
 #
 # This program is free software; you can redistribute it and/or modify
@@ -12,8 +11,7 @@ import struct
 
 from mutagen import StreamInfo, MutagenError
 from mutagen._file import FileType
-from mutagen._util import loadfile
-from mutagen._compat import xrange, endswith
+from mutagen._util import loadfile, endswith
 
 
 class SMFError(MutagenError):
@@ -123,7 +121,7 @@ def _read_midi_length(fileobj):
     # get a list of events and tempo changes for each track
     tracks = []
     first_tempos = None
-    for tracknum in xrange(ntracks):
+    for tracknum in range(ntracks):
         identifier, chunk = read_chunk(fileobj)
         if identifier != b"MTrk":
             continue

@@ -132,11 +132,11 @@ class LocalBuildDoc(setup_command.BuildDoc):
                 autoindex.write("   %s.rst\n" % module)
 
     def _sphinx_tree(self):
-            source_dir = self._get_source_dir()
-            cmd = ['-H', 'Modules', '-o', source_dir, '.']
-            if apidoc_use_padding:
-                cmd.insert(0, 'apidoc')
-            apidoc.main(cmd + self.autodoc_tree_excludes)
+        source_dir = self._get_source_dir()
+        cmd = ['-H', 'Modules', '-o', source_dir, '.']
+        if apidoc_use_padding:
+            cmd.insert(0, 'apidoc')
+        apidoc.main(cmd + self.autodoc_tree_excludes)
 
     def _sphinx_run(self):
         if not self.verbose:

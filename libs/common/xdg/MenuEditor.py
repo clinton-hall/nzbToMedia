@@ -54,7 +54,7 @@ class MenuEditor(object):
         try:
             self.tree = etree.parse(self.filename)
         except IOError:
-            root = etree.fromtring("""
+            root = etree.fromstring("""
 <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" "http://standards.freedesktop.org/menu-spec/menu-1.0.dtd">
     <Menu>
         <Name>Applications</Name>

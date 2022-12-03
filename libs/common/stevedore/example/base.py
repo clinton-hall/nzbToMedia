@@ -1,10 +1,7 @@
 import abc
 
-import six
 
-
-@six.add_metaclass(abc.ABCMeta)
-class FormatterBase(object):
+class FormatterBase(metaclass=abc.ABCMeta):
     """Base class for example plugin used in the tutorial.
     """
 

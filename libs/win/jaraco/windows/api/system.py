@@ -2,10 +2,10 @@ import ctypes.wintypes
 
 SystemParametersInfo = ctypes.windll.user32.SystemParametersInfoW
 SystemParametersInfo.argtypes = (
-	ctypes.wintypes.UINT,
-	ctypes.wintypes.UINT,
-	ctypes.c_void_p,
-	ctypes.wintypes.UINT,
+    ctypes.wintypes.UINT,
+    ctypes.wintypes.UINT,
+    ctypes.c_void_p,
+    ctypes.wintypes.UINT,
 )
 
 SPI_GETACTIVEWINDOWTRACKING = 0x1000

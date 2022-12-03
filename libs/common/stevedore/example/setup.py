@@ -9,7 +9,7 @@ setup(
     author='Doug Hellmann',
     author_email='doug@doughellmann.com',
 
-    url='http://git.openstack.org/cgit/openstack/stevedore',
+    url='http://opendev.org/openstack/stevedore',
 
     classifiers=['Development Status :: 3 - Alpha',
                  'License :: OSI Approved :: Apache Software License',

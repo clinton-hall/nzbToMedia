@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2005  Michael Urman
 #               2006  Lukas Lalinsky
 #               2013  Christoph Reiter
@@ -61,7 +60,7 @@ from ._util import ID3EncryptionUnsupportedError, ID3JunkFrameError, \
 # support open(filename) as interface
 Open = ID3
 
-# pyflakes
+# flake8
 ID3, ID3FileType, delete, ID3v1SaveOptions, Encoding, PictureType, CTOCFlags,
 ID3TimeStamp, Frames, Frames_2_2, Frame, TextFrame, UrlFrame, UrlFrameU,
 TimeStampTextFrame, BinaryFrame, NumericPartTextFrame, NumericTextFrame,
