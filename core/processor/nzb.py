@@ -15,11 +15,6 @@ from core.utils import (
     update_download_info_status,
 )
 
-try:
-    text_type = unicode
-except NameError:
-    text_type = str
-
 
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
     if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
@@ -48,12 +43,12 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         except Exception:
             pass
 
-        control_value_dict = {'input_directory': text_type(input_directory1)}
+        control_value_dict = {'input_directory': input_directory1}
         new_value_dict = {
-            'input_name': text_type(input_name1),
-            'input_hash': text_type(download_id),
-            'input_id': text_type(download_id),
-            'client_agent': text_type(client_agent),
+            'input_name': input_name1,
+            'input_hash': download_id,
+            'input_id': download_id,
+            'client_agent': client_agent,
             'status': 0,
             'last_update': datetime.date.today().toordinal(),
         }

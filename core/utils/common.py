@@ -1,7 +1,5 @@
 import os.path
 
-from six import text_type
-
 import core
 from core import logger
 from core.utils.files import list_media_files, move_file
@@ -27,7 +25,7 @@ def process_dir(path, link):
     folders = []
 
     logger.info('Searching {0} for mediafiles to post-process ...'.format(path))
-    dir_contents = os.listdir(text_type(path))
+    dir_contents = os.listdir(path)
 
     # search for single files and move them into their own folder for post-processing
 
@@ -63,7 +61,7 @@ def process_dir(path, link):
     # Generate all path contents
     path_contents = (
         os.path.join(path, item)
-        for item in os.listdir(text_type(path))
+        for item in os.listdir(path)
     )
 
     # Generate all directories from path contents

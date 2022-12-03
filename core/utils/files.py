@@ -6,7 +6,6 @@ import time
 
 import beets.mediafile
 import guessit
-from six import text_type
 
 import core
 from core import extractor, logger
@@ -141,7 +140,7 @@ def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True,
 
         return files
 
-    for cur_file in os.listdir(text_type(path)):
+    for cur_file in os.listdir(path):
         full_cur_file = os.path.join(path, cur_file)
 
         # if it's a folder do it recursively
