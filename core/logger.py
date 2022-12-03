@@ -19,12 +19,12 @@ DEBUG = logging.DEBUG
 POSTPROCESS = 21
 DB = 5
 
-reverseNames = {u'ERROR': ERROR,
-                u'WARNING': WARNING,
-                u'INFO': MESSAGE,
-                u'DEBUG': DEBUG,
-                u'POSTPROCESS': POSTPROCESS,
-                u'DB': DB}
+reverseNames = {'ERROR': ERROR,
+                'WARNING': WARNING,
+                'INFO': MESSAGE,
+                'DEBUG': DEBUG,
+                'POSTPROCESS': POSTPROCESS,
+                'DB': DB}
 
 
 class NTMRotatingLogHandler:
@@ -189,9 +189,9 @@ class NTMRotatingLogHandler:
                 self.writes_since_check += 1
 
             try:
-                message = u'{0}: {1}'.format(section.upper(), to_log)
+                message = '{0}: {1}'.format(section.upper(), to_log)
             except UnicodeError:
-                message = u'{0}: Message contains non-utf-8 string'.format(section.upper())
+                message = '{0}: Message contains non-utf-8 string'.format(section.upper())
 
             out_line = message
 

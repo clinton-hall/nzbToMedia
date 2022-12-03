@@ -208,23 +208,23 @@ def backup_versioned_file(old_file, version):
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.log(u'Not creating backup, {file} doesn\'t exist'.format(file=old_file), logger.DEBUG)
+            logger.log('Not creating backup, {file} doesn\'t exist'.format(file=old_file), logger.DEBUG)
             break
 
         try:
-            logger.log(u'Trying to back up {old} to {new]'.format(old=old_file, new=new_file), logger.DEBUG)
+            logger.log('Trying to back up {old} to {new]'.format(old=old_file, new=new_file), logger.DEBUG)
             shutil.copy(old_file, new_file)
-            logger.log(u'Backup done', logger.DEBUG)
+            logger.log('Backup done', logger.DEBUG)
             break
         except Exception as error:
-            logger.log(u'Error while trying to back up {old} to {new} : {msg}'.format
+            logger.log('Error while trying to back up {old} to {new} : {msg}'.format
                        (old=old_file, new=new_file, msg=error), logger.WARNING)
             num_tries += 1
             time.sleep(1)
-            logger.log(u'Trying again.', logger.DEBUG)
+            logger.log('Trying again.', logger.DEBUG)
 
         if num_tries >= 10:
-            logger.log(u'Unable to back up {old} to {new} please do it manually.'.format(old=old_file, new=new_file), logger.ERROR)
+            logger.log('Unable to back up {old} to {new} please do it manually.'.format(old=old_file, new=new_file), logger.ERROR)
             return False
 
     return True
