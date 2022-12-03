@@ -5,28 +5,19 @@ import requests
 from core import logger
 
 
-class ProcessResult:
-    def __init__(self, message: str, status_code: int):
-        self.message = message
-        self.status_code = status_code
-
-    def __iter__(self) -> typing.Tuple[int, str]:
-        return self.status_code, self.message
+class ProcessResult(typing.NamedTuple):
+    status_code: int
+    message: str
 
     def __bool__(self) -> bool:
         return not bool(self.status_code)
 
     def __str__(self) -> str:
-        return 'Processing {0}: {1}'.format(
-            'succeeded' if bool(self) else 'failed',
-            self.message,
-        )
+        status = 'succeeded' if bool(self) else 'failed'
+        return f'Processing {self.message}: {status}'
 
     def __repr__(self) -> str:
-        return '<ProcessResult {0}: {1}>'.format(
-            self.status_code,
-            self.message,
-        )
+        return f'<ProcessResult {self.status_code}: {self.message}>'
 
 
 def command_complete(url, params, headers, section):
