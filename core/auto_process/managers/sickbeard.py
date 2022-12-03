@@ -454,16 +454,16 @@ class SickBeard:
             response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Unable to '
+                f'connect to {self.sb_init.section}'
             )
 
         if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error('Server returned status {0}'.format(response.status_code), self.sb_init.section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Server returned status {1}'.format(self.sb_init.section, response.status_code),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Server '
+                f'returned status {response.status_code}'
             )
 
         return self.process_response(response)
@@ -487,11 +487,13 @@ class SickBeard:
                     self.success = True
 
         if self.success:
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(self.sb_init.section, self.input_name),
-                status_code=0,
+            return ProcessResult.success(
+                f'{self.sb_init.section}: Successfully post-processed '
+                f'{self.input_name}'
             )
-        return ProcessResult(
-            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(self.sb_init.section),
-            status_code=1,  # We did not receive Success confirmation.
+
+        # We did not receive Success confirmation.
+        return ProcessResult.failure(
+            f'{self.sb_init.section}: Failed to post-process - Returned log '
+            f'from {self.sb_init.section} was not as expected.'
         )
