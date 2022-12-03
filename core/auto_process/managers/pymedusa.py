@@ -160,8 +160,11 @@ class PyMedusaApiV2(SickBeard):
             except ValueError:
                 logger.debug('No data returned from provider')
                 return False
+        else:
+            jdata = {}
 
-        if not jdata.get('status') or not jdata['status'] == 'success':
+        status = jdata.get('status', None)
+        if status != 'success':
             return False
 
         queueitem_identifier = jdata['queueItem']['identifier']
