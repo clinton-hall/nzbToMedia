@@ -14,7 +14,6 @@ import requests
 from requests_oauthlib import OAuth2Session
 
 import six
-from six import iteritems
 
 
 class InitSickBeard:
@@ -270,7 +269,7 @@ class InitSickBeard:
             for param in rem_params:
                 params.pop(param)
 
-            for fork in sorted(iteritems(core.FORKS), reverse=False):
+            for fork in sorted(core.FORKS, reverse=False):
                 if params == fork[1]:
                     detected = True
                     break

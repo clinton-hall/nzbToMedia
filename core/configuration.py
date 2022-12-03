@@ -4,7 +4,6 @@ import shutil
 from itertools import chain
 
 import configobj
-from six import iteritems
 
 import core
 from core import logger
@@ -161,7 +160,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     continue
 
         def cleanup_values(values, section):
-            for option, value in iteritems(values):
+            for option, value in values.items():
                 if section in ['CouchPotato']:
                     if option == ['outputDirectory']:
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
@@ -242,7 +241,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             subsection = None
             if section in list(chain.from_iterable(subsections.values())):
                 subsection = section
-                section = ''.join([k for k, v in iteritems(subsections) if subsection in v])
+                section = ''.join([k for k, v in subsections.items() if subsection in v])
                 process_section(section, subsection)
             elif section in subsections.keys():
                 subsection = subsections[section]
@@ -252,7 +251,7 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         # migrate SiCRKAGE settings from SickBeard section to new dedicated SiCRKAGE section
         if CFG_OLD['SickBeard']['tv']['enabled'] and CFG_OLD['SickBeard']['tv']['fork'] == 'sickrage-api':
-            for option, value in iteritems(CFG_OLD['SickBeard']['tv']):
+            for option, value in CFG_OLD['SickBeard']['tv'].items():
                 if option in CFG_NEW['SiCKRAGE']['tv']:
                     CFG_NEW['SiCKRAGE']['tv'][option] = value
 

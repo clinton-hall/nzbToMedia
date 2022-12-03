@@ -9,7 +9,7 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import iteritems, string_types
+from six import string_types
 
 import core
 from core import logger
@@ -155,7 +155,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
         new_file = file
     else:
-        img, data = next(iteritems(file))
+        img, data = next(file.items())
         name = data['name']
         new_file = []
         rem_vid = []
@@ -926,7 +926,7 @@ def transcode_directory(dir_name):
             if isinstance(file, string_types):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE)
             else:
-                img, data = next(iteritems(file))
+                img, data = next(file.items())
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
