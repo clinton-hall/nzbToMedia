@@ -51,7 +51,10 @@ class PyMedusaApiV1(SickBeard):
                 timeout=(30, 1800),
             )
         except requests.ConnectionError:
-            logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
+            logger.error(
+                f'Unable to open URL: {self.url}',
+                self.sb_init.section,
+            )
             return ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
                 f'connect to {self.sb_init.section}'
@@ -136,10 +139,11 @@ class PyMedusaApiV2(SickBeard):
         del payload['nzbName']
 
         # Update the session with the x-api-key
-        self.session.headers.update({
+        headers = {
             'x-api-key': self.sb_init.apikey,
-            'Content-type': 'application/json'
-        })
+            'Content-type': 'application/json',
+        }
+        self.session.headers.update(headers)
 
         # Send postprocess request
         try:
