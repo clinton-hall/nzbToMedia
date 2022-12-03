@@ -43,24 +43,37 @@ class PyMedusaApiV1(SickBeard):
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
             return ProcessResult(
-                message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
+                message=f'{self.sb_init.section}: Failed to post-process - '
+                        f'Unable to connect to {self.sb_init.section}',
                 status_code=1,
             )
 
-        if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error('Server returned status {0}'.format(response.status_code), self.sb_init.section)
+        successful_status_codes = [
+            requests.codes.ok,
+            requests.codes.created,
+            requests.codes.accepted,
+        ]
+        if response.status_code not in successful_status_codes:
+            logger.error(
+                f'Server returned status {response.status_code}',
+                self.sb_init.section,
+            )
             return ProcessResult(
-                message='{0}: Failed to post-process - Server returned status {1}'.format(self.sb_init.section, response.status_code),
+                message=f'{self.sb_init.section}: Failed to post-process - '
+                        f'Server returned status {response.status_code}',
                 status_code=1,
             )
 
         if response.json()['result'] == 'success':
             return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(self.sb_init.section, self.input_name),
+                message=f'{self.sb_init.section}: '
+                        f'Successfully post-processed {self.input_name}',
                 status_code=0,
             )
         return ProcessResult(
-            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(self.sb_init.section),
+            message=f'{self.sb_init.section}: Failed to post-process - '
+                    f'Returned log from {self.sb_init.section} was not as '
+                    f'expected.',
             status_code=1,  # We did not receive Success confirmation.
         )
 
@@ -95,7 +108,10 @@ class PyMedusaApiV2(SickBeard):
         try:
             response = self.session.get(url, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error('Unable to get postprocess identifier status', self.sb_init.section)
+            logger.error(
+                'Unable to get postprocess identifier status',
+                self.sb_init.section,
+            )
             return False
 
         try:
@@ -120,11 +136,20 @@ class PyMedusaApiV2(SickBeard):
 
         # Send postprocess request
         try:
-            response = self.session.post(self.url, json=payload, verify=False, timeout=(30, 1800))
+            response = self.session.post(
+                self.url,
+                json=payload,
+                verify=False,
+                timeout=(30, 1800),
+            )
         except requests.ConnectionError:
-            logger.error('Unable to send postprocess request', self.sb_init.section)
+            logger.error(
+                'Unable to send postprocess request',
+                self.sb_init.section,
+            )
             return ProcessResult(
-                message='{0}: Unable to send postprocess request to PyMedusa',
+                message=f'{self.sb_init.section}: Unable to send postprocess '
+                        f'request to PyMedusa',
                 status_code=1,
             )
 
@@ -157,16 +182,20 @@ class PyMedusaApiV2(SickBeard):
         # Log Medusa's PP logs here.
         if response.get('output'):
             for line in response['output']:
-                logger.postprocess('{0}'.format(line), self.sb_init.section)
+                logger.postprocess(line, self.sb_init.section)
 
-        # For now this will most likely always be True. But in the future we could return an exit state
-        # for when the PP in medusa didn't yield an expected result.
+        # For now this will most likely always be True.
+        # In the future we could return an exit state for when the PP in
+        # medusa didn't yield an expected result.
         if response.get('success'):
             return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(self.sb_init.section, self.input_name),
+                message=f'{self.sb_init.section}: '
+                        f'Successfully post-processed {self.input_name}',
                 status_code=0,
             )
         return ProcessResult(
-            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(self.sb_init.section),
+            message=f'{self.sb_init.section}: Failed to post-process - '
+                    f'Returned log from {self.sb_init.section} was not '
+                    f'as expected.',
             status_code=1,  # We did not receive Success confirmation.
         )
