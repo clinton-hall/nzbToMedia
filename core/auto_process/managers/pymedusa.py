@@ -100,7 +100,7 @@ class PyMedusaApiV2(SickBeard):
 
         return jdata
 
-    def api_call(self):
+    def api_call(self) -> ProcessResult:
         self._process_fork_prarams()
         logger.debug(f'Opening URL: {self.url}', self.sb_init.section)
         payload = self.sb_init.fork_params
