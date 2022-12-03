@@ -1,0 +1,58 @@
+[build-system]
+requires = [
+    "setuptools>=45",
+    "setuptools_scm[toml]>=6.2",
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nzbToMedia"
+description = "Efficient on demand post processing"
+readme = {content-type = "utf-8", text = """hello"""}
+license = {file = "license.txt"}
+authors = [
+    {name = "Clinton Hall", email="fock_wulf@hotmail.com"}
+]
+dependencies =[
+    'pywin32;platform_system=="Windows"'
+]
+requires-python = ">=3.7"
+classifiers =[
+    # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: End Users/Desktop",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: MacOS",
+    "Operating System :: MacOS :: MacOS X",
+    "Operating System :: Microsoft",
+    "Operating System :: Microsoft :: Windows",
+    "Operating System :: POSIX",
+    "Operating System :: Unix",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Topic :: Games/Entertainment",
+    "Topic :: Multimedia",
+    "Topic :: Multimedia :: Sound/Audio",
+    "Topic :: Multimedia :: Video",
+    "Topic :: Utilities",
+]
+dynamic = ["version"]
+
+[project.urls]
+repository = "https://github.com/clinton-hall/nzbToMedia.git"
+documentation = "https://github.com/clinton-hall/nzbToMedia/wiki"
+
+[tools.setuptools]
+zip_safe = false
+include_package_data = true
+
+[tool.setuptools.packages.find]
+where = [""]
+include = ["core", "libs", "nzbTo*", "TorrentToMedia", "eol", "cleanup"]
+
+[tool.setuptools_scm]
