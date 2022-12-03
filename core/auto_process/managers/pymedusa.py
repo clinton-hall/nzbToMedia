@@ -11,7 +11,8 @@ import requests
 class PyMedusa(SickBeard):
     """PyMedusa class."""
 
-    def _create_url(self):
+    @property
+    def url(self):
         route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
         return core.utils.common.create_url(
             self.sb_init.protocol,
@@ -24,7 +25,8 @@ class PyMedusa(SickBeard):
 class PyMedusaApiV1(SickBeard):
     """PyMedusa apiv1 class."""
 
-    def _create_url(self):
+    @property
+    def url(self) -> str:
         route = f'{self.sb_init.web_root}/api/{self.sb_init.apikey}/'
         return core.utils.common.create_url(
             self.sb_init.protocol,
@@ -35,13 +37,11 @@ class PyMedusaApiV1(SickBeard):
 
     def api_call(self):
         self._process_fork_prarams()
-        url = self._create_url()
-
-        logger.debug('Opening URL: {0} with params: {1}'.format(url, self.sb_init.fork_params), self.sb_init.section)
+        logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
         try:
-            response = self.session.get(url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+            response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error('Unable to open URL: {0}'.format(url), self.sb_init.section)
+            logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
             return ProcessResult(
                 message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
                 status_code=1,
@@ -75,7 +75,8 @@ class PyMedusaApiV2(SickBeard):
         if not sb_init.apikey:
             raise Exception('For the section SickBeard `fork = medusa-apiv2` you also need to configure an `apikey`')
 
-    def _create_url(self):
+    @property
+    def url(self):
         route = f'{self.sb_init.web_root}/api/v2/postprocess'
         return core.utils.common.create_url(
             self.sb_init.protocol,
@@ -101,9 +102,7 @@ class PyMedusaApiV2(SickBeard):
 
     def api_call(self):
         self._process_fork_prarams()
-        url = self._create_url()
-
-        logger.debug('Opening URL: {0}'.format(url), self.sb_init.section)
+        logger.debug(f'Opening URL: {self.url}', self.sb_init.section)
         payload = self.sb_init.fork_params
         payload['resource'] = self.sb_init.fork_params['nzbName']
         del payload['nzbName']
@@ -116,7 +115,7 @@ class PyMedusaApiV2(SickBeard):
 
         # Send postprocess request
         try:
-            response = self.session.post(url, json=payload, verify=False, timeout=(30, 1800))
+            response = self.session.post(self.url, json=payload, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error('Unable to send postprocess request', self.sb_init.section)
             return ProcessResult(
@@ -140,7 +139,7 @@ class PyMedusaApiV2(SickBeard):
         wait_for = int(self.sb_init.config.get('wait_for', 2))
         n = 0
         response = {}
-        url = '{0}/{1}'.format(url, queueitem_identifier)
+        url = f'{self.url}/{queueitem_identifier}'
         while n < 12:  # set up wait_for minutes to see if command completes..
             time.sleep(5 * wait_for)
             response = self._get_identifier_status(url)
