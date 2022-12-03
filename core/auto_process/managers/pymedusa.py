@@ -52,10 +52,9 @@ class PyMedusaApiV1(SickBeard):
             )
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
-            return ProcessResult(
-                message=f'{self.sb_init.section}: Failed to post-process - '
-                        f'Unable to connect to {self.sb_init.section}',
-                status_code=1,
+            return ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Unable to '
+                f'connect to {self.sb_init.section}'
             )
 
         successful_status_codes = [
@@ -68,23 +67,20 @@ class PyMedusaApiV1(SickBeard):
                 f'Server returned status {response.status_code}',
                 self.sb_init.section,
             )
-            result = ProcessResult(
-                message=f'{self.sb_init.section}: Failed to post-process - '
-                        f'Server returned status {response.status_code}',
-                status_code=1,
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Server '
+                f'returned status {response.status_code}'
             )
         elif response.json()['result'] == 'success':
-            result = ProcessResult(
-                message=f'{self.sb_init.section}: '
-                        f'Successfully post-processed {self.input_name}',
-                status_code=0,
+            result = ProcessResult.success(
+                f'{self.sb_init.section}:  Successfully post-processed '
+                f'{self.input_name}'
             )
         else:
-            result = ProcessResult(
-                message=f'{self.sb_init.section}: Failed to post-process - '
-                        f'Returned log from {self.sb_init.section} was not as '
-                        f'expected.',
-                status_code=1,  # We did not receive Success confirmation.
+            # We did not receive Success confirmation.
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Returned '
+                f'log from {self.sb_init.section} was not as expected.'
             )
         return result
 
@@ -158,10 +154,9 @@ class PyMedusaApiV2(SickBeard):
                 'Unable to send postprocess request',
                 self.sb_init.section,
             )
-            return ProcessResult(
-                message=f'{self.sb_init.section}: Unable to send postprocess '
-                        f'request to PyMedusa',
-                status_code=1,
+            return ProcessResult.failure(
+                f'{self.sb_init.section}: Unable to send postprocess request '
+                f'to PyMedusa'
             )
 
         # Get UUID
@@ -170,13 +165,13 @@ class PyMedusaApiV2(SickBeard):
                 jdata = response.json()
             except ValueError:
                 logger.debug('No data returned from provider')
-                return False
+                return ProcessResult.failure('No data returned from provider')
         else:
             jdata = {}
 
         status = jdata.get('status', None)
         if status != 'success':
-            return False
+            return ProcessResult.failure()
 
         wait_for = int(self.sb_init.config.get('wait_for', 2))
         n = 0
@@ -202,16 +197,14 @@ class PyMedusaApiV2(SickBeard):
         # In the future we could return an exit state for when the PP in
         # medusa didn't yield an expected result.
         if response.get('success'):
-            result = ProcessResult(
-                message=f'{self.sb_init.section}: '
-                        f'Successfully post-processed {self.input_name}',
-                status_code=0,
+            result = ProcessResult.success(
+                f'{self.sb_init.section}: Successfully post-processed '
+                f'{self.input_name}'
             )
         else:
-            result = ProcessResult(
-                message=f'{self.sb_init.section}: Failed to post-process - '
-                        f'Returned log from {self.sb_init.section} was not '
-                        f'as expected.',
-                status_code=1,  # We did not receive Success confirmation.
+            # We did not receive Success confirmation.
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Returned '
+                f'log from {self.sb_init.section} was not as expected.'
             )
         return result
