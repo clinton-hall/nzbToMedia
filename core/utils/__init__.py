@@ -1,6 +1,5 @@
 import requests
 
-from core.utils import shutil_custom
 from core.utils.common import clean_dir, flatten, get_dirs, process_dir
 from core.utils.download_info import get_download_info, update_download_info_status
 from core.utils.encoding import char_replace, convert_to_ascii
@@ -42,4 +41,3 @@ from core.utils.paths import (
 from core.utils.processes import RunningProcess, restart
 
 requests.packages.urllib3.disable_warnings()
-shutil_custom.monkey_patch()

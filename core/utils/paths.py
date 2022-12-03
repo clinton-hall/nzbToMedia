@@ -4,8 +4,6 @@ import re
 import shutil
 import stat
 
-from six import text_type
-
 import core
 from core import logger
 
@@ -32,7 +30,7 @@ def onerror(func, path, exc_info):
 def remove_dir(dir_name):
     logger.info('Deleting {0}'.format(dir_name))
     try:
-        shutil.rmtree(text_type(dir_name), onerror=onerror)
+        shutil.rmtree(dir_name, onerror=onerror)
     except Exception:
         logger.error('Unable to delete folder {0}'.format(dir_name))
 
@@ -68,7 +66,7 @@ def get_dir_size(input_path):
     prepend = partial(os.path.join, input_path)
     return sum(
         (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
-        for f in map(prepend, os.listdir(text_type(input_path)))
+        for f in map(prepend, os.listdir(input_path))
     )
 
 
@@ -79,7 +77,7 @@ def remove_empty_folders(path, remove_root=True):
 
     # remove empty subfolders
     logger.debug('Checking for empty folders in:{0}'.format(path))
-    files = os.listdir(text_type(path))
+    files = os.listdir(path)
     if len(files):
         for f in files:
             fullpath = os.path.join(path, f)
@@ -87,7 +85,7 @@ def remove_empty_folders(path, remove_root=True):
                 remove_empty_folders(fullpath)
 
     # if folder empty, delete it
-    files = os.listdir(text_type(path))
+    files = os.listdir(path)
     if len(files) == 0 and remove_root:
         logger.debug('Removing empty folder:{}'.format(path))
         os.rmdir(path)

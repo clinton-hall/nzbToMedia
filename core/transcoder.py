@@ -9,7 +9,6 @@ import shutil
 import subprocess
 
 from babelfish import Language
-from six import iteritems, string_types, text_type
 
 import core
 from core import logger
@@ -137,7 +136,7 @@ def check_vid_file(video_details, result):
 
 
 def build_commands(file, new_dir, movie_name, bitbucket):
-    if isinstance(file, string_types):
+    if isinstance(file, str):
         input_file = file
         if 'concat:' in file:
             file = file.split('|')[0].replace('concat:', '')
@@ -155,7 +154,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             core.VEXTENSION = '-transcoded{ext}'.format(ext=core.VEXTENSION)  # adds '-transcoded.ext'
         new_file = file
     else:
-        img, data = next(iteritems(file))
+        img, data = next(file.items())
         name = data['name']
         new_file = []
         rem_vid = []
@@ -511,7 +510,6 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                     continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
-            lan = text_type(lan)
             metlan = None
             try:
                 if len(lan) == 3:
@@ -660,7 +658,7 @@ def process_list(it, new_dir, bitbucket):
     if combine:
         new_list.extend(combine_cd(combine))
     for file in new_list:
-        if isinstance(file, string_types) and 'concat:' not in file and not os.path.isfile(file):
+        if isinstance(file, str) and 'concat:' not in file and not os.path.isfile(file):
             success = False
             break
     if success and new_list:
@@ -903,13 +901,13 @@ def transcode_directory(dir_name):
         return 1, dir_name
 
     for file in file_list:
-        if isinstance(file, string_types) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
+        if isinstance(file, str) and os.path.splitext(file)[1] in core.IGNOREEXTENSIONS:
             continue
         command, file = build_commands(file, new_dir, movie_name, bitbucket)
         newfile_path = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
-        if core.SEXTRACT and isinstance(file, string_types):
+        if core.SEXTRACT and isinstance(file, str):
             extract_subs(file, newfile_path, bitbucket)
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
@@ -924,10 +922,10 @@ def transcode_directory(dir_name):
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
-            if isinstance(file, string_types):
+            if isinstance(file, str):
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE)
             else:
-                img, data = next(iteritems(file))
+                img, data = next(file.items())
                 proc = subprocess.Popen(command, stdout=bitbucket, stderr=subprocess.PIPE, stdin=subprocess.PIPE)
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
@@ -942,7 +940,7 @@ def transcode_directory(dir_name):
         except Exception:
             logger.error('Transcoding of video {0} has failed'.format(newfile_path))
 
-        if core.SUBSDIR and result == 0 and isinstance(file, string_types):
+        if core.SUBSDIR and result == 0 and isinstance(file, str):
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]
@@ -981,7 +979,7 @@ def transcode_directory(dir_name):
                 os.unlink(file)
             except Exception:
                 pass
-    if not os.listdir(text_type(new_dir)):  # this is an empty directory and we didn't transcode into it.
+    if not os.listdir(new_dir):  # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
         new_dir = dir_name
     if not core.PROCESSOUTPUT and core.DUPLICATE:  # We postprocess the original files to CP/SB

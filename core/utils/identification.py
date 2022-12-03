@@ -3,7 +3,6 @@ import re
 
 import guessit
 import requests
-from six import text_type
 
 from core import logger
 from core.utils.naming import sanitize_name
@@ -22,7 +21,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
         logger.info('Found imdbID [{0}]'.format(imdbid))
         return imdbid
     if os.path.isdir(dir_name):
-        for file in os.listdir(text_type(dir_name)):
+        for file in os.listdir(dir_name):
             m = re.search(r'\b(tt\d{7,8})\b', file)
             if m:
                 imdbid = m.group(1)
@@ -138,7 +137,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
         logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
         tordir = True
     elif input_name and os.path.isdir(input_directory):
-        for file in os.listdir(text_type(input_directory)):
+        for file in os.listdir(input_directory):
             if os.path.splitext(file)[0] in [input_name, sanitize_name(input_name)]:
                 logger.info('SEARCH: Found torrent file {0} in input directory directory {1}'.format(file, input_directory))
                 input_directory = os.path.join(input_directory, file)
