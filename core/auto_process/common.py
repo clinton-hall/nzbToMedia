@@ -19,6 +19,14 @@ class ProcessResult(typing.NamedTuple):
     def __repr__(self) -> str:
         return f'<ProcessResult {self.status_code}: {self.message}>'
 
+    @classmethod
+    def failure(cls, message: str = 'Failed'):
+        return cls(1, message)
+
+    @classmethod
+    def success(cls, message: str = 'Success'):
+        return cls(0, message)
+
 
 def command_complete(url, params, headers, section):
     try:
