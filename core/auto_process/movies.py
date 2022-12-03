@@ -27,8 +27,16 @@ from core.utils import (
 requests.packages.urllib3.disable_warnings()
 
 
-def process(section, dir_name, input_name=None, status=0, client_agent='manual', download_id='', input_category=None, failure_link=None):
-
+def process(
+    section,
+    dir_name,
+    input_name=None,
+    status=0,
+    client_agent='manual',
+    download_id='',
+    input_category=None,
+    failure_link=None,
+) -> ProcessResult:
     cfg = dict(core.CFG[section][input_category])
 
     host = cfg['host']
