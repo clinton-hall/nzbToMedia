@@ -71,9 +71,14 @@ class PyMedusaApiV2(SickBeard):
     def __init__(self, sb_init):
         super().__init__(sb_init)
 
-        # Check for an apikey, as this is required with using fork = medusa-apiv2
+        # Check for an apikey
+        # This is required with using fork = medusa-apiv2
         if not sb_init.apikey:
-            raise Exception('For the section SickBeard `fork = medusa-apiv2` you also need to configure an `apikey`')
+            logger.error(
+                'For the section SickBeard `fork = medusa-apiv2` you also '
+                'need to configure an `apikey`'
+            )
+            raise ValueError('Missing apikey for fork: medusa-apiv2')
 
     @property
     def url(self):
