@@ -18,7 +18,6 @@ FOLDER_STRUCTURE = {
     'libs': [
         'common',
         'custom',
-        'py2',
         'win',
     ],
     'core': [
