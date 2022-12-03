@@ -37,9 +37,19 @@ class PyMedusaApiV1(SickBeard):
 
     def api_call(self) -> ProcessResult:
         self._process_fork_prarams()
-        logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
+        logger.debug(
+            f'Opening URL: {self.url} with params: {self.sb_init.fork_params}',
+            self.sb_init.section,
+        )
         try:
-            response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+            response = self.session.get(
+                self.url,
+                auth=(self.sb_init.username, self.sb_init.password),
+                params=self.sb_init.fork_params,
+                stream=True,
+                verify=False,
+                timeout=(30, 1800),
+            )
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
             return ProcessResult(
@@ -167,12 +177,12 @@ class PyMedusaApiV2(SickBeard):
         if status != 'success':
             return False
 
-        queueitem_identifier = jdata['queueItem']['identifier']
-
         wait_for = int(self.sb_init.config.get('wait_for', 2))
         n = 0
         response = {}
-        url = f'{self.url}/{queueitem_identifier}'
+
+        queue_item_identifier = jdata['queueItem']['identifier']
+        url = f'{self.url}/{queue_item_identifier}'
         while n < 12:  # set up wait_for minutes to see if command completes..
             time.sleep(5 * wait_for)
             response = self._get_identifier_status(url)
