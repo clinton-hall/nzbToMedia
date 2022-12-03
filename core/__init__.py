@@ -37,9 +37,6 @@ CONFIG_TV_FILE = os.path.join(APP_ROOT, 'autoProcessTv.cfg')
 TEST_FILE = os.path.join(APP_ROOT, 'tests', 'test.mp4')
 MYAPP = None
 
-import six
-from six.moves import reload_module
-
 from core import logger, main_db, version_check, databases, transcoder
 from core.configuration import config
 from core.plugins.downloaders.configuration import (
@@ -304,23 +301,6 @@ def configure_locale():
     # For OSes that are poorly configured I'll just randomly force UTF-8
     if not SYS_ENCODING or SYS_ENCODING in ('ANSI_X3.4-1968', 'US-ASCII', 'ASCII'):
         SYS_ENCODING = 'UTF-8'
-
-    if six.PY2:
-        if not hasattr(sys, 'setdefaultencoding'):
-            reload_module(sys)
-
-        try:
-            # pylint: disable=E1101
-            # On non-unicode builds this will raise an AttributeError, if encoding type is not valid it throws a LookupError
-            sys.setdefaultencoding(SYS_ENCODING)
-        except Exception:
-            print('Sorry, you MUST add the nzbToMedia folder to the PYTHONPATH environment variable'
-                  '\nor find another way to force Python to use {codec} for string encoding.'.format
-                  (codec=SYS_ENCODING))
-            if 'NZBOP_SCRIPTDIR' in os.environ:
-                sys.exit(NZBGET_POSTPROCESS_ERROR)
-            else:
-                sys.exit(1)
 
 
 def configure_migration():
