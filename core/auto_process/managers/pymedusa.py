@@ -35,7 +35,7 @@ class PyMedusaApiV1(SickBeard):
             route,
         )
 
-    def api_call(self):
+    def api_call(self) -> ProcessResult:
         self._process_fork_prarams()
         logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
         try:
