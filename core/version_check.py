@@ -10,7 +10,7 @@ import subprocess
 import tarfile
 import traceback
 
-from six.moves.urllib.request import urlretrieve
+from urllib.request import urlretrieve
 
 import cleanup
 import core
