@@ -1,16 +1,9 @@
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
-
 import requests
 
 from core import logger
 
 
-class ProcessResult(object):
+class ProcessResult:
     def __init__(self, message, status_code):
         self.message = message
         self.status_code = status_code
