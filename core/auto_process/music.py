@@ -13,7 +13,14 @@ from core.utils import convert_to_ascii, list_media_files, remote_dir, remove_di
 requests.packages.urllib3.disable_warnings()
 
 
-def process(section, dir_name, input_name=None, status=0, client_agent='manual', input_category=None):
+def process(
+    section,
+    dir_name,
+    input_name=None,
+    status=0,
+    client_agent='manual',
+    input_category=None,
+) -> ProcessResult:
     status = int(status)
 
     cfg = dict(core.CFG[section][input_category])
