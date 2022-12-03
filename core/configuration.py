@@ -89,7 +89,7 @@ class ConfigObj(configobj.ConfigObj, Section):
     def __init__(self, *args, **kw):
         if len(args) == 0:
             args = (core.CONFIG_FILE,)
-        super(configobj.ConfigObj, self).__init__(*args, **kw)
+        super().__init__(*args, **kw)
         self.interpolation = False
 
     @staticmethod
