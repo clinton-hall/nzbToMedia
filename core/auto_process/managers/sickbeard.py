@@ -493,20 +493,26 @@ class SickBeard:
             response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
-            return ProcessResult.failure(
+            result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
                 f'connect to {self.sb_init.section}'
             )
-
-        if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error(f'Server returned status {response.status_code}',
-                         self.sb_init.section)
-            return ProcessResult.failure(
-                f'{self.sb_init.section}: Failed to post-process - Server '
-                f'returned status {response.status_code}'
-            )
-
-        return self.process_response(response)
+        else:
+            successful_statuses = [
+                requests.codes.ok,
+                requests.codes.created,
+                requests.codes.accepted,
+            ]
+            if response.status_code not in successful_statuses:
+                logger.error(f'Server returned status {response.status_code}',
+                             self.sb_init.section)
+                result = ProcessResult.failure(
+                    f'{self.sb_init.section}: Failed to post-process - Server '
+                    f'returned status {response.status_code}'
+                )
+            else:
+                result = self.process_response(response)
+        return result
 
     def process_response(self, response: requests.Response) -> ProcessResult:
         """Iterate over the lines returned, and log.
@@ -522,18 +528,20 @@ class SickBeard:
                 #     input_name = os.path.split(line)[1]
                 # if 'added to the queue' in line:
                 #     queued = True
-                # For the refactoring i'm only considering vanilla sickbeard, as for the base class.
+                # For the refactoring i'm only considering vanilla sickbeard,
+                # as for the base class.
                 if 'Processing succeeded' in line or 'Successfully processed' in line:
                     self.success = True
 
         if self.success:
-            return ProcessResult.success(
+            result = ProcessResult.success(
                 f'{self.sb_init.section}: Successfully post-processed '
                 f'{self.input_name}'
             )
-
-        # We did not receive Success confirmation.
-        return ProcessResult.failure(
-            f'{self.sb_init.section}: Failed to post-process - Returned log '
-            f'from {self.sb_init.section} was not as expected.'
-        )
+        else:
+            # We did not receive Success confirmation.
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Returned '
+                f'log from {self.sb_init.section} was not as expected.'
+            )
+        return result
