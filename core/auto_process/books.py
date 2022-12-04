@@ -36,15 +36,15 @@ requests.packages.urllib3.disable_warnings()
 
 
 def process(
-    section,
-    dir_name,
-    input_name=None,
+    section: core.configuration.Section,
+    dir_name: str,
+    input_name: str = '',
     status: int = 0,
-    failed=False,
-    client_agent='manual',
-    download_id='',
-    input_category=None,
-    failure_link=None,
+    failed: bool = False,
+    client_agent: str = 'manual',
+    download_id: str = '',
+    input_category: str = '',
+    failure_link: str = '',
 ) -> ProcessResult:
 
     cfg = dict(core.CFG[section][input_category])
