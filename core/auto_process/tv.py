@@ -36,6 +36,7 @@ requests.packages.urllib3.disable_warnings()
 
 
 def process(
+    *,
     section: str,
     dir_name: str,
     input_name: str = '',
