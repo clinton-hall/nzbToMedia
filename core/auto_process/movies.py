@@ -1,8 +1,13 @@
+import copy
+import errno
 import json
 import os
+import shutil
 import time
 
 import requests
+from oauthlib.oauth2 import LegacyApplicationClient
+from requests_oauthlib import OAuth2Session
 
 import core
 from core import logger, transcoder
@@ -11,6 +16,7 @@ from core.auto_process.common import (
     command_complete,
     completed_download_handling,
 )
+from core.auto_process.managers.sickbeard import InitSickBeard
 from core.plugins.downloaders.nzb.utils import report_nzb
 from core.plugins.subtitles import import_subs, rename_subs
 from core.scene_exceptions import process_all_exceptions
@@ -18,53 +24,63 @@ from core.utils import (
     convert_to_ascii,
     find_download,
     find_imdbid,
+    flatten,
     list_media_files,
     remote_dir,
     remove_dir,
     server_responding,
 )
 
+
 requests.packages.urllib3.disable_warnings()
 
 
 def process(
-    section,
-    dir_name,
-    input_name=None,
-    status=0,
-    client_agent='manual',
-    download_id='',
-    input_category=None,
-    failure_link=None,
+    *,
+    section: str,
+    dir_name: str,
+    input_name: str = '',
+    status: int = 0,
+    failed: bool = False,
+    client_agent: str = 'manual',
+    download_id: str = '',
+    input_category: str = '',
+    failure_link: str = '',
 ) -> ProcessResult:
-    cfg = dict(core.CFG[section][input_category])
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    apikey = cfg['apikey']
-    if section == 'CouchPotato':
-        method = cfg['method']
-    else:
-        method = None
-    # added importMode for Radarr config
-    if section == 'Radarr':
-        import_mode = cfg.get('importMode', 'Move')
-    else:
-        import_mode = None
-    delete_failed = int(cfg['delete_failed'])
-    wait_for = int(cfg['wait_for'])
-    ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    remote_path = int(cfg.get('remote_path', 0))
-    scheme = 'https' if ssl else 'http'
+
+    # Authentication
+    apikey = cfg.get('apikey', '')
     omdbapikey = cfg.get('omdbapikey', '')
-    no_status_check = int(cfg.get('no_status_check', 0))
-    status = int(status)
+
+    # Params
+    delete_failed = int(cfg.get('delete_failed', 0))
+    remote_path = int(cfg.get('remote_path', 0))
+    wait_for = int(cfg.get('wait_for', 2))
+
+    # Misc
     if status > 0 and core.NOEXTRACTFAILED:
         extract = 0
     else:
         extract = int(cfg.get('extract', 0))
+    chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
+    import_mode = cfg.get('importMode', 'Move')
+    if section != 'Radarr':
+        import_mode = None
+    no_status_check = int(cfg.get('no_status_check', 0))
+    method = cfg.get('method', None)
+    if section != 'CouchPotato':
+        method = None
 
+    # Begin processing
     imdbid = find_imdbid(dir_name, input_name, omdbapikey)
     if section == 'CouchPotato':
         route = f'{web_root}/api/{apikey}/'
@@ -88,9 +104,8 @@ def process(
             release = None
     else:
         logger.error('Server did not respond. Exiting', section)
-        return ProcessResult(
-            message='{0}: Failed to post-process - {0} did not respond.'.format(section),
-            status_code=1,
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process - {section} did not respond.'
         )
 
     # pull info from release found if available
@@ -172,7 +187,6 @@ def process(
                 logger.debug('Transcoding succeeded for files in {0}'.format(dir_name), section)
                 dir_name = new_dir_name
 
-                chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
                 logger.debug('Config setting \'chmodDirectory\' currently set to {0}'.format(oct(chmod_directory)), section)
                 if chmod_directory:
                     logger.info('Attempting to set the octal permission of \'{0}\' on directory \'{1}\''.format(oct(chmod_directory), dir_name), section)
@@ -368,29 +382,28 @@ def process(
             r = requests.get(url, params={'media_id': media_id}, verify=False, timeout=(30, 600))
         except requests.ConnectionError:
             logger.error('Unable to open URL {0}'.format(url), section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Unable to connect to {0}'.format(section),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{section}: Failed to post-process - Unable to connect to '
+                f'{section}'
             )
 
         result = r.json()
         if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
             logger.error('Server returned status {0}'.format(r.status_code), section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Server returned status {1}'.format(section, r.status_code),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{section}: Failed to post-process - Server returned status '
+                f'{r.status_code}'
             )
         elif result['success']:
             logger.postprocess('SUCCESS: Snatched the next highest release ...', section)
-            return ProcessResult(
-                message='{0}: Successfully snatched next highest release'.format(section),
-                status_code=0,
+            return ProcessResult.success(
+                f'{section}: Successfully snatched next highest release'
             )
         else:
             logger.postprocess('SUCCESS: Unable to find a new release to snatch now. CP will keep searching!', section)
-            return ProcessResult(
-                status_code=0,
-                message='{0}: No new release found now. {0} will keep searching'.format(section),
+            return ProcessResult.success(
+                f'{section}: No new release found now. '
+                f'{section} will keep searching'
             )
 
     # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
@@ -398,9 +411,9 @@ def process(
         download_id = None  # we don't want to filter new releases based on this.
 
     if no_status_check:
-        return ProcessResult(
-            status_code=0,
-            message='{0}: Successfully processed but no change in status confirmed'.format(section),
+        return ProcessResult.success(
+            f'{section}: Successfully processed but no change in status '
+            f'confirmed'
         )
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
@@ -420,17 +433,15 @@ def process(
                     title = release[release_id]['title']
                     logger.postprocess('SUCCESS: Movie {0} has now been added to CouchPotato with release status of [{1}]'.format(
                         title, str(release_status_new).upper()), section)
-                    return ProcessResult(
-                        message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                        status_code=0,
+                    return ProcessResult.success(
+                        f'{section}: Successfully post-processed {input_name}'
                     )
 
                 if release_status_new != release_status_old:
                     logger.postprocess('SUCCESS: Release {0} has now been marked with a status of [{1}]'.format(
                         release_id, str(release_status_new).upper()), section)
-                    return ProcessResult(
-                        message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                        status_code=0,
+                    return ProcessResult.success(
+                        f'{section}: Successfully post-processed {input_name}'
                     )
             except Exception:
                 pass
@@ -441,9 +452,8 @@ def process(
                 logger.debug('The Scan command return status: {0}'.format(command_status), section)
                 if command_status in ['completed']:
                     logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
-                    return ProcessResult(
-                        message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                        status_code=0,
+                    return ProcessResult.success(
+                        f'{section}: Successfully post-processed {input_name}'
                     )
                 elif command_status in ['failed']:
                     logger.debug('The Scan command has failed. Renaming was not successful.', section)
@@ -455,17 +465,15 @@ def process(
         if not os.path.isdir(dir_name):
             logger.postprocess('SUCCESS: Input Directory [{0}] has been processed and removed'.format(
                 dir_name), section)
-            return ProcessResult(
-                status_code=0,
-                message='{0}: Successfully post-processed {1}'.format(section, input_name),
+            return ProcessResult.success(
+                f'{section}: Successfully post-processed {input_name}'
             )
 
         elif not list_media_files(dir_name, media=True, audio=False, meta=False, archives=True):
             logger.postprocess('SUCCESS: Input Directory [{0}] has no remaining media files. This has been fully processed.'.format(
                 dir_name), section)
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                status_code=0,
+            return ProcessResult.success(
+                f'{section}: Successfully post-processed {input_name}'
             )
 
         # pause and let CouchPotatoServer/Radarr catch its breath
@@ -474,18 +482,17 @@ def process(
     # The status hasn't changed. we have waited wait_for minutes which is more than enough. uTorrent can resume seeding now.
     if section == 'Radarr' and completed_download_handling(url2, headers, section=section):
         logger.debug('The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.'.format(section), section)
-        return ProcessResult(
-            message='{0}: Complete DownLoad Handling is enabled. Passing back to {0}'.format(section),
-            status_code=status,
+        return ProcessResult.success(
+            f'{section}: Complete DownLoad Handling is enabled. Passing back '
+            f'to {section}'
         )
     logger.warning(
         '{0} does not appear to have changed status after {1} minutes, Please check your logs.'.format(input_name, wait_for),
         section,
     )
 
-    return ProcessResult(
-        status_code=1,
-        message='{0}: Failed to post-process - No change in status'.format(section),
+    return ProcessResult.failure(
+        f'{section}: Failed to post-process - No change in status'
     )
 
 

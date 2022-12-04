@@ -116,24 +116,33 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     logger.info('Calling {0}:{1} to post-process:{2}'.format(section_name, input_category, input_name))
 
-    if section_name in ['CouchPotato', 'Radarr', 'Watcher3']:
-        result = movies.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
-    elif section_name in ['SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr']:
-        result = tv.process(section_name, input_directory, input_name, status, client_agent, download_id, input_category, failure_link)
-    elif section_name in ['HeadPhones', 'Lidarr']:
-        result = music.process(section_name, input_directory, input_name, status, client_agent, input_category)
-    elif section_name == 'Mylar':
-        result = comics.process(section_name, input_directory, input_name, status, client_agent, input_category)
-    elif section_name == 'Gamez':
-        result = games.process(section_name, input_directory, input_name, status, client_agent, input_category)
-    elif section_name == 'LazyLibrarian':
-        result = books.process(section_name, input_directory, input_name, status, client_agent, input_category)
-    elif section_name == 'UserScript':
+    if section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
     else:
-        result = ProcessResult(
-            message='',
-            status_code=-1,
+        process_map = {
+            'CouchPotato': movies.process,
+            'Radarr': movies.process,
+            'Watcher3': movies.process,
+            'SickBeard': tv.process,
+            'SiCKRAGE': tv.process,
+            'NzbDrone': tv.process,
+            'Sonarr': tv.process,
+            'LazyLibrarian': books.process,
+            'HeadPhones': music.process,
+            'Lidarr': music.process,
+            'Mylar': comics.process,
+            'Gamez': games.process,
+        }
+        processor = process_map[section_name]
+        result = processor(
+            section=section_name,
+            dir_name=input_directory,
+            input_name=input_name,
+            status=status,
+            client_agent=client_agent,
+            download_id=download_id,
+            input_category=input_category,
+            failure_link=failure_link,
         )
 
     plex_update(input_category)

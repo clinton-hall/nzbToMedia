@@ -2,6 +2,7 @@ import copy
 import errno
 import json
 import os
+import shutil
 import time
 
 import requests
@@ -21,6 +22,8 @@ from core.plugins.subtitles import import_subs, rename_subs
 from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
+    find_download,
+    find_imdbid,
     flatten,
     list_media_files,
     remote_dir,
@@ -33,28 +36,55 @@ requests.packages.urllib3.disable_warnings()
 
 
 def process(
-    section,
-    dir_name,
-    input_name=None,
-    failed=False,
-    client_agent='manual',
-    download_id=None,
-    input_category=None,
-    failure_link=None,
+    *,
+    section: str,
+    dir_name: str,
+    input_name: str = '',
+    status: int = 0,
+    failed: bool = False,
+    client_agent: str = 'manual',
+    download_id: str = '',
+    input_category: str = '',
+    failure_link: str = '',
 ) -> ProcessResult:
-    cfg = dict(core.CFG[section][input_category])
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    scheme = 'https' if ssl else 'http'
+
+    # Authentication
+    apikey = cfg.get('apikey', '')
     username = cfg.get('username', '')
     password = cfg.get('password', '')
-    apikey = cfg.get('apikey', '')
     api_version = int(cfg.get('api_version', 2))
     sso_username = cfg.get('sso_username', '')
     sso_password = cfg.get('sso_password', '')
+
+    # Params
+    delete_failed = int(cfg.get('delete_failed', 0))
+    remote_path = int(cfg.get('remote_path', 0))
+    wait_for = int(cfg.get('wait_for', 2))
+
+    # Misc
+    if status > 0 and core.NOEXTRACTFAILED:
+        extract = 0
+    else:
+        extract = int(cfg.get('extract', 0))
+    chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
+    import_mode = cfg.get('importMode', 'Move')
+    nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
+    process_method = cfg.get('process_method')
+    force = int(cfg.get('force', 0))
+    delete_on = int(cfg.get('delete_on', 0))
+    ignore_subs = int(cfg.get('ignore_subs', 0))
+    status = int(failed)
+
+    # Begin processing
 
     # Refactor into an OO structure.
     # For now let's do botch the OO and the serialized code, until everything has been migrated.
@@ -71,29 +101,12 @@ def process(
         fork, fork_params = 'None', {}
     else:
         logger.error('Server did not respond. Exiting', section)
-        return ProcessResult(
-            status_code=1,
-            message='{0}: Failed to post-process - {0} did not respond.'.format(section),
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process - {section} did not respond.'
         )
 
-    delete_failed = int(cfg.get('delete_failed', 0))
-    nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
-    process_method = cfg.get('process_method')
     if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
         process_method = 'symlink'
-    remote_path = int(cfg.get('remote_path', 0))
-    wait_for = int(cfg.get('wait_for', 2))
-    force = int(cfg.get('force', 0))
-    delete_on = int(cfg.get('delete_on', 0))
-    ignore_subs = int(cfg.get('ignore_subs', 0))
-    status = int(failed)
-    if status > 0 and core.NOEXTRACTFAILED:
-        extract = 0
-    else:
-        extract = int(cfg.get('extract', 0))
-    # get importmode, default to 'Move' for consistency with legacy
-    import_mode = cfg.get('importMode', 'Move')
-
     if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
         dir_name = os.path.split(os.path.normpath(dir_name))[0]
 
@@ -161,10 +174,8 @@ def process(
                 failure_link += '&corrupt=true'
     elif client_agent == 'manual':
         logger.warning('No media files found in directory {0} to manually process.'.format(dir_name), section)
-        return ProcessResult(
-            message='',
-            status_code=0,  # Success (as far as this script is concerned)
-        )
+        # Success (as far as this script is concerned)
+        return ProcessResult.success()
     elif nzb_extraction_by == 'Destination':
         logger.info('Check for media files ignored because nzbExtractionBy is set to Destination.')
         if int(failed) == 0:
@@ -188,16 +199,14 @@ def process(
             logger.debug('SUCCESS: Transcoding succeeded for files in {0}'.format(dir_name), section)
             dir_name = new_dir_name
 
-            chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
             logger.debug('Config setting \'chmodDirectory\' currently set to {0}'.format(oct(chmod_directory)), section)
             if chmod_directory:
                 logger.info('Attempting to set the octal permission of \'{0}\' on directory \'{1}\''.format(oct(chmod_directory), dir_name), section)
                 core.rchmod(dir_name, chmod_directory)
         else:
             logger.error('FAILED: Transcoding failed for files in {0}'.format(dir_name), section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Transcoding failed'.format(section),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{section}: Failed to post-process - Transcoding failed'
             )
 
     # Part of the refactor
@@ -272,9 +281,8 @@ def process(
     if status == 0:
         if section == 'NzbDrone' and not apikey:
             logger.info('No Sonarr apikey entered. Processing completed.')
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                status_code=0,
+            return ProcessResult.success(
+                f'{section}: Successfully post-processed {input_name}'
             )
         logger.postprocess('SUCCESS: The download succeeded, sending a post-process request', section)
     else:
@@ -285,18 +293,19 @@ def process(
             logger.postprocess('FAILED: The download failed. Sending \'failed\' process request to {0} branch'.format(fork), section)
         elif section == 'NzbDrone':
             logger.postprocess('FAILED: The download failed. Sending failed download to {0} for CDH processing'.format(fork), section)
-            return ProcessResult(
-                message='{0}: Download Failed. Sending back to {0}'.format(section),
-                status_code=1,  # Return as failed to flag this in the downloader.
+            # Return as failed to flag this in the downloader.
+            return ProcessResult.failure(
+                f'{section}: Download Failed. Sending back to {section}'
             )
         else:
             logger.postprocess('FAILED: The download failed. {0} branch does not handle failed downloads. Nothing to process'.format(fork), section)
             if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
                 logger.postprocess('Deleting failed files and folder {0}'.format(dir_name), section)
                 remove_dir(dir_name)
-            return ProcessResult(
-                message='{0}: Failed to post-process. {0} does not support failed downloads'.format(section),
-                status_code=1,  # Return as failed to flag this in the downloader.
+            # Return as failed to flag this in the downloader.
+            return ProcessResult.failure(
+                f'{section}: Failed to post-process. {section} does not '
+                f'support failed downloads'
             )
 
     route = ''
@@ -376,16 +385,16 @@ def process(
             r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
     except requests.ConnectionError:
         logger.error('Unable to open URL: {0}'.format(url), section)
-        return ProcessResult(
-            message='{0}: Failed to post-process - Unable to connect to {0}'.format(section),
-            status_code=1,
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process - Unable to connect to '
+            f'{section}'
         )
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error('Server returned status {0}'.format(r.status_code), section)
-        return ProcessResult(
-            message='{0}: Failed to post-process - Server returned status {1}'.format(section, r.status_code),
-            status_code=1,
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process - Server returned status '
+            f'{r.status_code}'
         )
 
     success = False
@@ -431,9 +440,8 @@ def process(
         remove_dir(dir_name)
 
     if success:
-        return ProcessResult(
-            message='{0}: Successfully post-processed {1}'.format(section, input_name),
-            status_code=0,
+        return ProcessResult.success(
+            f'{section}: Successfully post-processed {input_name}'
         )
     elif section == 'NzbDrone' and started:
         n = 0
@@ -449,21 +457,18 @@ def process(
             logger.debug('The Scan command return status: {0}'.format(command_status), section)
         if not os.path.exists(dir_name):
             logger.debug('The directory {0} has been removed. Renaming was successful.'.format(dir_name), section)
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                status_code=0,
+            return ProcessResult.success(
+                f'{section}: Successfully post-processed {input_name}'
             )
         elif command_status and command_status in ['completed']:
             logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(section, input_name),
-                status_code=0,
+            return ProcessResult.success(
+                f'{section}: Successfully post-processed {input_name}'
             )
         elif command_status and command_status in ['failed']:
             logger.debug('The Scan command has failed. Renaming was not successful.', section)
-            # return ProcessResult(
-            #     message='{0}: Failed to post-process {1}'.format(section, input_name),
-            #     status_code=1,
+            # return ProcessResult.failure(
+            #     f'{section}: Failed to post-process {input_name}'
             # )
 
         url2 = core.utils.common.create_url(scheme, host, port, route)
@@ -471,17 +476,18 @@ def process(
             logger.debug('The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {0}.'.format(section),
                          section)
             return ProcessResult(
-                message='{0}: Complete DownLoad Handling is enabled. Passing back to {0}'.format(section),
+                message=f'{section}: Complete DownLoad Handling is enabled. '
+                        f'Passing back to {section}',
                 status_code=status,
             )
         else:
             logger.warning('The Scan command did not return a valid status. Renaming was not successful.', section)
-            return ProcessResult(
-                message='{0}: Failed to post-process {1}'.format(section, input_name),
-                status_code=1,
+            return ProcessResult.failure(
+                f'{section}: Failed to post-process {input_name}'
             )
     else:
-        return ProcessResult(
-            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(section),
-            status_code=1,  # We did not receive Success confirmation.
+        # We did not receive Success confirmation.
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process - Returned log from {section} '
+            f'was not as expected.'
         )
