@@ -61,7 +61,8 @@ class InitSickBeard:
     def auto_fork(self):
         # auto-detect correct section
         # config settings
-        if core.FORK_SET:  # keep using determined fork for multiple (manual) post-processing
+        if core.FORK_SET:
+            # keep using determined fork for multiple (manual) post-processing
             logger.info(
                 f'{self.section}:{self.input_category} fork already set to '
                 f'{core.FORK_SET[0]}'
@@ -98,10 +99,17 @@ class InitSickBeard:
             )
             headers = {'X-Api-Key': self.apikey}
             try:
-                r = requests.get(url, headers=headers, stream=True, verify=False)
+                r = requests.get(
+                    url,
+                    headers=headers,
+                    stream=True,
+                    verify=False,
+                )
             except requests.ConnectionError:
-                logger.warning(f'Could not connect to {self.section}:'
-                               f'{self.input_category} to verify fork!')
+                logger.warning(
+                    f'Could not connect to {self.section}:'
+                    f'{self.input_category} to verify fork!'
+                )
 
             if not r.ok:
                 logger.warning(
@@ -133,15 +141,36 @@ class InitSickBeard:
                 api_params = {'cmd': 'postprocess', 'help': '1'}
 
             try:
-                if self.api_version >= 2 and self.sso_username and self.sso_password:
-                    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=core.SICKRAGE_OAUTH_CLIENT_ID))
-                    oauth_token = oauth.fetch_token(client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
-                                                    token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
-                                                    username=self.sso_username,
-                                                    password=self.sso_password)
-                    r = requests.get(url, headers={'Authorization': 'Bearer ' + oauth_token['access_token']}, stream=True, verify=False)
+                if (
+                    self.api_version >= 2
+                    and self.sso_username
+                    and self.sso_password
+                ):
+                    oauth = OAuth2Session(
+                        client=LegacyApplicationClient(
+                            client_id=core.SICKRAGE_OAUTH_CLIENT_ID
+                        )
+                    )
+                    oauth_token = oauth.fetch_token(
+                        client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                        token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
+                        username=self.sso_username,
+                        password=self.sso_password,
+                    )
+                    token = oauth_token['access_token']
+                    r = requests.get(
+                        url,
+                        headers={f'Authorization': f'Bearer {token}'},
+                        stream=True,
+                        verify=False,
+                    )
                 else:
-                    r = requests.get(url, params=api_params, stream=True, verify=False)
+                    r = requests.get(
+                        url,
+                        params=api_params,
+                        stream=True,
+                        verify=False,
+                    )
 
                 if not r.ok:
                     logger.warning(
@@ -163,7 +192,7 @@ class InitSickBeard:
                 'type': None,
                 'delete': None,
                 'force_next': None,
-                'is_priority': None
+                'is_priority': None,
             }
 
             self.fork = ['default', params]
@@ -205,8 +234,9 @@ class InitSickBeard:
             # Find excess parameters
             excess_parameters = set(params).difference(optional_parameters)
             excess_parameters.remove('cmd')  # Don't remove cmd from api params
-            logger.debug(f'Removing excess parameters: '
-                         f'{sorted(excess_parameters)}')
+            logger.debug(
+                f'Removing excess parameters: ' f'{sorted(excess_parameters)}'
+            )
             rem_params.extend(excess_parameters)
             return rem_params, True
         except:
@@ -219,8 +249,9 @@ class InitSickBeard:
         params = core.ALL_FORKS
         rem_params = []
         logger.info(f'Attempting to auto-detect {self.input_category} fork')
-        # define the order to test. Default must be first since the default fork doesn't reject parameters.
-        # then in order of most unique parameters.
+        # Define the order to test.
+        # Default must be first since default fork doesn't reject parameters.
+        # Then in order of most unique parameters.
 
         if self.apikey:
             url = core.utils.common.create_url(
@@ -250,12 +281,20 @@ class InitSickBeard:
                     port=self.port,
                     path=f'{self.web_root}/login',
                 )
-                login_params = {'username': self.username, 'password': self.password}
+                login_params = {
+                    'username': self.username,
+                    'password': self.password,
+                }
                 r = s.get(login, verify=False, timeout=(30, 60))
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
-            r = s.get(url, auth=(self.username, self.password), params=api_params, verify=False)
+            r = s.get(
+                url,
+                auth=(self.username, self.password),
+                params=api_params,
+                verify=False,
+            )
         except requests.ConnectionError:
             logger.info(
                 f'Could not connect to {self.section}:{self.input_category} '
@@ -272,7 +311,12 @@ class InitSickBeard:
                     api_params = {'cmd': 'help', 'subject': 'postprocess'}
                     try:
                         if not self.apikey and self.username and self.password:
-                            r = s.get(url, auth=(self.username, self.password), params=api_params, verify=False)
+                            r = s.get(
+                                url,
+                                auth=(self.username, self.password),
+                                params=api_params,
+                                verify=False,
+                            )
                         else:
                             r = s.get(url, params=api_params, verify=False)
                     except requests.ConnectionError:
@@ -317,7 +361,9 @@ class InitSickBeard:
                 f'{self.section}:{self.input_category} fork auto-detection '
                 f'failed'
             )
-            self.fork = list(core.FORKS.items())[list(core.FORKS.keys()).index(core.FORK_DEFAULT)]
+            self.fork = list(core.FORKS.items())[
+                list(core.FORKS.keys()).index(core.FORK_DEFAULT)
+            ]
 
     def _init_fork(self):
         # These need to be imported here, to prevent a circular import.
@@ -326,7 +372,7 @@ class InitSickBeard:
         mapped_forks = {
             'Medusa': PyMedusa,
             'Medusa-api': PyMedusaApiV1,
-            'Medusa-apiv2': PyMedusaApiV2
+            'Medusa-apiv2': PyMedusaApiV2,
         }
         logger.debug(f'Create object for fork {self.fork}')
         if self.fork and mapped_forks.get(self.fork):
@@ -341,6 +387,7 @@ class InitSickBeard:
 
 class SickBeard:
     """Sickbeard base class."""
+
     sb_init: InitSickBeard
 
     def __init__(self, sb_init):
@@ -354,7 +401,9 @@ class SickBeard:
         self.dir_name = None
 
         self.delete_failed = int(self.sb_init.config.get('delete_failed', 0))
-        self.nzb_extraction_by = self.sb_init.config.get('nzbExtractionBy', 'Downloader')
+        self.nzb_extraction_by = self.sb_init.config.get(
+            'nzbExtractionBy', 'Downloader'
+        )
         self.process_method = self.sb_init.config.get('process_method')
         self.remote_path = int(self.sb_init.config.get('remote_path', 0))
         self.wait_for = int(self.sb_init.config.get('wait_for', 2))
@@ -369,7 +418,13 @@ class SickBeard:
         # Keep track of result state
         self.success = False
 
-    def initialize(self, dir_name, input_name=None, failed=False, client_agent='manual'):
+    def initialize(
+        self,
+        dir_name,
+        input_name=None,
+        failed=False,
+        client_agent='manual',
+    ):
         """We need to call this explicitely because we need some variables.
 
         We can't pass these directly through the constructor.
@@ -382,7 +437,10 @@ class SickBeard:
             self.extract = 0
         else:
             self.extract = int(self.sb_init.config.get('extract', 0))
-        if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
+        if (
+            client_agent == core.TORRENT_CLIENT_AGENT
+            and core.USE_LINK == 'move-sym'
+        ):
             self.process_method = 'symlink'
 
     @property
@@ -392,10 +450,10 @@ class SickBeard:
         else:
             route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
         return core.utils.common.create_url(
-            self.sb_init.protocol,
-            self.sb_init.host,
-            self.sb_init.port,
-            route
+            scheme=self.sb_init.protocol,
+            host=self.sb_init.host,
+            port=self.sb_init.port,
+            path=route,
         )
 
     def _process_fork_prarams(self):
@@ -422,12 +480,19 @@ class SickBeard:
                     del fork_params['quiet']
 
             if param == 'type':
-                if 'type' in fork_params:  # only set if we haven't already deleted for 'failed' above.
+                if 'type' in fork_params:
+                    # Set if we haven't already deleted for 'failed' above.
                     fork_params[param] = 'manual'
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
 
-            if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
+            if param in [
+                'dir_name',
+                'dir',
+                'proc_dir',
+                'process_directory',
+                'path',
+            ]:
                 fork_params[param] = self.dir_name
                 if self.remote_path:
                     fork_params[param] = remote_dir(self.dir_name)
@@ -474,9 +539,16 @@ class SickBeard:
     def api_call(self) -> ProcessResult:
         """Perform a base sickbeard api call."""
         self._process_fork_prarams()
-        logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
+        logger.debug(
+            f'Opening URL: {self.url} with params: {self.sb_init.fork_params}',
+            self.sb_init.section,
+        )
         try:
-            if not self.sb_init.apikey and self.sb_init.username and self.sb_init.password:
+            if (
+                not self.sb_init.apikey
+                and self.sb_init.username
+                and self.sb_init.password
+            ):
                 # If not using the api, we need to login using user/pass first.
                 route = f'{self.sb_init.web_root}/login'
                 login = core.utils.common.create_url(
@@ -485,14 +557,32 @@ class SickBeard:
                     self.sb_init.port,
                     route,
                 )
-                login_params = {'username': self.sb_init.username, 'password': self.sb_init.password}
+                login_params = {
+                    'username': self.sb_init.username,
+                    'password': self.sb_init.password,
+                }
                 r = self.session.get(login, verify=False, timeout=(30, 60))
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
-                self.session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
-            response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+                self.session.post(
+                    login,
+                    data=login_params,
+                    stream=True,
+                    verify=False,
+                    timeout=(30, 60),
+                )
+            response = self.session.get(
+                self.url,
+                auth=(self.sb_init.username, self.sb_init.password),
+                params=self.sb_init.fork_params,
+                stream=True,
+                verify=False,
+                timeout=(30, 1800),
+            )
         except requests.ConnectionError:
-            logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
+            logger.error(
+                f'Unable to open URL: {self.url}', self.sb_init.section
+            )
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
                 f'connect to {self.sb_init.section}'
@@ -504,8 +594,10 @@ class SickBeard:
                 requests.codes.accepted,
             ]
             if response.status_code not in successful_statuses:
-                logger.error(f'Server returned status {response.status_code}',
-                             self.sb_init.section)
+                logger.error(
+                    f'Server returned status {response.status_code}',
+                    self.sb_init.section,
+                )
                 result = ProcessResult.failure(
                     f'{self.sb_init.section}: Failed to post-process - Server '
                     f'returned status {response.status_code}'
@@ -530,7 +622,10 @@ class SickBeard:
                 #     queued = True
                 # For the refactoring i'm only considering vanilla sickbeard,
                 # as for the base class.
-                if 'Processing succeeded' in line or 'Successfully processed' in line:
+                if (
+                    'Processing succeeded' in line
+                    or 'Successfully processed' in line
+                ):
                     self.success = True
 
         if self.success:
