@@ -46,35 +46,40 @@ def process(
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
-    cfg = dict(core.CFG[section][input_category])
-
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    apikey = cfg['apikey']
-    if section == 'CouchPotato':
-        method = cfg['method']
-    else:
-        method = None
-    # added importMode for Radarr config
-    if section == 'Radarr':
-        import_mode = cfg.get('importMode', 'Move')
-    else:
-        import_mode = None
-    delete_failed = int(cfg['delete_failed'])
-    wait_for = int(cfg['wait_for'])
-    ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    remote_path = int(cfg.get('remote_path', 0))
-    scheme = 'https' if ssl else 'http'
+
+    # Authentication
+    apikey = cfg.get('apikey', '')
     omdbapikey = cfg.get('omdbapikey', '')
-    no_status_check = int(cfg.get('no_status_check', 0))
-    status = int(status)
+
+    # Params
+    delete_failed = int(cfg.get('delete_failed', 0))
+    remote_path = int(cfg.get('remote_path', 0))
+    wait_for = int(cfg.get('wait_for', 2))
+
+    # Misc
     if status > 0 and core.NOEXTRACTFAILED:
         extract = 0
     else:
         extract = int(cfg.get('extract', 0))
+    chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
+    import_mode = cfg.get('importMode', 'Move')
+    if section != 'Radarr':
+        import_mode = None
+    no_status_check = int(cfg.get('no_status_check', 0))
+    method = cfg.get('method', None)
+    if section != 'CouchPotato':
+        method = None
 
+    # Begin processing
     imdbid = find_imdbid(dir_name, input_name, omdbapikey)
     if section == 'CouchPotato':
         route = f'{web_root}/api/{apikey}/'
@@ -181,7 +186,6 @@ def process(
                 logger.debug('Transcoding succeeded for files in {0}'.format(dir_name), section)
                 dir_name = new_dir_name
 
-                chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
                 logger.debug('Config setting \'chmodDirectory\' currently set to {0}'.format(oct(chmod_directory)), section)
                 if chmod_directory:
                     logger.info('Attempting to set the octal permission of \'{0}\' on directory \'{1}\''.format(oct(chmod_directory), dir_name), section)

@@ -46,20 +46,44 @@ def process(
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
-    cfg = dict(core.CFG[section][input_category])
-
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    scheme = 'https' if ssl else 'http'
+
+    # Authentication
+    apikey = cfg.get('apikey', '')
     username = cfg.get('username', '')
     password = cfg.get('password', '')
-    apikey = cfg.get('apikey', '')
     api_version = int(cfg.get('api_version', 2))
     sso_username = cfg.get('sso_username', '')
     sso_password = cfg.get('sso_password', '')
+
+    # Params
+    delete_failed = int(cfg.get('delete_failed', 0))
+    remote_path = int(cfg.get('remote_path', 0))
+    wait_for = int(cfg.get('wait_for', 2))
+
+    # Misc
+    if status > 0 and core.NOEXTRACTFAILED:
+        extract = 0
+    else:
+        extract = int(cfg.get('extract', 0))
+    chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
+    import_mode = cfg.get('importMode', 'Move')
+    nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
+    process_method = cfg.get('process_method')
+    force = int(cfg.get('force', 0))
+    delete_on = int(cfg.get('delete_on', 0))
+    ignore_subs = int(cfg.get('ignore_subs', 0))
+    status = int(failed)
+
+    # Begin processing
 
     # Refactor into an OO structure.
     # For now let's do botch the OO and the serialized code, until everything has been migrated.
@@ -80,24 +104,8 @@ def process(
             f'{section}: Failed to post-process - {section} did not respond.'
         )
 
-    delete_failed = int(cfg.get('delete_failed', 0))
-    nzb_extraction_by = cfg.get('nzbExtractionBy', 'Downloader')
-    process_method = cfg.get('process_method')
     if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
         process_method = 'symlink'
-    remote_path = int(cfg.get('remote_path', 0))
-    wait_for = int(cfg.get('wait_for', 2))
-    force = int(cfg.get('force', 0))
-    delete_on = int(cfg.get('delete_on', 0))
-    ignore_subs = int(cfg.get('ignore_subs', 0))
-    status = int(failed)
-    if status > 0 and core.NOEXTRACTFAILED:
-        extract = 0
-    else:
-        extract = int(cfg.get('extract', 0))
-    # get importmode, default to 'Move' for consistency with legacy
-    import_mode = cfg.get('importMode', 'Move')
-
     if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
         dir_name = os.path.split(os.path.normpath(dir_name))[0]
 
@@ -190,7 +198,6 @@ def process(
             logger.debug('SUCCESS: Transcoding succeeded for files in {0}'.format(dir_name), section)
             dir_name = new_dir_name
 
-            chmod_directory = int(str(cfg.get('chmodDirectory', '0')), 8)
             logger.debug('Config setting \'chmodDirectory\' currently set to {0}'.format(oct(chmod_directory)), section)
             if chmod_directory:
                 logger.info('Attempting to set the octal permission of \'{0}\' on directory \'{1}\''.format(oct(chmod_directory), dir_name), section)

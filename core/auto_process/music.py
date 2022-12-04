@@ -46,24 +46,31 @@ def process(
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
-    cfg = dict(core.CFG[section][input_category])
-
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    apikey = cfg['apikey']
-    wait_for = int(cfg['wait_for'])
-    ssl = int(cfg.get('ssl', 0))
-    delete_failed = int(cfg['delete_failed'])
     web_root = cfg.get('web_root', '')
+
+    # Authentication
+    apikey = cfg.get('apikey', '')
+
+    # Params
+    delete_failed = int(cfg.get('delete_failed', 0))
     remote_path = int(cfg.get('remote_path', 0))
-    scheme = 'https' if ssl else 'http'
-    status = int(status)
+    wait_for = int(cfg.get('wait_for', 2))
+
+    # Misc
     if status > 0 and core.NOEXTRACTFAILED:
         extract = 0
     else:
         extract = int(cfg.get('extract', 0))
 
+    # Begin processing
     route = f'{web_root}/api/v1' if section == 'Lidarr' else f'{web_root}/api'
     url = core.utils.common.create_url(scheme, host, port, route)
     if not server_responding(url):

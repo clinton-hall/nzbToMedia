@@ -46,17 +46,25 @@ def process(
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
+    # Get configuration
+    cfg = core.CFG[section][input_category]
 
-    cfg = dict(core.CFG[section][input_category])
-
+    # Base URL
+    ssl = int(cfg.get('ssl', 0))
+    scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
-    apikey = cfg['apikey']
-    library = cfg.get('library')
-    ssl = int(cfg.get('ssl', 0))
     web_root = cfg.get('web_root', '')
-    scheme = 'https' if ssl else 'http'
 
+    # Authentication
+    apikey = cfg.get('apikey', '')
+
+    # Params
+
+    # Misc
+    library = cfg.get('library')
+
+    # Begin processing
     url = core.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
