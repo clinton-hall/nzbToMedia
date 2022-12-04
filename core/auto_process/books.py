@@ -1,11 +1,33 @@
+import copy
+import errno
+import json
+import os
+import shutil
+import time
+
 import requests
+from oauthlib.oauth2 import LegacyApplicationClient
+from requests_oauthlib import OAuth2Session
 
 import core
-from core import logger
-from core.auto_process.common import ProcessResult
+from core import logger, transcoder
+from core.auto_process.common import (
+    ProcessResult,
+    command_complete,
+    completed_download_handling,
+)
+from core.auto_process.managers.sickbeard import InitSickBeard
+from core.plugins.downloaders.nzb.utils import report_nzb
+from core.plugins.subtitles import import_subs, rename_subs
+from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
+    find_download,
+    find_imdbid,
+    flatten,
+    list_media_files,
     remote_dir,
+    remove_dir,
     server_responding,
 )
 
@@ -17,11 +39,13 @@ def process(
     section,
     dir_name,
     input_name=None,
-    status=0,
+    status: int = 0,
+    failed=False,
     client_agent='manual',
+    download_id='',
     input_category=None,
+    failure_link=None,
 ) -> ProcessResult:
-    status = int(status)
 
     cfg = dict(core.CFG[section][input_category])
 

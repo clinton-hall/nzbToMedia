@@ -2,6 +2,7 @@ import copy
 import errno
 import json
 import os
+import shutil
 import time
 
 import requests
@@ -21,6 +22,8 @@ from core.plugins.subtitles import import_subs, rename_subs
 from core.scene_exceptions import process_all_exceptions
 from core.utils import (
     convert_to_ascii,
+    find_download,
+    find_imdbid,
     flatten,
     list_media_files,
     remote_dir,
@@ -36,12 +39,14 @@ def process(
     section,
     dir_name,
     input_name=None,
+    status: int = 0,
     failed=False,
     client_agent='manual',
-    download_id=None,
+    download_id='',
     input_category=None,
     failure_link=None,
 ) -> ProcessResult:
+
     cfg = dict(core.CFG[section][input_category])
 
     host = cfg['host']
