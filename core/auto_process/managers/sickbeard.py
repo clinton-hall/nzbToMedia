@@ -61,9 +61,12 @@ class InitSickBeard:
     def auto_fork(self):
         # auto-detect correct section
         # config settings
-        if core.FORK_SET:  # keep using determined fork for multiple (manual) post-processing
-            logger.info('{section}:{category} fork already set to {fork}'.format
-                        (section=self.section, category=self.input_category, fork=core.FORK_SET[0]))
+        if core.FORK_SET:
+            # keep using determined fork for multiple (manual) post-processing
+            logger.info(
+                f'{self.section}:{self.input_category} fork already set to '
+                f'{core.FORK_SET[0]}'
+            )
             return core.FORK_SET[0], core.FORK_SET[1]
 
         cfg = dict(core.CFG[self.section][self.input_category])
@@ -87,57 +90,98 @@ class InitSickBeard:
         protocol = 'https://' if self.ssl else 'http://'
 
         if self.section == 'NzbDrone':
-            logger.info('Attempting to verify {category} fork'.format
-                        (category=self.input_category))
-            url = '{protocol}{host}:{port}{root}/api/rootfolder'.format(
-                protocol=protocol, host=self.host, port=self.port, root=self.web_root,
+            logger.info(f'Attempting to verify {self.input_category} fork')
+            url = core.utils.common.create_url(
+                scheme=protocol,
+                host=self.host,
+                port=self.port,
+                path=f'{self.web_root}/api/rootfolder',
             )
             headers = {'X-Api-Key': self.apikey}
             try:
-                r = requests.get(url, headers=headers, stream=True, verify=False)
+                r = requests.get(
+                    url,
+                    headers=headers,
+                    stream=True,
+                    verify=False,
+                )
             except requests.ConnectionError:
-                logger.warning('Could not connect to {0}:{1} to verify fork!'.format(self.section, self.input_category))
+                logger.warning(
+                    f'Could not connect to {self.section}:'
+                    f'{self.input_category} to verify fork!'
+                )
 
             if not r.ok:
-                logger.warning('Connection to {section}:{category} failed! '
-                               'Check your configuration'.format
-                               (section=self.section, category=self.input_category))
+                logger.warning(
+                    f'Connection to {self.section}:{self.input_category} '
+                    f'failed! Check your configuration'
+                )
 
             self.fork = ['default', {}]
 
         elif self.section == 'SiCKRAGE':
-            logger.info('Attempting to verify {category} fork'.format
-                        (category=self.input_category))
+            logger.info(f'Attempting to verify {self.input_category} fork')
 
             if self.api_version >= 2:
-                url = '{protocol}{host}:{port}{root}/api/v{api_version}/ping'.format(
-                    protocol=protocol, host=self.host, port=self.port, root=self.web_root, api_version=self.api_version
+                url = core.utils.common.create_url(
+                    scheme=protocol,
+                    host=self.host,
+                    port=self.port,
+                    path=f'{self.web_root}/api/v{self.api_version}/ping',
                 )
                 api_params = {}
             else:
-                url = '{protocol}{host}:{port}{root}/api/v{api_version}/{apikey}/'.format(
-                    protocol=protocol, host=self.host, port=self.port, root=self.web_root, api_version=self.api_version, apikey=self.apikey,
+                api_version = f'v{self.api_version}'
+                url = core.utils.common.create_url(
+                    scheme=protocol,
+                    host=self.host,
+                    port=self.port,
+                    path=f'{self.web_root}/api/{api_version}/{self.apikey}/',
                 )
                 api_params = {'cmd': 'postprocess', 'help': '1'}
 
             try:
-                if self.api_version >= 2 and self.sso_username and self.sso_password:
-                    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=core.SICKRAGE_OAUTH_CLIENT_ID))
-                    oauth_token = oauth.fetch_token(client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
-                                                    token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
-                                                    username=self.sso_username,
-                                                    password=self.sso_password)
-                    r = requests.get(url, headers={'Authorization': 'Bearer ' + oauth_token['access_token']}, stream=True, verify=False)
+                if (
+                    self.api_version >= 2
+                    and self.sso_username
+                    and self.sso_password
+                ):
+                    oauth = OAuth2Session(
+                        client=LegacyApplicationClient(
+                            client_id=core.SICKRAGE_OAUTH_CLIENT_ID
+                        )
+                    )
+                    oauth_token = oauth.fetch_token(
+                        client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                        token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
+                        username=self.sso_username,
+                        password=self.sso_password,
+                    )
+                    token = oauth_token['access_token']
+                    r = requests.get(
+                        url,
+                        headers={f'Authorization': f'Bearer {token}'},
+                        stream=True,
+                        verify=False,
+                    )
                 else:
-                    r = requests.get(url, params=api_params, stream=True, verify=False)
+                    r = requests.get(
+                        url,
+                        params=api_params,
+                        stream=True,
+                        verify=False,
+                    )
 
                 if not r.ok:
-                    logger.warning('Connection to {section}:{category} failed! '
-                                   'Check your configuration'.format(
-                                       section=self.section, category=self.input_category
-                                   ))
+                    logger.warning(
+                        f'Connection to {self.section}:{self.input_category} '
+                        f'failed! Check your configuration'
+                    )
             except requests.ConnectionError:
-                logger.warning('Could not connect to {0}:{1} to verify API version!'.format(self.section, self.input_category))
+                logger.warning(
+                    f'Could not connect to {self.section}:'
+                    f'{self.input_category} to verify API version!'
+                )
 
             params = {
                 'path': None,
@@ -148,7 +192,7 @@ class InitSickBeard:
                 'type': None,
                 'delete': None,
                 'force_next': None,
-                'is_priority': None
+                'is_priority': None,
             }
 
             self.fork = ['default', params]
@@ -156,8 +200,9 @@ class InitSickBeard:
         elif self.fork == 'auto':
             self.detect_fork()
 
-        logger.info('{section}:{category} fork set to {fork}'.format
-                    (section=self.section, category=self.input_category, fork=self.fork[0]))
+        logger.info(
+            f'{self.section}:{self.input_category} fork set to {self.fork[0]}'
+        )
         core.FORK_SET = self.fork
         self.fork, self.fork_params = self.fork[0], self.fork[1]
         # This will create the fork object, and attach to self.fork_obj.
@@ -177,7 +222,7 @@ class InitSickBeard:
             json_data = json_data['data']
         except KeyError:
             logger.error('Failed to get data from JSON')
-            logger.debug('Response received: {}'.format(json_data))
+            logger.debug(f'Response received: {json_data}')
             raise
         else:
             if isinstance(json_data, str):
@@ -189,7 +234,9 @@ class InitSickBeard:
             # Find excess parameters
             excess_parameters = set(params).difference(optional_parameters)
             excess_parameters.remove('cmd')  # Don't remove cmd from api params
-            logger.debug('Removing excess parameters: {}'.format(sorted(excess_parameters)))
+            logger.debug(
+                f'Removing excess parameters: ' f'{sorted(excess_parameters)}'
+            )
             rem_params.extend(excess_parameters)
             return rem_params, True
         except:
@@ -201,18 +248,25 @@ class InitSickBeard:
         detected = False
         params = core.ALL_FORKS
         rem_params = []
-        logger.info('Attempting to auto-detect {category} fork'.format(category=self.input_category))
-        # define the order to test. Default must be first since the default fork doesn't reject parameters.
-        # then in order of most unique parameters.
+        logger.info(f'Attempting to auto-detect {self.input_category} fork')
+        # Define the order to test.
+        # Default must be first since default fork doesn't reject parameters.
+        # Then in order of most unique parameters.
 
         if self.apikey:
-            url = '{protocol}{host}:{port}{root}/api/{apikey}/'.format(
-                protocol=self.protocol, host=self.host, port=self.port, root=self.web_root, apikey=self.apikey,
+            url = core.utils.common.create_url(
+                scheme=self.protocol,
+                host=self.host,
+                port=self.port,
+                path=f'{self.web_root}/api/{self.apikey}/',
             )
             api_params = {'cmd': 'sg.postprocess', 'help': '1'}
         else:
-            url = '{protocol}{host}:{port}{root}/home/postprocess/'.format(
-                protocol=self.protocol, host=self.host, port=self.port, root=self.web_root,
+            url = core.utils.common.create_url(
+                scheme=self.protocol,
+                host=self.host,
+                port=self.port,
+                path=f'{self.web_root}/home/postprocess',
             )
             api_params = {}
 
@@ -221,17 +275,31 @@ class InitSickBeard:
             s = requests.Session()
 
             if not self.apikey and self.username and self.password:
-                login = '{protocol}{host}:{port}{root}/login'.format(
-                    protocol=self.protocol, host=self.host, port=self.port, root=self.web_root)
-                login_params = {'username': self.username, 'password': self.password}
+                login = core.utils.common.create_url(
+                    scheme=self.protocol,
+                    host=self.host,
+                    port=self.port,
+                    path=f'{self.web_root}/login',
+                )
+                login_params = {
+                    'username': self.username,
+                    'password': self.password,
+                }
                 r = s.get(login, verify=False, timeout=(30, 60))
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
                 s.post(login, data=login_params, stream=True, verify=False)
-            r = s.get(url, auth=(self.username, self.password), params=api_params, verify=False)
+            r = s.get(
+                url,
+                auth=(self.username, self.password),
+                params=api_params,
+                verify=False,
+            )
         except requests.ConnectionError:
-            logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
-                        (section=self.section, category=self.input_category))
+            logger.info(
+                f'Could not connect to {self.section}:{self.input_category} '
+                f'to perform auto-fork detection!'
+            )
             r = []
 
         if r and r.ok:
@@ -243,12 +311,20 @@ class InitSickBeard:
                     api_params = {'cmd': 'help', 'subject': 'postprocess'}
                     try:
                         if not self.apikey and self.username and self.password:
-                            r = s.get(url, auth=(self.username, self.password), params=api_params, verify=False)
+                            r = s.get(
+                                url,
+                                auth=(self.username, self.password),
+                                params=api_params,
+                                verify=False,
+                            )
                         else:
                             r = s.get(url, params=api_params, verify=False)
                     except requests.ConnectionError:
-                        logger.info('Could not connect to {section}:{category} to perform auto-fork detection!'.format
-                                    (section=self.section, category=self.input_category))
+                        logger.info(
+                            f'Could not connect to {self.section}:'
+                            f'{self.input_category} to perform auto-fork '
+                            f'detection!'
+                        )
                     rem_params, found = self._api_check(r, params, rem_params)
                     params['cmd'] = 'postprocess'
             else:
@@ -256,7 +332,7 @@ class InitSickBeard:
                 rem_params.extend(
                     param
                     for param in params
-                    if 'name="{param}"'.format(param=param) not in r.text
+                    if f'name="{param}"' not in r.text
                 )
 
             # Remove excess params
@@ -270,16 +346,24 @@ class InitSickBeard:
 
         if detected:
             self.fork = fork
-            logger.info('{section}:{category} fork auto-detection successful ...'.format
-                        (section=self.section, category=self.input_category))
+            logger.info(
+                f'{self.section}:{self.input_category} fork auto-detection '
+                f'successful ...'
+            )
         elif rem_params:
-            logger.info('{section}:{category} fork auto-detection found custom params {params}'.format
-                        (section=self.section, category=self.input_category, params=params))
+            logger.info(
+                f'{self.section}:{self.input_category} fork auto-detection '
+                f'found custom params {params}'
+            )
             self.fork = ['custom', params]
         else:
-            logger.info('{section}:{category} fork auto-detection failed'.format
-                        (section=self.section, category=self.input_category))
-            self.fork = list(core.FORKS.items())[list(core.FORKS.keys()).index(core.FORK_DEFAULT)]
+            logger.info(
+                f'{self.section}:{self.input_category} fork auto-detection '
+                f'failed'
+            )
+            self.fork = list(core.FORKS.items())[
+                list(core.FORKS.keys()).index(core.FORK_DEFAULT)
+            ]
 
     def _init_fork(self):
         # These need to be imported here, to prevent a circular import.
@@ -288,20 +372,22 @@ class InitSickBeard:
         mapped_forks = {
             'Medusa': PyMedusa,
             'Medusa-api': PyMedusaApiV1,
-            'Medusa-apiv2': PyMedusaApiV2
+            'Medusa-apiv2': PyMedusaApiV2,
         }
-        logger.debug('Create object for fork {fork}'.format(fork=self.fork))
+        logger.debug(f'Create object for fork {self.fork}')
         if self.fork and mapped_forks.get(self.fork):
             # Create the fork object and pass self (SickBeardInit) to it for all the data, like Config.
             self.fork_obj = mapped_forks[self.fork](self)
         else:
-            logger.info('{section}:{category} Could not create a fork object for {fork}. Probaly class not added yet.'.format(
-                section=self.section, category=self.input_category, fork=self.fork)
+            logger.info(
+                f'{self.section}:{self.input_category} Could not create a '
+                f'fork object for {self.fork}. Probaly class not added yet.'
             )
 
 
 class SickBeard:
     """Sickbeard base class."""
+
     sb_init: InitSickBeard
 
     def __init__(self, sb_init):
@@ -315,7 +401,9 @@ class SickBeard:
         self.dir_name = None
 
         self.delete_failed = int(self.sb_init.config.get('delete_failed', 0))
-        self.nzb_extraction_by = self.sb_init.config.get('nzbExtractionBy', 'Downloader')
+        self.nzb_extraction_by = self.sb_init.config.get(
+            'nzbExtractionBy', 'Downloader'
+        )
         self.process_method = self.sb_init.config.get('process_method')
         self.remote_path = int(self.sb_init.config.get('remote_path', 0))
         self.wait_for = int(self.sb_init.config.get('wait_for', 2))
@@ -330,7 +418,13 @@ class SickBeard:
         # Keep track of result state
         self.success = False
 
-    def initialize(self, dir_name, input_name=None, failed=False, client_agent='manual'):
+    def initialize(
+        self,
+        dir_name,
+        input_name=None,
+        failed=False,
+        client_agent='manual',
+    ):
         """We need to call this explicitely because we need some variables.
 
         We can't pass these directly through the constructor.
@@ -343,7 +437,10 @@ class SickBeard:
             self.extract = 0
         else:
             self.extract = int(self.sb_init.config.get('extract', 0))
-        if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
+        if (
+            client_agent == core.TORRENT_CLIENT_AGENT
+            and core.USE_LINK == 'move-sym'
+        ):
             self.process_method = 'symlink'
 
     @property
@@ -353,10 +450,10 @@ class SickBeard:
         else:
             route = f'{self.sb_init.web_root}/home/postprocess/processEpisode'
         return core.utils.common.create_url(
-            self.sb_init.protocol,
-            self.sb_init.host,
-            self.sb_init.port,
-            route
+            scheme=self.sb_init.protocol,
+            host=self.sb_init.host,
+            port=self.sb_init.port,
+            path=route,
         )
 
     def _process_fork_prarams(self):
@@ -383,12 +480,19 @@ class SickBeard:
                     del fork_params['quiet']
 
             if param == 'type':
-                if 'type' in fork_params:  # only set if we haven't already deleted for 'failed' above.
+                if 'type' in fork_params:
+                    # Set if we haven't already deleted for 'failed' above.
                     fork_params[param] = 'manual'
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
 
-            if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
+            if param in [
+                'dir_name',
+                'dir',
+                'proc_dir',
+                'process_directory',
+                'path',
+            ]:
                 fork_params[param] = self.dir_name
                 if self.remote_path:
                     fork_params[param] = remote_dir(self.dir_name)
@@ -432,12 +536,19 @@ class SickBeard:
         # delete any unused params so we don't pass them to SB by mistake
         [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
 
-    def api_call(self):
+    def api_call(self) -> ProcessResult:
         """Perform a base sickbeard api call."""
         self._process_fork_prarams()
-        logger.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}', self.sb_init.section)
+        logger.debug(
+            f'Opening URL: {self.url} with params: {self.sb_init.fork_params}',
+            self.sb_init.section,
+        )
         try:
-            if not self.sb_init.apikey and self.sb_init.username and self.sb_init.password:
+            if (
+                not self.sb_init.apikey
+                and self.sb_init.username
+                and self.sb_init.password
+            ):
                 # If not using the api, we need to login using user/pass first.
                 route = f'{self.sb_init.web_root}/login'
                 login = core.utils.common.create_url(
@@ -446,29 +557,56 @@ class SickBeard:
                     self.sb_init.port,
                     route,
                 )
-                login_params = {'username': self.sb_init.username, 'password': self.sb_init.password}
+                login_params = {
+                    'username': self.sb_init.username,
+                    'password': self.sb_init.password,
+                }
                 r = self.session.get(login, verify=False, timeout=(30, 60))
                 if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
                     login_params['_xsrf'] = r.cookies.get('_xsrf')
-                self.session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
-            response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))
+                self.session.post(
+                    login,
+                    data=login_params,
+                    stream=True,
+                    verify=False,
+                    timeout=(30, 60),
+                )
+            response = self.session.get(
+                self.url,
+                auth=(self.sb_init.username, self.sb_init.password),
+                params=self.sb_init.fork_params,
+                stream=True,
+                verify=False,
+                timeout=(30, 1800),
+            )
         except requests.ConnectionError:
-            logger.error(f'Unable to open URL: {self.url}', self.sb_init.section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Unable to connect to {0}'.format(self.sb_init.section),
-                status_code=1,
+            logger.error(
+                f'Unable to open URL: {self.url}', self.sb_init.section
             )
-
-        if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-            logger.error('Server returned status {0}'.format(response.status_code), self.sb_init.section)
-            return ProcessResult(
-                message='{0}: Failed to post-process - Server returned status {1}'.format(self.sb_init.section, response.status_code),
-                status_code=1,
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Unable to '
+                f'connect to {self.sb_init.section}'
             )
+        else:
+            successful_statuses = [
+                requests.codes.ok,
+                requests.codes.created,
+                requests.codes.accepted,
+            ]
+            if response.status_code not in successful_statuses:
+                logger.error(
+                    f'Server returned status {response.status_code}',
+                    self.sb_init.section,
+                )
+                result = ProcessResult.failure(
+                    f'{self.sb_init.section}: Failed to post-process - Server '
+                    f'returned status {response.status_code}'
+                )
+            else:
+                result = self.process_response(response)
+        return result
 
-        return self.process_response(response)
-
-    def process_response(self, response):
+    def process_response(self, response: requests.Response) -> ProcessResult:
         """Iterate over the lines returned, and log.
 
         :param response: Streamed Requests response object.
@@ -477,21 +615,28 @@ class SickBeard:
         for line in response.iter_lines():
             if line:
                 line = line.decode('utf-8')
-                logger.postprocess('{0}'.format(line), self.sb_init.section)
+                logger.postprocess(line, self.sb_init.section)
                 # if 'Moving file from' in line:
                 #     input_name = os.path.split(line)[1]
                 # if 'added to the queue' in line:
                 #     queued = True
-                # For the refactoring i'm only considering vanilla sickbeard, as for the base class.
-                if 'Processing succeeded' in line or 'Successfully processed' in line:
+                # For the refactoring i'm only considering vanilla sickbeard,
+                # as for the base class.
+                if (
+                    'Processing succeeded' in line
+                    or 'Successfully processed' in line
+                ):
                     self.success = True
 
         if self.success:
-            return ProcessResult(
-                message='{0}: Successfully post-processed {1}'.format(self.sb_init.section, self.input_name),
-                status_code=0,
+            result = ProcessResult.success(
+                f'{self.sb_init.section}: Successfully post-processed '
+                f'{self.input_name}'
             )
-        return ProcessResult(
-            message='{0}: Failed to post-process - Returned log from {0} was not as expected.'.format(self.sb_init.section),
-            status_code=1,  # We did not receive Success confirmation.
-        )
+        else:
+            # We did not receive Success confirmation.
+            result = ProcessResult.failure(
+                f'{self.sb_init.section}: Failed to post-process - Returned '
+                f'log from {self.sb_init.section} was not as expected.'
+            )
+        return result
