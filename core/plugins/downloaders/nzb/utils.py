@@ -11,9 +11,9 @@ def get_nzoid(input_name):
     slots = []
     logger.debug('Searching for nzoid from SAbnzbd ...')
     if 'http' in core.SABNZBD_HOST:
-        base_url = '{0}:{1}/api'.format(core.SABNZBD_HOST, core.SABNZBD_PORT)
+        base_url = f'{core.SABNZBD_HOST}:{core.SABNZBD_PORT}/api'
     else:
-        base_url = 'http://{0}:{1}/api'.format(core.SABNZBD_HOST, core.SABNZBD_PORT)
+        base_url = f'http://{core.SABNZBD_HOST}:{core.SABNZBD_PORT}/api'
     url = base_url
     params = {
         'apikey': core.SABNZBD_APIKEY,
@@ -47,7 +47,7 @@ def get_nzoid(input_name):
         for nzo_id, name in slots:
             if name in [input_name, clean_name]:
                 nzoid = nzo_id
-                logger.debug('Found nzoid: {0}'.format(nzoid))
+                logger.debug(f'Found nzoid: {nzoid}')
                 break
     except Exception:
         logger.warning('Data from SABnzbd could not be parsed')
@@ -66,5 +66,5 @@ def report_nzb(failure_link, client_agent):
     try:
         requests.post(failure_link, headers=headers, timeout=(30, 300))
     except Exception as e:
-        logger.error('Unable to open URL {0} due to {1}'.format(failure_link, e))
+        logger.error(f'Unable to open URL {failure_link} due to {e}')
     return

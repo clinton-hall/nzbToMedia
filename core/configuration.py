@@ -9,7 +9,7 @@ import core
 from core import logger
 
 
-class Section(configobj.Section, object):
+class Section(configobj.Section):
     def isenabled(self):
         # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
         if not self.sections:
@@ -96,14 +96,12 @@ class ConfigObj(configobj.ConfigObj, Section):
     def find_key(node, kv):
         if isinstance(node, list):
             for i in node:
-                for x in ConfigObj.find_key(i, kv):
-                    yield x
+                yield from ConfigObj.find_key(i, kv)
         elif isinstance(node, dict):
             if kv in node:
                 yield node[kv]
             for j in node.values():
-                for x in ConfigObj.find_key(j, kv):
-                    yield x
+                yield from ConfigObj.find_key(j, kv)
 
     @staticmethod
     def migrate():
@@ -117,7 +115,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(core.CONFIG_SPEC_FILE, core.CONFIG_FILE)
             CFG_OLD = config(core.CONFIG_FILE)
         except Exception as error:
-            logger.error('Error {msg} when copying to .cfg'.format(msg=error))
+            logger.error(f'Error {error} when copying to .cfg')
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
@@ -125,7 +123,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(core.CONFIG_FILE, core.CONFIG_SPEC_FILE)
             CFG_NEW = config(core.CONFIG_SPEC_FILE)
         except Exception as error:
-            logger.error('Error {msg} when copying to .spec'.format(msg=error))
+            logger.error(f'Error {error} when copying to .spec')
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
@@ -264,7 +262,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             CFG_NEW['SickBeard']['tv']['fork'] = 'auto'
 
         # create a backup of our old config
-        CFG_OLD.filename = '{config}.old'.format(config=core.CONFIG_FILE)
+        CFG_OLD.filename = f'{core.CONFIG_FILE}.old'
         CFG_OLD.write()
 
         # write our new config to autoProcessMedia.cfg
@@ -315,7 +313,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['AUTO_UPDATE', 'CHECK_MEDIA', 'REQUIRE_LAN', 'SAFE_MODE', 'NO_EXTRACT_FAILED']
             cfg_keys = ['auto_update', 'check_media', 'require_lan', 'safe_mode', 'no_extract_failed']
             for index in range(len(env_keys)):
-                key = 'NZBPO_{index}'.format(index=env_keys[index])
+                key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -325,7 +323,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['MOUNTPOINTS']
             cfg_keys = ['mount_points']
             for index in range(len(env_keys)):
-                key = 'NZBPO_{index}'.format(index=env_keys[index])
+                key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -339,7 +337,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'wait_for', 'watch_dir', 'omdbapikey']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_CPS{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_CPS{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -360,7 +358,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'wait_for', 'watch_dir', 'omdbapikey']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_W3{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_W3{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -381,7 +379,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_SB{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_SB{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -402,7 +400,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_SR{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_SR{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -421,7 +419,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir', 'remote_path', 'delete_failed']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_HP{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_HP{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -440,7 +438,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_MY{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_MY{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -455,7 +453,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'library', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_GZ{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_GZ{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -470,7 +468,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_LL{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_LL{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -488,7 +486,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'importMode']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_ND{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_ND{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -510,7 +508,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey', 'importMode']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_RA{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_RA{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -531,7 +529,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_LI{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_LI{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -546,7 +544,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
             cfg_keys = ['compressedExtensions', 'mediaExtensions', 'metaExtensions']
             for index in range(len(env_keys)):
-                key = 'NZBPO_{index}'.format(index=env_keys[index])
+                key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -556,7 +554,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['NICENESS', 'IONICE_CLASS', 'IONICE_CLASSDATA']
             cfg_keys = ['niceness', 'ionice_class', 'ionice_classdata']
             for index in range(len(env_keys)):
-                key = 'NZBPO_{index}'.format(index=env_keys[index])
+                key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -584,7 +582,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels',
                         'outputAudioOtherChannels', 'outputVideoResolution']
             for index in range(len(env_keys)):
-                key = 'NZBPO_{index}'.format(index=env_keys[index])
+                key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -594,7 +592,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['WAKE', 'HOST', 'PORT', 'MAC']
             cfg_keys = ['wake', 'host', 'port', 'mac']
             for index in range(len(env_keys)):
-                key = 'NZBPO_WOL{index}'.format(index=env_keys[index])
+                key = f'NZBPO_WOL{env_keys[index]}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -608,7 +606,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                         'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
-                    key = 'NZBPO_{index}'.format(index=env_keys[index])
+                    key = f'NZBPO_{env_keys[index]}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -618,14 +616,14 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
 
         except Exception as error:
-            logger.debug('Error {msg} when applying NZBGet config'.format(msg=error))
+            logger.debug(f'Error {error} when applying NZBGet config')
 
         try:
             # write our new config to autoProcessMedia.cfg
             cfg_new.filename = core.CONFIG_FILE
             cfg_new.write()
         except Exception as error:
-            logger.debug('Error {msg} when writing changes to .cfg'.format(msg=error))
+            logger.debug(f'Error {error} when writing changes to .cfg')
 
         return cfg_new
 

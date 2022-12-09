@@ -133,7 +133,7 @@ class NTMRotatingLogHandler:
 
         i: Log number to ues
         """
-        return self.log_file_path + ('.{0}'.format(i) if i else '')
+        return self.log_file_path + (f'.{i}' if i else '')
 
     def _num_logs(self):
         """
@@ -189,9 +189,9 @@ class NTMRotatingLogHandler:
                 self.writes_since_check += 1
 
             try:
-                message = '{0}: {1}'.format(section.upper(), to_log)
+                message = f'{section.upper()}: {to_log}'
             except UnicodeError:
-                message = '{0}: Message contains non-utf-8 string'.format(section.upper())
+                message = f'{section.upper()}: Message contains non-utf-8 string'
 
             out_line = message
 

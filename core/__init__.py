@@ -295,7 +295,7 @@ def configure_locale():
     try:
         locale.setlocale(locale.LC_ALL, '')
         SYS_ENCODING = locale.getpreferredencoding()
-    except (locale.Error, IOError):
+    except (locale.Error, OSError):
         pass
 
     # For OSes that are poorly configured I'll just randomly force UTF-8
@@ -309,7 +309,7 @@ def configure_migration():
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error('Unable to migrate config file {0}, exiting ...'.format(CONFIG_FILE))
+        logger.error(f'Unable to migrate config file {CONFIG_FILE}, exiting ...')
         if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
@@ -320,7 +320,7 @@ def configure_migration():
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
-        logger.info('Loading config from [{0}]'.format(CONFIG_FILE))
+        logger.info(f'Loading config from [{CONFIG_FILE}]')
         CFG = config()
 
 
@@ -338,7 +338,7 @@ def configure_logging_part_2():
 
     if LOG_ENV:
         for item in os.environ:
-            logger.info('{0}: {1}'.format(item, os.environ[item]), 'ENVIRONMENT')
+            logger.info(f'{item}: {os.environ[item]}', 'ENVIRONMENT')
 
 
 def configure_general():
@@ -441,23 +441,26 @@ def configure_niceness():
     with open(os.devnull, 'w') as devnull:
         try:
             subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
-            if len(CFG['Posix']['niceness'].split(',')) > 1: #Allow passing of absolute command, not just value.
-                NICENESS.extend(CFG['Posix']['niceness'].split(','))
+            niceness = CFG['Posix']['niceness']
+            if len(niceness.split(',')) > 1: #Allow passing of absolute command, not just value.
+                NICENESS.extend(niceness.split(','))
             else:
-                NICENESS.extend(['nice', '-n{0}'.format(int(CFG['Posix']['niceness']))])
+                NICENESS.extend(['nice', f'-n{int(niceness)}'])
         except Exception:
             pass
         try:
             subprocess.Popen(['ionice'], stdout=devnull, stderr=devnull).communicate()
             try:
-                NICENESS.extend(['ionice', '-c{0}'.format(int(CFG['Posix']['ionice_class']))])
+                ionice = CFG['Posix']['ionice_class']
+                NICENESS.extend(['ionice', f'-c{int(ionice)}'])
             except Exception:
                 pass
             try:
                 if 'ionice' in NICENESS:
-                    NICENESS.extend(['-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+                    ionice = CFG['Posix']['ionice_classdata']
+                    NICENESS.extend([f'-n{int(ionice)}'])
                 else:
-                    NICENESS.extend(['ionice', '-n{0}'.format(int(CFG['Posix']['ionice_classdata']))])
+                    NICENESS.extend(['ionice', f'-n{int(ionice)}'])
             except Exception:
                 pass
         except Exception:
@@ -473,7 +476,7 @@ def configure_containers():
     COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
                             re.compile(r'.part\d+.rar$', re.I),
                             re.compile('.rar$', re.I)]
-    COMPRESSED_CONTAINER += [re.compile('{0}$'.format(ext), re.I) for ext in
+    COMPRESSED_CONTAINER += [re.compile(f'{ext}$', re.I) for ext in
                              CFG['Extensions']['compressedExtensions']]
     MEDIA_CONTAINER = CFG['Extensions']['mediaExtensions']
     AUDIO_CONTAINER = CFG['Extensions']['audioExtensions']

@@ -81,7 +81,7 @@ def process(
         'dir': remote_dir(dir_name) if remote_path else dir_name,
     }
 
-    logger.debug('Opening URL: {0} with params: {1}'.format(url, params), section)
+    logger.debug(f'Opening URL: {url} with params: {params}', section)
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
@@ -92,21 +92,21 @@ def process(
             f'{section}'
         )
 
-    logger.postprocess('{0}'.format(r.text), section)
+    logger.postprocess(f'{r.text}', section)
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error('Server returned status {0}'.format(r.status_code), section)
+        logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}'
         )
     elif r.text == 'OK':
-        logger.postprocess('SUCCESS: ForceProcess for {0} has been started in LazyLibrarian'.format(dir_name), section)
+        logger.postprocess(f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian', section)
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}'
         )
     else:
-        logger.error('FAILED: ForceProcess of {0} has Failed in LazyLibrarian'.format(dir_name), section)
+        logger.error(f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.'

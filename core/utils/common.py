@@ -26,7 +26,7 @@ def clean_dir(path, section, subsection):
 def process_dir(path, link):
     folders = []
 
-    logger.info('Searching {0} for mediafiles to post-process ...'.format(path))
+    logger.info(f'Searching {path} for mediafiles to post-process ...')
     dir_contents = os.listdir(path)
 
     # search for single files and move them into their own folder for post-processing
@@ -56,7 +56,7 @@ def process_dir(path, link):
             try:
                 move_file(mediafile, path, link)
             except Exception as e:
-                logger.error('Failed to move {0} to its own directory: {1}'.format(os.path.split(mediafile)[1], e))
+                logger.error(f'Failed to move {os.path.split(mediafile)[1]} to its own directory: {e}')
 
     # removeEmptyFolders(path, removeRoot=False)
 
@@ -97,7 +97,7 @@ def get_dirs(section, subsection, link='hard'):
     try:
         to_return.extend(process_dir(directory, link))
     except Exception as e:
-        logger.error('Failed to add directories from {0} for post-processing: {1}'.format(watch_directory, e))
+        logger.error(f'Failed to add directories from {watch_directory} for post-processing: {e}')
 
     if core.USE_LINK == 'move':
         try:
@@ -105,10 +105,10 @@ def get_dirs(section, subsection, link='hard'):
             if os.path.exists(output_directory):
                 to_return.extend(process_dir(output_directory, link))
         except Exception as e:
-            logger.error('Failed to add directories from {0} for post-processing: {1}'.format(core.OUTPUT_DIRECTORY, e))
+            logger.error(f'Failed to add directories from {core.OUTPUT_DIRECTORY} for post-processing: {e}')
 
     if not to_return:
-        logger.debug('No directories identified in {0}:{1} for post-processing'.format(section, subsection))
+        logger.debug(f'No directories identified in {section}:{subsection} for post-processing')
 
     return list(set(to_return))
 

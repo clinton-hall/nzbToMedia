@@ -11,7 +11,7 @@ def configure_client():
     user = core.DELUGE_USER
     password = core.DELUGE_PASSWORD
 
-    logger.debug('Connecting to {0}: http://{1}:{2}'.format(agent, host, port))
+    logger.debug(f'Connecting to {agent}: http://{host}:{port}')
     client = DelugeRPCClient(host, port, user, password)
     try:
         client.connect()

@@ -1,4 +1,3 @@
-
 import os
 import socket
 import subprocess
@@ -44,10 +43,10 @@ class PosixProcess:
     def alreadyrunning(self):
         try:
             self.lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
-            self.lock_socket.bind('\0{path}'.format(path=self.pidpath))
+            self.lock_socket.bind(f'\0{self.pidpath}')
             self.lasterror = False
             return self.lasterror
-        except socket.error as e:
+        except OSError as e:
             if 'Address already in use' in str(e):
                 self.lasterror = True
                 return self.lasterror
@@ -56,7 +55,7 @@ class PosixProcess:
         if os.path.exists(self.pidpath):
             # Make sure it is not a 'stale' pidFile
             try:
-                pid = int(open(self.pidpath, 'r').read().strip())
+                pid = int(open(self.pidpath).read().strip())
             except Exception:
                 pid = None
             # Check list of running pids, if not running it is stale so overwrite
@@ -107,7 +106,7 @@ def restart():
 
     if popen_list:
         popen_list += SYS_ARGV
-        logger.log('Restarting nzbToMedia with {args}'.format(args=popen_list))
+        logger.log(f'Restarting nzbToMedia with {popen_list}')
         logger.close()
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()

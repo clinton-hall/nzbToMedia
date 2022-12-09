@@ -1,11 +1,3 @@
-
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
-
 import shutil
 import os
 import time
@@ -23,5 +15,5 @@ if __name__ == '__main__':
         else:
             print('Removed', directory)
         time.sleep(10)
-        requirements = 'requirements-{name}.txt'.format(name=lib)
+        requirements = f'requirements-{lib}.txt'
         libs.util.install_requirements(requirements, file=True, path=directory)

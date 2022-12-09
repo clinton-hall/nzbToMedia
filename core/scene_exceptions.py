@@ -71,20 +71,20 @@ def rename_file(filename, newfile_path):
     try:
         os.rename(filename, newfile_path)
     except Exception as error:
-        logger.error('Unable to rename file due to: {error}'.format(error=error), 'EXCEPTION')
+        logger.error(f'Unable to rename file due to: {error}', 'EXCEPTION')
 
 
 def replace_filename(filename, dirname, name):
     head, file_extension = os.path.splitext(os.path.basename(filename))
     if media_pattern.search(os.path.basename(dirname).replace(' ', '.')) is not None:
         newname = os.path.basename(dirname).replace(' ', '.')
-        logger.debug('Replacing file name {old} with directory name {new}'.format(old=head, new=newname), 'EXCEPTION')
+        logger.debug(f'Replacing file name {head} with directory name {newname}', 'EXCEPTION')
     elif media_pattern.search(name.replace(' ', '.').lower()) is not None:
         newname = name.replace(' ', '.')
         logger.debug('Replacing file name {old} with download name {new}'.format
                      (old=head, new=newname), 'EXCEPTION')
     else:
-        logger.warning('No name replacement determined for {name}'.format(name=head), 'EXCEPTION')
+        logger.warning(f'No name replacement determined for {head}', 'EXCEPTION')
         newname = name
     newfile = newname + file_extension
     newfile_path = os.path.join(dirname, newfile)
@@ -142,7 +142,7 @@ def rename_script(dirname):
                 try:
                     os.rename(orig, dest)
                 except Exception as error:
-                    logger.error('Unable to rename file due to: {error}'.format(error=error), 'EXCEPTION')
+                    logger.error(f'Unable to rename file due to: {error}', 'EXCEPTION')
 
 
 def par2(dirname):
@@ -164,18 +164,18 @@ def par2(dirname):
             bitbucket = open('NUL')
         else:
             bitbucket = open('/dev/null')
-        logger.info('Running par2 on file {0}.'.format(parfile), 'PAR2')
+        logger.info(f'Running par2 on file {parfile}.', 'PAR2')
         command = [core.PAR2CMD, 'r', parfile, '*']
         cmd = ''
         for item in command:
-            cmd = '{cmd} {item}'.format(cmd=cmd, item=item)
-        logger.debug('calling command:{0}'.format(cmd), 'PAR2')
+            cmd = f'{cmd} {item}'
+        logger.debug(f'calling command:{cmd}', 'PAR2')
         try:
             proc = subprocess.Popen(command, stdout=bitbucket, stderr=bitbucket)
             proc.communicate()
             result = proc.returncode
         except Exception:
-            logger.error('par2 file processing for {0} has failed'.format(parfile), 'PAR2')
+            logger.error(f'par2 file processing for {parfile} has failed', 'PAR2')
         if result == 0:
             logger.info('par2 file processing succeeded', 'PAR2')
         os.chdir(pwd)

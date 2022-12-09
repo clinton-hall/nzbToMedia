@@ -17,9 +17,9 @@ except ImportError:
 
 
 def copy_link(src, target_link, use_link):
-    logger.info('MEDIAFILE: [{0}]'.format(os.path.basename(target_link)), 'COPYLINK')
-    logger.info('SOURCE FOLDER: [{0}]'.format(os.path.dirname(src)), 'COPYLINK')
-    logger.info('TARGET FOLDER: [{0}]'.format(os.path.dirname(target_link)), 'COPYLINK')
+    logger.info(f'MEDIAFILE: [{os.path.basename(target_link)}]', 'COPYLINK')
+    logger.info(f'SOURCE FOLDER: [{os.path.dirname(src)}]', 'COPYLINK')
+    logger.info(f'TARGET FOLDER: [{os.path.dirname(target_link)}]', 'COPYLINK')
 
     if src != target_link and os.path.exists(target_link):
         logger.info('MEDIAFILE already exists in the TARGET folder, skipping ...', 'COPYLINK')
@@ -59,7 +59,7 @@ def copy_link(src, target_link, use_link):
             shutil.move(src, target_link)
             return True
     except Exception as e:
-        logger.warning('Error: {0}, copying instead ... '.format(e), 'COPYLINK')
+        logger.warning(f'Error: {e}, copying instead ... ', 'COPYLINK')
 
     logger.info('Copying SOURCE MEDIAFILE -> TARGET FOLDER', 'COPYLINK')
     shutil.copy(src, target_link)
@@ -78,10 +78,10 @@ def replace_links(link, max_depth=10):
         link_depth = attempt
 
     if not link_depth:
-        logger.debug('{0} is not a link'.format(link))
+        logger.debug(f'{link} is not a link')
     elif link_depth > max_depth or (link_depth == max_depth and islink(target)):
-        logger.warning('Exceeded maximum depth {0} while following link {1}'.format(max_depth, link))
+        logger.warning(f'Exceeded maximum depth {max_depth} while following link {link}')
     else:
-        logger.info('Changing sym-link: {0} to point directly to file: {1}'.format(link, target), 'COPYLINK')
+        logger.info(f'Changing sym-link: {link} to point directly to file: {target}', 'COPYLINK')
         os.unlink(link)
         linktastic.symlink(target, link)

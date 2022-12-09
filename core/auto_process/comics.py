@@ -94,7 +94,7 @@ def process(
 
     success = False
 
-    logger.debug('Opening URL: {0}'.format(url), section)
+    logger.debug(f'Opening URL: {url}', section)
     try:
         r = requests.post(url, params=params, stream=True, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
@@ -104,7 +104,7 @@ def process(
             f'{section}'
         )
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error('Server returned status {0}'.format(r.status_code), section)
+        logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}'
@@ -115,7 +115,7 @@ def process(
         result = result.split('\n')
     for line in result:
         if line:
-            logger.postprocess('{0}'.format(line), section)
+            logger.postprocess(line, section)
         if 'Post Processing SUCCESSFUL' in line:
             success = True
 

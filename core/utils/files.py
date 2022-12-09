@@ -15,7 +15,7 @@ from core.utils.paths import get_dir_size, make_dir
 
 
 def move_file(mediafile, path, link):
-    logger.debug('Found file {0} in root directory {1}.'.format(os.path.split(mediafile)[1], path))
+    logger.debug(f'Found file {os.path.split(mediafile)[1]} in root directory {path}.')
     new_path = None
     file_ext = os.path.splitext(mediafile)[1]
     try:
@@ -27,7 +27,7 @@ def move_file(mediafile, path, link):
             album = f.album
 
             # create new path
-            new_path = os.path.join(path, '{0} - {1}'.format(sanitize_name(artist), sanitize_name(album)))
+            new_path = os.path.join(path, f'{sanitize_name(artist)} - {sanitize_name(album)}')
         elif file_ext in core.MEDIA_CONTAINER:
             f = guessit.guessit(mediafile)
 
@@ -39,7 +39,7 @@ def move_file(mediafile, path, link):
 
             new_path = os.path.join(path, sanitize_name(title))
     except Exception as e:
-        logger.error('Exception parsing name for media file: {0}: {1}'.format(os.path.split(mediafile)[1], e))
+        logger.error(f'Exception parsing name for media file: {os.path.split(mediafile)[1]}: {e}')
 
     if not new_path:
         title = os.path.splitext(os.path.basename(mediafile))[0]
@@ -79,7 +79,7 @@ def is_min_size(input_name, min_size):
         try:
             input_size = get_dir_size(os.path.dirname(input_name))
         except Exception:
-            logger.error('Failed to get file size for {0}'.format(input_name), 'MINSIZE')
+            logger.error(f'Failed to get file size for {input_name}', 'MINSIZE')
             return True
 
     # Ignore files under a certain size
@@ -131,8 +131,7 @@ def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True,
                     if delete_ignored == 1:
                         try:
                             os.unlink(path)
-                            logger.debug('Ignored file {0} has been removed ...'.format
-                                         (cur_file))
+                            logger.debug(f'Ignored file {cur_file} has been removed ...')
                         except Exception:
                             pass
                 else:
@@ -153,8 +152,7 @@ def list_media_files(path, min_size=0, delete_ignored=0, media=True, audio=True,
                 if delete_ignored == 1:
                     try:
                         os.unlink(full_cur_file)
-                        logger.debug('Ignored file {0} has been removed ...'.format
-                                     (cur_file))
+                        logger.debug(f'Ignored file {cur_file} has been removed ...')
                     except Exception:
                         pass
                 continue
@@ -182,7 +180,7 @@ def extract_files(src, dst=None, keep_archive=None):
                 extracted_folder.append(dir_path)
                 extracted_archive.append(archive_name)
         except Exception:
-            logger.error('Extraction failed for: {0}'.format(full_file_name))
+            logger.error(f'Extraction failed for: {full_file_name}')
 
     for folder in extracted_folder:
         for inputFile in list_media_files(folder, media=False, audio=False, meta=False, archives=True):
@@ -191,24 +189,24 @@ def extract_files(src, dst=None, keep_archive=None):
             archive_name = re.sub(r'part[0-9]+', '', archive_name)
             if archive_name not in extracted_archive or keep_archive:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
-            logger.info('Removing extracted archive {0} from folder {1} ...'.format(full_file_name, folder))
+            logger.info(f'Removing extracted archive {full_file_name} from folder {folder} ...')
             try:
                 if not os.access(inputFile, os.W_OK):
                     os.chmod(inputFile, stat.S_IWUSR)
                 os.remove(inputFile)
                 time.sleep(1)
             except Exception as e:
-                logger.error('Unable to remove file {0} due to: {1}'.format(inputFile, e))
+                logger.error(f'Unable to remove file {inputFile} due to: {e}')
 
 
 def backup_versioned_file(old_file, version):
     num_tries = 0
 
-    new_file = '{old}.v{version}'.format(old=old_file, version=version)
+    new_file = f'{old_file}.v{version}'
 
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.log('Not creating backup, {file} doesn\'t exist'.format(file=old_file), logger.DEBUG)
+            logger.log(f'Not creating backup, {old_file} doesn\'t exist', logger.DEBUG)
             break
 
         try:
@@ -224,7 +222,7 @@ def backup_versioned_file(old_file, version):
             logger.log('Trying again.', logger.DEBUG)
 
         if num_tries >= 10:
-            logger.log('Unable to back up {old} to {new} please do it manually.'.format(old=old_file, new=new_file), logger.ERROR)
+            logger.log(f'Unable to back up {old_file} to {new_file} please do it manually.', logger.ERROR)
             return False
 
     return True

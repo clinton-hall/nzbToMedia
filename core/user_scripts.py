@@ -54,7 +54,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
             if transcoder.is_video_good(video, 0):
                 import_subs(video)
             else:
-                logger.info('Corrupt video file found {0}. Deleting.'.format(video), 'USERSCRIPT')
+                logger.info(f'Corrupt video file found {video}. Deleting.', 'USERSCRIPT')
                 os.unlink(video)
 
     for dirpath, _, filenames in os.walk(output_destination):
@@ -62,7 +62,7 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
 
             file_path = core.os.path.join(dirpath, file)
             file_name, file_extension = os.path.splitext(file)
-            logger.debug('Checking file {0} to see if this should be processed.'.format(file), 'USERSCRIPT')
+            logger.debug(f'Checking file {file} to see if this should be processed.', 'USERSCRIPT')
 
             if file_extension in core.USER_SCRIPT_MEDIAEXTENSIONS or 'all' in core.USER_SCRIPT_MEDIAEXTENSIONS:
                 num_files += 1
@@ -71,44 +71,42 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                 command = [core.USER_SCRIPT]
                 for param in core.USER_SCRIPT_PARAM:
                     if param == 'FN':
-                        command.append('{0}'.format(file))
+                        command.append(f'{file}')
                         continue
                     elif param == 'FP':
-                        command.append('{0}'.format(file_path))
+                        command.append(f'{file_path}')
                         continue
                     elif param == 'TN':
-                        command.append('{0}'.format(torrent_name))
+                        command.append(f'{torrent_name}')
                         continue
                     elif param == 'TL':
-                        command.append('{0}'.format(torrent_label))
+                        command.append(f'{torrent_label}')
                         continue
                     elif param == 'DN':
                         if core.USER_SCRIPT_RUNONCE == 1:
-                            command.append('{0}'.format(output_destination))
+                            command.append(f'{output_destination}')
                         else:
-                            command.append('{0}'.format(dirpath))
+                            command.append(f'{dirpath}')
                         continue
                     else:
                         command.append(param)
                         continue
                 cmd = ''
                 for item in command:
-                    cmd = '{cmd} {item}'.format(cmd=cmd, item=item)
-                logger.info('Running script {cmd} on file {path}.'.format(cmd=cmd, path=file_path), 'USERSCRIPT')
+                    cmd = f'{cmd} {item}'
+                logger.info(f'Running script {cmd} on file {file_path}.', 'USERSCRIPT')
                 try:
                     p = Popen(command)
                     res = p.wait()
                     if str(res) in core.USER_SCRIPT_SUCCESSCODES:  # Linux returns 0 for successful.
-                        logger.info('UserScript {0} was successfull'.format(command[0]))
+                        logger.info(f'UserScript {command[0]} was successfull')
                         result = 0
                     else:
-                        logger.error('UserScript {0} has failed with return code: {1}'.format(command[0], res), 'USERSCRIPT')
-                        logger.info(
-                            'If the UserScript completed successfully you should add {0} to the user_script_successCodes'.format(
-                                res), 'USERSCRIPT')
+                        logger.error(f'UserScript {command[0]} has failed with return code: {res}', 'USERSCRIPT')
+                        logger.info(f'If the UserScript completed successfully you should add {res} to the user_script_successCodes', 'USERSCRIPT')
                         result = int(1)
                 except Exception:
-                    logger.error('UserScript {0} has failed'.format(command[0]), 'USERSCRIPT')
+                    logger.error(f'UserScript {command[0]} has failed', 'USERSCRIPT')
                     result = int(1)
                 final_result += result
 
@@ -121,11 +119,10 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                 num_files_new += 1
 
     if core.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
-        logger.info('All files have been processed. Cleaning outputDirectory {0}'.format(output_destination))
+        logger.info(f'All files have been processed. Cleaning outputDirectory {output_destination}')
         remove_dir(output_destination)
     elif core.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
-        logger.info('{0} files were processed, but {1} still remain. outputDirectory will not be cleaned.'.format(
-            num_files, num_files_new))
+        logger.info(f'{num_files} files were processed, but {num_files_new} still remain. outputDirectory will not be cleaned.')
     return ProcessResult(
         status_code=final_result,
         message='User Script Completed',

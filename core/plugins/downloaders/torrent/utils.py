@@ -28,7 +28,7 @@ def create_torrent_class(client_agent):
 
 
 def pause_torrent(client_agent, input_hash, input_id, input_name):
-    logger.debug('Stopping torrent {0} in {1} while processing'.format(input_name, client_agent))
+    logger.debug(f'Stopping torrent {input_name} in {client_agent} while processing')
     try:
         if client_agent == 'utorrent' and core.TORRENT_CLASS != '':
             core.TORRENT_CLASS.stop(input_hash)
@@ -42,13 +42,13 @@ def pause_torrent(client_agent, input_hash, input_id, input_name):
             core.TORRENT_CLASS.pause(input_hash)
         time.sleep(5)
     except Exception:
-        logger.warning('Failed to stop torrent {0} in {1}'.format(input_name, client_agent))
+        logger.warning(f'Failed to stop torrent {input_name} in {client_agent}')
 
 
 def resume_torrent(client_agent, input_hash, input_id, input_name):
     if not core.TORRENT_RESUME == 1:
         return
-    logger.debug('Starting torrent {0} in {1}'.format(input_name, client_agent))
+    logger.debug(f'Starting torrent {input_name} in {client_agent}')
     try:
         if client_agent == 'utorrent' and core.TORRENT_CLASS != '':
             core.TORRENT_CLASS.start(input_hash)
@@ -62,12 +62,12 @@ def resume_torrent(client_agent, input_hash, input_id, input_name):
             core.TORRENT_CLASS.resume(input_hash)
         time.sleep(5)
     except Exception:
-        logger.warning('Failed to start torrent {0} in {1}'.format(input_name, client_agent))
+        logger.warning(f'Failed to start torrent {input_name} in {client_agent}')
 
 
 def remove_torrent(client_agent, input_hash, input_id, input_name):
     if core.DELETE_ORIGINAL == 1 or core.USE_LINK == 'move':
-        logger.debug('Deleting torrent {0} from {1}'.format(input_name, client_agent))
+        logger.debug(f'Deleting torrent {input_name} from {client_agent}')
         try:
             if client_agent == 'utorrent' and core.TORRENT_CLASS != '':
                 core.TORRENT_CLASS.removedata(input_hash)
@@ -82,6 +82,6 @@ def remove_torrent(client_agent, input_hash, input_id, input_name):
                 core.TORRENT_CLASS.delete_permanently(input_hash)
             time.sleep(5)
         except Exception:
-            logger.warning('Failed to delete torrent {0} in {1}'.format(input_name, client_agent))
+            logger.warning(f'Failed to delete torrent {input_name} in {client_agent}')
     else:
         resume_torrent(client_agent, input_hash, input_id, input_name)

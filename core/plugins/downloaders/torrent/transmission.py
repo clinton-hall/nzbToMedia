@@ -11,7 +11,7 @@ def configure_client():
     user = core.TRANSMISSION_USER
     password = core.TRANSMISSION_PASSWORD
 
-    logger.debug('Connecting to {0}: http://{1}:{2}'.format(agent, host, port))
+    logger.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = TransmissionClient(host, port, user, password)
     except Exception:

@@ -94,7 +94,7 @@ def process(
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
     if not list_media_files(dir_name, media=False, audio=True, meta=False, archives=False) and list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
-        logger.debug('Checking for archives to extract in directory: {0}'.format(dir_name))
+        logger.debug(f'Checking for archives to extract in directory: {dir_name}')
         core.extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
@@ -125,7 +125,7 @@ def process(
             return res
 
         # The status hasn't changed. uTorrent can resume seeding now.
-        logger.warning('The music album does not appear to have changed status after {0} minutes. Please check your Logs'.format(wait_for), section)
+        logger.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - No change in wanted status'
         )
@@ -135,17 +135,17 @@ def process(
         url = core.utils.common.create_url(scheme, host, port, route)
         headers = {'X-Api-Key': apikey}
         if remote_path:
-            logger.debug('remote_path: {0}'.format(remote_dir(dir_name)), section)
+            logger.debug(f'remote_path: {remote_dir(dir_name)}', section)
             data = {'name': 'Rename', 'path': remote_dir(dir_name)}
         else:
-            logger.debug('path: {0}'.format(dir_name), section)
+            logger.debug(f'path: {dir_name}', section)
             data = {'name': 'Rename', 'path': dir_name}
         data = json.dumps(data)
         try:
-            logger.debug('Opening URL: {0} with data: {1}'.format(url, data), section)
+            logger.debug(f'Opening URL: {url} with data: {data}', section)
             r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error('Unable to open URL: {0}'.format(url), section)
+            logger.error(f'Unable to open URL: {url}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to connect to '
                 f'{section}'
@@ -154,16 +154,16 @@ def process(
         try:
             res = r.json()
             scan_id = int(res['id'])
-            logger.debug('Scan started with id: {0}'.format(scan_id), section)
+            logger.debug(f'Scan started with id: {scan_id}', section)
         except Exception as e:
-            logger.warning('No scan id was returned due to: {0}'.format(e), section)
+            logger.warning(f'No scan id was returned due to: {e}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to start scan'
             )
 
         n = 0
         params = {}
-        url = '{0}/{1}'.format(url, scan_id)
+        url = f'{url}/{scan_id}'
         while n < 6:  # set up wait_for minutes to see if command completes..
             time.sleep(10 * wait_for)
             command_status = command_complete(url, params, headers, section)
@@ -171,9 +171,9 @@ def process(
                 break
             n += 1
         if command_status:
-            logger.debug('The Scan command return status: {0}'.format(command_status), section)
+            logger.debug(f'The Scan command return status: {command_status}', section)
         if not os.path.exists(dir_name):
-            logger.debug('The directory {0} has been removed. Renaming was successful.'.format(dir_name), section)
+            logger.debug(f'The directory {dir_name} has been removed. Renaming was successful.', section)
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}'
             )
@@ -188,7 +188,7 @@ def process(
             #     f'{section}: Failed to post-process {input_name}'
             # )
         else:
-            logger.debug('The Scan command did not return status completed. Passing back to {0} to attempt complete download handling.'.format(section), section)
+            logger.debug(f'The Scan command did not return status completed. Passing back to {section} to attempt complete download handling.', section)
             return ProcessResult(
                 message=f'{section}: Passing back to {section} to attempt '
                         f'Complete Download Handling',
@@ -197,7 +197,7 @@ def process(
 
     else:
         if section == 'Lidarr':
-            logger.postprocess('FAILED: The download failed. Sending failed download to {0} for CDH processing'.format(section), section)
+            logger.postprocess(f'FAILED: The download failed. Sending failed download to {section} for CDH processing', section)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
                 f'{section}: Download Failed. Sending back to {section}'
@@ -205,7 +205,7 @@ def process(
         else:
             logger.warning('FAILED DOWNLOAD DETECTED', section)
             if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
-                logger.postprocess('Deleting failed files and folder {0}'.format(dir_name), section)
+                logger.postprocess(f'Deleting failed files and folder {dir_name}', section)
                 remove_dir(dir_name)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
@@ -215,14 +215,14 @@ def process(
 
 
 def get_status(url, apikey, dir_name):
-    logger.debug('Attempting to get current status for release:{0}'.format(os.path.basename(dir_name)))
+    logger.debug(f'Attempting to get current status for release:{os.path.basename(dir_name)}')
 
     params = {
         'apikey': apikey,
         'cmd': 'getHistory',
     }
 
-    logger.debug('Opening URL: {0} with PARAMS: {1}'.format(url, params))
+    logger.debug(f'Opening URL: {url} with PARAMS: {params}')
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 120))
@@ -244,30 +244,30 @@ def get_status(url, apikey, dir_name):
 def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
     release_status = get_status(url, apikey, dir_name)
     if not release_status:
-        logger.error('Could not find a status for {0}, is it in the wanted list ?'.format(input_name), section)
+        logger.error(f'Could not find a status for {input_name}, is it in the wanted list ?', section)
 
-    logger.debug('Opening URL: {0} with PARAMS: {1}'.format(url, params), section)
+    logger.debug(f'Opening URL: {url} with PARAMS: {params}', section)
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
-        logger.error('Unable to open URL {0}'.format(url), section)
+        logger.error(f'Unable to open URL {url}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}'
         )
 
-    logger.debug('Result: {0}'.format(r.text), section)
+    logger.debug(f'Result: {r.text}', section)
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error('Server returned status {0}'.format(r.status_code), section)
+        logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status {r.status_code}'
         )
     elif r.text == 'OK':
-        logger.postprocess('SUCCESS: Post-Processing started for {0} in folder {1} ...'.format(input_name, dir_name), section)
+        logger.postprocess(f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...', section)
     else:
-        logger.error('FAILED: Post-Processing has NOT started for {0} in folder {1}. exiting!'.format(input_name, dir_name), section)
+        logger.error(f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.'
@@ -278,12 +278,12 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
     while time.time() < timeout:
         current_status = get_status(url, apikey, dir_name)
         if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-            logger.postprocess('SUCCESS: This release is now marked as status [{0}]'.format(current_status), section)
+            logger.postprocess(f'SUCCESS: This release is now marked as status [{current_status}]', section)
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}'
             )
         if not os.path.isdir(dir_name):
-            logger.postprocess('SUCCESS: The input directory {0} has been removed Processing must have finished.'.format(dir_name), section)
+            logger.postprocess(f'SUCCESS: The input directory {dir_name} has been removed Processing must have finished.', section)
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}'
             )

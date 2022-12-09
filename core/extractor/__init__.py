@@ -73,7 +73,7 @@ def extract(file_path, output_destination):
     if ext[1] in ('.gz', '.bz2', '.lzma'):
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == '.tar':
-            cmd = extract_commands['.tar{ext}'.format(ext=ext[1])]
+            cmd = extract_commands[f'.tar{ext[1]}']
         else: # Try gunzip
             cmd = extract_commands[ext[1]]
     elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in ('.rar', '.zip', '.7z'):
@@ -137,7 +137,7 @@ def extract(file_path, output_destination):
                     continue
                 cmd2 = cmd
                 # append password here.
-                passcmd = '-p{pwd}'.format(pwd=password)
+                passcmd = f'-p{password}'
                 cmd2.append(passcmd)
                 p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()

@@ -28,11 +28,11 @@ def onerror(func, path, exc_info):
 
 
 def remove_dir(dir_name):
-    logger.info('Deleting {0}'.format(dir_name))
+    logger.info(f'Deleting {dir_name}')
     try:
         shutil.rmtree(dir_name, onerror=onerror)
     except Exception:
-        logger.error('Unable to delete folder {0}'.format(dir_name))
+        logger.error(f'Unable to delete folder {dir_name}')
 
 
 def make_dir(path):
@@ -76,7 +76,7 @@ def remove_empty_folders(path, remove_root=True):
         return
 
     # remove empty subfolders
-    logger.debug('Checking for empty folders in:{0}'.format(path))
+    logger.debug(f'Checking for empty folders in:{path}')
     files = os.listdir(path)
     if len(files):
         for f in files:
@@ -87,7 +87,7 @@ def remove_empty_folders(path, remove_root=True):
     # if folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0 and remove_root:
-        logger.debug('Removing empty folder:{}'.format(path))
+        logger.debug(f'Removing empty folder:{path}')
         os.rmdir(path)
 
 
@@ -102,11 +102,11 @@ def remove_read_only(filename):
             try:
                 os.chmod(filename, stat.S_IWRITE)
             except Exception:
-                logger.warning('Cannot change permissions of {file}'.format(file=filename), logger.WARNING)
+                logger.warning(f'Cannot change permissions of {filename}', logger.WARNING)
 
 
 def flatten_dir(destination, files):
-    logger.info('FLATTEN: Flattening directory: {0}'.format(destination))
+    logger.info(f'FLATTEN: Flattening directory: {destination}')
     for outputFile in files:
         dir_path = os.path.dirname(outputFile)
         file_name = os.path.basename(outputFile)
@@ -119,37 +119,37 @@ def flatten_dir(destination, files):
         try:
             shutil.move(outputFile, target)
         except Exception:
-            logger.error('Could not flatten {0}'.format(outputFile), 'FLATTEN')
+            logger.error(f'Could not flatten {outputFile}', 'FLATTEN')
 
     remove_empty_folders(destination)  # Cleanup empty directories
 
 
 def clean_directory(path, files):
     if not os.path.exists(path):
-        logger.info('Directory {0} has been processed and removed ...'.format(path), 'CLEANDIR')
+        logger.info(f'Directory {path} has been processed and removed ...', 'CLEANDIR')
         return
 
     if core.FORCE_CLEAN and not core.FAILED:
-        logger.info('Doing Forceful Clean of {0}'.format(path), 'CLEANDIR')
+        logger.info(f'Doing Forceful Clean of {path}', 'CLEANDIR')
         remove_dir(path)
         return
 
     if files:
         logger.info(
-            'Directory {0} still contains {1} unprocessed file(s), skipping ...'.format(path, len(files)),
+            f'Directory {path} still contains {len(files)} unprocessed file(s), skipping ...',
             'CLEANDIRS',
         )
         return
 
-    logger.info('Directory {0} has been processed, removing ...'.format(path), 'CLEANDIRS')
+    logger.info(f'Directory {path} has been processed, removing ...', 'CLEANDIRS')
     try:
         shutil.rmtree(path, onerror=onerror)
     except Exception:
-        logger.error('Unable to delete directory {0}'.format(path))
+        logger.error(f'Unable to delete directory {path}')
 
 
 def rchmod(path, mod):
-    logger.log('Changing file mode of {0} to {1}'.format(path, oct(mod)))
+    logger.log(f'Changing file mode of {path} to {oct(mod)}')
     os.chmod(path, mod)
     if not os.path.isdir(path):
         return  # Skip files

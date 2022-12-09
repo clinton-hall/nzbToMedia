@@ -45,6 +45,6 @@ class GitHub:
         """
         return self._access_api(
             ['repos', self.github_repo_user, self.github_repo, 'compare',
-             '{base}...{head}'.format(base=base, head=head)],
+             f'{base}...{head}'],
             params={'per_page': per_page},
         )

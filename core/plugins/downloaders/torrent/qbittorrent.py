@@ -12,9 +12,9 @@ def configure_client():
     password = core.QBITTORRENT_PASSWORD
 
     logger.debug(
-        'Connecting to {0}: http://{1}:{2}'.format(agent, host, port),
+        f'Connecting to {agent}: http://{host}:{port}',
     )
-    client = qBittorrentClient('http://{0}:{1}/'.format(host, port))
+    client = qBittorrentClient(f'http://{host}:{port}/')
     try:
         client.login(user, password)
     except Exception:

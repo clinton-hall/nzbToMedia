@@ -64,7 +64,7 @@ class CheckVersion:
             logger.log('Version checking is disabled, not checking for the newest version')
             return False
 
-        logger.log('Checking if {install} needs an update'.format(install=self.install_type))
+        logger.log(f'Checking if {self.install_type} needs an update')
         if not self.updater.need_update():
             core.NEWEST_VERSION_STRING = None
             logger.log('No update needed')
@@ -111,7 +111,7 @@ class GitUpdateManager(UpdateManager):
         test_cmd = 'version'
 
         if core.GIT_PATH:
-            main_git = '"{git}"'.format(git=core.GIT_PATH)
+            main_git = f'"{core.GIT_PATH}"'
         else:
             main_git = 'git'
 
@@ -120,10 +120,10 @@ class GitUpdateManager(UpdateManager):
         output, err, exit_status = self._run_git(main_git, test_cmd)
 
         if exit_status == 0:
-            logger.log('Using: {git}'.format(git=main_git), logger.DEBUG)
+            logger.log(f'Using: {main_git}', logger.DEBUG)
             return main_git
         else:
-            logger.log('Not using: {git}'.format(git=main_git), logger.DEBUG)
+            logger.log(f'Not using: {main_git}', logger.DEBUG)
 
         # trying alternatives
 
@@ -146,10 +146,10 @@ class GitUpdateManager(UpdateManager):
                 output, err, exit_status = self._run_git(cur_git, test_cmd)
 
                 if exit_status == 0:
-                    logger.log('Using: {git}'.format(git=cur_git), logger.DEBUG)
+                    logger.log(f'Using: {cur_git}', logger.DEBUG)
                     return cur_git
                 else:
-                    logger.log('Not using: {git}'.format(git=cur_git), logger.DEBUG)
+                    logger.log(f'Not using: {cur_git}', logger.DEBUG)
 
         # Still haven't found a working git
         logger.debug('Unable to find your git executable - '
@@ -168,7 +168,7 @@ class GitUpdateManager(UpdateManager):
             exit_status = 1
             return output, err, exit_status
 
-        cmd = '{git} {args}'.format(git=git_path, args=args)
+        cmd = f'{git_path} {args}'
 
         try:
             logger.log('Executing {cmd} with your shell in {directory}'.format
@@ -183,15 +183,15 @@ class GitUpdateManager(UpdateManager):
             if output:
                 output = output.strip()
             if core.LOG_GIT:
-                logger.log('git output: {output}'.format(output=output), logger.DEBUG)
+                logger.log(f'git output: {output}', logger.DEBUG)
 
         except OSError:
-            logger.log('Command {cmd} didn\'t work'.format(cmd=cmd))
+            logger.log(f'Command {cmd} didn\'t work')
             exit_status = 1
 
         exit_status = 128 if ('fatal:' in output) or err else exit_status
         if exit_status == 0:
-            logger.log('{cmd} : returned successful'.format(cmd=cmd), logger.DEBUG)
+            logger.log(f'{cmd} : returned successful', logger.DEBUG)
             exit_status = 0
         elif core.LOG_GIT and exit_status in (1, 128):
             logger.log('{cmd} returned : {output}'.format
@@ -310,7 +310,7 @@ class GitUpdateManager(UpdateManager):
             try:
                 self._check_github_for_update()
             except Exception as error:
-                logger.log('Unable to contact github, can\'t check for update: {msg!r}'.format(msg=error), logger.ERROR)
+                logger.log(f'Unable to contact github, can\'t check for update: {error!r}', logger.ERROR)
                 return False
 
             if self._num_commits_behind > 0:
@@ -325,7 +325,7 @@ class GitUpdateManager(UpdateManager):
         Calls git pull origin <branch> in order to update Sick Beard.
         Returns a bool depending on the call's success.
         """
-        output, err, exit_status = self._run_git(self._git_path, 'pull origin {branch}'.format(branch=self.branch))  # @UnusedVariable
+        output, err, exit_status = self._run_git(self._git_path, f'pull origin {self.branch}')  # @UnusedVariable
 
         if exit_status == 0:
             return True
@@ -352,10 +352,10 @@ class SourceUpdateManager(UpdateManager):
             return
 
         try:
-            with open(version_file, 'r') as fp:
+            with open(version_file) as fp:
                 self._cur_commit_hash = fp.read().strip(' \n\r')
-        except EnvironmentError as error:
-            logger.log('Unable to open \'version.txt\': {msg}'.format(msg=error), logger.DEBUG)
+        except OSError as error:
+            logger.log(f'Unable to open \'version.txt\': {error}', logger.DEBUG)
 
         if not self._cur_commit_hash:
             self._cur_commit_hash = None
@@ -369,7 +369,7 @@ class SourceUpdateManager(UpdateManager):
         try:
             self._check_github_for_update()
         except Exception as error:
-            logger.log('Unable to contact github, can\'t check for update: {msg!r}'.format(msg=error), logger.ERROR)
+            logger.log(f'Unable to contact github, can\'t check for update: {error!r}', logger.ERROR)
             return False
 
         if not self._cur_commit_hash or self._num_commits_behind > 0:
@@ -444,14 +444,14 @@ class SourceUpdateManager(UpdateManager):
             sb_update_dir = os.path.join(core.APP_ROOT, 'sb-update')
 
             if os.path.isdir(sb_update_dir):
-                logger.log('Clearing out update folder {dir} before extracting'.format(dir=sb_update_dir))
+                logger.log(f'Clearing out update folder {sb_update_dir} before extracting')
                 shutil.rmtree(sb_update_dir)
 
-            logger.log('Creating update folder {dir} before extracting'.format(dir=sb_update_dir))
+            logger.log(f'Creating update folder {sb_update_dir} before extracting')
             os.makedirs(sb_update_dir)
 
             # retrieve file
-            logger.log('Downloading update from {url!r}'.format(url=tar_download_url))
+            logger.log(f'Downloading update from {tar_download_url!r}')
             tar_download_path = os.path.join(sb_update_dir, 'nzbtomedia-update.tar')
             urlretrieve(tar_download_url, tar_download_path)
 
@@ -466,20 +466,20 @@ class SourceUpdateManager(UpdateManager):
                 return False
 
             # extract to sb-update dir
-            logger.log('Extracting file {path}'.format(path=tar_download_path))
+            logger.log(f'Extracting file {tar_download_path}')
             tar = tarfile.open(tar_download_path)
             tar.extractall(sb_update_dir)
             tar.close()
 
             # delete .tar.gz
-            logger.log('Deleting file {path}'.format(path=tar_download_path))
+            logger.log(f'Deleting file {tar_download_path}')
             os.remove(tar_download_path)
 
             # find update dir name
             update_dir_contents = [x for x in os.listdir(sb_update_dir) if
                                    os.path.isdir(os.path.join(sb_update_dir, x))]
             if len(update_dir_contents) != 1:
-                logger.log('Invalid update data, update failed: {0}'.format(update_dir_contents), logger.ERROR)
+                logger.log(f'Invalid update data, update failed: {update_dir_contents}', logger.ERROR)
                 return False
             content_dir = os.path.join(sb_update_dir, update_dir_contents[0])
 
@@ -514,7 +514,7 @@ class SourceUpdateManager(UpdateManager):
             try:
                 with open(version_path, 'w') as ver_file:
                     ver_file.write(self._newest_commit_hash)
-            except EnvironmentError as error:
+            except OSError as error:
                 logger.log('Unable to write version file, update not complete: {msg}'.format
                            (msg=error), logger.ERROR)
                 return False
@@ -522,7 +522,7 @@ class SourceUpdateManager(UpdateManager):
         except Exception as error:
             logger.log('Error while trying to update: {msg}'.format
                        (msg=error), logger.ERROR)
-            logger.log('Traceback: {error}'.format(error=traceback.format_exc()), logger.DEBUG)
+            logger.log(f'Traceback: {traceback.format_exc()}', logger.DEBUG)
             return False
 
         return True

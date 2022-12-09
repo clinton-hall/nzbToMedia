@@ -88,7 +88,7 @@ def process(
         'status': download_status,
     }
 
-    logger.debug('Opening URL: {0}'.format(url), section)
+    logger.debug(f'Opening URL: {url}', section)
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
@@ -100,13 +100,13 @@ def process(
         )
 
     result = r.json()
-    logger.postprocess('{0}'.format(result), section)
+    logger.postprocess(result, section)
     if library:
-        logger.postprocess('moving files to library: {0}'.format(library), section)
+        logger.postprocess(f'moving files to library: {library}', section)
         try:
             shutil.move(dir_name, os.path.join(library, input_name))
         except Exception:
-            logger.error('Unable to move {0} to {1}'.format(dir_name, os.path.join(library, input_name)), section)
+            logger.error(f'Unable to move {dir_name} to {os.path.join(library, input_name)}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to move files'
             )
@@ -118,18 +118,18 @@ def process(
         )
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error('Server returned status {0}'.format(r.status_code), section)
+        logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}'
         )
     elif result['success']:
-        logger.postprocess('SUCCESS: Status for {0} has been set to {1} in Gamez'.format(gamez_id, download_status), section)
+        logger.postprocess(f'SUCCESS: Status for {gamez_id} has been set to {download_status} in Gamez', section)
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}'
         )
     else:
-        logger.error('FAILED: Status for {0} has NOT been updated in Gamez'.format(gamez_id), section)
+        logger.error(f'FAILED: Status for {gamez_id} has NOT been updated in Gamez', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.'

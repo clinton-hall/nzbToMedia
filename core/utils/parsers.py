@@ -84,10 +84,11 @@ def parse_synods(args):
     input_hash = os.getenv('TR_TORRENT_HASH')
     if not input_name: # No info passed. Assume manual download.
         return input_directory, input_name, input_category, input_hash, input_id
-    input_id = 'dbid_{0}'.format(os.getenv('TR_TORRENT_ID'))
+    torrent_id = os.getenv('TR_TORRENT_ID')
+    input_id = f'dbid_{torrent_id}'
     #res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
     res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
-    logger.debug('result from syno {0}'.format(res))
+    logger.debug(f'result from syno {res}')
     if res['success']:
         try:
             tasks = res['data']['tasks']

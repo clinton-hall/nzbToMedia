@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# coding=utf-8
 #
 ##############################################################################
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
@@ -715,12 +714,6 @@
 ### NZBGET POST-PROCESSING SCRIPT                                          ###
 ##############################################################################
 
-from __future__ import (
-    absolute_import,
-    division,
-    print_function,
-    unicode_literals,
-)
 
 import os
 import sys
@@ -743,11 +736,11 @@ def main(args, section=None):
     core.initialize(section)
 
     logger.info('#########################################################')
-    logger.info('## ..::[{0}]::.. ##'.format(os.path.basename(__file__)))
+    logger.info(f'## ..::[{os.path.basename(__file__)}]::.. ##')
     logger.info('#########################################################')
 
     # debug command line options
-    logger.debug('Options passed into nzbToMedia: {0}'.format(args))
+    logger.debug(f'Options passed into nzbToMedia: {args}')
 
     # Post-Processing Result
     result = ProcessResult(
@@ -774,14 +767,14 @@ def main(args, section=None):
         manual.process()
 
     if result.status_code == 0:
-        logger.info('The {0} script completed successfully.'.format(args[0]))
+        logger.info(f'The {args[0]} script completed successfully.')
         if result.message:
             print(result.message + '!')
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del core.MYAPP
             return core.NZBGET_POSTPROCESS_SUCCESS
     else:
-        logger.error('A problem was reported in the {0} script.'.format(args[0]))
+        logger.error(f'A problem was reported in the {args[0]} script.')
         if result.message:
             print(result.message + '!')
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11

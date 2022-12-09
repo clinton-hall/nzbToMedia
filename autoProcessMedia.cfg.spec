@@ -29,7 +29,7 @@
     # Enable/Disable media file checking using ffprobe.
     check_media = 1
     # Required media audio language for media to be deemed valid. Leave blank to disregard media audio language check.
-    require_lan = 
+    require_lan =
     # Enable/Disable a safety check to ensure we don't process all downloads in the default_downloadDirectories by mistake.
     safe_mode = 1
     # Turn this on to disable additional extraction attempts for failed downloads. Default = 0 will attempt to extract and verify if media is present.
