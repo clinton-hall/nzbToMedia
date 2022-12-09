@@ -8,7 +8,7 @@ import subprocess
 
 import core
 from core import logger
-from core.utils import list_media_files
+from core.utils.files import list_media_files
 
 reverse_list = [
     r'\.\d{2}e\d{2}s\.', r'\.[pi]0801\.', r'\.p027\.', r'\.[pi]675\.', r'\.[pi]084\.', r'\.p063\.',

@@ -52,26 +52,25 @@ from core.plugins.downloaders.utils import (
     resume_torrent,
 )
 from core.plugins.plex import configure_plex
-from core.utils import (
-    RunningProcess,
-    category_search,
-    clean_dir,
-    copy_link,
-    extract_files,
-    flatten,
-    get_dirs,
-    get_download_info,
-    list_media_files,
-    make_dir,
-    parse_args,
-    rchmod,
-    remove_dir,
-    remove_read_only,
-    restart,
-    sanitize_name,
-    update_download_info_status,
-    wake_up,
-)
+from core.utils.processes import RunningProcess
+from core.utils.processes import restart
+from core.utils.files import copy_link
+from core.utils.files import extract_files
+from core.utils.files import list_media_files
+from core.utils.files import make_dir
+from core.utils.files import sanitize_name
+from core.utils.paths import rchmod
+from core.utils.paths import remove_dir
+from core.utils.paths import remove_read_only
+from core.utils.common import clean_dir
+from core.utils.common import flatten
+from core.utils.common import get_dirs
+from core.utils.download_info import get_download_info
+from core.utils.download_info import update_download_info_status
+from core.utils.parsers import parse_args
+from core.utils.network import wake_up
+from core.utils.identification import category_search
+
 
 __version__ = '12.1.11'
 

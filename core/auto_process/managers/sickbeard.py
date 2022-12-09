@@ -11,7 +11,7 @@ from core import logger
 from core.auto_process.common import (
     ProcessResult,
 )
-from core.utils import remote_dir
+from core.utils.paths import remote_dir
 
 
 class InitSickBeard:
