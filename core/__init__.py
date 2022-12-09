@@ -392,7 +392,7 @@ def configure_updates():
 
     # Set Current Version
     logger.info(
-        'nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format(version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH, system=platform.system(), release=platform.release()),
+        f'nzbToMedia Version:{NZBTOMEDIA_VERSION} Branch:{GIT_BRANCH} ({platform.system()} {platform.release()})',
     )
 
 

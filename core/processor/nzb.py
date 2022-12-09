@@ -19,7 +19,8 @@ from core.utils import (
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
     if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
         logger.error(
-            f'The input directory:[{input_directory}] is the Default Download Directory. Please configure category directories to prevent processing of other media.')
+            f'The input directory:[{input_directory}] is the Default Download Directory. Please configure category directories to prevent processing of other media.',
+        )
         return ProcessResult(
             message='',
             status_code=-1,
@@ -62,7 +63,8 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         section = core.CFG.findsection('ALL').isenabled()
         if section is None:
             logger.error(
-                f'Category:[{input_category}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.')
+                f'Category:[{input_category}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.',
+            )
             return ProcessResult(
                 message='',
                 status_code=-1,
@@ -72,7 +74,8 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     if len(section) > 1:
         logger.error(
-            f'Category:[{input_category}] is not unique, {section.keys()} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.')
+            f'Category:[{input_category}] is not unique, {section.keys()} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.',
+        )
         return ProcessResult(
             message='',
             status_code=-1,

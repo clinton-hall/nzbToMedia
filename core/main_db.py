@@ -57,7 +57,7 @@ class DBConnection:
                     sql_result = cursor.fetchone()[0]
                 else:
                     logger.log(
-                        '{name}: {query} with args {args}'.format(name=self.filename, query=query, args=args), logger.DB,
+                        f'{self.filename}: {query} with args {args}', logger.DB,
                     )
                     cursor = self.connection.cursor()
                     cursor.execute(query, args)
@@ -133,7 +133,7 @@ class DBConnection:
                     sql_result = self.connection.execute(query)
                 else:
                     logger.log(
-                        '{name}: {query} with args {args}'.format(name=self.filename, query=query, args=args), logger.DB,
+                        f'{self.filename}: {query} with args {args}', logger.DB,
                     )
                     sql_result = self.connection.execute(query, args)
                 self.connection.commit()
@@ -231,25 +231,25 @@ def pretty_name(class_name):
 def _process_upgrade(connection, upgrade_class):
     instance = upgrade_class(connection)
     logger.log(
-        'Checking {name} database upgrade'.format(name=pretty_name(upgrade_class.__name__)), logger.DEBUG,
+        f'Checking {pretty_name(upgrade_class.__name__)} database upgrade', logger.DEBUG,
     )
     if not instance.test():
         logger.log(
-            'Database upgrade required: {name}'.format(name=pretty_name(upgrade_class.__name__)), logger.MESSAGE,
+            f'Database upgrade required: {pretty_name(upgrade_class.__name__)}', logger.MESSAGE,
         )
         try:
             instance.execute()
         except sqlite3.DatabaseError as error:
             print(
-                'Error in {name}: {msg}'.format(name=upgrade_class.__name__, msg=error),
+                f'Error in {upgrade_class.__name__}: {error}',
             )
             raise
         logger.log(
-            '{name} upgrade completed'.format(name=upgrade_class.__name__), logger.DEBUG,
+            f'{upgrade_class.__name__} upgrade completed', logger.DEBUG,
         )
     else:
         logger.log(
-            '{name} upgrade not required'.format(name=upgrade_class.__name__), logger.DEBUG,
+            f'{upgrade_class.__name__} upgrade not required', logger.DEBUG,
         )
 
     for upgradeSubClass in upgrade_class.__subclasses__():

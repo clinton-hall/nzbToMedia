@@ -57,7 +57,7 @@ class PyMedusaApiV1(SickBeard):
             )
             return ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
-                f'connect to {self.sb_init.section}'
+                f'connect to {self.sb_init.section}',
             )
 
         successful_status_codes = [
@@ -72,18 +72,18 @@ class PyMedusaApiV1(SickBeard):
             )
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Server '
-                f'returned status {response.status_code}'
+                f'returned status {response.status_code}',
             )
         elif response.json()['result'] == 'success':
             result = ProcessResult.success(
                 f'{self.sb_init.section}:  Successfully post-processed '
-                f'{self.input_name}'
+                f'{self.input_name}',
             )
         else:
             # We did not receive Success confirmation.
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Returned '
-                f'log from {self.sb_init.section} was not as expected.'
+                f'log from {self.sb_init.section} was not as expected.',
             )
         return result
 
@@ -99,7 +99,7 @@ class PyMedusaApiV2(SickBeard):
         if not sb_init.apikey:
             logger.error(
                 'For the section SickBeard `fork = medusa-apiv2` you also '
-                'need to configure an `apikey`'
+                'need to configure an `apikey`',
             )
             raise ValueError('Missing apikey for fork: medusa-apiv2')
 
@@ -160,7 +160,7 @@ class PyMedusaApiV2(SickBeard):
             )
             return ProcessResult.failure(
                 f'{self.sb_init.section}: Unable to send postprocess request '
-                f'to PyMedusa'
+                f'to PyMedusa',
             )
 
         # Get UUID
@@ -203,12 +203,12 @@ class PyMedusaApiV2(SickBeard):
         if response.get('success'):
             result = ProcessResult.success(
                 f'{self.sb_init.section}: Successfully post-processed '
-                f'{self.input_name}'
+                f'{self.input_name}',
             )
         else:
             # We did not receive Success confirmation.
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Returned '
-                f'log from {self.sb_init.section} was not as expected.'
+                f'log from {self.sb_init.section} was not as expected.',
             )
         return result

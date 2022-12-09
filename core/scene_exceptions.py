@@ -72,7 +72,7 @@ def rename_file(filename, newfile_path):
     if os.path.isfile(newfile_path):
         newfile_path = os.path.splitext(newfile_path)[0] + '.NTM' + os.path.splitext(newfile_path)[1]
     logger.debug(
-        'Replacing file name {old} with download name {new}'.format(old=filename, new=newfile_path), 'EXCEPTION',
+        f'Replacing file name {filename} with download name {newfile_path}', 'EXCEPTION',
     )
     try:
         os.rename(filename, newfile_path)
@@ -88,7 +88,7 @@ def replace_filename(filename, dirname, name):
     elif media_pattern.search(name.replace(' ', '.').lower()) is not None:
         newname = name.replace(' ', '.')
         logger.debug(
-            'Replacing file name {old} with download name {new}'.format(old=head, new=newname), 'EXCEPTION',
+            f'Replacing file name {head} with download name {newname}', 'EXCEPTION',
         )
     else:
         logger.warning(f'No name replacement determined for {head}', 'EXCEPTION')
@@ -118,7 +118,7 @@ def reverse_filename(filename, dirname, name):
         newname = head[::-1].title()
     newname = newname.replace(' ', '.')
     logger.debug(
-        'Reversing filename {old} to {new}'.format(old=head, new=newname), 'EXCEPTION',
+        f'Reversing filename {head} to {newname}', 'EXCEPTION',
     )
     newfile = newname + file_extension
     newfile_path = os.path.join(dirname, newfile)
@@ -146,7 +146,7 @@ def rename_script(dirname):
                 if os.path.isfile(dest):
                     continue
                 logger.debug(
-                    'Renaming file {source} to {destination}'.format(source=orig, destination=dest), 'EXCEPTION',
+                    f'Renaming file {orig} to {dest}', 'EXCEPTION',
                 )
                 try:
                     os.rename(orig, dest)

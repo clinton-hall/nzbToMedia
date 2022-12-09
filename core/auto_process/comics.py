@@ -72,7 +72,7 @@ def process(
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
+            f'{section}: Failed to post-process - {section} did not respond.',
         )
 
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
@@ -101,13 +101,13 @@ def process(
         logger.error('Unable to open URL', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}'
+            f'{r.status_code}',
         )
 
     result = r.text
@@ -122,11 +122,11 @@ def process(
     if success:
         logger.postprocess('SUCCESS: This issue has been processed successfully', section)
         return ProcessResult.success(
-            f'{section}: Successfully post-processed {input_name}'
+            f'{section}: Successfully post-processed {input_name}',
         )
     else:
         logger.warning('The issue does not appear to have successfully processed. Please check your Logs', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from '
-            f'{section} was not as expected.'
+            f'{section} was not as expected.',
         )

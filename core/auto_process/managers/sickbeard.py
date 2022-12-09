@@ -65,7 +65,7 @@ class InitSickBeard:
             # keep using determined fork for multiple (manual) post-processing
             logger.info(
                 f'{self.section}:{self.input_category} fork already set to '
-                f'{core.FORK_SET[0]}'
+                f'{core.FORK_SET[0]}',
             )
             return core.FORK_SET[0], core.FORK_SET[1]
 
@@ -108,13 +108,13 @@ class InitSickBeard:
             except requests.ConnectionError:
                 logger.warning(
                     f'Could not connect to {self.section}:'
-                    f'{self.input_category} to verify fork!'
+                    f'{self.input_category} to verify fork!',
                 )
 
             if not r.ok:
                 logger.warning(
                     f'Connection to {self.section}:{self.input_category} '
-                    f'failed! Check your configuration'
+                    f'failed! Check your configuration',
                 )
 
             self.fork = ['default', {}]
@@ -148,8 +148,8 @@ class InitSickBeard:
                 ):
                     oauth = OAuth2Session(
                         client=LegacyApplicationClient(
-                            client_id=core.SICKRAGE_OAUTH_CLIENT_ID
-                        )
+                            client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                        ),
                     )
                     oauth_token = oauth.fetch_token(
                         client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
@@ -175,12 +175,12 @@ class InitSickBeard:
                 if not r.ok:
                     logger.warning(
                         f'Connection to {self.section}:{self.input_category} '
-                        f'failed! Check your configuration'
+                        f'failed! Check your configuration',
                     )
             except requests.ConnectionError:
                 logger.warning(
                     f'Could not connect to {self.section}:'
-                    f'{self.input_category} to verify API version!'
+                    f'{self.input_category} to verify API version!',
                 )
 
             params = {
@@ -201,7 +201,7 @@ class InitSickBeard:
             self.detect_fork()
 
         logger.info(
-            f'{self.section}:{self.input_category} fork set to {self.fork[0]}'
+            f'{self.section}:{self.input_category} fork set to {self.fork[0]}',
         )
         core.FORK_SET = self.fork
         self.fork, self.fork_params = self.fork[0], self.fork[1]
@@ -235,7 +235,7 @@ class InitSickBeard:
             excess_parameters = set(params).difference(optional_parameters)
             excess_parameters.remove('cmd')  # Don't remove cmd from api params
             logger.debug(
-                f'Removing excess parameters: ' f'{sorted(excess_parameters)}'
+                f'Removing excess parameters: ' f'{sorted(excess_parameters)}',
             )
             rem_params.extend(excess_parameters)
             return rem_params, True
@@ -298,7 +298,7 @@ class InitSickBeard:
         except requests.ConnectionError:
             logger.info(
                 f'Could not connect to {self.section}:{self.input_category} '
-                f'to perform auto-fork detection!'
+                f'to perform auto-fork detection!',
             )
             r = []
 
@@ -323,7 +323,7 @@ class InitSickBeard:
                         logger.info(
                             f'Could not connect to {self.section}:'
                             f'{self.input_category} to perform auto-fork '
-                            f'detection!'
+                            f'detection!',
                         )
                     rem_params, found = self._api_check(r, params, rem_params)
                     params['cmd'] = 'postprocess'
@@ -348,18 +348,18 @@ class InitSickBeard:
             self.fork = fork
             logger.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
-                f'successful ...'
+                f'successful ...',
             )
         elif rem_params:
             logger.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
-                f'found custom params {params}'
+                f'found custom params {params}',
             )
             self.fork = ['custom', params]
         else:
             logger.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
-                f'failed'
+                f'failed',
             )
             self.fork = list(core.FORKS.items())[
                 list(core.FORKS.keys()).index(core.FORK_DEFAULT)
@@ -381,7 +381,7 @@ class InitSickBeard:
         else:
             logger.info(
                 f'{self.section}:{self.input_category} Could not create a '
-                f'fork object for {self.fork}. Probaly class not added yet.'
+                f'fork object for {self.fork}. Probaly class not added yet.',
             )
 
 
@@ -402,7 +402,7 @@ class SickBeard:
 
         self.delete_failed = int(self.sb_init.config.get('delete_failed', 0))
         self.nzb_extraction_by = self.sb_init.config.get(
-            'nzbExtractionBy', 'Downloader'
+            'nzbExtractionBy', 'Downloader',
         )
         self.process_method = self.sb_init.config.get('process_method')
         self.remote_path = int(self.sb_init.config.get('remote_path', 0))
@@ -581,11 +581,11 @@ class SickBeard:
             )
         except requests.ConnectionError:
             logger.error(
-                f'Unable to open URL: {self.url}', self.sb_init.section
+                f'Unable to open URL: {self.url}', self.sb_init.section,
             )
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
-                f'connect to {self.sb_init.section}'
+                f'connect to {self.sb_init.section}',
             )
         else:
             successful_statuses = [
@@ -600,7 +600,7 @@ class SickBeard:
                 )
                 result = ProcessResult.failure(
                     f'{self.sb_init.section}: Failed to post-process - Server '
-                    f'returned status {response.status_code}'
+                    f'returned status {response.status_code}',
                 )
             else:
                 result = self.process_response(response)
@@ -631,12 +631,12 @@ class SickBeard:
         if self.success:
             result = ProcessResult.success(
                 f'{self.sb_init.section}: Successfully post-processed '
-                f'{self.input_name}'
+                f'{self.input_name}',
             )
         else:
             # We did not receive Success confirmation.
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Returned '
-                f'log from {self.sb_init.section} was not as expected.'
+                f'log from {self.sb_init.section} was not as expected.',
             )
         return result

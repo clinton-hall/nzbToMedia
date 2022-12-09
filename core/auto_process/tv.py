@@ -102,7 +102,7 @@ def process(
     else:
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
+            f'{section}: Failed to post-process - {section} did not respond.',
         )
 
     if client_agent == core.TORRENT_CLIENT_AGENT and core.USE_LINK == 'move-sym':
@@ -170,7 +170,7 @@ def process(
                 logger.debug(f'Video marked as failed due to missing required language: {core.REQUIRE_LAN}', section)
             else:
                 logger.debug('Video marked as failed due to missing playable audio or video', section)
-            if good_files < num_files and failure_link: # only report corrupt files
+            if good_files < num_files and failure_link:  # only report corrupt files
                 failure_link += '&corrupt=true'
     elif client_agent == 'manual':
         logger.warning(f'No media files found in directory {dir_name} to manually process.', section)
@@ -206,7 +206,7 @@ def process(
         else:
             logger.error(f'FAILED: Transcoding failed for files in {dir_name}', section)
             return ProcessResult.failure(
-                f'{section}: Failed to post-process - Transcoding failed'
+                f'{section}: Failed to post-process - Transcoding failed',
             )
 
     # Part of the refactor
@@ -282,7 +282,7 @@ def process(
         if section == 'NzbDrone' and not apikey:
             logger.info('No Sonarr apikey entered. Processing completed.')
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         logger.postprocess('SUCCESS: The download succeeded, sending a post-process request', section)
     else:
@@ -295,7 +295,7 @@ def process(
             logger.postprocess(f'FAILED: The download failed. Sending failed download to {fork} for CDH processing', section)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
-                f'{section}: Download Failed. Sending back to {section}'
+                f'{section}: Download Failed. Sending back to {section}',
             )
         else:
             logger.postprocess(f'FAILED: The download failed. {fork} branch does not handle failed downloads. Nothing to process', section)
@@ -303,10 +303,7 @@ def process(
                 logger.postprocess(f'Deleting failed files and folder {dir_name}', section)
                 remove_dir(dir_name)
             # Return as failed to flag this in the downloader.
-            return ProcessResult.failure(
-                f'{section}: Failed to post-process. {section} does not '
-                f'support failed downloads'
-            )
+            return ProcessResult.failure(f'{section}: Failed to post-process. {section} does not support failed downloads')
 
     route = ''
     if section == 'SickBeard':
@@ -360,10 +357,12 @@ def process(
 
             if api_version >= 2 and sso_username and sso_password:
                 oauth = OAuth2Session(client=LegacyApplicationClient(client_id=core.SICKRAGE_OAUTH_CLIENT_ID))
-                oauth_token = oauth.fetch_token(client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
-                                                token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
-                                                username=sso_username,
-                                                password=sso_password)
+                oauth_token = oauth.fetch_token(
+                    client_id=core.SICKRAGE_OAUTH_CLIENT_ID,
+                    token_url=core.SICKRAGE_OAUTH_TOKEN_URL,
+                    username=sso_username,
+                    password=sso_password,
+                )
                 s.headers.update({'Authorization': 'Bearer ' + oauth_token['access_token']})
 
                 params = {
@@ -374,7 +373,7 @@ def process(
                     'returnData': str(bool(fork_params['return_data'])).lower(),
                     'delete': str(bool(fork_params['delete'])).lower(),
                     'forceNext': str(bool(fork_params['force_next'])).lower(),
-                    'nzbName': fork_params['nzbName']
+                    'nzbName': fork_params['nzbName'],
                 }
             else:
                 params = fork_params
@@ -387,14 +386,14 @@ def process(
         logger.error(f'Unable to open URL: {url}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}'
+            f'{r.status_code}',
         )
 
     success = False
@@ -441,7 +440,7 @@ def process(
 
     if success:
         return ProcessResult.success(
-            f'{section}: Successfully post-processed {input_name}'
+            f'{section}: Successfully post-processed {input_name}',
         )
     elif section == 'NzbDrone' and started:
         n = 0
@@ -458,12 +457,12 @@ def process(
         if not os.path.exists(dir_name):
             logger.debug(f'The directory {dir_name} has been removed. Renaming was successful.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['completed']:
             logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['failed']:
             logger.debug('The Scan command has failed. Renaming was not successful.', section)
@@ -473,8 +472,10 @@ def process(
 
         url2 = core.utils.common.create_url(scheme, host, port, route)
         if completed_download_handling(url2, headers, section=section):
-            logger.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.',
-                         section)
+            logger.debug(
+                f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.',
+                section,
+            )
             return ProcessResult(
                 message=f'{section}: Complete DownLoad Handling is enabled. '
                         f'Passing back to {section}',
@@ -483,11 +484,11 @@ def process(
         else:
             logger.warning('The Scan command did not return a valid status. Renaming was not successful.', section)
             return ProcessResult.failure(
-                f'{section}: Failed to post-process {input_name}'
+                f'{section}: Failed to post-process {input_name}',
             )
     else:
         # We did not receive Success confirmation.
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.'
+            f'was not as expected.',
         )

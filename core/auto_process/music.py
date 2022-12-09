@@ -77,7 +77,7 @@ def process(
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
+            f'{section}: Failed to post-process - {section} did not respond.',
         )
 
     if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
@@ -127,7 +127,7 @@ def process(
         # The status hasn't changed. uTorrent can resume seeding now.
         logger.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - No change in wanted status'
+            f'{section}: Failed to post-process - No change in wanted status',
         )
 
     elif status == 0 and section == 'Lidarr':
@@ -148,7 +148,7 @@ def process(
             logger.error(f'Unable to open URL: {url}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to connect to '
-                f'{section}'
+                f'{section}',
             )
 
         try:
@@ -158,7 +158,7 @@ def process(
         except Exception as e:
             logger.warning(f'No scan id was returned due to: {e}', section)
             return ProcessResult.failure(
-                f'{section}: Failed to post-process - Unable to start scan'
+                f'{section}: Failed to post-process - Unable to start scan',
             )
 
         n = 0
@@ -175,12 +175,12 @@ def process(
         if not os.path.exists(dir_name):
             logger.debug(f'The directory {dir_name} has been removed. Renaming was successful.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['completed']:
             logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['failed']:
             logger.debug('The Scan command has failed. Renaming was not successful.', section)
@@ -200,7 +200,7 @@ def process(
             logger.postprocess(f'FAILED: The download failed. Sending failed download to {section} for CDH processing', section)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
-                f'{section}: Download Failed. Sending back to {section}'
+                f'{section}: Download Failed. Sending back to {section}',
             )
         else:
             logger.warning('FAILED DOWNLOAD DETECTED', section)
@@ -210,7 +210,7 @@ def process(
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
                 f'{section}: Failed to post-process. {section} does not '
-                f'support failed downloads'
+                f'support failed downloads',
             )
 
 
@@ -254,7 +254,7 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
         logger.error(f'Unable to open URL {url}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
 
     logger.debug(f'Result: {r.text}', section)
@@ -262,7 +262,7 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - Server returned status {r.status_code}'
+            f'{section}: Failed to post-process - Server returned status {r.status_code}',
         )
     elif r.text == 'OK':
         logger.postprocess(f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...', section)
@@ -270,7 +270,7 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
         logger.error(f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.'
+            f'was not as expected.',
         )
 
     # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
@@ -280,12 +280,12 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
         if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
             logger.postprocess(f'SUCCESS: This release is now marked as status [{current_status}]', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         if not os.path.isdir(dir_name):
             logger.postprocess(f'SUCCESS: The input directory {dir_name} has been removed Processing must have finished.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
         time.sleep(10 * wait_for)
     # The status hasn't changed.

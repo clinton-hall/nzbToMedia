@@ -104,9 +104,7 @@ def process(
             release = None
     else:
         logger.error('Server did not respond. Exiting', section)
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
-        )
+        return ProcessResult.failure(f'{section}: Failed to post-process - {section} did not respond.')
 
     # pull info from release found if available
     release_id = None
@@ -166,7 +164,7 @@ def process(
             logger.debug(f'Video marked as failed due to missing required language: {core.REQUIRE_LAN}', section)
         else:
             logger.debug('Video marked as failed due to missing playable audio or video', section)
-        if good_files < num_files and failure_link: # only report corrupt files
+        if good_files < num_files and failure_link:  # only report corrupt files
             failure_link += '&corrupt=true'
     elif client_agent == 'manual':
         logger.warning(f'No media files found in directory {dir_name} to manually process.', section)
@@ -296,8 +294,10 @@ def process(
                     status_code=1,
                 )
         else:
-            logger.error(f'FAILED: {method} scan was unable to finish for folder {dir_name}. exiting!',
-                         section)
+            logger.error(
+                f'FAILED: {method} scan was unable to finish for folder {dir_name}. exiting!',
+                section,
+            )
             return ProcessResult(
                 message=f'{section}: Failed to post-process - Server did not return success',
                 status_code=1,
@@ -334,8 +334,10 @@ def process(
             remove_dir(dir_name)
 
         if not release_id and not media_id:
-            logger.error(f'Could not find a downloaded movie in the database matching {input_name}, exiting!',
-                         section)
+            logger.error(
+                f'Could not find a downloaded movie in the database matching {input_name}, exiting!',
+                section,
+            )
             return ProcessResult(
                 message='{0}: Failed to post-process - Failed download not found in {0}'.format(section),
                 status_code=1,
@@ -385,7 +387,7 @@ def process(
             logger.error(f'Unable to open URL {url}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to connect to '
-                f'{section}'
+                f'{section}',
             )
 
         result = r.json()
@@ -393,18 +395,18 @@ def process(
             logger.error(f'Server returned status {r.status_code}', section)
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Server returned status '
-                f'{r.status_code}'
+                f'{r.status_code}',
             )
         elif result['success']:
             logger.postprocess('SUCCESS: Snatched the next highest release ...', section)
             return ProcessResult.success(
-                f'{section}: Successfully snatched next highest release'
+                f'{section}: Successfully snatched next highest release',
             )
         else:
             logger.postprocess('SUCCESS: Unable to find a new release to snatch now. CP will keep searching!', section)
             return ProcessResult.success(
                 f'{section}: No new release found now. '
-                f'{section} will keep searching'
+                f'{section} will keep searching',
             )
 
     # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
@@ -414,7 +416,7 @@ def process(
     if no_status_check:
         return ProcessResult.success(
             f'{section}: Successfully processed but no change in status '
-            f'confirmed'
+            f'confirmed',
         )
 
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
@@ -434,13 +436,13 @@ def process(
                     title = release[release_id]['title']
                     logger.postprocess(f'SUCCESS: Movie {title} has now been added to CouchPotato with release status of [{str(release_status_new).upper()}]', section)
                     return ProcessResult.success(
-                        f'{section}: Successfully post-processed {input_name}'
+                        f'{section}: Successfully post-processed {input_name}',
                     )
 
                 if release_status_new != release_status_old:
                     logger.postprocess(f'SUCCESS: Release {release_id} has now been marked with a status of [{str(release_status_new).upper()}]', section)
                     return ProcessResult.success(
-                        f'{section}: Successfully post-processed {input_name}'
+                        f'{section}: Successfully post-processed {input_name}',
                     )
             except Exception:
                 pass
@@ -452,7 +454,7 @@ def process(
                 if command_status in ['completed']:
                     logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
                     return ProcessResult.success(
-                        f'{section}: Successfully post-processed {input_name}'
+                        f'{section}: Successfully post-processed {input_name}',
                     )
                 elif command_status in ['failed']:
                     logger.debug('The Scan command has failed. Renaming was not successful.', section)
@@ -464,13 +466,13 @@ def process(
         if not os.path.isdir(dir_name):
             logger.postprocess(f'SUCCESS: Input Directory [{dir_name}] has been processed and removed', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
 
         elif not list_media_files(dir_name, media=True, audio=False, meta=False, archives=True):
             logger.postprocess(f'SUCCESS: Input Directory [{dir_name}] has no remaining media files. This has been fully processed.', section)
             return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}'
+                f'{section}: Successfully post-processed {input_name}',
             )
 
         # pause and let CouchPotatoServer/Radarr catch its breath
@@ -481,7 +483,7 @@ def process(
         logger.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.', section)
         return ProcessResult.success(
             f'{section}: Complete DownLoad Handling is enabled. Passing back '
-            f'to {section}'
+            f'to {section}',
         )
     logger.warning(
         f'{input_name} does not appear to have changed status after {wait_for} minutes, Please check your logs.',
@@ -489,7 +491,7 @@ def process(
     )
 
     return ProcessResult.failure(
-        f'{section}: Failed to post-process - No change in status'
+        f'{section}: Failed to post-process - No change in status',
     )
 
 

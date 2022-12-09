@@ -70,7 +70,7 @@ def process(
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
+            f'{section}: Failed to post-process - {section} did not respond.',
         )
 
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
@@ -89,7 +89,7 @@ def process(
         logger.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
 
     logger.postprocess(f'{r.text}', section)
@@ -98,16 +98,16 @@ def process(
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}'
+            f'{r.status_code}',
         )
     elif r.text == 'OK':
         logger.postprocess(f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian', section)
         return ProcessResult.success(
-            f'{section}: Successfully post-processed {input_name}'
+            f'{section}: Successfully post-processed {input_name}',
         )
     else:
         logger.error(f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.'
+            f'was not as expected.',
         )

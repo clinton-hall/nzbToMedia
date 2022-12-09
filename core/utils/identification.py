@@ -124,7 +124,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
         tordir = True
     elif input_name and os.path.isdir(os.path.join(input_directory, sanitize_name(input_name))):
         logger.info(
-            'SEARCH: Found torrent directory {} in input directory directory {}'.format(sanitize_name(input_name), input_directory),
+            f'SEARCH: Found torrent directory {sanitize_name(input_name)} in input directory directory {input_directory}',
         )
         input_directory = os.path.join(input_directory, sanitize_name(input_name))
         logger.info(f'SEARCH: Setting input_directory to {input_directory}')
@@ -136,7 +136,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
         tordir = True
     elif input_name and os.path.isfile(os.path.join(input_directory, sanitize_name(input_name))):
         logger.info(
-            'SEARCH: Found torrent file {} in input directory directory {}'.format(sanitize_name(input_name), input_directory,),
+            f'SEARCH: Found torrent file {sanitize_name(input_name)} in input directory directory {input_directory}',
         )
         input_directory = os.path.join(input_directory, sanitize_name(input_name))
         logger.info(f'SEARCH: Setting input_directory to {input_directory}')

@@ -216,7 +216,7 @@ def backup_versioned_file(old_file, version):
             break
         except Exception as error:
             logger.log(
-                'Error while trying to back up {old} to {new} : {msg}'.format(old=old_file, new=new_file, msg=error), logger.WARNING,
+                f'Error while trying to back up {old_file} to {new_file} : {error}', logger.WARNING,
             )
             num_tries += 1
             time.sleep(1)

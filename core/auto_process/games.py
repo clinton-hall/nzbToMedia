@@ -69,9 +69,7 @@ def process(
     url = core.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
-        )
+        return ProcessResult.failure(f'{section}: Failed to post-process - {section} did not respond.')
 
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
@@ -96,7 +94,7 @@ def process(
         logger.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
 
     result = r.json()
@@ -108,29 +106,29 @@ def process(
         except Exception:
             logger.error(f'Unable to move {dir_name} to {os.path.join(library, input_name)}', section)
             return ProcessResult.failure(
-                f'{section}: Failed to post-process - Unable to move files'
+                f'{section}: Failed to post-process - Unable to move files',
             )
     else:
         logger.error('No library specified to move files to. Please edit your configuration.', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - No library defined in '
-            f'{section}'
+            f'{section}',
         )
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}'
+            f'{r.status_code}',
         )
     elif result['success']:
         logger.postprocess(f'SUCCESS: Status for {gamez_id} has been set to {download_status} in Gamez', section)
         return ProcessResult.success(
-            f'{section}: Successfully post-processed {input_name}'
+            f'{section}: Successfully post-processed {input_name}',
         )
     else:
         logger.error(f'FAILED: Status for {gamez_id} has NOT been updated in Gamez', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.'
+            f'was not as expected.',
         )
