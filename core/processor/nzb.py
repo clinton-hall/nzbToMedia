@@ -1,26 +1,32 @@
+from __future__ import annotations
+
 import datetime
 
 import core
-from core import logger, main_db
-from core.auto_process import comics, games, movies, music, tv, books
+from core import logger
+from core import main_db
+from core.auto_process import books
+from core.auto_process import comics
+from core.auto_process import games
+from core.auto_process import movies
+from core.auto_process import music
+from core.auto_process import tv
 from core.auto_process.common import ProcessResult
 from core.plugins.downloaders.nzb.utils import get_nzoid
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import (
-    char_replace,
-    clean_dir,
-    convert_to_ascii,
-    extract_files,
-    update_download_info_status,
-)
+from core.utils import char_replace
+from core.utils import clean_dir
+from core.utils import convert_to_ascii
+from core.utils import extract_files
+from core.utils import update_download_info_status
 
 
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
     if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
         logger.error(
-            'The input directory:[{0}] is the Default Download Directory. Please configure category directories to prevent processing of other media.'.format(
-                input_directory))
+            f'The input directory:[{input_directory}] is the Default Download Directory. Please configure category directories to prevent processing of other media.',
+        )
         return ProcessResult(
             message='',
             status_code=-1,
@@ -30,7 +36,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         download_id = get_nzoid(input_name)
 
     if client_agent != 'manual' and not core.DOWNLOAD_INFO:
-        logger.debug('Adding NZB download info for directory {0} to database'.format(input_directory))
+        logger.debug(f'Adding NZB download info for directory {input_directory} to database')
 
         my_db = main_db.DBConnection()
 
@@ -63,8 +69,8 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         section = core.CFG.findsection('ALL').isenabled()
         if section is None:
             logger.error(
-                'Category:[{0}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.'.format(
-                    input_category))
+                f'Category:[{input_category}] is not defined or is not enabled. Please rename it or ensure it is enabled for the appropriate section in your autoProcessMedia.cfg and try again.',
+            )
             return ProcessResult(
                 message='',
                 status_code=-1,
@@ -74,8 +80,8 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     if len(section) > 1:
         logger.error(
-            'Category:[{0}] is not unique, {1} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.'.format(
-                input_category, section.keys()))
+            f'Category:[{input_category}] is not unique, {section.keys()} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.',
+        )
         return ProcessResult(
             message='',
             status_code=-1,
@@ -83,10 +89,9 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     if section:
         section_name = section.keys()[0]
-        logger.info('Auto-detected SECTION:{0}'.format(section_name))
+        logger.info(f'Auto-detected SECTION:{section_name}')
     else:
-        logger.error('Unable to locate a section with subsection:{0} enabled in your autoProcessMedia.cfg, exiting!'.format(
-            input_category))
+        logger.error(f'Unable to locate a section with subsection:{input_category} enabled in your autoProcessMedia.cfg, exiting!')
         return ProcessResult(
             status_code=-1,
             message='',
@@ -98,23 +103,22 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     try:
         if int(cfg.get('remote_path')) and not core.REMOTE_PATHS:
-            logger.error('Remote Path is enabled for {0}:{1} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!'.format(
-                section_name, input_category))
+            logger.error(f'Remote Path is enabled for {section_name}:{input_category} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!')
             return ProcessResult(
                 status_code=-1,
                 message='',
             )
     except Exception:
-        logger.error('Remote Path {0} is not valid for {1}:{2} Please set this to either 0 to disable or 1 to enable!'.format(
-            cfg.get('remote_path'), section_name, input_category))
+        remote_path = cfg.get('remote_path')
+        logger.error(f'Remote Path {remote_path} is not valid for {section_name}:{input_category} Please set this to either 0 to disable or 1 to enable!')
 
     input_name, input_directory = convert_to_ascii(input_name, input_directory)
 
     if extract == 1 and not (status > 0 and core.NOEXTRACTFAILED):
-        logger.debug('Checking for archives to extract in directory: {0}'.format(input_directory))
+        logger.debug(f'Checking for archives to extract in directory: {input_directory}')
         extract_files(input_directory)
 
-    logger.info('Calling {0}:{1} to post-process:{2}'.format(section_name, input_category, input_name))
+    logger.info(f'Calling {section_name}:{input_category} to post-process:{input_name}')
 
     if section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])

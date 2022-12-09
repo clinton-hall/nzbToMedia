@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import re
 
@@ -11,21 +13,21 @@ from core.utils.naming import sanitize_name
 def find_imdbid(dir_name, input_name, omdb_api_key):
     imdbid = None
 
-    logger.info('Attemping imdbID lookup for {0}'.format(input_name))
+    logger.info(f'Attemping imdbID lookup for {input_name}')
 
     # find imdbid in dirName
     logger.info('Searching folder and file names for imdbID ...')
     m = re.search(r'\b(tt\d{7,8})\b', dir_name + input_name)
     if m:
         imdbid = m.group(1)
-        logger.info('Found imdbID [{0}]'.format(imdbid))
+        logger.info(f'Found imdbID [{imdbid}]')
         return imdbid
     if os.path.isdir(dir_name):
         for file in os.listdir(dir_name):
             m = re.search(r'\b(tt\d{7,8})\b', file)
             if m:
                 imdbid = m.group(1)
-                logger.info('Found imdbID [{0}] via file name'.format(imdbid))
+                logger.info(f'Found imdbID [{imdbid}] via file name')
                 return imdbid
     if 'NZBPR__DNZB_MOREINFO' in os.environ:
         dnzb_more_info = os.environ.get('NZBPR__DNZB_MOREINFO', '')
@@ -34,7 +36,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             m = regex.match(dnzb_more_info)
             if m:
                 imdbid = m.group(1)
-                logger.info('Found imdbID [{0}] from DNZB-MoreInfo'.format(imdbid))
+                logger.info(f'Found imdbID [{imdbid}] from DNZB-MoreInfo')
                 return imdbid
     logger.info('Searching IMDB for imdbID ...')
     try:
@@ -58,13 +60,15 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             logger.info('Unable to determine imdbID: No api key provided for omdbapi.com.')
             return
 
-        logger.debug('Opening URL: {0}'.format(url))
+        logger.debug(f'Opening URL: {url}')
 
         try:
-            r = requests.get(url, params={'apikey': omdb_api_key, 'y': year, 't': title},
-                             verify=False, timeout=(60, 300))
+            r = requests.get(
+                url, params={'apikey': omdb_api_key, 'y': year, 't': title},
+                verify=False, timeout=(60, 300),
+            )
         except requests.ConnectionError:
-            logger.error('Unable to open URL {0}'.format(url))
+            logger.error(f'Unable to open URL {url}')
             return
 
         try:
@@ -78,10 +82,10 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             logger.error('No imdbID returned from omdbapi.com')
 
         if imdbid:
-            logger.info('Found imdbID [{0}]'.format(imdbid))
+            logger.info(f'Found imdbID [{imdbid}]')
             return imdbid
 
-    logger.warning('Unable to find a imdbID for {0}'.format(input_name))
+    logger.warning(f'Unable to find a imdbID for {input_name}')
     return imdbid
 
 
@@ -94,13 +98,13 @@ def category_search(input_directory, input_name, input_category, root, categorie
     pathlist = os.path.normpath(input_directory).split(os.sep)
 
     if input_category and input_category in pathlist:
-        logger.debug('SEARCH: Found the Category: {0} in directory structure'.format(input_category))
+        logger.debug(f'SEARCH: Found the Category: {input_category} in directory structure')
     elif input_category:
-        logger.debug('SEARCH: Could not find the category: {0} in the directory structure'.format(input_category))
+        logger.debug(f'SEARCH: Could not find the category: {input_category} in the directory structure')
     else:
         try:
             input_category = list(set(pathlist) & set(categories))[-1]  # assume last match is most relevant category.
-            logger.debug('SEARCH: Found Category: {0} in directory structure'.format(input_category))
+            logger.debug(f'SEARCH: Found Category: {input_category} in directory structure')
         except IndexError:
             input_category = ''
             logger.debug('SEARCH: Could not find a category in the directory structure')
@@ -111,37 +115,40 @@ def category_search(input_directory, input_name, input_category, root, categorie
 
     if input_category and os.path.isdir(os.path.join(input_directory, input_category)):
         logger.info(
-            'SEARCH: Found category directory {0} in input directory directory {1}'.format(input_category, input_directory))
+            f'SEARCH: Found category directory {input_category} in input directory directory {input_directory}',
+        )
         input_directory = os.path.join(input_directory, input_category)
-        logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+        logger.info(f'SEARCH: Setting input_directory to {input_directory}')
     if input_name and os.path.isdir(os.path.join(input_directory, input_name)):
-        logger.info('SEARCH: Found torrent directory {0} in input directory directory {1}'.format(input_name, input_directory))
+        logger.info(f'SEARCH: Found torrent directory {input_name} in input directory directory {input_directory}')
         input_directory = os.path.join(input_directory, input_name)
-        logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+        logger.info(f'SEARCH: Setting input_directory to {input_directory}')
         tordir = True
     elif input_name and os.path.isdir(os.path.join(input_directory, sanitize_name(input_name))):
-        logger.info('SEARCH: Found torrent directory {0} in input directory directory {1}'.format(
-            sanitize_name(input_name), input_directory))
+        logger.info(
+            f'SEARCH: Found torrent directory {sanitize_name(input_name)} in input directory directory {input_directory}',
+        )
         input_directory = os.path.join(input_directory, sanitize_name(input_name))
-        logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+        logger.info(f'SEARCH: Setting input_directory to {input_directory}')
         tordir = True
     elif input_name and os.path.isfile(os.path.join(input_directory, input_name)):
-        logger.info('SEARCH: Found torrent file {0} in input directory directory {1}'.format(input_name, input_directory))
+        logger.info(f'SEARCH: Found torrent file {input_name} in input directory directory {input_directory}')
         input_directory = os.path.join(input_directory, input_name)
-        logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+        logger.info(f'SEARCH: Setting input_directory to {input_directory}')
         tordir = True
     elif input_name and os.path.isfile(os.path.join(input_directory, sanitize_name(input_name))):
-        logger.info('SEARCH: Found torrent file {0} in input directory directory {1}'.format(
-            sanitize_name(input_name), input_directory))
+        logger.info(
+            f'SEARCH: Found torrent file {sanitize_name(input_name)} in input directory directory {input_directory}',
+        )
         input_directory = os.path.join(input_directory, sanitize_name(input_name))
-        logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+        logger.info(f'SEARCH: Setting input_directory to {input_directory}')
         tordir = True
     elif input_name and os.path.isdir(input_directory):
         for file in os.listdir(input_directory):
             if os.path.splitext(file)[0] in [input_name, sanitize_name(input_name)]:
-                logger.info('SEARCH: Found torrent file {0} in input directory directory {1}'.format(file, input_directory))
+                logger.info(f'SEARCH: Found torrent file {file} in input directory directory {input_directory}')
                 input_directory = os.path.join(input_directory, file)
-                logger.info('SEARCH: Setting input_directory to {0}'.format(input_directory))
+                logger.info(f'SEARCH: Setting input_directory to {input_directory}')
                 input_name = file
                 tordir = True
                 break
@@ -156,8 +163,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
             index = pathlist.index(input_category)
             if index + 1 < len(pathlist):
                 tordir = True
-                logger.info('SEARCH: Found a unique directory {0} in the category directory'.format
-                            (pathlist[index + 1]))
+                logger.info(f'SEARCH: Found a unique directory {pathlist[index + 1]} in the category directory')
                 if not input_name:
                     input_name = pathlist[index + 1]
         except ValueError:
@@ -165,7 +171,7 @@ def category_search(input_directory, input_name, input_category, root, categorie
 
     if input_name and not tordir:
         if input_name in pathlist or sanitize_name(input_name) in pathlist:
-            logger.info('SEARCH: Found torrent directory {0} in the directory structure'.format(input_name))
+            logger.info(f'SEARCH: Found torrent directory {input_name} in the directory structure')
             tordir = True
         else:
             root = 1

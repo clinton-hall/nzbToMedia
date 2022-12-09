@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from syno.downloadstation import DownloadStation
 
 import core
@@ -11,7 +13,7 @@ def configure_client():
     user = core.SYNO_USER
     password = core.SYNO_PASSWORD
 
-    logger.debug('Connecting to {0}: http://{1}:{2}'.format(agent, host, port))
+    logger.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = DownloadStation(host, port, user, password)
     except Exception:

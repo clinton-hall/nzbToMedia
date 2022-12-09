@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import requests
 
 
@@ -44,7 +46,9 @@ class GitHub:
         Returns a deserialized json object containing the compare info. See http://developer.github.com/v3/repos/commits/
         """
         return self._access_api(
-            ['repos', self.github_repo_user, self.github_repo, 'compare',
-             '{base}...{head}'.format(base=base, head=head)],
+            [
+                'repos', self.github_repo_user, self.github_repo, 'compare',
+                f'{base}...{head}',
+            ],
             params={'per_page': per_page},
         )

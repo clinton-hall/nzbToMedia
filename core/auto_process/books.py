@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import errno
 import json
@@ -10,26 +12,24 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import core
-from core import logger, transcoder
-from core.auto_process.common import (
-    ProcessResult,
-    command_complete,
-    completed_download_handling,
-)
+from core import logger
+from core import transcoder
+from core.auto_process.common import command_complete
+from core.auto_process.common import completed_download_handling
+from core.auto_process.common import ProcessResult
 from core.auto_process.managers.sickbeard import InitSickBeard
 from core.plugins.downloaders.nzb.utils import report_nzb
-from core.plugins.subtitles import import_subs, rename_subs
+from core.plugins.subtitles import import_subs
+from core.plugins.subtitles import rename_subs
 from core.scene_exceptions import process_all_exceptions
-from core.utils import (
-    convert_to_ascii,
-    find_download,
-    find_imdbid,
-    flatten,
-    list_media_files,
-    remote_dir,
-    remove_dir,
-    server_responding,
-)
+from core.utils import convert_to_ascii
+from core.utils import find_download
+from core.utils import find_imdbid
+from core.utils import flatten
+from core.utils import list_media_files
+from core.utils import remote_dir
+from core.utils import remove_dir
+from core.utils import server_responding
 
 
 requests.packages.urllib3.disable_warnings()
@@ -70,7 +70,7 @@ def process(
     if not server_responding(url):
         logger.error('Server did not respond. Exiting', section)
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.'
+            f'{section}: Failed to post-process - {section} did not respond.',
         )
 
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
@@ -81,7 +81,7 @@ def process(
         'dir': remote_dir(dir_name) if remote_path else dir_name,
     }
 
-    logger.debug('Opening URL: {0} with params: {1}'.format(url, params), section)
+    logger.debug(f'Opening URL: {url} with params: {params}', section)
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
@@ -89,25 +89,25 @@ def process(
         logger.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}'
+            f'{section}',
         )
 
-    logger.postprocess('{0}'.format(r.text), section)
+    logger.postprocess(f'{r.text}', section)
 
     if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
-        logger.error('Server returned status {0}'.format(r.status_code), section)
+        logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}'
+            f'{r.status_code}',
         )
     elif r.text == 'OK':
-        logger.postprocess('SUCCESS: ForceProcess for {0} has been started in LazyLibrarian'.format(dir_name), section)
+        logger.postprocess(f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian', section)
         return ProcessResult.success(
-            f'{section}: Successfully post-processed {input_name}'
+            f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.error('FAILED: ForceProcess of {0} has Failed in LazyLibrarian'.format(dir_name), section)
+        logger.error(f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.'
+            f'was not as expected.',
         )

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import sys
 
@@ -33,7 +35,7 @@ def _parse_total_status():
     status_summary = os.environ['NZBPP_TOTALSTATUS']
     if status_summary != 'SUCCESS':
         status = os.environ['NZBPP_STATUS']
-        logger.info('Download failed with status {0}.'.format(status))
+        logger.info(f'Download failed with status {status}.')
         return 1
     return 0
 
@@ -87,9 +89,9 @@ def check_version():
     version = os.environ['NZBOP_VERSION']
     # Check if the script is called from nzbget 11.0 or later
     if version[0:5] < '11.0':
-        logger.error('NZBGet Version {0} is not supported. Please update NZBGet.'.format(version))
+        logger.error(f'NZBGet Version {version} is not supported. Please update NZBGet.')
         sys.exit(core.NZBGET_POSTPROCESS_ERROR)
-    logger.info('Script triggered from NZBGet Version {0}.'.format(version))
+    logger.info(f'Script triggered from NZBGet Version {version}.')
 
 
 def process():

@@ -1,9 +1,10 @@
 #!/usr/bin/env python
+from __future__ import annotations
 
 import os
+import shutil
 import subprocess
 import sys
-import shutil
 
 sys.dont_write_bytecode = True
 
@@ -68,8 +69,10 @@ def module_path(module=__file__, parent=False):
     return normalized
 
 
-def git_clean(remove_directories=False, force=False, dry_run=False, interactive=False, quiet=False, exclude=None,
-              ignore_rules=False, clean_ignored=False, paths=None):
+def git_clean(
+    remove_directories=False, force=False, dry_run=False, interactive=False, quiet=False, exclude=None,
+    ignore_rules=False, clean_ignored=False, paths=None,
+):
     """Execute git clean commands."""
     command = ['git', 'clean']
     if remove_directories:
@@ -88,7 +91,7 @@ def git_clean(remove_directories=False, force=False, dry_run=False, interactive=
         except AttributeError:
             pass
         for exclusion in exclude:
-            command.append('--exclude={pattern}'.format(pattern=exclusion))
+            command.append(f'--exclude={exclusion}')
     if ignore_rules:
         command.append('-x')
     if clean_ignored:
@@ -116,9 +119,9 @@ def clean_bytecode():
         )
         print(result)
     except subprocess.CalledProcessError as error:
-        sys.exit('Error Code: {}'.format(error.returncode))
-    except (IOError, OSError) as error:
-        sys.exit('Error: {}'.format(error))
+        sys.exit(f'Error Code: {error.returncode}')
+    except OSError as error:
+        sys.exit(f'Error: {error}')
     else:
         return result
 
@@ -133,9 +136,9 @@ def clean_folders(*paths):
             paths=paths,
         )
     except subprocess.CalledProcessError as error:
-        sys.exit('Error Code: {}'.format(error.returncode))
-    except (IOError, OSError) as error:
-        sys.exit('Error: {}'.format(error))
+        sys.exit(f'Error Code: {error.returncode}')
+    except OSError as error:
+        sys.exit(f'Error: {error}')
     else:
         return result
 
@@ -166,7 +169,7 @@ def clean(paths):
     def _report_error(msg):
         print('WARNING: Automatic cleanup could not be executed.')
         print('         If errors occur, manual cleanup may be required.')
-        print('REASON : {}'.format(msg))
+        print(f'REASON : {msg}')
 
     with WorkingDirectory(module_path()) as cwd:
         if cwd.working_directory != cwd.original_directory:
@@ -181,7 +184,7 @@ def clean(paths):
             print(result or 'No bytecode to clean')
 
         if paths and os.path.exists('.git'):
-            print('\n-- Cleaning folders: {} --'.format(list(paths)))
+            print(f'\n-- Cleaning folders: {list(paths)} --')
             try:
                 result = clean_folders(*paths)
             except SystemExit as error:

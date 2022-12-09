@@ -1,6 +1,9 @@
+from __future__ import annotations
+
 import datetime
 
-from core import logger, main_db
+from core import logger
+from core import main_db
 
 database = main_db.DBConnection()
 

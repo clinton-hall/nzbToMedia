@@ -1,5 +1,6 @@
+from __future__ import annotations
+
 import os
-from builtins import bytes
 
 import core
 from core import logger
@@ -23,7 +24,8 @@ def char_replace(name_in):
         if (len(name) != 1) & (Idx < (len(name) - 1)):
             # Detect UTF-8
             if ((name[Idx] == 0xC2) | (name[Idx] == 0xC3)) & (
-                    (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)):
+                    (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)
+            ):
                 encoding = 'utf-8'
                 break
             # Detect CP850
@@ -66,23 +68,23 @@ def convert_to_ascii(input_name, dir_name):
     encoded, base2 = char_replace(base)
     if encoded:
         dir_name = os.path.join(directory, base2)
-        logger.info('Renaming directory to: {0}.'.format(base2), 'ENCODER')
+        logger.info(f'Renaming directory to: {base2}.', 'ENCODER')
         os.rename(os.path.join(directory, base), dir_name)
         if 'NZBOP_SCRIPTDIR' in os.environ:
-            print('[NZB] DIRECTORY={0}'.format(dir_name))
+            print(f'[NZB] DIRECTORY={dir_name}')
 
     for dirname, dirnames, _ in os.walk(dir_name, topdown=False):
         for subdirname in dirnames:
             encoded, subdirname2 = char_replace(subdirname)
             if encoded:
-                logger.info('Renaming directory to: {0}.'.format(subdirname2), 'ENCODER')
+                logger.info(f'Renaming directory to: {subdirname2}.', 'ENCODER')
                 os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
 
     for dirname, _, filenames in os.walk(dir_name):
         for filename in filenames:
             encoded, filename2 = char_replace(filename)
             if encoded:
-                logger.info('Renaming file to: {0}.'.format(filename2), 'ENCODER')
+                logger.info(f'Renaming file to: {filename2}.', 'ENCODER')
                 os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
 
     return input_name, dir_name

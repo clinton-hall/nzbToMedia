@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import os
 import platform
 import shutil
 import stat
 import subprocess
-from subprocess import Popen, call
+from subprocess import call
+from subprocess import Popen
 from time import sleep
 
 import core
@@ -46,8 +49,10 @@ def extract(file_path, output_destination):
         if not os.getenv('TR_TORRENT_DIR'):
             devnull = open(os.devnull, 'w')
             for cmd in required_cmds:
-                if call(['which', cmd], stdout=devnull,
-                        stderr=devnull):  # note, returns 0 if exists, or 1 if doesn't exist.
+                if call(
+                    ['which', cmd], stdout=devnull,
+                    stderr=devnull,
+                ):  # note, returns 0 if exists, or 1 if doesn't exist.
                     for k, v in extract_commands.items():
                         if cmd in v[0]:
                             if not call(['which', '7zr'], stdout=devnull, stderr=devnull):  # we do have '7zr'
@@ -57,9 +62,7 @@ def extract(file_path, output_destination):
                             elif not call(['which', '7za'], stdout=devnull, stderr=devnull):  # we do have '7za'
                                 extract_commands[k] = ['7za', 'x', '-y']
                             else:
-                                core.logger.error('EXTRACTOR: {cmd} not found, '
-                                                  'disabling support for {feature}'.format
-                                                  (cmd=cmd, feature=k))
+                                core.logger.error(f'EXTRACTOR: {cmd} not found, disabling support for {k}')
                                 del extract_commands[k]
             devnull.close()
         else:
@@ -73,8 +76,8 @@ def extract(file_path, output_destination):
     if ext[1] in ('.gz', '.bz2', '.lzma'):
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == '.tar':
-            cmd = extract_commands['.tar{ext}'.format(ext=ext[1])]
-        else: # Try gunzip
+            cmd = extract_commands[f'.tar{ext[1]}']
+        else:  # Try gunzip
             cmd = extract_commands[ext[1]]
     elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in ('.rar', '.zip', '.7z'):
         cmd = extract_commands[os.path.splitext(ext[0])[1]]
@@ -84,8 +87,7 @@ def extract(file_path, output_destination):
         if ext[1] in extract_commands:
             cmd = extract_commands[ext[1]]
         else:
-            core.logger.debug('EXTRACTOR: Unknown file type: {ext}'.format
-                              (ext=ext[1]))
+            core.logger.debug(f'EXTRACTOR: Unknown file type: {ext[1]}')
             return False
 
         # Create outputDestination folder
@@ -96,10 +98,8 @@ def extract(file_path, output_destination):
     else:
         passwords = []
 
-    core.logger.info('Extracting {file} to {destination}'.format
-                     (file=file_path, destination=output_destination))
-    core.logger.debug('Extracting {cmd} {file} {destination}'.format
-                      (cmd=cmd, file=file_path, destination=output_destination))
+    core.logger.info(f'Extracting {file_path} to {output_destination}')
+    core.logger.debug(f'Extracting {cmd} {file_path} {output_destination}')
 
     orig_files = []
     orig_dirs = []
@@ -122,13 +122,12 @@ def extract(file_path, output_destination):
         else:
             cmd = core.NICENESS + cmd
         cmd2 = cmd
-        if not 'gunzip' in cmd: #gunzip doesn't support password
+        if not 'gunzip' in cmd:  # gunzip doesn't support password
             cmd2.append('-p-')  # don't prompt for password.
         p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
         res = p.wait()
         if res == 0:  # Both Linux and Windows return 0 for successful.
-            core.logger.info('EXTRACTOR: Extraction was successful for {file} to {destination}'.format
-                             (file=file_path, destination=output_destination))
+            core.logger.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}')
             success = 1
         elif len(passwords) > 0 and not 'gunzip' in cmd:
             core.logger.info('EXTRACTOR: Attempting to extract with passwords')
@@ -137,22 +136,18 @@ def extract(file_path, output_destination):
                     continue
                 cmd2 = cmd
                 # append password here.
-                passcmd = '-p{pwd}'.format(pwd=password)
+                passcmd = f'-p{password}'
                 cmd2.append(passcmd)
                 p = Popen(cmd2, stdout=devnull, stderr=devnull, startupinfo=info)  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
-                    core.logger.info('EXTRACTOR: Extraction was successful '
-                                     'for {file} to {destination} using password: {pwd}'.format
-                                     (file=file_path, destination=output_destination, pwd=password))
+                    core.logger.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}')
                     success = 1
                     break
                 else:
                     continue
     except Exception:
-        core.logger.error('EXTRACTOR: Extraction failed for {file}. '
-                          'Could not call command {cmd}'.format
-                          (file=file_path, cmd=cmd))
+        core.logger.error(f'EXTRACTOR: Extraction failed for {file_path}. Could not call command {cmd}')
         os.chdir(pwd)
         return False
 
@@ -177,7 +172,5 @@ def extract(file_path, output_destination):
                         pass
         return True
     else:
-        core.logger.error('EXTRACTOR: Extraction failed for {file}. '
-                          'Result was {result}'.format
-                          (file=file_path, result=res))
+        core.logger.error(f'EXTRACTOR: Extraction failed for {file_path}. Result was {res}')
         return False

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import requests
 
 import core
@@ -33,13 +35,13 @@ def plex_update(category):
     section = None
     if not core.PLEX_SECTION:
         return
-    logger.debug('Attempting to update Plex Library for category {0}.'.format(category), 'PLEX')
+    logger.debug(f'Attempting to update Plex Library for category {category}.', 'PLEX')
     for item in core.PLEX_SECTION:
         if item[0] == category:
             section = item[1]
 
     if section:
-        url = '{url}{section}/refresh?X-Plex-Token={token}'.format(url=url, section=section, token=core.PLEX_TOKEN)
+        url = f'{url}{section}/refresh?X-Plex-Token={core.PLEX_TOKEN}'
         requests.get(url, timeout=(60, 120), verify=False)
         logger.debug('Plex Library has been refreshed.', 'PLEX')
     else:
