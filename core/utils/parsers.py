@@ -82,7 +82,7 @@ def parse_synods(args):
     input_category = ''
     input_name = os.getenv('TR_TORRENT_NAME')
     input_hash = os.getenv('TR_TORRENT_HASH')
-    if not input_name: # No info passed. Assume manual download.
+    if not input_name:  # No info passed. Assume manual download.
         return input_directory, input_name, input_category, input_hash, input_id
     torrent_id = os.getenv('TR_TORRENT_ID')
     input_id = f'dbid_{torrent_id}'
@@ -92,12 +92,12 @@ def parse_synods(args):
     if res['success']:
         try:
             tasks = res['data']['tasks']
-            task = [ task for task in tasks if task['id'] == input_id ][0]
+            task = [task for task in tasks if task['id'] == input_id][0]
             input_id = task['id']
             input_directory = task['additional']['detail']['destination']
         except:
             logger.error('unable to find download details in Synology DS')
-        #Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
+        # Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
         if not os.path.isdir(input_directory):
             for root in ['/volume1/', '/volume2/', '/volume3/', '/volume4/']:
                 if os.path.isdir(os.path.join(root, input_directory)):

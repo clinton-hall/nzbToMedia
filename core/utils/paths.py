@@ -97,8 +97,9 @@ def remove_read_only(filename):
         file_attribute = os.stat(filename)[0]
         if not file_attribute & stat.S_IWRITE:
             # File is read-only, so make it writeable
-            logger.debug('Read only mode on file {name}. Attempting to make it writeable'.format
-                         (name=filename))
+            logger.debug(
+                'Read only mode on file {name}. Attempting to make it writeable'.format(name=filename),
+            )
             try:
                 os.chmod(filename, stat.S_IWRITE)
             except Exception:

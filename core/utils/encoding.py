@@ -22,7 +22,8 @@ def char_replace(name_in):
         if (len(name) != 1) & (Idx < (len(name) - 1)):
             # Detect UTF-8
             if ((name[Idx] == 0xC2) | (name[Idx] == 0xC3)) & (
-                    (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)):
+                    (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)
+            ):
                 encoding = 'utf-8'
                 break
             # Detect CP850

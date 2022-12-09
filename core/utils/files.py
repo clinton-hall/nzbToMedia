@@ -45,11 +45,11 @@ def move_file(mediafile, path, link):
         title = os.path.splitext(os.path.basename(mediafile))[0]
         new_path = os.path.join(path, sanitize_name(title))
 
-    # Removed as encoding of directory no-longer required
-    #try:
-    #    new_path = new_path.encode(core.SYS_ENCODING)
-    #except Exception:
-    #    pass
+    # # Removed as encoding of directory no-longer required
+    # try:
+    #     new_path = new_path.encode(core.SYS_ENCODING)
+    # except Exception:
+    #     pass
 
     # Just fail-safe incase we already have afile with this clean-name (was actually a bug from earlier code, but let's be safe).
     if os.path.isfile(new_path):
@@ -215,8 +215,9 @@ def backup_versioned_file(old_file, version):
             logger.log('Backup done', logger.DEBUG)
             break
         except Exception as error:
-            logger.log('Error while trying to back up {old} to {new} : {msg}'.format
-                       (old=old_file, new=new_file, msg=error), logger.WARNING)
+            logger.log(
+                'Error while trying to back up {old} to {new} : {msg}'.format(old=old_file, new=new_file, msg=error), logger.WARNING,
+            )
             num_tries += 1
             time.sleep(1)
             logger.log('Trying again.', logger.DEBUG)
