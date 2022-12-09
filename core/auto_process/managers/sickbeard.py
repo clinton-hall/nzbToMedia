@@ -1,4 +1,10 @@
+from __future__ import annotations
+
 import copy
+
+import requests
+from oauthlib.oauth2 import LegacyApplicationClient
+from requests_oauthlib import OAuth2Session
 
 import core
 from core import logger
@@ -6,12 +12,6 @@ from core.auto_process.common import (
     ProcessResult,
 )
 from core.utils import remote_dir
-
-from oauthlib.oauth2 import LegacyApplicationClient
-
-import requests
-
-from requests_oauthlib import OAuth2Session
 
 
 class InitSickBeard:

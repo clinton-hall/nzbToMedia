@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import os
 import re
 import shutil
@@ -8,10 +10,13 @@ import beets.mediafile
 import guessit
 
 import core
-from core import extractor, logger
+from core import extractor
+from core import logger
 from core.utils.links import copy_link
-from core.utils.naming import is_sample, sanitize_name
-from core.utils.paths import get_dir_size, make_dir
+from core.utils.naming import is_sample
+from core.utils.naming import sanitize_name
+from core.utils.paths import get_dir_size
+from core.utils.paths import make_dir
 
 
 def move_file(mediafile, path, link):

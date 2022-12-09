@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from transmissionrpc.client import Client as TransmissionClient
 
 import core

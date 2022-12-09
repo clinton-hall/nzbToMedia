@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import copy
 import errno
 import json
@@ -10,26 +12,24 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import core
-from core import logger, transcoder
-from core.auto_process.common import (
-    ProcessResult,
-    command_complete,
-    completed_download_handling,
-)
+from core import logger
+from core import transcoder
+from core.auto_process.common import command_complete
+from core.auto_process.common import completed_download_handling
+from core.auto_process.common import ProcessResult
 from core.auto_process.managers.sickbeard import InitSickBeard
 from core.plugins.downloaders.nzb.utils import report_nzb
-from core.plugins.subtitles import import_subs, rename_subs
+from core.plugins.subtitles import import_subs
+from core.plugins.subtitles import rename_subs
 from core.scene_exceptions import process_all_exceptions
-from core.utils import (
-    convert_to_ascii,
-    find_download,
-    find_imdbid,
-    flatten,
-    list_media_files,
-    remote_dir,
-    remove_dir,
-    server_responding,
-)
+from core.utils import convert_to_ascii
+from core.utils import find_download
+from core.utils import find_imdbid
+from core.utils import flatten
+from core.utils import list_media_files
+from core.utils import remote_dir
+from core.utils import remove_dir
+from core.utils import server_responding
 
 
 requests.packages.urllib3.disable_warnings()

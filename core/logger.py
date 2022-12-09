@@ -1,10 +1,12 @@
+from __future__ import annotations
+
+import functools
 import logging
 import os
 import sys
 import threading
 
 import core
-import functools
 
 # number of log files to keep
 NUM_LOGS = 3

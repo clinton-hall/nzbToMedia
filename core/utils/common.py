@@ -1,11 +1,15 @@
+from __future__ import annotations
+
 import os.path
 import typing
 import urllib.parse
 
 import core
 from core import logger
-from core.utils.files import list_media_files, move_file
-from core.utils.paths import clean_directory, flatten_dir
+from core.utils.files import list_media_files
+from core.utils.files import move_file
+from core.utils.paths import clean_directory
+from core.utils.paths import flatten_dir
 
 
 def flatten(output_destination):
@@ -116,7 +120,7 @@ def get_dirs(section, subsection, link='hard'):
 def create_url(
     scheme: str,
     host: str,
-    port: typing.Optional[int] = None,
+    port: int | None = None,
     path: str = '',
     query: str = '',
 ) -> str:

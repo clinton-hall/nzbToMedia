@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import time
 
 import core
@@ -5,9 +7,9 @@ from core import logger
 
 from .deluge import configure_client as deluge_client
 from .qbittorrent import configure_client as qbittorrent_client
+from .synology import configure_client as synology_client
 from .transmission import configure_client as transmission_client
 from .utorrent import configure_client as utorrent_client
-from .synology import configure_client as synology_client
 
 torrent_clients = {
     'deluge': deluge_client,

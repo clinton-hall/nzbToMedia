@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from utorrent.client import UTorrentClient
 
 import core

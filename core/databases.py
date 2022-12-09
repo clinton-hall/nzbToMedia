@@ -1,4 +1,7 @@
-from core import logger, main_db
+from __future__ import annotations
+
+from core import logger
+from core import main_db
 from core.utils import backup_versioned_file
 
 MIN_DB_VERSION = 1  # oldest db version we support migrating from

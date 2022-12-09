@@ -1,12 +1,14 @@
+from __future__ import annotations
+
 import errno
 import json
-import sys
 import os
-import time
 import platform
 import re
 import shutil
 import subprocess
+import sys
+import time
 
 from babelfish import Language
 

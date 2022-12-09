@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from syno.downloadstation import DownloadStation
 
 import core

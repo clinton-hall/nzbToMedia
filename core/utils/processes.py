@@ -1,10 +1,15 @@
+from __future__ import annotations
+
 import os
 import socket
 import subprocess
 import sys
 
 import core
-from core import logger, version_check, APP_FILENAME, SYS_ARGV
+from core import APP_FILENAME
+from core import logger
+from core import SYS_ARGV
+from core import version_check
 
 if os.name == 'nt':
     from win32event import CreateMutex

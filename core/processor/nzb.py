@@ -1,19 +1,25 @@
+from __future__ import annotations
+
 import datetime
 
 import core
-from core import logger, main_db
-from core.auto_process import comics, games, movies, music, tv, books
+from core import logger
+from core import main_db
+from core.auto_process import books
+from core.auto_process import comics
+from core.auto_process import games
+from core.auto_process import movies
+from core.auto_process import music
+from core.auto_process import tv
 from core.auto_process.common import ProcessResult
 from core.plugins.downloaders.nzb.utils import get_nzoid
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import (
-    char_replace,
-    clean_dir,
-    convert_to_ascii,
-    extract_files,
-    update_download_info_status,
-)
+from core.utils import char_replace
+from core.utils import clean_dir
+from core.utils import convert_to_ascii
+from core.utils import extract_files
+from core.utils import update_download_info_status
 
 
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):

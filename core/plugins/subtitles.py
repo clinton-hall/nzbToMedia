@@ -1,11 +1,13 @@
-from babelfish import Language
-import subliminal
-
-import core
-from core import logger
+from __future__ import annotations
 
 import os
 import re
+
+import subliminal
+from babelfish import Language
+
+import core
+from core import logger
 
 for provider in subliminal.provider_manager.internal_extensions:
     if provider not in [str(x) for x in subliminal.provider_manager.list_entry_points()]:

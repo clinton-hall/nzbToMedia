@@ -1,8 +1,10 @@
-from functools import partial
+from __future__ import annotations
+
 import os
 import re
 import shutil
 import stat
+from functools import partial
 
 import core
 from core import logger

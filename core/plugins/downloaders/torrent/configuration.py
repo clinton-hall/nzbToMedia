@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import core
 from core.plugins.downloaders.torrent.utils import create_torrent_class
 

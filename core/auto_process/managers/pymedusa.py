@@ -1,11 +1,13 @@
+from __future__ import annotations
+
 import time
+
+import requests
 
 import core.utils.common
 from core import logger
 from core.auto_process.common import ProcessResult
 from core.auto_process.managers.sickbeard import SickBeard
-
-import requests
 
 
 class PyMedusa(SickBeard):

@@ -1,5 +1,6 @@
 # Author: Nic Wolfe <nic@wolfeden.ca>
 # Modified by: echel0n
+from __future__ import annotations
 
 import os
 import platform
@@ -9,12 +10,12 @@ import stat
 import subprocess
 import tarfile
 import traceback
-
 from urllib.request import urlretrieve
 
 import cleanup
 import core
-from core import github_api as github, logger
+from core import github_api as github
+from core import logger
 
 
 class CheckVersion:

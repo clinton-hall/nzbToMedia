@@ -1,9 +1,12 @@
+from __future__ import annotations
+
 import os
 import platform
 import shutil
 import stat
 import subprocess
-from subprocess import Popen, call
+from subprocess import call
+from subprocess import Popen
 from time import sleep
 
 import core
