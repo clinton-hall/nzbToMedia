@@ -19,12 +19,14 @@ DEBUG = logging.DEBUG
 POSTPROCESS = 21
 DB = 5
 
-reverseNames = {'ERROR': ERROR,
-                'WARNING': WARNING,
-                'INFO': MESSAGE,
-                'DEBUG': DEBUG,
-                'POSTPROCESS': POSTPROCESS,
-                'DB': DB}
+reverseNames = {
+    'ERROR': ERROR,
+    'WARNING': WARNING,
+    'INFO': MESSAGE,
+    'DEBUG': DEBUG,
+    'POSTPROCESS': POSTPROCESS,
+    'DB': DB,
+}
 
 
 class NTMRotatingLogHandler:
@@ -81,12 +83,16 @@ class NTMRotatingLogHandler:
                 console.setLevel(DB)
 
                 # set a format which is simpler for console use
-                console.setFormatter(DispatchingFormatter(
-                    {'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                     },
-                    logging.Formatter('%(message)s')))
+                console.setFormatter(
+                    DispatchingFormatter(
+                        {
+                            'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                            'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                            'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                        },
+                        logging.Formatter('%(message)s'),
+                    ),
+                )
 
                 # add the handler to the root logger
                 logging.getLogger('nzbtomedia').addHandler(console)
@@ -115,12 +121,16 @@ class NTMRotatingLogHandler:
 
         file_handler.setLevel(DB)
 
-        file_handler.setFormatter(DispatchingFormatter(
-            {'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-             },
-            logging.Formatter('%(message)s')))
+        file_handler.setFormatter(
+            DispatchingFormatter(
+                {
+                    'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+                    'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+                    'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+                },
+                logging.Formatter('%(message)s'),
+            ),
+        )
 
         return file_handler
 

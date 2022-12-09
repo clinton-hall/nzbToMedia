@@ -40,17 +40,14 @@ class InitialSchema(main_db.SchemaUpgrade):
             cur_db_version = self.check_db_version()
 
             if cur_db_version < MIN_DB_VERSION:
-                logger.log_error_and_exit('Your database version ({current}) is too old to migrate '
-                                          'from what this version of nzbToMedia supports ({min}).'
-                                          '\nPlease remove nzbtomedia.db file to begin fresh.'.format
-                                          (current=cur_db_version, min=MIN_DB_VERSION))
+                logger.log_error_and_exit(
+                    'Your database version ({current}) is too old to migrate from what this version of nzbToMedia supports ({min}).\nPlease remove nzbtomedia.db file to begin fresh.'.format(current=cur_db_version, min=MIN_DB_VERSION),
+                )
 
             if cur_db_version > MAX_DB_VERSION:
-                logger.log_error_and_exit('Your database version ({current}) has been incremented '
-                                          'past what this version of nzbToMedia supports ({max}).'
-                                          '\nIf you have used other forks of nzbToMedia, your database '
-                                          'may be unusable due to their modifications.'.format
-                                          (current=cur_db_version, max=MAX_DB_VERSION))
+                logger.log_error_and_exit(
+                    'Your database version ({current}) has been incremented past what this version of nzbToMedia supports ({max}).\nIf you have used other forks of nzbToMedia, your database may be unusable due to their modifications.'.format(current=cur_db_version, max=MAX_DB_VERSION),
+                )
             if cur_db_version < MAX_DB_VERSION:  # We need to upgrade.
                 queries = [
                     'CREATE TABLE downloads2 (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));',

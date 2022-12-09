@@ -68,8 +68,10 @@ def module_path(module=__file__, parent=False):
     return normalized
 
 
-def git_clean(remove_directories=False, force=False, dry_run=False, interactive=False, quiet=False, exclude=None,
-              ignore_rules=False, clean_ignored=False, paths=None):
+def git_clean(
+    remove_directories=False, force=False, dry_run=False, interactive=False, quiet=False, exclude=None,
+    ignore_rules=False, clean_ignored=False, paths=None,
+):
     """Execute git clean commands."""
     command = ['git', 'clean']
     if remove_directories:

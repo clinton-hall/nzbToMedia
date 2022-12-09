@@ -33,8 +33,10 @@ def is_video_good(videofile, status, require_lan=None):
             aud_streams = [item for item in test_details['streams'] if 'codec_type' in item and item['codec_type'] == 'audio']
             if not (len(vid_streams) > 0 and len(aud_streams) > 0):
                 disable = True
-                logger.info('DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.',
-                            'TRANSCODER')
+                logger.info(
+                    'DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.',
+                    'TRANSCODER',
+                )
     if disable:
         if status:  # if the download was 'failed', assume bad. If it was successful, assume good.
             return False
@@ -55,7 +57,7 @@ def is_video_good(videofile, status, require_lan=None):
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         if require_lan:
-            valid_audio = [item for item in audio_streams if 'tags' in item and 'language' in item['tags'] and item['tags']['language'] in require_lan ]
+            valid_audio = [item for item in audio_streams if 'tags' in item and 'language' in item['tags'] and item['tags']['language'] in require_lan]
         else:
             valid_audio = audio_streams
         if len(video_streams) > 0 and len(valid_audio) > 0:
@@ -89,8 +91,10 @@ def get_video_details(videofile, img=None, bitbucket=None):
     try:
         if img:
             videofile = '-'
-        command = [core.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error',
-                   videofile]
+        command = [
+            core.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error',
+            videofile,
+        ]
         print_cmd(command)
         if img:
             procin = zip_out(file, img, bitbucket)
@@ -102,7 +106,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
         result = proc.returncode
         video_details = json.loads(out.decode())
     except Exception:
-        try: # try this again without -show error in case of ffmpeg limitation
+        try:  # try this again without -show error in case of ffmpeg limitation
             command = [core.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
             print_cmd(command)
             if img:
@@ -159,9 +163,9 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         rem_vid = []
         for vid in data['files']:
             video_details, result = get_video_details(vid, img, bitbucket)
-            if not check_vid_file(video_details, result): #lets not transcode menu or other clips that don't have audio and video.
+            if not check_vid_file(video_details, result):  # lets not transcode menu or other clips that don't have audio and video.
                 rem_vid.append(vid)
-        data['files'] = [ f for f in data['files'] if f not in rem_vid ]
+        data['files'] = [f for f in data['files'] if f not in rem_vid]
         new_file = {img: {'name': data['name'], 'files': data['files']}}
         video_details, result = get_video_details(data['files'][0], img, bitbucket)
         input_file = '-'
@@ -178,7 +182,8 @@ def build_commands(file, new_dir, movie_name, bitbucket):
     other_cmd = []
 
     if not video_details or not video_details.get(
-            'streams'):  # we couldn't read streams with ffprobe. Set defaults to try transcoding.
+            'streams',
+    ):  # we couldn't read streams with ffprobe. Set defaults to try transcoding.
         video_streams = []
         audio_streams = []
         sub_streams = []
@@ -205,8 +210,10 @@ def build_commands(file, new_dir, movie_name, bitbucket):
 
         if core.ACODEC:
             audio_cmd.extend(['-c:a', core.ACODEC])
-            if core.ACODEC in ['aac',
-                               'dts']:  # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
+            if core.ACODEC in [
+                'aac',
+                'dts',
+            ]:  # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
                 audio_cmd.extend(['-strict', '-2'])
         else:
             audio_cmd.extend(['-c:a', 'copy'])
@@ -232,9 +239,12 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle']
         if core.VEXTENSION not in ['.mkv', '.mpegts']:
-            sub_streams = [item for item in video_details['streams'] if
-                           item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item[
-                               'codec_name'] != 'pgssub']
+            sub_streams = [
+                item for item in video_details['streams'] if
+                item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item[
+                    'codec_name'
+                ] != 'pgssub'
+            ]
 
     for video in video_streams:
         codec = video['codec_name']
@@ -518,8 +528,10 @@ def build_commands(file, new_dir, movie_name, bitbucket):
             except Exception:
                 pass
             if metlan:
-                meta_cmd.extend([f'-metadata:s:s:{len(s_mapped) + n}',
-                                 f'language={metlan.alpha3}'])
+                meta_cmd.extend([
+                    f'-metadata:s:s:{len(s_mapped) + n}',
+                    f'language={metlan.alpha3}',
+                ])
             n += 1
             map_cmd.extend(['-map', f'{n}:0'])
 
@@ -567,13 +579,19 @@ def extract_subs(file, newfile_path, bitbucket):
     name = os.path.splitext(os.path.split(newfile_path)[1])[0]
 
     try:
-        sub_streams = [item for item in video_details['streams'] if
-                       item['codec_type'] == 'subtitle' and item['tags']['language'] in core.SLANGUAGES and item[
-                           'codec_name'] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub']
+        sub_streams = [
+            item for item in video_details['streams'] if
+            item['codec_type'] == 'subtitle' and item['tags']['language'] in core.SLANGUAGES and item[
+                'codec_name'
+            ] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub'
+        ]
     except Exception:
-        sub_streams = [item for item in video_details['streams'] if
-                       item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item[
-                           'codec_name'] != 'pgssub']
+        sub_streams = [
+            item for item in video_details['streams'] if
+            item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item[
+                'codec_name'
+            ] != 'pgssub'
+        ]
     num = len(sub_streams)
     for n in range(num):
         sub = sub_streams[n]
@@ -589,8 +607,10 @@ def extract_subs(file, newfile_path, bitbucket):
             if os.path.isfile(output_file):
                 output_file = os.path.join(subdir, f'{name}.{lan}.{n}.srt')
 
-        command = [core.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an',
-                   f'-codec:{idx}', 'srt', output_file]
+        command = [
+            core.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an',
+            f'-codec:{idx}', 'srt', output_file,
+        ]
         if platform.system() != 'Windows':
             command = core.NICENESS + command
 
@@ -672,17 +692,17 @@ def process_list(it, new_dir, bitbucket):
     return it, rem_list, new_list, success
 
 
-def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount when permissions allow.
+def mount_iso(item, new_dir, bitbucket):  # Currently only supports Linux Mount when permissions allow.
     if platform.system() == 'Windows':
         logger.error(f'No mounting options available under Windows for image file {item}', 'TRANSCODER')
         return []
-    mount_point = os.path.join(os.path.dirname(os.path.abspath(item)),'temp')
+    mount_point = os.path.join(os.path.dirname(os.path.abspath(item)), 'temp')
     make_dir(mount_point)
     cmd = ['mount', '-o', 'loop', item, mount_point]
     print_cmd(cmd)
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
     out, err = proc.communicate()
-    core.MOUNTED = mount_point # Allows us to verify this has been done and then cleanup.
+    core.MOUNTED = mount_point  # Allows us to verify this has been done and then cleanup.
     for root, dirs, files in os.walk(mount_point):
         for file in files:
             full_path = os.path.join(root, file)
@@ -701,7 +721,7 @@ def mount_iso(item, new_dir, bitbucket): #Currently only supports Linux Mount wh
                     mts_path = os.path.split(full_path)[0]
                 return combine_mts(mts_path)
     logger.error(f'No VIDEO_TS or BDMV/SOURCE folder found in image file {mount_point}', 'TRANSCODER')
-    return ['failure'] # If we got here, nothing matched our criteria
+    return ['failure']  # If we got here, nothing matched our criteria
 
 
 def rip_iso(item, new_dir, bitbucket):
@@ -711,7 +731,7 @@ def rip_iso(item, new_dir, bitbucket):
     if not core.SEVENZIP:
         logger.debug(f'No 7zip installed. Attempting to mount image file {item}', 'TRANSCODER')
         try:
-            new_files = mount_iso(item, new_dir, bitbucket) # Currently only works for Linux.
+            new_files = mount_iso(item, new_dir, bitbucket)  # Currently only works for Linux.
         except Exception:
             logger.error(f'Failed to mount and extract from image file {item}', 'TRANSCODER')
             new_files = [failure_dir]
@@ -732,7 +752,7 @@ def rip_iso(item, new_dir, bitbucket):
             if file_match
         ]
         combined = []
-        if file_list: # handle DVD
+        if file_list:  # handle DVD
             for n in range(99):
                 concat = []
                 m = 1
@@ -749,10 +769,10 @@ def rip_iso(item, new_dir, bitbucket):
                     combined.extend(concat)
                     continue
                 name = '{name}.cd{x}'.format(
-                    name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1
+                    name=os.path.splitext(os.path.split(item)[1])[0], x=n + 1,
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
-        else: #check BlueRay for BDMV/STREAM/XXXX.MTS
+        else:  # check BlueRay for BDMV/STREAM/XXXX.MTS
             mts_list_gen = (
                 re.match(r'.+(BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]).', line)
                 for line in out.decode().splitlines()
@@ -762,9 +782,9 @@ def rip_iso(item, new_dir, bitbucket):
                 for file_match in mts_list_gen
                 if file_match
             ]
-            if sys.version_info[0] == 2: # Python2 sorting
-                mts_list.sort(key=lambda f: int(filter(str.isdigit, f))) # Sort all .mts files in numerical order
-            else: # Python3 sorting
+            if sys.version_info[0] == 2:  # Python2 sorting
+                mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))  # Sort all .mts files in numerical order
+            else:  # Python3 sorting
                 mts_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
             n = 0
             for mts_name in mts_list:
@@ -775,7 +795,7 @@ def rip_iso(item, new_dir, bitbucket):
                     combined.extend(concat)
                     continue
                 name = '{name}.cd{x}'.format(
-                    name=os.path.splitext(os.path.split(item)[1])[0], x=n
+                    name=os.path.splitext(os.path.split(item)[1])[0], x=n,
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
         if core.CONCAT and combined:
@@ -814,7 +834,7 @@ def combine_vts(vts_path):
             combined.extend(concat)
             continue
         name = '{name}.cd{x}'.format(
-            name=name, x=n + 1
+            name=name, x=n + 1,
         )
         new_files.append({vts_path: {'name': name, 'files': concat}})
     if core.CONCAT:
@@ -832,18 +852,18 @@ def combine_mts(mts_path):
         name = os.path.basename(name)
     n = 0
     mts_list = [f for f in os.listdir(mts_path) if os.path.isfile(os.path.join(mts_path, f))]
-    if sys.version_info[0] == 2: # Python2 sorting
+    if sys.version_info[0] == 2:  # Python2 sorting
         mts_list.sort(key=lambda f: int(filter(str.isdigit, f)))
-    else: # Python3 sorting
+    else:  # Python3 sorting
         mts_list.sort(key=lambda f: int(''.join(filter(str.isdigit, f))))
-    for mts_name in mts_list:  ### need to sort all files [1 - 998].mts in order
+    for mts_name in mts_list:  # need to sort all files [1 - 998].mts in order
         concat = []
         concat.append(os.path.join(mts_path, mts_name))
         if core.CONCAT:
             combined.extend(concat)
             continue
         name = '{name}.cd{x}'.format(
-            name=name, x=n + 1
+            name=name, x=n + 1,
         )
         new_files.append({mts_path: {'name': name, 'files': concat}})
         n += 1
@@ -857,8 +877,10 @@ def combine_cd(combine):
     for item in {re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine}:
         concat = ''
         for n in range(99):
-            files = [file for file in combine if
-                     n + 1 == int(re.match('.+[cC][dD]([0-9]+).', file).groups()[0]) and item in file]
+            files = [
+                file for file in combine if
+                n + 1 == int(re.match('.+[cC][dD]([0-9]+).', file).groups()[0]) and item in file
+            ]
             if files:
                 concat += f'{files[0]}|'
             else:
@@ -963,8 +985,8 @@ def transcode_directory(dir_name):
             logger.error(f'Transcoding of video to {newfile_path} failed with result {result}')
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
-    if core.MOUNTED: # In case we mounted an .iso file, unmount here.
-        time.sleep(5) # play it safe and avoid failing to unmount.
+    if core.MOUNTED:  # In case we mounted an .iso file, unmount here.
+        time.sleep(5)  # play it safe and avoid failing to unmount.
         cmd = ['umount', '-l', core.MOUNTED]
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)

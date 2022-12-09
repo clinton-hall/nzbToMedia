@@ -56,8 +56,9 @@ class DBConnection:
                     cursor.execute(query)
                     sql_result = cursor.fetchone()[0]
                 else:
-                    logger.log('{name}: {query} with args {args}'.format
-                               (name=self.filename, query=query, args=args), logger.DB)
+                    logger.log(
+                        '{name}: {query} with args {args}'.format(name=self.filename, query=query, args=args), logger.DB,
+                    )
                     cursor = self.connection.cursor()
                     cursor.execute(query, args)
                     sql_result = cursor.fetchone()[0]
@@ -131,8 +132,9 @@ class DBConnection:
                     logger.log(f'{self.filename}: {query}', logger.DB)
                     sql_result = self.connection.execute(query)
                 else:
-                    logger.log('{name}: {query} with args {args}'.format
-                               (name=self.filename, query=query, args=args), logger.DB)
+                    logger.log(
+                        '{name}: {query} with args {args}'.format(name=self.filename, query=query, args=args), logger.DB,
+                    )
                     sql_result = self.connection.execute(query, args)
                 self.connection.commit()
                 # get out of the connection attempt loop since we were successful
@@ -228,22 +230,27 @@ def pretty_name(class_name):
 
 def _process_upgrade(connection, upgrade_class):
     instance = upgrade_class(connection)
-    logger.log('Checking {name} database upgrade'.format
-               (name=pretty_name(upgrade_class.__name__)), logger.DEBUG)
+    logger.log(
+        'Checking {name} database upgrade'.format(name=pretty_name(upgrade_class.__name__)), logger.DEBUG,
+    )
     if not instance.test():
-        logger.log('Database upgrade required: {name}'.format
-                   (name=pretty_name(upgrade_class.__name__)), logger.MESSAGE)
+        logger.log(
+            'Database upgrade required: {name}'.format(name=pretty_name(upgrade_class.__name__)), logger.MESSAGE,
+        )
         try:
             instance.execute()
         except sqlite3.DatabaseError as error:
-            print('Error in {name}: {msg}'.format
-                  (name=upgrade_class.__name__, msg=error))
+            print(
+                'Error in {name}: {msg}'.format(name=upgrade_class.__name__, msg=error),
+            )
             raise
-        logger.log('{name} upgrade completed'.format
-                   (name=upgrade_class.__name__), logger.DEBUG)
+        logger.log(
+            '{name} upgrade completed'.format(name=upgrade_class.__name__), logger.DEBUG,
+        )
     else:
-        logger.log('{name} upgrade not required'.format
-                   (name=upgrade_class.__name__), logger.DEBUG)
+        logger.log(
+            '{name} upgrade not required'.format(name=upgrade_class.__name__), logger.DEBUG,
+        )
 
     for upgradeSubClass in upgrade_class.__subclasses__():
         _process_upgrade(connection, upgradeSubClass)

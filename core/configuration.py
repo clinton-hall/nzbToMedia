@@ -139,16 +139,18 @@ class ConfigObj(configobj.ConfigObj, Section):
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():
-                if option in ['category',
-                              'cpsCategory',
-                              'sbCategory',
-                              'srCategory',
-                              'hpCategory',
-                              'mlCategory',
-                              'gzCategory',
-                              'raCategory',
-                              'ndCategory',
-                              'W3Category']:
+                if option in [
+                    'category',
+                    'cpsCategory',
+                    'sbCategory',
+                    'srCategory',
+                    'hpCategory',
+                    'mlCategory',
+                    'gzCategory',
+                    'raCategory',
+                    'ndCategory',
+                    'W3Category',
+                ]:
                     if not isinstance(value, list):
                         value = [value]
 
@@ -279,29 +281,29 @@ class ConfigObj(configobj.ConfigObj, Section):
         try:
             if 'NZBPO_NDCATEGORY' in os.environ and 'NZBPO_SBCATEGORY' in os.environ:
                 if os.environ['NZBPO_NDCATEGORY'] == os.environ['NZBPO_SBCATEGORY']:
-                    logger.warning('{x} category is set for SickBeard and Sonarr. '
-                                   'Please check your config in NZBGet'.format
-                                   (x=os.environ['NZBPO_NDCATEGORY']))
+                    logger.warning(
+                        '{x} category is set for SickBeard and Sonarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_NDCATEGORY']),
+                    )
             if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
                 if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
-                    logger.warning('{x} category is set for CouchPotato and Radarr. '
-                                   'Please check your config in NZBGet'.format
-                                   (x=os.environ['NZBPO_RACATEGORY']))
+                    logger.warning(
+                        '{x} category is set for CouchPotato and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']),
+                    )
             if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_W3CATEGORY' in os.environ:
                 if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_W3CATEGORY']:
-                    logger.warning('{x} category is set for Watcher3 and Radarr. '
-                                   'Please check your config in NZBGet'.format
-                                   (x=os.environ['NZBPO_RACATEGORY']))
+                    logger.warning(
+                        '{x} category is set for Watcher3 and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']),
+                    )
             if 'NZBPO_W3CATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
                 if os.environ['NZBPO_W3CATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
-                    logger.warning('{x} category is set for CouchPotato and Watcher3. '
-                                   'Please check your config in NZBGet'.format
-                                   (x=os.environ['NZBPO_W3CATEGORY']))
+                    logger.warning(
+                        '{x} category is set for CouchPotato and Watcher3. Please check your config in NZBGet'.format(x=os.environ['NZBPO_W3CATEGORY']),
+                    )
             if 'NZBPO_LICATEGORY' in os.environ and 'NZBPO_HPCATEGORY' in os.environ:
                 if os.environ['NZBPO_LICATEGORY'] == os.environ['NZBPO_HPCATEGORY']:
-                    logger.warning('{x} category is set for HeadPhones and Lidarr. '
-                                   'Please check your config in NZBGet'.format
-                                   (x=os.environ['NZBPO_LICATEGORY']))
+                    logger.warning(
+                        '{x} category is set for HeadPhones and Lidarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_LICATEGORY']),
+                    )
             section = 'Nzb'
             key = 'NZBOP_DESTDIR'
             if key in os.environ:
@@ -331,10 +333,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'CouchPotato'
             env_cat_key = 'NZBPO_CPSCATEGORY'
-            env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
-                        'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
-            cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
-                        'wait_for', 'watch_dir', 'omdbapikey']
+            env_keys = [
+                'ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
+                'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY',
+            ]
+            cfg_keys = [
+                'enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
+                'wait_for', 'watch_dir', 'omdbapikey',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_CPS{env_keys[index]}'
@@ -352,10 +358,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'Watcher3'
             env_cat_key = 'NZBPO_W3CATEGORY'
-            env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
-                        'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
-            cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
-                        'wait_for', 'watch_dir', 'omdbapikey']
+            env_keys = [
+                'ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH',
+                'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY',
+            ]
+            cfg_keys = [
+                'enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path',
+                'wait_for', 'watch_dir', 'omdbapikey',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_W3{env_keys[index]}'
@@ -373,10 +383,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'SickBeard'
             env_cat_key = 'NZBPO_SBCATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK',
-                        'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
-            cfg_keys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink',
-                        'nzbExtractionBy', 'remote_path', 'process_method']
+            env_keys = [
+                'ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK',
+                'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD',
+            ]
+            cfg_keys = [
+                'enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink',
+                'nzbExtractionBy', 'remote_path', 'process_method',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_SB{env_keys[index]}'
@@ -394,10 +408,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'SiCKRAGE'
             env_cat_key = 'NZBPO_SRCATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'API_VERSION', 'SSO_USERNAME', 'SSO_PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
-                        'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
-            cfg_keys = ['enabled', 'host', 'port', 'apikey', 'api_version', 'sso_username', 'sso_password', 'ssl', 'web_root', 'watch_dir', 'fork',
-                        'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
+            env_keys = [
+                'ENABLED', 'HOST', 'PORT', 'APIKEY', 'API_VERSION', 'SSO_USERNAME', 'SSO_PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK',
+                'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD',
+            ]
+            cfg_keys = [
+                'enabled', 'host', 'port', 'apikey', 'api_version', 'sso_username', 'sso_password', 'ssl', 'web_root', 'watch_dir', 'fork',
+                'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_SR{env_keys[index]}'
@@ -432,10 +450,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'Mylar'
             env_cat_key = 'NZBPO_MYCATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'APIKEY', 'SSL', 'WEB_ROOT', 'WATCH_DIR',
-                        'REMOTE_PATH']
-            cfg_keys = ['enabled', 'host', 'port', 'username', 'password', 'apikey', 'ssl', 'web_root', 'watch_dir',
-                        'remote_path']
+            env_keys = [
+                'ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'APIKEY', 'SSL', 'WEB_ROOT', 'WATCH_DIR',
+                'REMOTE_PATH',
+            ]
+            cfg_keys = [
+                'enabled', 'host', 'port', 'username', 'password', 'apikey', 'ssl', 'web_root', 'watch_dir',
+                'remote_path',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_MY{env_keys[index]}'
@@ -479,11 +501,15 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'NzbDrone'
             env_cat_key = 'NZBPO_NDCATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'IMPORTMODE']
+            env_keys = [
+                'ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
+                'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'IMPORTMODE',
+            ]
             # new cfgKey added for importMode
-            cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'importMode']
+            cfg_keys = [
+                'enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
+                'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'importMode',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_ND{env_keys[index]}'
@@ -501,11 +527,15 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'Radarr'
             env_cat_key = 'NZBPO_RACATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY', 'IMPORTMODE']
+            env_keys = [
+                'ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
+                'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH', 'OMDBAPIKEY', 'IMPORTMODE',
+            ]
             # new cfgKey added for importMode
-            cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey', 'importMode']
+            cfg_keys = [
+                'enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
+                'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey', 'importMode',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_RA{env_keys[index]}'
@@ -523,10 +553,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'Lidarr'
             env_cat_key = 'NZBPO_LICATEGORY'
-            env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
-                        'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
-            cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
-                        'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
+            env_keys = [
+                'ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED',
+                'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH',
+            ]
+            cfg_keys = [
+                'enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed',
+                'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_LI{env_keys[index]}'
@@ -561,26 +595,30 @@ class ConfigObj(configobj.ConfigObj, Section):
                     cfg_new[section][option] = value
 
             section = 'Transcoder'
-            env_keys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH',
-                        'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES',
-                        'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR',
-                        'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW',
-                        'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC',
-                        'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS',
-                        'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE',
-                        'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE',
-                        'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS',
-                        'OUTPUTAUDIOOTHERCHANNELS', 'OUTPUTVIDEORESOLUTION']
-            cfg_keys = ['transcode', 'duplicate', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath',
-                        'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages',
-                        'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir',
-                        'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow',
-                        'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec',
-                        'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs',
-                        'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate',
-                        'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate',
-                        'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels',
-                        'outputAudioOtherChannels', 'outputVideoResolution']
+            env_keys = [
+                'TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH',
+                'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES',
+                'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR',
+                'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW',
+                'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC',
+                'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS',
+                'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE',
+                'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE',
+                'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS',
+                'OUTPUTAUDIOOTHERCHANNELS', 'OUTPUTVIDEORESOLUTION',
+            ]
+            cfg_keys = [
+                'transcode', 'duplicate', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath',
+                'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages',
+                'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir',
+                'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow',
+                'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec',
+                'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs',
+                'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate',
+                'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate',
+                'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels',
+                'outputAudioOtherChannels', 'outputVideoResolution',
+            ]
             for index in range(len(env_keys)):
                 key = f'NZBPO_{env_keys[index]}'
                 if key in os.environ:
@@ -600,10 +638,14 @@ class ConfigObj(configobj.ConfigObj, Section):
 
             section = 'UserScript'
             env_cat_key = 'NZBPO_USCATEGORY'
-            env_keys = ['USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE',
-                        'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH']
-            cfg_keys = ['user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce',
-                        'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
+            env_keys = [
+                'USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE',
+                'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH',
+            ]
+            cfg_keys = [
+                'user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce',
+                'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path',
+            ]
             if env_cat_key in os.environ:
                 for index in range(len(env_keys)):
                     key = f'NZBPO_{env_keys[index]}'

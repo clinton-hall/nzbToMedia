@@ -391,9 +391,9 @@ def configure_updates():
             logger.error('Update failed, not restarting. Check your log for more information.')
 
     # Set Current Version
-    logger.info('nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format
-                (version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH,
-                 system=platform.system(), release=platform.release()))
+    logger.info(
+        'nzbToMedia Version:{version} Branch:{branch} ({system} {release})'.format(version=NZBTOMEDIA_VERSION, branch=GIT_BRANCH, system=platform.system(), release=platform.release()),
+    )
 
 
 def configure_wake_on_lan():
@@ -442,7 +442,7 @@ def configure_niceness():
         try:
             subprocess.Popen(['nice'], stdout=devnull, stderr=devnull).communicate()
             niceness = CFG['Posix']['niceness']
-            if len(niceness.split(',')) > 1: #Allow passing of absolute command, not just value.
+            if len(niceness.split(',')) > 1:  # Allow passing of absolute command, not just value.
                 NICENESS.extend(niceness.split(','))
             else:
                 NICENESS.extend(['nice', f'-n{int(niceness)}'])
@@ -473,11 +473,15 @@ def configure_containers():
     global AUDIO_CONTAINER
     global META_CONTAINER
 
-    COMPRESSED_CONTAINER = [re.compile(r'.r\d{2}$', re.I),
-                            re.compile(r'.part\d+.rar$', re.I),
-                            re.compile('.rar$', re.I)]
-    COMPRESSED_CONTAINER += [re.compile(f'{ext}$', re.I) for ext in
-                             CFG['Extensions']['compressedExtensions']]
+    COMPRESSED_CONTAINER = [
+        re.compile(r'.r\d{2}$', re.I),
+        re.compile(r'.part\d+.rar$', re.I),
+        re.compile('.rar$', re.I),
+    ]
+    COMPRESSED_CONTAINER += [
+        re.compile(f'{ext}$', re.I) for ext in
+        CFG['Extensions']['compressedExtensions']
+    ]
     MEDIA_CONTAINER = CFG['Extensions']['mediaExtensions']
     AUDIO_CONTAINER = CFG['Extensions']['audioExtensions']
     META_CONTAINER = CFG['Extensions']['metaExtensions']  # .nfo,.sub,.srt
@@ -755,7 +759,7 @@ def configure_transcoder():
             'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8,
             'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None,
             'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8,
-            'SCODEC': 'mov_text'
+            'SCODEC': 'mov_text',
         },
         'mkv-bluray': {
             'VEXTENSION': '.mkv', 'VCODEC': 'libx265', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None,
@@ -901,7 +905,8 @@ def configure_utility_locations():
         if not SEVENZIP:
             SEVENZIP = None
             logger.warning(
-                'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
+                'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!',
+            )
         try:
             PAR2CMD = subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE).communicate()[0].strip().decode()
         except Exception:
@@ -909,12 +914,17 @@ def configure_utility_locations():
         if not PAR2CMD:
             PAR2CMD = None
             logger.warning(
-                'Failed to locate par2. Repair and rename using par files will not be possible!')
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(os.path.join(FFMPEG_PATH, 'ffmpeg'),
-                                                                            os.X_OK):
+                'Failed to locate par2. Repair and rename using par files will not be possible!',
+            )
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(
+            os.path.join(FFMPEG_PATH, 'ffmpeg'),
+            os.X_OK,
+        ):
             FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(os.path.join(FFMPEG_PATH, 'avconv'),
-                                                                              os.X_OK):
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(
+            os.path.join(FFMPEG_PATH, 'avconv'),
+            os.X_OK,
+        ):
             FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
         else:
             try:
@@ -931,11 +941,15 @@ def configure_utility_locations():
             logger.warning('Failed to locate ffmpeg. Transcoding disabled!')
             logger.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(os.path.join(FFMPEG_PATH, 'ffprobe'),
-                                                                             os.X_OK):
+        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(
+            os.path.join(FFMPEG_PATH, 'ffprobe'),
+            os.X_OK,
+        ):
             FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(os.path.join(FFMPEG_PATH, 'avprobe'),
-                                                                               os.X_OK):
+        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(
+            os.path.join(FFMPEG_PATH, 'avprobe'),
+            os.X_OK,
+        ):
             FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
         else:
             try:
