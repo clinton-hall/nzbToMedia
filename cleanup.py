@@ -11,7 +11,6 @@ sys.dont_write_bytecode = True
 FOLDER_STRUCTURE = {
     'libs': [
         'common',
-        'custom',
         'win',
     ],
     'core': [

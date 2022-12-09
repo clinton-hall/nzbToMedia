@@ -5,7 +5,10 @@ import struct
 import warnings
 import zlib
 
-from .rencode import dumps, loads
+from rencode import dumps, loads
+
+__version__ = '1.1.0'
+
 
 RPC_RESPONSE = 1
 RPC_ERROR = 2

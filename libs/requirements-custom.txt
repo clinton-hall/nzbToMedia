@@ -1,2 +1,0 @@
-deluge_client
-utorrent

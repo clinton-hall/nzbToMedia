@@ -12,3 +12,6 @@ setuptools
 six
 subliminal
 transmissionrpc
+deluge-client@git+https://github.com/labrys/deluge.git@master
+syno@git+https://github.com/labrys/syno.git@master
+utorrent@git+https://github.com/labrys/utorrent.git@master

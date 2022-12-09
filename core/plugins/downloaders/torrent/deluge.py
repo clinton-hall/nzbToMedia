@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from deluge_client.client import DelugeRPCClient
+from deluge_client import DelugeRPCClient
 
 import core
 from core import logger
