@@ -58,9 +58,6 @@ class RegistrableExtensionManager(ExtensionManager):
             raise ValueError('Extension already registered')
 
         ep = EntryPoint.parse(entry_point)
-        if ep.name in self.names():
-            raise ValueError('An extension with the same name already exist')
-
         ext = self._load_one_plugin(ep, False, (), {}, False)
         self.extensions.append(ext)
         if self._extensions_by_name is not None:
