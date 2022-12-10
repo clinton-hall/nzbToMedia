@@ -6,8 +6,8 @@ import core
 from core import logger
 from core.auto_process.common import ProcessResult
 from core.processor import nzb
-from core.utils import get_dirs
-from core.utils import get_download_info
+from core.utils.common import get_dirs
+from core.utils.download_info import get_download_info
 
 
 def process():

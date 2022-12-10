@@ -14,7 +14,7 @@ from babelfish import Language
 
 import core
 from core import logger
-from core.utils import make_dir
+from core.utils.paths import make_dir
 
 __author__ = 'Justin'
 

@@ -22,14 +22,14 @@ from core.plugins.downloaders.nzb.utils import report_nzb
 from core.plugins.subtitles import import_subs
 from core.plugins.subtitles import rename_subs
 from core.scene_exceptions import process_all_exceptions
-from core.utils import convert_to_ascii
-from core.utils import find_download
-from core.utils import find_imdbid
-from core.utils import flatten
-from core.utils import list_media_files
-from core.utils import remote_dir
-from core.utils import remove_dir
-from core.utils import server_responding
+from core.utils.encoding import convert_to_ascii
+from core.utils.network import find_download
+from core.utils.identification import find_imdbid
+from core.utils.common import flatten
+from core.utils.files import list_media_files
+from core.utils.paths import remote_dir
+from core.utils.paths import remove_dir
+from core.utils.network import server_responding
 
 
 requests.packages.urllib3.disable_warnings()

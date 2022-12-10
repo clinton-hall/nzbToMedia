@@ -15,11 +15,11 @@ from core.auto_process.common import ProcessResult
 from core.plugins.downloaders.nzb.utils import get_nzoid
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import char_replace
-from core.utils import clean_dir
-from core.utils import convert_to_ascii
-from core.utils import extract_files
-from core.utils import update_download_info_status
+from core.utils.encoding import char_replace
+from core.utils.common import clean_dir
+from core.utils.encoding import convert_to_ascii
+from core.utils.files import extract_files
+from core.utils.download_info import update_download_info_status
 
 
 def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
