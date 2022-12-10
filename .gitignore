@@ -6,6 +6,8 @@
 *.pid
 *.db
 *.dbm
+.coverage
+/build/
 /userscripts/
 /logs/
 /.idea/
