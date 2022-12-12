@@ -21,6 +21,7 @@ import os
 import locale
 import subprocess
 import ast
+import sys
 try:
     import xml.etree.cElementTree as etree
 except ImportError:
@@ -33,6 +34,17 @@ from xdg.util import PY3
 
 import xdg.Locale
 import xdg.Config
+
+
+def _ast_const(name):
+    if sys.version_info >= (3, 4):
+        name = ast.literal_eval(name)
+        if sys.version_info >= (3, 8):
+            return ast.Constant(name)
+        else:
+            return ast.NameConstant(name)
+    else:
+        return ast.Name(id=name, ctx=ast.Load())
 
 
 def _strxfrm(s):
@@ -298,11 +310,11 @@ class Menu:
                     entry.Show = NO_EXEC
                     self.Visible -= 1
                 elif xdg.Config.windowmanager:
-                    if (entry.DesktopEntry.OnlyShowIn != [] and (
-                            xdg.Config.windowmanager not in entry.DesktopEntry.OnlyShowIn
+                    if (entry.DesktopEntry.getOnlyShowIn() != [] and (
+                            xdg.Config.windowmanager not in entry.DesktopEntry.getOnlyShowIn()
                         )
                     ) or (
-                        xdg.Config.windowmanager in entry.DesktopEntry.NotShowIn
+                        xdg.Config.windowmanager in entry.DesktopEntry.getNotShowIn()
                     ):
                         entry.Show = NOT_SHOW_IN
                         self.Visible -= 1
@@ -710,11 +722,12 @@ class XMLMenuBuilder(object):
             inline_header=_to_bool(node.attrib.get("inline_header", True)),
             inline_alias=_to_bool(node.attrib.get("inline_alias", False))
         )
+        order = []
         for child in node:
             tag, text = child.tag, child.text
             text = text.strip() if text else None
             if tag == "Menuname" and text:
-                layout.order.append([
+                order.append([
                     "Menuname",
                     text,
                     _to_bool(child.attrib.get("show_empty", False)),
@@ -724,14 +737,15 @@ class XMLMenuBuilder(object):
                     _to_bool(child.attrib.get("inline_alias", False))
                 ])
             elif tag == "Separator":
-                layout.order.append(['Separator'])
+                order.append(['Separator'])
             elif tag == "Filename" and text:
-                layout.order.append(["Filename", text])
+                order.append(["Filename", text])
             elif tag == "Merge":
-                layout.order.append([
+                order.append([
                     "Merge",
                     child.attrib.get("type", "all")
                 ])
+        layout.order = order
         return layout
 
     def parse_move(self, node):
@@ -754,7 +768,7 @@ class XMLMenuBuilder(object):
         if expr:
             tree.body = expr
         else:
-            tree.body = ast.Name('False', ast.Load())
+            tree.body = _ast_const('False')
         ast.fix_missing_locations(tree)
         return Rule(type, tree)
 
@@ -781,7 +795,7 @@ class XMLMenuBuilder(object):
             expr = self.parse_bool_op(node, ast.Or())
             return ast.UnaryOp(ast.Not(), expr) if expr else None
         elif tag == 'All':
-            return ast.Name('True', ast.Load())
+            return _ast_const('True')
         elif tag == 'Category':
             category = node.text
             return ast.Compare(
@@ -994,8 +1008,8 @@ class XMLMenuBuilder(object):
                     menuentry = MenuEntry(directory, dir)
                     if not menu.Directory:
                         menu.Directory = menuentry
-                    elif menuentry.Type == MenuEntry.TYPE_SYSTEM:
-                        if menu.Directory.Type == MenuEntry.TYPE_USER:
+                    elif menuentry.getType() == MenuEntry.TYPE_SYSTEM:
+                        if menu.Directory.getType() == MenuEntry.TYPE_USER:
                             menu.Directory.Original = menuentry
             if menu.Directory:
                 break

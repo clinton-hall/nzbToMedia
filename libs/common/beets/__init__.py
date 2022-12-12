@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2016, Adrian Sampson.
 #
@@ -13,30 +12,29 @@
 # The above copyright notice and this permission notice shall be
 # included in all copies or substantial portions of the Software.
 
-from __future__ import division, absolute_import, print_function
 
-import os
+import confuse
+from sys import stderr
 
-from beets.util import confit
-
-__version__ = u'1.4.7'
-__author__ = u'Adrian Sampson <adrian@radbox.org>'
+__version__ = '1.6.0'
+__author__ = 'Adrian Sampson <adrian@radbox.org>'
 
 
-class IncludeLazyConfig(confit.LazyConfig):
-    """A version of Confit's LazyConfig that also merges in data from
+class IncludeLazyConfig(confuse.LazyConfig):
+    """A version of Confuse's LazyConfig that also merges in data from
     YAML files specified in an `include` setting.
     """
     def read(self, user=True, defaults=True):
-        super(IncludeLazyConfig, self).read(user, defaults)
+        super().read(user, defaults)
 
         try:
             for view in self['include']:
-                filename = view.as_filename()
-                if os.path.isfile(filename):
-                    self.set_file(filename)
-        except confit.NotFoundError:
+                self.set_file(view.as_filename())
+        except confuse.NotFoundError:
             pass
+        except confuse.ConfigReadError as err:
+            stderr.write("configuration `import` failed: {}"
+                         .format(err.reason))
 
 
 config = IncludeLazyConfig('beets', __name__)

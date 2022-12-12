@@ -43,6 +43,9 @@ xdg_config_dirs = [xdg_config_home] + \
 xdg_cache_home = os.environ.get('XDG_CACHE_HOME') or \
             os.path.join(_home, '.cache')
 
+xdg_state_home = os.environ.get('XDG_STATE_HOME') or \
+            os.path.join(_home, '.local', 'state')
+
 xdg_data_dirs = [x for x in xdg_data_dirs if x]
 xdg_config_dirs = [x for x in xdg_config_dirs if x]
 
@@ -77,6 +80,17 @@ def save_cache_path(*resource):
     resource = os.path.join(*resource)
     assert not resource.startswith('/')
     path = os.path.join(xdg_cache_home, resource)
+    if not os.path.isdir(path):
+        os.makedirs(path)
+    return path
+
+def save_state_path(*resource):
+    """Ensure ``$XDG_STATE_HOME/<resource>/`` exists, and return its path.
+    'resource' should normally be the name of your application or a shared
+    resource."""
+    resource = os.path.join(*resource)
+    assert not resource.startswith('/')
+    path = os.path.join(xdg_state_home, resource)
     if not os.path.isdir(path):
         os.makedirs(path)
     return path

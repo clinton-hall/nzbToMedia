@@ -10,8 +10,6 @@
 #    License for the specific language governing permissions and limitations
 #    under the License.
 
-from __future__ import unicode_literals
-
 import inspect
 
 from docutils import nodes
@@ -113,3 +111,7 @@ class ListPluginsDirective(rst.Directive):
 def setup(app):
     LOG.info('loading stevedore.sphinxext')
     app.add_directive('list-plugins', ListPluginsDirective)
+    return {
+        'parallel_read_safe': True,
+        'parallel_write_safe': True,
+    }

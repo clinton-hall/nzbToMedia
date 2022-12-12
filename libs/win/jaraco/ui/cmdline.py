@@ -1,77 +1,76 @@
 import argparse
 
-import six
 from jaraco.classes import meta
-from jaraco import text
+from jaraco import text  # type: ignore
 
 
-@six.add_metaclass(meta.LeafClassesMeta)
-class Command(object):
-	"""
-	A general-purpose base class for creating commands for a command-line
-	program using argparse. Each subclass of Command represents a separate
-	sub-command of a program.
+class Command(metaclass=meta.LeafClassesMeta):
+    """
+    A general-purpose base class for creating commands for a command-line
+    program using argparse. Each subclass of Command represents a separate
+    sub-command of a program.
 
-	For example, one might use Command subclasses to implement the Mercurial
-	command set::
+    For example, one might use Command subclasses to implement the Mercurial
+    command set::
 
-		class Commit(Command):
-			@staticmethod
-			def add_arguments(cls, parser):
-				parser.add_argument('-m', '--message')
+            class Commit(Command):
+                    @staticmethod
+                    def add_arguments(cls, parser):
+                            parser.add_argument('-m', '--message')
 
-			@classmethod
-			def run(cls, args):
-				"Run the 'commit' command with args (parsed)"
+                    @classmethod
+                    def run(cls, args):
+                            "Run the 'commit' command with args (parsed)"
 
-		class Merge(Command): pass
-		class Pull(Command): pass
-		...
+            class Merge(Command): pass
+            class Pull(Command): pass
+            ...
 
-	Then one could create an entry point for Mercurial like so::
+    Then one could create an entry point for Mercurial like so::
 
-		def hg_command():
-			Command.invoke()
-	"""
+            def hg_command():
+                    Command.invoke()
+    """
 
-	@classmethod
-	def add_subparsers(cls, parser):
-		subparsers = parser.add_subparsers()
-		[cmd_class.add_parser(subparsers) for cmd_class in cls._leaf_classes]
+    @classmethod
+    def add_subparsers(cls, parser):
+        subparsers = parser.add_subparsers()
+        [cmd_class.add_parser(subparsers) for cmd_class in cls._leaf_classes]
 
-	@classmethod
-	def add_parser(cls, subparsers):
-		cmd_string = text.words(cls.__name__).lowered().dash_separated()
-		parser = subparsers.add_parser(cmd_string)
-		parser.set_defaults(action=cls)
-		cls.add_arguments(parser)
-		return parser
+    @classmethod
+    def add_parser(cls, subparsers):
+        cmd_string = text.words(cls.__name__).lowered().dash_separated()
+        parser = subparsers.add_parser(cmd_string)
+        parser.set_defaults(action=cls)
+        cls.add_arguments(parser)
+        return parser
 
-	@classmethod
-	def add_arguments(cls, parser):
-		pass
+    @classmethod
+    def add_arguments(cls, parser):
+        pass
 
-	@classmethod
-	def invoke(cls):
-		"""
-		Invoke the command using ArgumentParser
-		"""
-		parser = argparse.ArgumentParser()
-		cls.add_subparsers(parser)
-		args = parser.parse_args()
-		args.action.run(args)
+    @classmethod
+    def invoke(cls):
+        """
+        Invoke the command using ArgumentParser
+        """
+        parser = argparse.ArgumentParser()
+        cls.add_subparsers(parser)
+        args = parser.parse_args()
+        args.action.run(args)
 
 
 class Extend(argparse.Action):
-	"""
-	Argparse action to take an nargs=* argument
-	and add any values to the existing value.
+    """
+    Argparse action to take an nargs=* argument
+    and add any values to the existing value.
 
-	>>> parser = argparse.ArgumentParser()
-	>>> _ = parser.add_argument('--foo', nargs='*', default=[], action=Extend)
-	>>> args = parser.parse_args(['--foo', 'a=1', '--foo', 'b=2', 'c=3'])
-	>>> args.foo
-	['a=1', 'b=2', 'c=3']
-	"""
-	def __call__(self, parser, namespace, values, option_string=None):
-		getattr(namespace, self.dest).extend(values)
+    >>> parser = argparse.ArgumentParser()
+    >>> _ = parser.add_argument('--foo', nargs='*', default=[], action=Extend)
+    >>> args = parser.parse_args(['--foo', 'a=1', '--foo', 'b=2', 'c=3'])
+    >>> args.foo
+    ['a=1', 'b=2', 'c=3']
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        getattr(namespace, self.dest).extend(values)

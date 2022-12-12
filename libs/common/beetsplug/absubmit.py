@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # This file is part of beets.
 # Copyright 2016, Pieter Mulder.
 #
@@ -16,7 +15,6 @@
 """Calculate acoustic information and submit to AcousticBrainz.
 """
 
-from __future__ import division, absolute_import, print_function
 
 import errno
 import hashlib
@@ -32,6 +30,9 @@ from beets import plugins
 from beets import util
 from beets import ui
 
+# We use this field to check whether AcousticBrainz info is present.
+PROBE_FIELD = 'mood_acoustic'
+
 
 class ABSubmitError(Exception):
     """Raised when failing to analyse file with extractor."""
@@ -43,19 +44,23 @@ def call(args):
     Raise a AnalysisABSubmitError on failure.
     """
     try:
-        return util.command_output(args)
+        return util.command_output(args).stdout
     except subprocess.CalledProcessError as e:
         raise ABSubmitError(
-            u'{0} exited with status {1}'.format(args[0], e.returncode)
+            '{} exited with status {}'.format(args[0], e.returncode)
         )
 
 
 class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
 
     def __init__(self):
-        super(AcousticBrainzSubmitPlugin, self).__init__()
+        super().__init__()
 
-        self.config.add({'extractor': u''})
+        self.config.add({
+            'extractor': '',
+            'force': False,
+            'pretend': False
+        })
 
         self.extractor = self.config['extractor'].as_str()
         if self.extractor:
@@ -63,7 +68,7 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
             # Expicit path to extractor
             if not os.path.isfile(self.extractor):
                 raise ui.UserError(
-                    u'Extractor command does not exist: {0}.'.
+                    'Extractor command does not exist: {0}.'.
                     format(self.extractor)
                 )
         else:
@@ -73,8 +78,8 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
                 call([self.extractor])
             except OSError:
                 raise ui.UserError(
-                    u'No extractor command found: please install the '
-                    u'extractor binary from http://acousticbrainz.org/download'
+                    'No extractor command found: please install the extractor'
+                    ' binary from https://acousticbrainz.org/download'
                 )
             except ABSubmitError:
                 # Extractor found, will exit with an error if not called with
@@ -96,7 +101,18 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
     def commands(self):
         cmd = ui.Subcommand(
             'absubmit',
-            help=u'calculate and submit AcousticBrainz analysis'
+            help='calculate and submit AcousticBrainz analysis'
+        )
+        cmd.parser.add_option(
+            '-f', '--force', dest='force_refetch',
+            action='store_true', default=False,
+            help='re-download data when already present'
+        )
+        cmd.parser.add_option(
+            '-p', '--pretend', dest='pretend_fetch',
+            action='store_true', default=False,
+            help='pretend to perform action, but show \
+only files which would be processed'
         )
         cmd.func = self.command
         return [cmd]
@@ -104,17 +120,30 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
     def command(self, lib, opts, args):
         # Get items from arguments
         items = lib.items(ui.decargs(args))
-        for item in items:
-            analysis = self._get_analysis(item)
-            if analysis:
-                self._submit_data(item, analysis)
+        self.opts = opts
+        util.par_map(self.analyze_submit, items)
+
+    def analyze_submit(self, item):
+        analysis = self._get_analysis(item)
+        if analysis:
+            self._submit_data(item, analysis)
 
     def _get_analysis(self, item):
         mbid = item['mb_trackid']
-        # If file has no mbid skip it.
+
+        # Avoid re-analyzing files that already have AB data.
+        if not self.opts.force_refetch and not self.config['force']:
+            if item.get(PROBE_FIELD):
+                return None
+
+        # If file has no MBID, skip it.
         if not mbid:
-            self._log.info(u'Not analysing {}, missing '
-                           u'musicbrainz track id.', item)
+            self._log.info('Not analysing {}, missing '
+                           'musicbrainz track id.', item)
+            return None
+
+        if self.opts.pretend_fetch or self.config['pretend']:
+            self._log.info('pretend action - extract item: {}', item)
             return None
 
         # Temporary file to save extractor output to, extractor only works
@@ -129,11 +158,11 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
                 call([self.extractor, util.syspath(item.path), filename])
             except ABSubmitError as e:
                 self._log.warning(
-                    u'Failed to analyse {item} for AcousticBrainz: {error}',
+                    'Failed to analyse {item} for AcousticBrainz: {error}',
                     item=item, error=e
                 )
                 return None
-            with open(filename, 'rb') as tmp_file:
+            with open(filename) as tmp_file:
                 analysis = json.load(tmp_file)
             # Add the hash to the output.
             analysis['metadata']['version']['essentia_build_sha'] = \
@@ -157,11 +186,11 @@ class AcousticBrainzSubmitPlugin(plugins.BeetsPlugin):
             try:
                 message = response.json()['message']
             except (ValueError, KeyError) as e:
-                message = u'unable to get error message: {}'.format(e)
+                message = f'unable to get error message: {e}'
             self._log.error(
-                u'Failed to submit AcousticBrainz analysis of {item}: '
-                u'{message}).', item=item, message=message
+                'Failed to submit AcousticBrainz analysis of {item}: '
+                '{message}).', item=item, message=message
             )
         else:
-            self._log.debug(u'Successfully submitted AcousticBrainz analysis '
-                            u'for {}.', item)
+            self._log.debug('Successfully submitted AcousticBrainz analysis '
+                            'for {}.', item)

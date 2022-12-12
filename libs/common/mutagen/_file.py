@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2005  Michael Urman
 #
 # This program is free software; you can redistribute it and/or modify
@@ -9,7 +8,6 @@
 import warnings
 
 from mutagen._util import DictMixin, loadfile
-from mutagen._compat import izip
 
 
 class FileType(DictMixin):
@@ -97,7 +95,7 @@ class FileType(DictMixin):
             return self.tags.keys()
 
     @loadfile(writable=True)
-    def delete(self, filething):
+    def delete(self, filething=None):
         """delete(filething=None)
 
         Remove tags from a file.
@@ -120,7 +118,7 @@ class FileType(DictMixin):
             return self.tags.delete(filething)
 
     @loadfile(writable=True)
-    def save(self, filething, **kwargs):
+    def save(self, filething=None, **kwargs):
         """save(filething=None, **kwargs)
 
         Save metadata tags.
@@ -221,13 +219,13 @@ def File(filething, options=None, easy=False):
         filething (filething)
         options: Sequence of :class:`FileType` implementations,
             defaults to all included ones.
-        easy (bool):  If the easy wrappers should be returnd if available.
+        easy (bool):  If the easy wrappers should be returned if available.
             For example :class:`EasyMP3 <mp3.EasyMP3>` instead of
             :class:`MP3 <mp3.MP3>`.
 
     Returns:
         FileType: A FileType instance for the detected type or `None` in case
-            the type couln't be determined.
+            the type couldn't be determined.
 
     Raises:
         MutagenError: in case the detected type fails to load the file.
@@ -264,12 +262,16 @@ def File(filething, options=None, easy=False):
         from mutagen.optimfrog import OptimFROG
         from mutagen.aiff import AIFF
         from mutagen.aac import AAC
+        from mutagen.ac3 import AC3
         from mutagen.smf import SMF
+        from mutagen.tak import TAK
         from mutagen.dsf import DSF
+        from mutagen.dsdiff import DSDIFF
+        from mutagen.wave import WAVE
         options = [MP3, TrueAudio, OggTheora, OggSpeex, OggVorbis, OggFLAC,
                    FLAC, AIFF, APEv2File, MP4, ID3FileType, WavPack,
-                   Musepack, MonkeysAudio, OptimFROG, ASF, OggOpus, AAC,
-                   SMF, DSF]
+                   Musepack, MonkeysAudio, OptimFROG, ASF, OggOpus, AAC, AC3,
+                   SMF, TAK, DSF, DSDIFF, WAVE]
 
     if not options:
         return None
@@ -287,7 +289,7 @@ def File(filething, options=None, easy=False):
     results = [(Kind.score(filething.name, fileobj, header), Kind.__name__)
                for Kind in options]
 
-    results = list(izip(results, options))
+    results = list(zip(results, options))
     results.sort()
     (score, name), Kind = results[-1]
     if score > 0:

@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2006  Joe Wreschnig
 #
 # This program is free software; you can redistribute it and/or modify
@@ -8,7 +7,6 @@
 
 import struct
 
-from mutagen._compat import PY2
 from mutagen._util import convert_error
 
 # This is not an exhaustive list of container atoms, but just the
@@ -180,12 +178,8 @@ class Atoms(object):
         specifying the complete path ('moov.udta').
         """
 
-        if PY2:
-            if isinstance(names, basestring):
-                names = names.split(b".")
-        else:
-            if isinstance(names, bytes):
-                names = names.split(b".")
+        if isinstance(names, bytes):
+            names = names.split(b".")
 
         for child in self.atoms:
             if child.name == names[0]:

@@ -187,7 +187,9 @@ class CapturedSubprocess(fixtures.Fixture):
         self.addDetail(self.label + '-stderr', content.text_content(self.err))
         self.returncode = proc.returncode
         if proc.returncode:
-            raise AssertionError('Failed process %s' % proc.returncode)
+            raise AssertionError(
+                'Failed process args=%r, kwargs=%r, returncode=%s' % (
+                    self.args, self.kwargs, proc.returncode))
         self.addCleanup(delattr, self, 'out')
         self.addCleanup(delattr, self, 'err')
         self.addCleanup(delattr, self, 'returncode')
@@ -200,12 +202,15 @@ def _run_cmd(args, cwd):
     :param cwd: The directory to run the comamnd in.
     :return: ((stdout, stderr), returncode)
     """
+    print('Running %s' % ' '.join(args))
     p = subprocess.Popen(
         args, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
         stderr=subprocess.PIPE, cwd=cwd)
     streams = tuple(s.decode('latin1').strip() for s in p.communicate())
-    for stream_content in streams:
-        print(stream_content)
+    print('STDOUT:')
+    print(streams[0])
+    print('STDERR:')
+    print(streams[1])
     return (streams) + (p.returncode,)
 
 

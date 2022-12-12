@@ -20,7 +20,7 @@ from musicbrainzngs import mbxml
 from musicbrainzngs import util
 from musicbrainzngs import compat
 
-_version = "0.6"
+_version = "0.7.1"
 _log = logging.getLogger("musicbrainzngs")
 
 LUCENE_SPECIAL = r'([+\-&|!(){}\[\]\^"~*?:\\\/])'
@@ -54,11 +54,11 @@ VALID_INCLUDES = {
     'recording': [
         "artists", "releases", # Subqueries
         "discids", "media", "artist-credits", "isrcs",
-        "annotation", "aliases"
+        "work-level-rels", "annotation", "aliases"
     ] + TAG_INCLUDES + RATING_INCLUDES + RELATION_INCLUDES,
     'release': [
         "artists", "labels", "recordings", "release-groups", "media",
-        "artist-credits", "discids", "puids", "isrcs",
+        "artist-credits", "discids", "isrcs",
         "recording-level-rels", "work-level-rels", "annotation", "aliases"
     ] + TAG_INCLUDES + RELATION_INCLUDES,
     'release-group': [
@@ -69,16 +69,15 @@ VALID_INCLUDES = {
         "annotation", "aliases"
     ] + RELATION_INCLUDES,
     'work': [
-        "artists", # Subqueries
         "aliases", "annotation"
     ] + TAG_INCLUDES + RATING_INCLUDES + RELATION_INCLUDES,
     'url': RELATION_INCLUDES,
     'discid': [ # Discid should be the same as release
         "artists", "labels", "recordings", "release-groups", "media",
-        "artist-credits", "discids", "puids", "isrcs",
+        "artist-credits", "discids", "isrcs",
         "recording-level-rels", "work-level-rels", "annotation", "aliases"
     ] + RELATION_INCLUDES,
-    'isrc': ["artists", "releases", "puids", "isrcs"],
+    'isrc': ["artists", "releases", "isrcs"],
     'iswc': ["artists"],
     'collection': ['releases'],
 }
@@ -109,48 +108,58 @@ VALID_SEARCH_FIELDS = {
         'entity', 'name', 'text', 'type'
     ],
     'area': [
-        'aid', 'area', 'alias', 'begin', 'comment', 'end', 'ended',
-        'iso', 'iso1', 'iso2', 'iso3', 'type'
+        'aid', 'alias', 'area', 'areaaccent', 'begin', 'comment', 'end',
+        'ended', 'iso', 'iso1', 'iso2', 'iso3', 'sortname', 'tag', 'type'
     ],
     'artist': [
-        'arid', 'artist', 'artistaccent', 'alias', 'begin', 'comment',
-        'country', 'end', 'ended', 'gender', 'ipi', 'sortname', 'tag', 'type',
-        'area', 'beginarea', 'endarea'
+        'alias', 'area', 'arid', 'artist', 'artistaccent', 'begin', 'beginarea',
+        'comment', 'country', 'end', 'endarea', 'ended', 'gender',
+        'ipi', 'isni', 'primary_alias', 'sortname', 'tag', 'type'
+    ],
+    'event': [
+        'aid', 'alias', 'area', 'arid', 'artist', 'begin', 'comment', 'eid',
+        'end', 'ended', 'event', 'eventaccent', 'pid', 'place', 'tag', 'type'
+    ],
+    'instrument': [
+        'alias', 'comment', 'description', 'iid', 'instrument',
+        'instrumentaccent', 'tag', 'type'
     ],
     'label': [
-        'alias', 'begin', 'code', 'comment', 'country', 'end', 'ended',
-        'ipi', 'label', 'labelaccent', 'laid', 'sortname', 'type', 'tag',
-        'area'
-    ],
-    'recording': [
-        'arid', 'artist', 'artistname', 'creditname', 'comment',
-        'country', 'date', 'dur', 'format', 'isrc', 'number',
-        'position', 'primarytype', 'puid', 'qdur', 'recording',
-        'recordingaccent', 'reid', 'release', 'rgid', 'rid',
-        'secondarytype', 'status', 'tnum', 'tracks', 'tracksrelease',
-        'tag', 'type', 'video'
-    ],
-    'release-group': [
-        'arid', 'artist', 'artistname', 'comment', 'creditname',
-        'primarytype', 'rgid', 'releasegroup', 'releasegroupaccent',
-        'releases', 'release', 'reid', 'secondarytype', 'status',
+        'alias', 'area', 'begin', 'code', 'comment', 'country', 'end', 'ended',
+        'ipi', 'label', 'labelaccent', 'laid', 'release_count', 'sortname',
         'tag', 'type'
     ],
+    'place': [
+        'address', 'alias', 'area', 'begin', 'comment', 'end', 'ended', 'lat', 'long',
+        'pid', 'place', 'placeaccent', 'type'
+    ],
+    'recording': [
+        'alias', 'arid', 'artist', 'artistname', 'comment', 'country',
+        'creditname', 'date', 'dur', 'format', 'isrc', 'number', 'position',
+        'primarytype', 'qdur', 'recording', 'recordingaccent', 'reid',
+        'release', 'rgid', 'rid', 'secondarytype', 'status', 'tag', 'tid',
+        'tnum', 'tracks', 'tracksrelease', 'type', 'video'],
+
+    'release-group': [
+        'alias', 'arid', 'artist', 'artistname', 'comment', 'creditname',
+        'primarytype', 'reid', 'release', 'releasegroup', 'releasegroupaccent',
+        'releases', 'rgid', 'secondarytype', 'status', 'tag', 'type'
+    ],
     'release': [
-        'arid', 'artist', 'artistname', 'asin', 'barcode', 'creditname',
-        'catno', 'comment', 'country', 'creditname', 'date', 'discids',
-        'discidsmedium', 'format', 'laid', 'label', 'lang', 'mediums',
-        'primarytype', 'puid', 'quality', 'reid', 'release', 'releaseaccent',
-        'rgid', 'script', 'secondarytype', 'status', 'tag', 'tracks',
-        'tracksmedium', 'type'
+        'alias', 'arid', 'artist', 'artistname', 'asin', 'barcode', 'catno',
+        'comment', 'country', 'creditname', 'date', 'discids', 'discidsmedium',
+        'format', 'label', 'laid', 'lang', 'mediums', 'primarytype', 'quality',
+        'reid', 'release', 'releaseaccent', 'rgid', 'script', 'secondarytype',
+        'status', 'tag', 'tracks', 'tracksmedium', 'type'
     ],
     'series': [
-        'alias', 'comment', 'sid', 'series', 'type'
+        'alias', 'comment', 'orderingattribute', 'series', 'seriesaccent',
+        'sid', 'tag', 'type'
     ],
     'work': [
-        'alias', 'arid', 'artist', 'comment', 'iswc', 'lang', 'tag',
-        'type', 'wid', 'work', 'workaccent'
-    ],
+        'alias', 'arid', 'artist', 'comment', 'iswc', 'lang', 'recording',
+        'recording_count', 'rid', 'tag', 'type', 'wid', 'work', 'workaccent'
+    ]
 }
 
 # Constants
@@ -278,8 +287,6 @@ def _docstring_search(entity):
 
 def _docstring_impl(name, values):
     def _decorator(func):
-        # puids are allowed so nothing breaks, but not documented
-        if "puids" in values: values.remove("puids")
         vstr = ", ".join(values)
         args = {name: vstr}
         if func.__doc__:
@@ -293,6 +300,7 @@ def _docstring_impl(name, values):
 
 user = password = ""
 hostname = "musicbrainz.org"
+https = True
 _client = ""
 _useragent = ""
 
@@ -317,12 +325,21 @@ def set_useragent(app, version, contact=None):
     _client = "%s-%s" % (app, version)
     _log.debug("set user-agent to %s" % _useragent)
 
-def set_hostname(new_hostname):
+
+def set_hostname(new_hostname, use_https=False):
     """Set the hostname for MusicBrainz webservice requests.
-    Defaults to 'musicbrainz.org'.
-    You can also include a port: 'localhost:8000'."""
+    Defaults to 'musicbrainz.org', accessing over https.
+    For backwards compatibility, `use_https` is False by default.
+
+    :param str new_hostname: The hostname (and port) of the MusicBrainz server to connect to
+    :param bool use_https: `True` if the host should be accessed using https. Default is `False`
+
+    Specify a non-standard port by adding it to the hostname,
+    for example 'localhost:8000'."""
     global hostname
+    global https
     hostname = new_hostname
+    https = use_https
 
 # Rate limiting.
 
@@ -626,7 +643,7 @@ def _mb_request(path, method='GET', auth_required=AUTH_NO,
     # Construct the full URL for the request, including hostname and
     # query string.
     url = compat.urlunparse((
-        'http',
+        'https' if https else 'http',
         hostname,
         '/ws/2/%s' % path,
         '',
@@ -737,10 +754,6 @@ def _do_mb_search(entity, query='', fields={},
 			raise InvalidSearchFieldError(
 				'%s is not a valid search field for %s' % (key, entity)
 			)
-		elif key == "puid":
-			warn("PUID support was removed from server\n"
-			     "the 'puid' field is ignored",
-			     Warning, stacklevel=2)
 
 		# Escape Lucene's special characters.
 		value = util._unicode(value)
@@ -1024,27 +1037,6 @@ def get_releases_by_discid(id, includes=[], toc=None, cdstubs=True, media_format
         params["media-format"] = media_format
     return _do_mb_query("discid", id, includes, params)
 
-@_docstring_get("recording")
-def get_recordings_by_echoprint(echoprint, includes=[], release_status=[],
-                                release_type=[]):
-    """Search for recordings with an `echoprint <http://echoprint.me>`_.
-    (not available on server)"""
-    warn("Echoprints were never introduced\n"
-         "and will not be found (404)",
-         Warning, stacklevel=2)
-    raise ResponseError(cause=compat.HTTPError(
-                                            None, 404, "Not Found", None, None))
-
-@_docstring_get("recording")
-def get_recordings_by_puid(puid, includes=[], release_status=[],
-                           release_type=[]):
-    """Search for recordings with a :musicbrainz:`PUID`.
-    (not available on server)"""
-    warn("PUID support was removed from the server\n"
-         "and no PUIDs will be found (404)",
-         Warning, stacklevel=2)
-    raise ResponseError(cause=compat.HTTPError(
-                                            None, 404, "Not Found", None, None))
 
 @_docstring_get("recording")
 def get_recordings_by_isrc(isrc, includes=[], release_status=[],
@@ -1261,23 +1253,6 @@ def submit_barcodes(release_barcode):
     query = mbxml.make_barcode_request(release_barcode)
     return _do_mb_post("release", query)
 
-def submit_puids(recording_puids):
-    """Submit PUIDs.
-    (Functionality removed from server)
-    """
-    warn("PUID support was dropped at the server\n"
-         "nothing will be submitted",
-         Warning, stacklevel=2)
-    return {'message': {'text': 'OK'}}
-
-def submit_echoprints(recording_echoprints):
-    """Submit echoprints.
-    (Functionality removed from server)
-    """
-    warn("Echoprints were never introduced\n"
-         "nothing will be submitted",
-         Warning, stacklevel=2)
-    return {'message': {'text': 'OK'}}
 
 def submit_isrcs(recording_isrcs):
     """Submit ISRCs.

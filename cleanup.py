@@ -25,6 +25,7 @@ FOLDER_STRUCTURE = {
         'auto_process',
         'extractor',
         'plugins',
+        'processor',
         'utils',
     ],
 }

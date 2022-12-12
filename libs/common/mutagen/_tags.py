@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Copyright (C) 2005  Michael Urman
 #
 # This program is free software; you can redistribute it and/or modify
@@ -115,7 +114,7 @@ class Metadata(Tags):
         raise NotImplementedError
 
     @loadfile(writable=False)
-    def save(self, filething, **kwargs):
+    def save(self, filething=None, **kwargs):
         """save(filething=None, **kwargs)
 
         Save changes to a file.
@@ -129,7 +128,7 @@ class Metadata(Tags):
         raise NotImplementedError
 
     @loadfile(writable=False)
-    def delete(self, filething):
+    def delete(self, filething=None):
         """delete(filething=None)
 
         Remove tags from a file.

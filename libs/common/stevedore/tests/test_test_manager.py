@@ -10,7 +10,8 @@
 #  License for the specific language governing permissions and limitations
 #  under the License.
 
-from mock import Mock, sentinel
+from unittest.mock import Mock, sentinel
+
 from stevedore import (ExtensionManager, NamedExtensionManager, HookManager,
                        DriverManager, EnabledExtensionManager)
 from stevedore.dispatch import (DispatchExtensionManager,
