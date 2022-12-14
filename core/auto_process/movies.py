@@ -44,6 +44,8 @@ def process(
     failure_link: str = '',
 ) -> ProcessResult:
     # Get configuration
+    if core.CFG is None:
+        raise RuntimeError('Configuration not loaded.')
     cfg = core.CFG[section][input_category]
 
     # Base URL
