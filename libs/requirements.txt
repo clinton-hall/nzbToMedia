@@ -1,2 +1,0 @@
--r requirements-common.txt
--r requirements-win.txt ; sys.platform == 'win32'

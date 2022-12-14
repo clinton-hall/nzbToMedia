@@ -3,6 +3,7 @@ from __future__ import annotations
 import itertools
 import locale
 import os
+import pathlib
 import platform
 import re
 import subprocess
@@ -10,11 +11,6 @@ import sys
 import time
 
 import eol
-import libs.autoload
-import libs.util
-
-if not libs.autoload.completed:
-    sys.exit('Could not load vendored libraries.')
 
 try:
     import win32event
@@ -22,8 +18,17 @@ except ImportError:
     if sys.platform == 'win32':
         sys.exit('Please install pywin32')
 
-APP_ROOT = libs.util.module_path(parent=True)
-SOURCE_ROOT = libs.util.module_path()
+
+def module_path(module=__file__):
+    try:
+        path = pathlib.Path(module.__file__)
+    except AttributeError:
+        path = pathlib.Path(module)
+    return path.parent.absolute()
+
+
+SOURCE_ROOT = module_path()
+APP_ROOT = SOURCE_ROOT.parent
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
