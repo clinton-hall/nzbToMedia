@@ -57,9 +57,9 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
                     'TRANSCODER',
                 )
     if disable:
-        if (
-            status
-        ):  # if the download was 'failed', assume bad. If it was successful, assume good.
+        if status:
+            # if the download was 'failed', assume bad.
+            # If it was successful, assume good.
             return False
         else:
             return True

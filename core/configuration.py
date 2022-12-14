@@ -90,10 +90,10 @@ class Section(configobj.Section):
 
 
 class ConfigObj(configobj.ConfigObj, Section):
-    def __init__(self, *args, **kw):
-        if len(args) == 0:
-            args = (core.CONFIG_FILE,)
-        super().__init__(*args, **kw)
+    def __init__(self, infile=None, *args, **kw):
+        if infile is None:
+            infile = core.CONFIG_FILE
+        super().__init__(os.fspath(infile), *args, **kw)
         self.interpolation = False
 
     @staticmethod
@@ -115,7 +115,7 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         try:
             # check for autoProcessMedia.cfg and create if it does not exist
-            if not os.path.isfile(core.CONFIG_FILE):
+            if not core.CONFIG_FILE.is_file():
                 shutil.copyfile(core.CONFIG_SPEC_FILE, core.CONFIG_FILE)
             CFG_OLD = config(core.CONFIG_FILE)
         except Exception as error:
@@ -123,7 +123,7 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
-            if not os.path.isfile(core.CONFIG_SPEC_FILE):
+            if not core.CONFIG_SPEC_FILE.is_file():
                 shutil.copyfile(core.CONFIG_FILE, core.CONFIG_SPEC_FILE)
             CFG_NEW = config(core.CONFIG_SPEC_FILE)
         except Exception as error:
