@@ -402,7 +402,8 @@ class SickBeard:
 
         self.delete_failed = int(self.sb_init.config.get('delete_failed', 0))
         self.nzb_extraction_by = self.sb_init.config.get(
-            'nzbExtractionBy', 'Downloader',
+            'nzbExtractionBy',
+            'Downloader',
         )
         self.process_method = self.sb_init.config.get('process_method')
         self.remote_path = int(self.sb_init.config.get('remote_path', 0))
@@ -581,7 +582,8 @@ class SickBeard:
             )
         except requests.ConnectionError:
             logger.error(
-                f'Unable to open URL: {self.url}', self.sb_init.section,
+                f'Unable to open URL: {self.url}',
+                self.sb_init.section,
             )
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '

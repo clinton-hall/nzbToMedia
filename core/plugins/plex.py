@@ -15,10 +15,11 @@ def configure_plex(config):
 
     if plex_section:
         if isinstance(plex_section, list):
-            plex_section = ','.join(plex_section)  # fix in case this imported as list.
+            plex_section = ','.join(
+                plex_section,
+            )  # fix in case this imported as list.
         plex_section = [
-            tuple(item.split(','))
-            for item in plex_section.split('|')
+            tuple(item.split(',')) for item in plex_section.split('|')
         ]
 
     core.PLEX_SECTION = plex_section
@@ -35,7 +36,9 @@ def plex_update(category):
     section = None
     if not core.PLEX_SECTION:
         return
-    logger.debug(f'Attempting to update Plex Library for category {category}.', 'PLEX')
+    logger.debug(
+        f'Attempting to update Plex Library for category {category}.', 'PLEX',
+    )
     for item in core.PLEX_SECTION:
         if item[0] == category:
             section = item[1]

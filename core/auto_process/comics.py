@@ -96,14 +96,20 @@ def process(
 
     logger.debug(f'Opening URL: {url}', section)
     try:
-        r = requests.post(url, params=params, stream=True, verify=False, timeout=(30, 300))
+        r = requests.post(
+            url, params=params, stream=True, verify=False, timeout=(30, 300),
+        )
     except requests.ConnectionError:
         logger.error('Unable to open URL', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}',
         )
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+    if r.status_code not in [
+        requests.codes.ok,
+        requests.codes.created,
+        requests.codes.accepted,
+    ]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
@@ -120,12 +126,17 @@ def process(
             success = True
 
     if success:
-        logger.postprocess('SUCCESS: This issue has been processed successfully', section)
+        logger.postprocess(
+            'SUCCESS: This issue has been processed successfully', section,
+        )
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.warning('The issue does not appear to have successfully processed. Please check your Logs', section)
+        logger.warning(
+            'The issue does not appear to have successfully processed. Please check your Logs',
+            section,
+        )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from '
             f'{section} was not as expected.',

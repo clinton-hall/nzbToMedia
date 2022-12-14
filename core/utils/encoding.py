@@ -24,7 +24,7 @@ def char_replace(name_in):
         if (len(name) != 1) & (Idx < (len(name) - 1)):
             # Detect UTF-8
             if ((name[Idx] == 0xC2) | (name[Idx] == 0xC3)) & (
-                    (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)
+                (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)
             ):
                 encoding = 'utf-8'
                 break
@@ -56,7 +56,9 @@ def char_replace(name_in):
 def convert_to_ascii(input_name, dir_name):
 
     ascii_convert = int(core.CFG['ASCII']['convert'])
-    if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and '\' is replaced!.
+    if (
+        ascii_convert == 0 or os.name == 'nt'
+    ):  # just return if we don't want to convert or on windows os and '\' is replaced!.
         return input_name, dir_name
 
     encoded, input_name = char_replace(input_name)
@@ -77,14 +79,22 @@ def convert_to_ascii(input_name, dir_name):
         for subdirname in dirnames:
             encoded, subdirname2 = char_replace(subdirname)
             if encoded:
-                logger.info(f'Renaming directory to: {subdirname2}.', 'ENCODER')
-                os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
+                logger.info(
+                    f'Renaming directory to: {subdirname2}.', 'ENCODER',
+                )
+                os.rename(
+                    os.path.join(dirname, subdirname),
+                    os.path.join(dirname, subdirname2),
+                )
 
     for dirname, _, filenames in os.walk(dir_name):
         for filename in filenames:
             encoded, filename2 = char_replace(filename)
             if encoded:
                 logger.info(f'Renaming file to: {filename2}.', 'ENCODER')
-                os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
+                os.rename(
+                    os.path.join(dirname, filename),
+                    os.path.join(dirname, filename2),
+                )
 
     return input_name, dir_name

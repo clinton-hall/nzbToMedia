@@ -11,7 +11,9 @@ MAX_DB_VERSION = 2
 def backup_database(version):
     logger.info('Backing up database before upgrade')
     if not backup_versioned_file(main_db.db_filename(), version):
-        logger.log_error_and_exit('Database backup failed, abort upgrading database')
+        logger.log_error_and_exit(
+            'Database backup failed, abort upgrading database',
+        )
     else:
         logger.info('Proceeding with upgrade')
 
@@ -20,6 +22,7 @@ def backup_database(version):
 # = Main DB Migrations =
 # ======================
 # Add new migrations at the bottom of the list; subclass the previous migration.
+
 
 class InitialSchema(main_db.SchemaUpgrade):
     def test(self):
@@ -30,7 +33,9 @@ class InitialSchema(main_db.SchemaUpgrade):
         return no_update
 
     def execute(self):
-        if not self.has_table('downloads') and not self.has_table('db_version'):
+        if not self.has_table('downloads') and not self.has_table(
+            'db_version',
+        ):
             queries = [
                 'CREATE TABLE db_version (db_version INTEGER);',
                 'CREATE TABLE downloads (input_directory TEXT, input_name TEXT, input_hash TEXT, input_id TEXT, client_agent TEXT, status INTEGER, last_update NUMERIC, CONSTRAINT pk_downloadID PRIMARY KEY (input_directory, input_name));',

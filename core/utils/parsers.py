@@ -61,7 +61,11 @@ def parse_deluge(args):
     input_hash = args[1]
     input_id = args[1]
     try:
-        input_category = core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get(b'label').decode()
+        input_category = (
+            core.TORRENT_CLASS.core.get_torrent_status(input_id, ['label'])
+            .get(b'label')
+            .decode()
+        )
     except Exception:
         input_category = ''
     return input_directory, input_name, input_category, input_hash, input_id
@@ -85,10 +89,16 @@ def parse_synods(args):
     input_name = os.getenv('TR_TORRENT_NAME')
     input_hash = os.getenv('TR_TORRENT_HASH')
     if not input_name:  # No info passed. Assume manual download.
-        return input_directory, input_name, input_category, input_hash, input_id
+        return (
+            input_directory,
+            input_name,
+            input_category,
+            input_hash,
+            input_id,
+        )
     torrent_id = os.getenv('TR_TORRENT_ID')
     input_id = f'dbid_{torrent_id}'
-    #res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
+    # res = core.TORRENT_CLASS.tasks_list(additional_param='detail')
     res = core.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
     logger.debug(f'result from syno {res}')
     if res['success']:

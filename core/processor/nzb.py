@@ -22,7 +22,15 @@ from core.utils.files import extract_files
 from core.utils.download_info import update_download_info_status
 
 
-def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
+def process(
+    input_directory,
+    input_name=None,
+    status=0,
+    client_agent='manual',
+    download_id=None,
+    input_category=None,
+    failure_link=None,
+):
     if core.SAFE_MODE and input_directory == core.NZB_DEFAULT_DIRECTORY:
         logger.error(
             f'The input directory:[{input_directory}] is the Default Download Directory. Please configure category directories to prevent processing of other media.',
@@ -36,7 +44,9 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         download_id = get_nzoid(input_name)
 
     if client_agent != 'manual' and not core.DOWNLOAD_INFO:
-        logger.debug(f'Adding NZB download info for directory {input_directory} to database')
+        logger.debug(
+            f'Adding NZB download info for directory {input_directory} to database',
+        )
 
         my_db = main_db.DBConnection()
 
@@ -91,7 +101,9 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         section_name = section.keys()[0]
         logger.info(f'Auto-detected SECTION:{section_name}')
     else:
-        logger.error(f'Unable to locate a section with subsection:{input_category} enabled in your autoProcessMedia.cfg, exiting!')
+        logger.error(
+            f'Unable to locate a section with subsection:{input_category} enabled in your autoProcessMedia.cfg, exiting!',
+        )
         return ProcessResult(
             status_code=-1,
             message='',
@@ -103,25 +115,35 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
 
     try:
         if int(cfg.get('remote_path')) and not core.REMOTE_PATHS:
-            logger.error(f'Remote Path is enabled for {section_name}:{input_category} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!')
+            logger.error(
+                f'Remote Path is enabled for {section_name}:{input_category} but no Network mount points are defined. Please check your autoProcessMedia.cfg, exiting!',
+            )
             return ProcessResult(
                 status_code=-1,
                 message='',
             )
     except Exception:
         remote_path = cfg.get('remote_path')
-        logger.error(f'Remote Path {remote_path} is not valid for {section_name}:{input_category} Please set this to either 0 to disable or 1 to enable!')
+        logger.error(
+            f'Remote Path {remote_path} is not valid for {section_name}:{input_category} Please set this to either 0 to disable or 1 to enable!',
+        )
 
     input_name, input_directory = convert_to_ascii(input_name, input_directory)
 
     if extract == 1 and not (status > 0 and core.NOEXTRACTFAILED):
-        logger.debug(f'Checking for archives to extract in directory: {input_directory}')
+        logger.debug(
+            f'Checking for archives to extract in directory: {input_directory}',
+        )
         extract_files(input_directory)
 
-    logger.info(f'Calling {section_name}:{input_category} to post-process:{input_name}')
+    logger.info(
+        f'Calling {section_name}:{input_category} to post-process:{input_name}',
+    )
 
     if section_name == 'UserScript':
-        result = external_script(input_directory, input_name, input_category, section[usercat])
+        result = external_script(
+            input_directory, input_name, input_category, section[usercat],
+        )
     else:
         process_map = {
             'CouchPotato': movies.process,
@@ -155,7 +177,13 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         if client_agent != 'manual':
             # update download status in our DB
             update_download_info_status(input_name, 1)
-        if section_name not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr', 'Lidarr']:
+        if section_name not in [
+            'UserScript',
+            'NzbDrone',
+            'Sonarr',
+            'Radarr',
+            'Lidarr',
+        ]:
             # cleanup our processing folders of any misc unwanted files and empty directories
             clean_dir(input_directory, section_name, input_category)
 

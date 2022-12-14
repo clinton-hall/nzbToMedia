@@ -57,8 +57,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     logger.debug(f'Received Directory: {input_directory} | Name: {input_name} | Category: {input_category}')
 
     # Confirm the category by parsing directory structure
-    input_directory, input_name, input_category, root = core.category_search(input_directory, input_name, input_category,
-                                                                             root, core.CATEGORIES)
+    input_directory, input_name, input_category, root = core.category_search(
+        input_directory, input_name, input_category,
+        root, core.CATEGORIES,
+    )
     if input_category == '':
         input_category = 'UNCAT'
 
@@ -110,10 +112,12 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         output_destination = os.path.join(core.OUTPUT_DIRECTORY, input_category, basename)
     elif unique_path:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUT_DIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category, core.sanitize_name(input_name).replace(' ', '.')),
+        )
     else:
         output_destination = os.path.normpath(
-            core.os.path.join(core.OUTPUT_DIRECTORY, input_category))
+            core.os.path.join(core.OUTPUT_DIRECTORY, input_category),
+        )
 
     if output_destination in input_directory:
         output_destination = input_directory
@@ -128,7 +132,8 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     if section_name in ['HeadPhones', 'Lidarr']:
         core.NOFLATTEN.extend(
-            input_category)  # Make sure we preserve folder structure for HeadPhones.
+            input_category,
+        )  # Make sure we preserve folder structure for HeadPhones.
 
     now = datetime.datetime.now()
 
@@ -150,13 +155,16 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         if input_category in core.NOFLATTEN:
             if not os.path.basename(file_path) in output_destination:
                 target_file = core.os.path.join(
-                    core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name)
+                    core.os.path.join(output_destination, os.path.basename(file_path)), full_file_name,
+                )
                 logger.debug(f'Setting outputDestination to {os.path.dirname(target_file)} to preserve folder structure')
         if root == 1:
             if not found_file:
                 logger.debug(f'Looking for {input_name} in: {inputFile}')
-            if any([core.sanitize_name(input_name) in core.sanitize_name(inputFile),
-                    core.sanitize_name(file_name) in core.sanitize_name(input_name)]):
+            if any([
+                core.sanitize_name(input_name) in core.sanitize_name(inputFile),
+                core.sanitize_name(file_name) in core.sanitize_name(input_name),
+            ]):
                 found_file = True
                 logger.debug(f'Found file {full_file_name} that matches Torrent Name {input_name}')
             else:
@@ -194,7 +202,8 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     # Now check if video files exist in destination:
     if section_name in ['SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr', 'Watcher3']:
         num_videos = len(
-            core.list_media_files(output_destination, media=True, audio=False, meta=False, archives=False))
+            core.list_media_files(output_destination, media=True, audio=False, meta=False, archives=False),
+        )
         if num_videos > 0:
             logger.info(f'Found {num_videos} media files in {output_destination}')
             status = 0
@@ -248,11 +257,15 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     if result.status_code != 0:
         if not core.TORRENT_RESUME_ON_FAILURE:
-            logger.error('A problem was reported in the autoProcess* script. '
-                         'Torrent won\'t resume seeding (settings)')
+            logger.error(
+                'A problem was reported in the autoProcess* script. '
+                'Torrent won\'t resume seeding (settings)',
+            )
         elif client_agent != 'manual':
-            logger.error('A problem was reported in the autoProcess* script. '
-                         'If torrent was paused we will resume seeding')
+            logger.error(
+                'A problem was reported in the autoProcess* script. '
+                'If torrent was paused we will resume seeding',
+            )
             core.resume_torrent(client_agent, input_hash, input_id, input_name)
 
     else:
@@ -336,8 +349,10 @@ def main(args):
 
                     input_name = os.path.basename(dir_name)
 
-                    results = process_torrent(dir_name, input_name, subsection, input_hash or None, input_id or None,
-                                              client_agent)
+                    results = process_torrent(
+                        dir_name, input_name, subsection, input_hash or None, input_id or None,
+                        client_agent,
+                    )
                     if results.status_code != 0:
                         logger.error(f'A problem was reported when trying to perform a manual run for {section}:{subsection}.')
                         result = results

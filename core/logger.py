@@ -88,9 +88,18 @@ class NTMRotatingLogHandler:
                 console.setFormatter(
                     DispatchingFormatter(
                         {
-                            'nzbtomedia': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                            'postprocess': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
-                            'db': logging.Formatter('[%(asctime)s] [%(levelname)s]::%(message)s', '%H:%M:%S'),
+                            'nzbtomedia': logging.Formatter(
+                                '[%(asctime)s] [%(levelname)s]::%(message)s',
+                                '%H:%M:%S',
+                            ),
+                            'postprocess': logging.Formatter(
+                                '[%(asctime)s] [%(levelname)s]::%(message)s',
+                                '%H:%M:%S',
+                            ),
+                            'db': logging.Formatter(
+                                '[%(asctime)s] [%(levelname)s]::%(message)s',
+                                '%H:%M:%S',
+                            ),
                         },
                         logging.Formatter('%(message)s'),
                     ),
@@ -119,16 +128,27 @@ class NTMRotatingLogHandler:
 
     def _config_handler(self):
         """Configure a file handler to log at file_name and return it."""
-        file_handler = logging.FileHandler(self.log_file_path, encoding='utf-8')
+        file_handler = logging.FileHandler(
+            self.log_file_path, encoding='utf-8',
+        )
 
         file_handler.setLevel(DB)
 
         file_handler.setFormatter(
             DispatchingFormatter(
                 {
-                    'nzbtomedia': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-                    'postprocess': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
-                    'db': logging.Formatter('%(asctime)s %(levelname)-8s::%(message)s', '%Y-%m-%d %H:%M:%S'),
+                    'nzbtomedia': logging.Formatter(
+                        '%(asctime)s %(levelname)-8s::%(message)s',
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
+                    'postprocess': logging.Formatter(
+                        '%(asctime)s %(levelname)-8s::%(message)s',
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
+                    'db': logging.Formatter(
+                        '%(asctime)s %(levelname)-8s::%(message)s',
+                        '%Y-%m-%d %H:%M:%S',
+                    ),
                 },
                 logging.Formatter('%(message)s'),
             ),
@@ -194,7 +214,10 @@ class NTMRotatingLogHandler:
 
             # check the size and see if we need to rotate
             if self.writes_since_check >= 10:
-                if os.path.isfile(self.log_file_path) and os.path.getsize(self.log_file_path) >= LOG_SIZE:
+                if (
+                    os.path.isfile(self.log_file_path)
+                    and os.path.getsize(self.log_file_path) >= LOG_SIZE
+                ):
                     self._rotate_logs()
                 self.writes_since_check = 0
             else:
@@ -203,14 +226,18 @@ class NTMRotatingLogHandler:
             try:
                 message = f'{section.upper()}: {to_log}'
             except UnicodeError:
-                message = f'{section.upper()}: Message contains non-utf-8 string'
+                message = (
+                    f'{section.upper()}: Message contains non-utf-8 string'
+                )
 
             out_line = message
 
             ntm_logger = logging.getLogger('nzbtomedia')
             pp_logger = logging.getLogger('postprocess')
             db_logger = logging.getLogger('db')
-            pp_logger.postprocess = functools.partial(pp_logger.log, POSTPROCESS)
+            pp_logger.postprocess = functools.partial(
+                pp_logger.log, POSTPROCESS,
+            )
             db_logger.db = functools.partial(db_logger.log, DB)
             try:
                 if log_level == DEBUG:

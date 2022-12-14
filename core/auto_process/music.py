@@ -80,7 +80,9 @@ def process(
             f'{section}: Failed to post-process - {section} did not respond.',
         )
 
-    if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
+    if not os.path.isdir(dir_name) and os.path.isfile(
+        dir_name,
+    ):  # If the input directory is a file, assume single file download and split dir/name.
         dir_name = os.path.split(os.path.normpath(dir_name))[0]
 
     specific_path = os.path.join(dir_name, str(input_name))
@@ -93,8 +95,18 @@ def process(
     process_all_exceptions(input_name, dir_name)
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
-    if not list_media_files(dir_name, media=False, audio=True, meta=False, archives=False) and list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
-        logger.debug(f'Checking for archives to extract in directory: {dir_name}')
+    if (
+        not list_media_files(
+            dir_name, media=False, audio=True, meta=False, archives=False,
+        )
+        and list_media_files(
+            dir_name, media=False, audio=False, meta=False, archives=True,
+        )
+        and extract
+    ):
+        logger.debug(
+            f'Checking for archives to extract in directory: {dir_name}',
+        )
         core.extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
@@ -110,22 +122,31 @@ def process(
             'dir': remote_dir(dir_name) if remote_path else dir_name,
         }
 
-        res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
+        res = force_process(
+            params, url, apikey, input_name, dir_name, section, wait_for,
+        )
         if res.status_code in [0, 1]:
             return res
 
         params = {
             'apikey': apikey,
             'cmd': 'forceProcess',
-            'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0],
+            'dir': os.path.split(remote_dir(dir_name))[0]
+            if remote_path
+            else os.path.split(dir_name)[0],
         }
 
-        res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
+        res = force_process(
+            params, url, apikey, input_name, dir_name, section, wait_for,
+        )
         if res.status_code in [0, 1]:
             return res
 
         # The status hasn't changed. uTorrent can resume seeding now.
-        logger.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs', section)
+        logger.warning(
+            f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs',
+            section,
+        )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - No change in wanted status',
         )
@@ -143,7 +164,14 @@ def process(
         data = json.dumps(data)
         try:
             logger.debug(f'Opening URL: {url} with data: {data}', section)
-            r = requests.post(url, data=data, headers=headers, stream=True, verify=False, timeout=(30, 1800))
+            r = requests.post(
+                url,
+                data=data,
+                headers=headers,
+                stream=True,
+                verify=False,
+                timeout=(30, 1800),
+            )
         except requests.ConnectionError:
             logger.error(f'Unable to open URL: {url}', section)
             return ProcessResult.failure(
@@ -171,41 +199,64 @@ def process(
                 break
             n += 1
         if command_status:
-            logger.debug(f'The Scan command return status: {command_status}', section)
+            logger.debug(
+                f'The Scan command return status: {command_status}', section,
+            )
         if not os.path.exists(dir_name):
-            logger.debug(f'The directory {dir_name} has been removed. Renaming was successful.', section)
+            logger.debug(
+                f'The directory {dir_name} has been removed. Renaming was successful.',
+                section,
+            )
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['completed']:
-            logger.debug('The Scan command has completed successfully. Renaming was successful.', section)
+            logger.debug(
+                'The Scan command has completed successfully. Renaming was successful.',
+                section,
+            )
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
         elif command_status and command_status in ['failed']:
-            logger.debug('The Scan command has failed. Renaming was not successful.', section)
+            logger.debug(
+                'The Scan command has failed. Renaming was not successful.',
+                section,
+            )
             # return ProcessResult.failure(
             #     f'{section}: Failed to post-process {input_name}'
             # )
         else:
-            logger.debug(f'The Scan command did not return status completed. Passing back to {section} to attempt complete download handling.', section)
+            logger.debug(
+                f'The Scan command did not return status completed. Passing back to {section} to attempt complete download handling.',
+                section,
+            )
             return ProcessResult(
                 message=f'{section}: Passing back to {section} to attempt '
-                        f'Complete Download Handling',
+                f'Complete Download Handling',
                 status_code=status,
             )
 
     else:
         if section == 'Lidarr':
-            logger.postprocess(f'FAILED: The download failed. Sending failed download to {section} for CDH processing', section)
+            logger.postprocess(
+                f'FAILED: The download failed. Sending failed download to {section} for CDH processing',
+                section,
+            )
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
                 f'{section}: Download Failed. Sending back to {section}',
             )
         else:
             logger.warning('FAILED DOWNLOAD DETECTED', section)
-            if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
-                logger.postprocess(f'Deleting failed files and folder {dir_name}', section)
+            if (
+                delete_failed
+                and os.path.isdir(dir_name)
+                and not os.path.dirname(dir_name) == dir_name
+            ):
+                logger.postprocess(
+                    f'Deleting failed files and folder {dir_name}', section,
+                )
                 remove_dir(dir_name)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(
@@ -215,7 +266,9 @@ def process(
 
 
 def get_status(url, apikey, dir_name):
-    logger.debug(f'Attempting to get current status for release:{os.path.basename(dir_name)}')
+    logger.debug(
+        f'Attempting to get current status for release:{os.path.basename(dir_name)}',
+    )
 
     params = {
         'apikey': apikey,
@@ -241,10 +294,15 @@ def get_status(url, apikey, dir_name):
             return album['Status'].lower()
 
 
-def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
+def force_process(
+    params, url, apikey, input_name, dir_name, section, wait_for,
+):
     release_status = get_status(url, apikey, dir_name)
     if not release_status:
-        logger.error(f'Could not find a status for {input_name}, is it in the wanted list ?', section)
+        logger.error(
+            f'Could not find a status for {input_name}, is it in the wanted list ?',
+            section,
+        )
 
     logger.debug(f'Opening URL: {url} with PARAMS: {params}', section)
 
@@ -259,15 +317,25 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
 
     logger.debug(f'Result: {r.text}', section)
 
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+    if r.status_code not in [
+        requests.codes.ok,
+        requests.codes.created,
+        requests.codes.accepted,
+    ]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status {r.status_code}',
         )
     elif r.text == 'OK':
-        logger.postprocess(f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...', section)
+        logger.postprocess(
+            f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...',
+            section,
+        )
     else:
-        logger.error(f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!', section)
+        logger.error(
+            f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!',
+            section,
+        )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.',
@@ -277,13 +345,21 @@ def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
     timeout = time.time() + 60 * wait_for
     while time.time() < timeout:
         current_status = get_status(url, apikey, dir_name)
-        if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
-            logger.postprocess(f'SUCCESS: This release is now marked as status [{current_status}]', section)
+        if (
+            current_status is not None and current_status != release_status
+        ):  # Something has changed. CPS must have processed this movie.
+            logger.postprocess(
+                f'SUCCESS: This release is now marked as status [{current_status}]',
+                section,
+            )
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
         if not os.path.isdir(dir_name):
-            logger.postprocess(f'SUCCESS: The input directory {dir_name} has been removed Processing must have finished.', section)
+            logger.postprocess(
+                f'SUCCESS: The input directory {dir_name} has been removed Processing must have finished.',
+                section,
+            )
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )

@@ -1,9 +1,12 @@
 babelfish
 beets
 configobj
+deluge-client@git+https://github.com/labrys/deluge.git@master
 guessit
+jaraco-windows ; sys.platform == 'win32'
 linktastic
 python-qbittorrent
+pywin32 ; sys.platform == 'win32'
 pyxdg
 rencode
 requests
@@ -11,9 +14,6 @@ requests_oauthlib
 setuptools
 six
 subliminal != 2.1.0
-transmissionrpc
-deluge-client@git+https://github.com/labrys/deluge.git@master
 syno@git+https://github.com/labrys/syno.git@master
+transmissionrpc
 utorrent@git+https://github.com/labrys/utorrent.git@master
-jaraco-windows ; sys.platform == 'win32'
-pywin32 ; sys.platform == 'win32'

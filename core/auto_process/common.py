@@ -32,11 +32,22 @@ class ProcessResult(typing.NamedTuple):
 
 def command_complete(url, params, headers, section):
     try:
-        r = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        r = requests.get(
+            url,
+            params=params,
+            headers=headers,
+            stream=True,
+            verify=False,
+            timeout=(30, 60),
+        )
     except requests.ConnectionError:
         logger.error(f'Unable to open URL: {url}', section)
         return None
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+    if r.status_code not in [
+        requests.codes.ok,
+        requests.codes.created,
+        requests.codes.accepted,
+    ]:
         logger.error(f'Server returned status {r.status_code}', section)
         return None
     else:
@@ -44,17 +55,30 @@ def command_complete(url, params, headers, section):
             return r.json()['status']
         except (ValueError, KeyError):
             # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            logger.error(f'{section} did not return expected json data.', section)
+            logger.error(
+                f'{section} did not return expected json data.', section,
+            )
             return None
 
 
 def completed_download_handling(url2, headers, section='MAIN'):
     try:
-        r = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
+        r = requests.get(
+            url2,
+            params={},
+            headers=headers,
+            stream=True,
+            verify=False,
+            timeout=(30, 60),
+        )
     except requests.ConnectionError:
         logger.error(f'Unable to open URL: {url2}', section)
         return False
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+    if r.status_code not in [
+        requests.codes.ok,
+        requests.codes.created,
+        requests.codes.accepted,
+    ]:
         logger.error(f'Server returned status {r.status_code}', section)
         return False
     else:

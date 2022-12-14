@@ -6,9 +6,15 @@ from core.plugins.downloaders.torrent.utils import create_torrent_class
 
 def configure_torrents(config):
     torrent_config = config['Torrent']
-    core.TORRENT_CLIENT_AGENT = torrent_config['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
-    core.OUTPUT_DIRECTORY = torrent_config['outputDirectory']  # /abs/path/to/complete/
-    core.TORRENT_DEFAULT_DIRECTORY = torrent_config['default_downloadDirectory']
+    core.TORRENT_CLIENT_AGENT = torrent_config[
+        'clientAgent'
+    ]  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
+    core.OUTPUT_DIRECTORY = torrent_config[
+        'outputDirectory'
+    ]  # /abs/path/to/complete/
+    core.TORRENT_DEFAULT_DIRECTORY = torrent_config[
+        'default_downloadDirectory'
+    ]
     core.TORRENT_NO_MANUAL = int(torrent_config['no_manual'], 0)
 
     configure_torrent_linking(torrent_config)
@@ -29,13 +35,15 @@ def configure_torrent_linking(config):
 
 
 def configure_flattening(config):
-    core.NOFLATTEN = (config['noFlatten'])
+    core.NOFLATTEN = config['noFlatten']
     if isinstance(core.NOFLATTEN, str):
         core.NOFLATTEN = core.NOFLATTEN.split(',')
 
 
 def configure_torrent_categories(config):
-    core.CATEGORIES = (config['categories'])  # music,music_videos,pictures,software
+    core.CATEGORIES = config[
+        'categories'
+    ]  # music,music_videos,pictures,software
     if isinstance(core.CATEGORIES, str):
         core.CATEGORIES = core.CATEGORIES.split(',')
 
@@ -54,7 +62,9 @@ def configure_torrent_deletion(config):
 
 
 def configure_utorrent(config):
-    core.UTORRENT_WEB_UI = config['uTorrentWEBui']  # http://localhost:8090/gui/
+    core.UTORRENT_WEB_UI = config[
+        'uTorrentWEBui'
+    ]  # http://localhost:8090/gui/
     core.UTORRENT_USER = config['uTorrentUSR']  # mysecretusr
     core.UTORRENT_PASSWORD = config['uTorrentPWD']  # mysecretpwr
 
