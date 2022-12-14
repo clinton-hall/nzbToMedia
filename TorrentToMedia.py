@@ -1,6 +1,3 @@
-#!/usr/bin/env python
-
-
 import datetime
 import os
 import sys
@@ -16,12 +13,8 @@ from core.auto_process import comics, games, movies, music, tv, books
 from core.auto_process.common import ProcessResult
 from core.plugins.plex import plex_update
 from core.user_scripts import external_script
-from core.utils import char_replace, convert_to_ascii, replace_links
-
-try:
-    text_type = unicode
-except NameError:
-    text_type = str
+from core.utils.encoding import char_replace, convert_to_ascii
+from core.utils.links import replace_links
 
 
 def process_torrent(input_directory, input_name, input_category, input_hash, input_id, client_agent):
@@ -43,12 +36,12 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         except Exception:
             pass
 
-        control_value_dict = {'input_directory': text_type(input_directory1)}
+        control_value_dict = {'input_directory': input_directory1}
         new_value_dict = {
-            'input_name': text_type(input_name1),
-            'input_hash': text_type(input_hash),
-            'input_id': text_type(input_id),
-            'client_agent': text_type(client_agent),
+            'input_name': input_name1,
+            'input_hash': input_hash,
+            'input_id': input_id,
+            'client_agent': client_agent,
             'status': 0,
             'last_update': datetime.date.today().toordinal(),
         }
@@ -334,9 +327,9 @@ def main(args):
                     logger.info(f'Checking database for download info for {os.path.basename(dir_name)} ...')
                     core.DOWNLOAD_INFO = core.get_download_info(os.path.basename(dir_name), 0)
                     if core.DOWNLOAD_INFO:
-                        client_agent = text_type(core.DOWNLOAD_INFO[0]['client_agent']) or 'manual'
-                        input_hash = text_type(core.DOWNLOAD_INFO[0]['input_hash']) or ''
-                        input_id = text_type(core.DOWNLOAD_INFO[0]['input_id']) or ''
+                        client_agent = core.DOWNLOAD_INFO[0]['client_agent'] or 'manual'
+                        input_hash = core.DOWNLOAD_INFO[0]['input_hash'] or ''
+                        input_id = core.DOWNLOAD_INFO[0]['input_id'] or ''
                         logger.info(f'Found download info for {os.path.basename(dir_name)}, setting variables now ...')
                     else:
                         logger.info(f'Unable to locate download info for {os.path.basename(dir_name)}, continuing to try and process this release ...')
