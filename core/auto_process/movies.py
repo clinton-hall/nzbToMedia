@@ -389,7 +389,7 @@ def process(
                 scan_id = None
         elif section == 'Watcher3' and result['status'] == 'finished':
             update_movie_status = result['tasks']['update_movie_status']
-            logger.postprocess('Watcher3 updated status to {}'.format())
+            logger.postprocess(f'Watcher3 updated status to {section}')
             if update_movie_status == 'Finished':
                 return ProcessResult(
                     message=f'{section}: Successfully post-processed {input_name}',
