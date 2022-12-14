@@ -88,7 +88,8 @@ class PosixProcess:
         if not self.lasterror:
             if self.lock_socket:
                 self.lock_socket.close()
-            self.pidpath.unlink(missing_ok=True)
+            if self.pidpath.is_file():
+                self.pidpath.unlink()
 
 
 ProcessType = typing.Type[typing.Union[PosixProcess, WindowsProcess]]
