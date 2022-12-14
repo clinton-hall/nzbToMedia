@@ -9,7 +9,7 @@ import sys
 sys.dont_write_bytecode = True
 
 FOLDER_STRUCTURE = {
-    'core': [
+    'nzb2media': [
         'auto_process',
         'extractor',
         'plugins',
