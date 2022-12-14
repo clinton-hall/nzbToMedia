@@ -1,7 +1,7 @@
 #! /usr/bin/env python
 from __future__ import annotations
 
-import core
+import nzb2media
 
 
 def test_eol():
@@ -39,9 +39,9 @@ def test_import_core_utils():
 
 
 def test_initial():
-    core.initialize()
-    del core.MYAPP
+    nzb2media.initialize()
+    del nzb2media.MYAPP
 
 
 def test_core_parameters():
-    assert core.CHECK_MEDIA == 1
+    assert nzb2media.CHECK_MEDIA == 1
