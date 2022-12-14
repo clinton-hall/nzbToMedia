@@ -38,13 +38,14 @@ def process(
     dir_name: str,
     input_name: str = '',
     status: int = 0,
-    failed: bool = False,
     client_agent: str = 'manual',
     download_id: str = '',
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
     # Get configuration
+    if core.CFG is None:
+        raise RuntimeError('Configuration not loaded.')
     cfg = core.CFG[section][input_category]
 
     # Base URL
@@ -113,10 +114,7 @@ def process(
             f'{r.status_code}',
         )
 
-    result = r.text
-    if not type(result) == list:
-        result = result.split('\n')
-    for line in result:
+    for line in r.text.split('\n'):
         if line:
             logger.postprocess(line, section)
         if 'Post Processing SUCCESSFUL' in line:

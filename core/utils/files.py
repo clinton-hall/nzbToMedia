@@ -277,9 +277,7 @@ def backup_versioned_file(old_file, version):
 
         try:
             logger.log(
-                'Trying to back up {old} to {new]'.format(
-                    old=old_file, new=new_file,
-                ),
+                f'Trying to back up {old_file} to {new_file}',
                 logger.DEBUG,
             )
             shutil.copy(old_file, new_file)

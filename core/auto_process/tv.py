@@ -38,13 +38,14 @@ def process(
     dir_name: str,
     input_name: str = '',
     status: int = 0,
-    failed: bool = False,
     client_agent: str = 'manual',
     download_id: str = '',
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
     # Get configuration
+    if core.CFG is None:
+        raise RuntimeError('Configuration not loaded.')
     cfg = core.CFG[section][input_category]
 
     # Base URL
@@ -79,7 +80,6 @@ def process(
     force = int(cfg.get('force', 0))
     delete_on = int(cfg.get('delete_on', 0))
     ignore_subs = int(cfg.get('ignore_subs', 0))
-    status = int(failed)
 
     # Begin processing
 
@@ -185,11 +185,9 @@ def process(
         if valid_files == num_files and not status == 0:
             logger.info('Found Valid Videos. Setting status Success')
             status = 0
-            failed = 0
         if valid_files < num_files and status == 0:
             logger.info('Found corrupt videos. Setting status Failed')
             status = 1
-            failed = 1
             if (
                 'NZBOP_VERSION' in os.environ
                 and os.environ['NZBOP_VERSION'][0:5] >= '14.0'
@@ -220,23 +218,19 @@ def process(
         logger.info(
             'Check for media files ignored because nzbExtractionBy is set to Destination.',
         )
-        if int(failed) == 0:
+        if status == 0:
             logger.info('Setting Status Success.')
-            status = 0
-            failed = 0
         else:
             logger.info(
                 'Downloader reported an error during download or verification. Processing this as a failed download.',
             )
             status = 1
-            failed = 1
     else:
         logger.warning(
             f'No media files found in directory {dir_name}. Processing this as a failed download',
             section,
         )
         status = 1
-        failed = 1
         if (
             'NZBOP_VERSION' in os.environ
             and os.environ['NZBOP_VERSION'][0:5] >= '14.0'
@@ -275,7 +269,7 @@ def process(
     # Part of the refactor
     if init_sickbeard.fork_obj:
         init_sickbeard.fork_obj.initialize(
-            dir_name, input_name, failed, client_agent='manual',
+            dir_name, input_name, status, client_agent='manual',
         )
 
     # configure SB params to pass
@@ -289,9 +283,9 @@ def process(
 
         for param in copy.copy(fork_params):
             if param == 'failed':
-                if failed > 1:
-                    failed = 1
-                fork_params[param] = failed
+                if status > 1:
+                    status = 1
+                fork_params[param] = status
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
                 if 'type' in fork_params:
@@ -437,7 +431,6 @@ def process(
             }
         if not download_id:
             data.pop('downloadClientId')
-        data = json.dumps(data)
     url = core.utils.common.create_url(scheme, host, port, route)
     try:
         if section == 'SickBeard':
@@ -517,7 +510,7 @@ def process(
             logger.debug(f'Opening URL: {url} with data: {data}', section)
             r = requests.post(
                 url,
-                data=data,
+                data=json.dumps(data),
                 headers=headers,
                 stream=True,
                 verify=False,

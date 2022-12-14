@@ -32,22 +32,20 @@ from core.utils.paths import remove_dir
 from core.utils.network import server_responding
 
 
-requests.packages.urllib3.disable_warnings()
-
-
 def process(
     *,
     section: str,
     dir_name: str,
     input_name: str = '',
     status: int = 0,
-    failed: bool = False,
     client_agent: str = 'manual',
     download_id: str = '',
     input_category: str = '',
     failure_link: str = '',
 ) -> ProcessResult:
     # Get configuration
+    if core.CFG is None:
+        raise RuntimeError('Configuration not loaded.')
     cfg = core.CFG[section][input_category]
 
     # Base URL
@@ -389,7 +387,7 @@ def process(
                 scan_id = None
         elif section == 'Watcher3' and result['status'] == 'finished':
             update_movie_status = result['tasks']['update_movie_status']
-            logger.postprocess('Watcher3 updated status to {}'.format())
+            logger.postprocess(f'Watcher3 updated status to {section}')
             if update_movie_status == 'Finished':
                 return ProcessResult(
                     message=f'{section}: Successfully post-processed {input_name}',
@@ -578,11 +576,11 @@ def process(
                 f'{section} will keep searching',
             )
 
-    # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
+    # Added a release that was not in the wanted list so confirm rename
+    # successful by finding this movie media.list.
     if not release:
-        download_id = (
-            None  # we don't want to filter new releases based on this.
-        )
+        # we don't want to filter new releases based on this.
+        download_id = ''
 
     if no_status_check:
         return ProcessResult.success(

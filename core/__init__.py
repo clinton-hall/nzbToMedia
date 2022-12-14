@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import time
+import typing
 
 import eol
 
@@ -32,16 +33,16 @@ APP_ROOT = SOURCE_ROOT.parent
 
 # init preliminaries
 SYS_ARGV = sys.argv[1:]
-APP_FILENAME = sys.argv[0]
-APP_NAME = os.path.basename(APP_FILENAME)
-LOG_DIR = os.path.join(APP_ROOT, 'logs')
-LOG_FILE = os.path.join(LOG_DIR, 'nzbtomedia.log')
-PID_FILE = os.path.join(LOG_DIR, 'nzbtomedia.pid')
-CONFIG_FILE = os.path.join(APP_ROOT, 'autoProcessMedia.cfg')
-CONFIG_SPEC_FILE = os.path.join(APP_ROOT, 'autoProcessMedia.cfg.spec')
-CONFIG_MOVIE_FILE = os.path.join(APP_ROOT, 'autoProcessMovie.cfg')
-CONFIG_TV_FILE = os.path.join(APP_ROOT, 'autoProcessTv.cfg')
-TEST_FILE = os.path.join(APP_ROOT, 'tests', 'test.mp4')
+APP_FILENAME = pathlib.Path(sys.argv[0])
+APP_NAME: str = APP_FILENAME.name
+LOG_DIR: pathlib.Path = APP_ROOT / 'logs'
+LOG_FILE: pathlib.Path = LOG_DIR / 'nzbtomedia.log'
+PID_FILE = LOG_DIR / 'nzbtomedia.pid'
+CONFIG_FILE = APP_ROOT / 'autoProcessMedia.cfg'
+CONFIG_SPEC_FILE = APP_ROOT / 'autoProcessMedia.cfg.spec'
+CONFIG_MOVIE_FILE = APP_ROOT / 'autoProcessMovie.cfg'
+CONFIG_TV_FILE = APP_ROOT / 'autoProcessTv.cfg'
+TEST_FILE = APP_ROOT / 'tests' / 'test.mp4'
 MYAPP = None
 
 from core import logger, main_db, version_check, databases, transcoder
@@ -91,6 +92,7 @@ TORRENT_CLIENTS = [
     'manual',
 ]
 
+
 # sickbeard fork/branch constants
 FORK_DEFAULT = 'default'
 FORK_FAILED = 'failed'
@@ -105,7 +107,7 @@ FORK_SICKGEAR = 'SickGear'
 FORK_SICKGEAR_API = 'SickGear-api'
 FORK_STHENO = 'Stheno'
 
-FORKS = {
+FORKS: typing.Mapping[str, typing.Mapping] = {
     FORK_DEFAULT: {'dir': None},
     FORK_FAILED: {'dirName': None, 'failed': None},
     FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
@@ -201,7 +203,10 @@ ALL_FORKS = {
     for k in set(
         list(
             itertools.chain.from_iterable(
-                [FORKS[x].keys() for x in FORKS.keys()],
+                [
+                    FORKS[x].keys()
+                    for x in FORKS.keys()
+                ],
             ),
         ),
     )
@@ -250,7 +255,7 @@ TORRENT_CLIENT_AGENT = None
 TORRENT_CLASS = None
 USE_LINK = None
 OUTPUT_DIRECTORY = None
-NOFLATTEN = []
+NOFLATTEN: list[str] = []
 DELETE_ORIGINAL = None
 TORRENT_CHMOD_DIRECTORY = None
 TORRENT_DEFAULT_DIRECTORY = None
@@ -287,17 +292,17 @@ PLEX_SSL = None
 PLEX_HOST = None
 PLEX_PORT = None
 PLEX_TOKEN = None
-PLEX_SECTION = []
+PLEX_SECTION: list[str] = []
 
-EXT_CONTAINER = []
+EXT_CONTAINER: list[str] = []
 COMPRESSED_CONTAINER = []
 MEDIA_CONTAINER = []
 AUDIO_CONTAINER = []
 META_CONTAINER = []
 
-SECTIONS = []
-CATEGORIES = []
-FORK_SET = []
+SECTIONS: list[str] = []
+CATEGORIES: list[str] = []
+FORK_SET: list[str] = []
 
 MOUNTED = None
 GETSUBS = False

@@ -4,6 +4,7 @@ import os
 import socket
 import subprocess
 import sys
+import typing
 
 import core
 from core import APP_FILENAME
@@ -20,9 +21,9 @@ if os.name == 'nt':
 class WindowsProcess:
     def __init__(self):
         self.mutex = None
-        self.mutexname = 'nzbtomedia_{pid}'.format(
-            pid=core.PID_FILE.replace('\\', '/'),
-        )  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}'
+        # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}
+        _path_str = os.fspath(core.PID_FILE).replace('\\', '/')
+        self.mutexname = f'nzbtomedia_{_path_str}'
         self.CreateMutex = CreateMutex
         self.CloseHandle = CloseHandle
         self.GetLastError = GetLastError
@@ -79,25 +80,21 @@ class PosixProcess:
 
         if not self.lasterror:
             # Write my pid into pidFile to keep multiple copies of program from running
-            try:
-                fp = open(self.pidpath, 'w')
-                fp.write(str(os.getpid()))
-                fp.close()
-            except Exception:
-                pass
-
+            with self.pidpath.open(mode='w') as fp:
+                fp.write(os.getpid())
         return self.lasterror
 
     def __del__(self):
         if not self.lasterror:
             if self.lock_socket:
                 self.lock_socket.close()
-            if os.path.isfile(self.pidpath):
-                os.unlink(self.pidpath)
+            if self.pidpath.is_file():
+                self.pidpath.unlink()
 
 
+ProcessType = typing.Type[typing.Union[PosixProcess, WindowsProcess]]
 if os.name == 'nt':
-    RunningProcess = WindowsProcess
+    RunningProcess: ProcessType = WindowsProcess
 else:
     RunningProcess = PosixProcess
 
