@@ -578,11 +578,11 @@ def process(
                 f'{section} will keep searching',
             )
 
-    # Added a release that was not in the wanted list so confirm rename successful by finding this movie media.list.
+    # Added a release that was not in the wanted list so confirm rename
+    # successful by finding this movie media.list.
     if not release:
-        download_id = (
-            None  # we don't want to filter new releases based on this.
-        )
+        # we don't want to filter new releases based on this.
+        download_id = ''
 
     if no_status_check:
         return ProcessResult.success(
