@@ -32,9 +32,6 @@ from core.utils.paths import remove_dir
 from core.utils.network import server_responding
 
 
-requests.packages.urllib3.disable_warnings()
-
-
 def process(
     *,
     section: str,
