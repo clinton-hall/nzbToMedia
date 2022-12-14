@@ -3,6 +3,7 @@ from __future__ import annotations
 import errno
 import json
 import os
+import pathlib
 import platform
 import re
 import shutil
@@ -19,9 +20,8 @@ from core.utils.paths import make_dir
 __author__ = 'Justin'
 
 
-def is_video_good(videofile, status, require_lan=None):
-    file_name_ext = os.path.basename(videofile)
-    file_name, file_ext = os.path.splitext(file_name_ext)
+def is_video_good(video: pathlib.Path, status, require_lan=None):
+    file_ext = video.suffix
     disable = False
     if (
         file_ext not in core.MEDIA_CONTAINER
@@ -65,18 +65,18 @@ def is_video_good(videofile, status, require_lan=None):
             return True
 
     logger.info(
-        f'Checking [{file_name_ext}] for corruption, please stand by ...',
+        f'Checking [{video.name}] for corruption, please stand by ...',
         'TRANSCODER',
     )
-    video_details, result = get_video_details(videofile)
+    video_details, result = get_video_details(video)
 
     if result != 0:
-        logger.error(f'FAILED: [{file_name_ext}] is corrupted!', 'TRANSCODER')
+        logger.error(f'FAILED: [{video.name}] is corrupted!', 'TRANSCODER')
         return False
     if video_details.get('error'):
         error_details = video_details.get('error')
         logger.info(
-            f'FAILED: [{file_name_ext}] returned error [{error_details}].',
+            f'FAILED: [{video.name}] returned error [{error_details}].',
             'TRANSCODER',
         )
         return False
@@ -103,12 +103,12 @@ def is_video_good(videofile, status, require_lan=None):
             valid_audio = audio_streams
         if len(video_streams) > 0 and len(valid_audio) > 0:
             logger.info(
-                f'SUCCESS: [{file_name_ext}] has no corruption.', 'TRANSCODER',
+                f'SUCCESS: [{video.name}] has no corruption.', 'TRANSCODER',
             )
             return True
         else:
             logger.info(
-                f'FAILED: [{file_name_ext}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.',
+                f'FAILED: [{video.name}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.',
                 'TRANSCODER',
             )
             return False
