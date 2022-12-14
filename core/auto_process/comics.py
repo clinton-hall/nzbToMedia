@@ -113,10 +113,7 @@ def process(
             f'{r.status_code}',
         )
 
-    result = r.text
-    if not type(result) == list:
-        result = result.split('\n')
-    for line in result:
+    for line in r.text.split('\n'):
         if line:
             logger.postprocess(line, section)
         if 'Post Processing SUCCESSFUL' in line:
