@@ -4,6 +4,7 @@ import os
 import socket
 import subprocess
 import sys
+import typing
 
 import core
 from core import APP_FILENAME
@@ -96,8 +97,9 @@ class PosixProcess:
                 os.unlink(self.pidpath)
 
 
+ProcessType = typing.Type[typing.Union[PosixProcess, WindowsProcess]]
 if os.name == 'nt':
-    RunningProcess = WindowsProcess
+    RunningProcess: ProcessType = WindowsProcess
 else:
     RunningProcess = PosixProcess
 
