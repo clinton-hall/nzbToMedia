@@ -259,6 +259,8 @@ def process(
                 f'support failed downloads',
             )
 
+    return ProcessResult.failure()
+
 
 def get_status(url, apikey, dir_name):
     logger.debug(
