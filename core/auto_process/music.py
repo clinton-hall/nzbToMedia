@@ -158,12 +158,11 @@ def process(
         else:
             logger.debug(f'path: {dir_name}', section)
             data = {'name': 'Rename', 'path': dir_name}
-        data = json.dumps(data)
         try:
             logger.debug(f'Opening URL: {url} with data: {data}', section)
             r = requests.post(
                 url,
-                data=data,
+                data=json.dumps(data),
                 headers=headers,
                 stream=True,
                 verify=False,

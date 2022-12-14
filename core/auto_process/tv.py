@@ -429,7 +429,6 @@ def process(
             }
         if not download_id:
             data.pop('downloadClientId')
-        data = json.dumps(data)
     url = core.utils.common.create_url(scheme, host, port, route)
     try:
         if section == 'SickBeard':
@@ -509,7 +508,7 @@ def process(
             logger.debug(f'Opening URL: {url} with data: {data}', section)
             r = requests.post(
                 url,
-                data=data,
+                data=json.dumps(data),
                 headers=headers,
                 stream=True,
                 verify=False,
