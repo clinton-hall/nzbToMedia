@@ -9,10 +9,6 @@ import sys
 sys.dont_write_bytecode = True
 
 FOLDER_STRUCTURE = {
-    'libs': [
-        'common',
-        'win',
-    ],
     'core': [
         'auto_process',
         'extractor',
