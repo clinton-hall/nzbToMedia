@@ -38,7 +38,6 @@ def process(
     dir_name: str,
     input_name: str = '',
     status: int = 0,
-    failed: bool = False,
     client_agent: str = 'manual',
     download_id: str = '',
     input_category: str = '',
