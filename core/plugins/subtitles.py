@@ -14,7 +14,9 @@ def import_subs(filename):
     if not core.GETSUBS:
         return
     try:
-        subliminal.region.configure('dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'})
+        subliminal.region.configure(
+            'dogpile.cache.dbm', arguments={'filename': 'cachefile.dbm'},
+        )
     except Exception:
         pass
 
@@ -27,37 +29,54 @@ def import_subs(filename):
     if not languages:
         return
 
-    logger.info(f'Attempting to download subtitles for {filename}', 'SUBTITLES')
+    logger.info(
+        f'Attempting to download subtitles for {filename}', 'SUBTITLES',
+    )
     try:
         video = subliminal.scan_video(filename)
         subtitles = subliminal.download_best_subtitles({video}, languages)
         subliminal.save_subtitles(video, subtitles[video])
 
         for subtitle in subtitles[video]:
-            subtitle_path = subliminal.subtitle.get_subtitle_path(video.name, subtitle.language)
+            subtitle_path = subliminal.subtitle.get_subtitle_path(
+                video.name, subtitle.language,
+            )
             os.chmod(subtitle_path, 0o644)
     except Exception as e:
-        logger.error(f'Failed to download subtitles for {filename} due to: {e}', 'SUBTITLES')
+        logger.error(
+            f'Failed to download subtitles for {filename} due to: {e}',
+            'SUBTITLES',
+        )
 
 
 def rename_subs(path):
     filepaths = []
     sub_ext = ['.srt', '.sub', '.idx']
-    vidfiles = core.list_media_files(path, media=True, audio=False, meta=False, archives=False)
-    if not vidfiles or len(vidfiles) > 1:  # If there is more than 1 video file, or no video files, we can't rename subs.
+    vidfiles = core.list_media_files(
+        path, media=True, audio=False, meta=False, archives=False,
+    )
+    if (
+        not vidfiles or len(vidfiles) > 1
+    ):  # If there is more than 1 video file, or no video files, we can't rename subs.
         return
     name = os.path.splitext(os.path.split(vidfiles[0])[1])[0]
     for directory, _, filenames in os.walk(path):
         for filename in filenames:
             filepaths.extend([os.path.join(directory, filename)])
-    subfiles = [item for item in filepaths if os.path.splitext(item)[1] in sub_ext]
+    subfiles = [
+        item for item in filepaths if os.path.splitext(item)[1] in sub_ext
+    ]
     subfiles.sort()  # This should sort subtitle names by language (alpha) and Number (where multiple)
     renamed = []
     for sub in subfiles:
         subname, ext = os.path.splitext(os.path.basename(sub))
-        if name in subname:  # The sub file name already includes the video name.
+        if (
+            name in subname
+        ):  # The sub file name already includes the video name.
             continue
-        words = re.findall('[a-zA-Z]+', str(subname))  # find whole words in string
+        words = re.findall(
+            '[a-zA-Z]+', str(subname),
+        )  # find whole words in string
         # parse the words for language descriptors.
         lan = None
         for word in words:
@@ -78,8 +97,12 @@ def rename_subs(path):
             new_sub_name = name
         else:
             new_sub_name = f'{name}.{str(lan)}'
-        new_sub = os.path.join(directory, new_sub_name)  # full path and name less ext
-        if f'{new_sub}{ext}' in renamed:  # If duplicate names, add unique number before ext.
+        new_sub = os.path.join(
+            directory, new_sub_name,
+        )  # full path and name less ext
+        if (
+            f'{new_sub}{ext}' in renamed
+        ):  # If duplicate names, add unique number before ext.
             for i in range(1, len(renamed) + 1):
                 if f'{new_sub}.{i}{ext}' in renamed:
                     continue
@@ -87,7 +110,9 @@ def rename_subs(path):
                 break
         new_sub = f'{new_sub}{ext}'  # add extension now
         if os.path.isfile(new_sub):  # Don't copy over existing - final check.
-            logger.debug(f'Unable to rename sub file {sub} as destination {new_sub} already exists')
+            logger.debug(
+                f'Unable to rename sub file {sub} as destination {new_sub} already exists',
+            )
             continue
         logger.debug(
             f'Renaming sub file from {sub} to {new_sub}',

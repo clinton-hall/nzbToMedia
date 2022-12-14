@@ -12,10 +12,7 @@ from core import logger
 
 def make_wake_on_lan_packet(mac_address):
     """Build the Wake-On-LAN 'Magic Packet'."""
-    address = (
-        int(value, 16)
-        for value in mac_address.split(':')
-    )
+    address = (int(value, 16) for value in mac_address.split(':'))
     fmt = 'BBBBBB'
     hardware_address = struct.pack(fmt, *address)
     broadcast_address = b'\xFF' * 6  # FF:FF:FF:FF:FF:FF
@@ -115,7 +112,9 @@ def find_download(client_agent, download_id):
             'value': download_id,
         }
         try:
-            r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+            r = requests.get(
+                url, params=params, verify=False, timeout=(30, 120),
+            )
         except requests.ConnectionError:
             logger.error('Unable to open URL')
             return False  # failure

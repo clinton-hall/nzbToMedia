@@ -65,11 +65,17 @@ def _parse_health_status():
         # Unpack was skipped due to nzb-file properties
         # or due to errors during par-check
         if int(os.environ['NZBPP_HEALTH']) < 1000:
-            logger.warning('Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
+            logger.warning(
+                'Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'',
+            )
             status = 1
         else:
-            logger.info('Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
-        logger.info('Please check your Par-check/repair settings for future downloads.')
+            logger.info(
+                'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful',
+            )
+        logger.info(
+            'Please check your Par-check/repair settings for future downloads.',
+        )
     return status
 
 
@@ -89,7 +95,9 @@ def check_version():
     version = os.environ['NZBOP_VERSION']
     # Check if the script is called from nzbget 11.0 or later
     if version[0:5] < '11.0':
-        logger.error(f'NZBGet Version {version} is not supported. Please update NZBGet.')
+        logger.error(
+            f'NZBGet Version {version} is not supported. Please update NZBGet.',
+        )
         sys.exit(core.NZBGET_POSTPROCESS_ERROR)
     logger.info(f'Script triggered from NZBGet Version {version}.')
 

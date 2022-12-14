@@ -94,19 +94,29 @@ def process(
 
     logger.postprocess(f'{r.text}', section)
 
-    if r.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+    if r.status_code not in [
+        requests.codes.ok,
+        requests.codes.created,
+        requests.codes.accepted,
+    ]:
         logger.error(f'Server returned status {r.status_code}', section)
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}',
         )
     elif r.text == 'OK':
-        logger.postprocess(f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian', section)
+        logger.postprocess(
+            f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian',
+            section,
+        )
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.error(f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian', section)
+        logger.error(
+            f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian',
+            section,
+        )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.',

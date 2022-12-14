@@ -20,7 +20,9 @@ if os.name == 'nt':
 class WindowsProcess:
     def __init__(self):
         self.mutex = None
-        self.mutexname = 'nzbtomedia_{pid}'.format(pid=core.PID_FILE.replace('\\', '/'))  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}'
+        self.mutexname = 'nzbtomedia_{pid}'.format(
+            pid=core.PID_FILE.replace('\\', '/'),
+        )  # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}'
         self.CreateMutex = CreateMutex
         self.CloseHandle = CloseHandle
         self.GetLastError = GetLastError

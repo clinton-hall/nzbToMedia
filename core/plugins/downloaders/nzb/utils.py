@@ -30,7 +30,12 @@ def get_nzoid(input_name):
     try:
         result = r.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
-        slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
+        slots.extend(
+            [
+                (slot['nzo_id'], slot['filename'])
+                for slot in result['queue']['slots']
+            ],
+        )
     except Exception:
         logger.warning('Data from SABnzbd queue could not be parsed')
     params['mode'] = 'history'
@@ -42,7 +47,12 @@ def get_nzoid(input_name):
     try:
         result = r.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
-        slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
+        slots.extend(
+            [
+                (slot['nzo_id'], slot['name'])
+                for slot in result['history']['slots']
+            ],
+        )
     except Exception:
         logger.warning('Data from SABnzbd history could not be parsed')
     try:

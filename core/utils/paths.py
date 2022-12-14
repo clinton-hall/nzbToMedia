@@ -105,7 +105,9 @@ def remove_read_only(filename):
             try:
                 os.chmod(filename, stat.S_IWRITE)
             except Exception:
-                logger.warning(f'Cannot change permissions of {filename}', logger.WARNING)
+                logger.warning(
+                    f'Cannot change permissions of {filename}', logger.WARNING,
+                )
 
 
 def flatten_dir(destination, files):
@@ -129,7 +131,9 @@ def flatten_dir(destination, files):
 
 def clean_directory(path, files):
     if not os.path.exists(path):
-        logger.info(f'Directory {path} has been processed and removed ...', 'CLEANDIR')
+        logger.info(
+            f'Directory {path} has been processed and removed ...', 'CLEANDIR',
+        )
         return
 
     if core.FORCE_CLEAN and not core.FAILED:
@@ -144,7 +148,9 @@ def clean_directory(path, files):
         )
         return
 
-    logger.info(f'Directory {path} has been processed, removing ...', 'CLEANDIRS')
+    logger.info(
+        f'Directory {path} has been processed, removing ...', 'CLEANDIRS',
+    )
     try:
         shutil.rmtree(path, onerror=onerror)
     except Exception:

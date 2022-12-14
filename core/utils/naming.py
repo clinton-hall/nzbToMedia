@@ -33,7 +33,9 @@ def clean_file_name(filename):
     space, but handles decimal numbers in string, for example:
     """
     filename = re.sub(r'(\D)\.(?!\s)(\D)', r'\1 \2', filename)
-    filename = re.sub(r'(\d)\.(\d{4})', r'\1 \2', filename)  # if it ends in a year then don't keep the dot
+    filename = re.sub(
+        r'(\d)\.(\d{4})', r'\1 \2', filename,
+    )  # if it ends in a year then don't keep the dot
     filename = re.sub(r'(\D)\.(?!\s)', r'\1 ', filename)
     filename = re.sub(r'\.(?!\s)(\D)', r' \1', filename)
     filename = filename.replace('_', ' ')

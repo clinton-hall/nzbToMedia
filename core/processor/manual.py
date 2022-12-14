@@ -35,24 +35,36 @@ def process():
                 )
 
                 core.DOWNLOAD_INFO = get_download_info(
-                    os.path.basename(dir_name), 0,
+                    os.path.basename(dir_name),
+                    0,
                 )
                 if core.DOWNLOAD_INFO:
-                    logger.info(f'Found download info for {os.path.basename(dir_name)}, setting variables now ...')
-                    client_agent = core.DOWNLOAD_INFO[0]['client_agent'] or 'manual'
+                    logger.info(
+                        f'Found download info for {os.path.basename(dir_name)}, setting variables now ...',
+                    )
+                    client_agent = (
+                        core.DOWNLOAD_INFO[0]['client_agent'] or 'manual'
+                    )
                     download_id = core.DOWNLOAD_INFO[0]['input_id'] or ''
                 else:
-                    logger.info(f'Unable to locate download info for {os.path.basename(dir_name)}, continuing to try and process this release ...')
+                    logger.info(
+                        f'Unable to locate download info for {os.path.basename(dir_name)}, continuing to try and process this release ...',
+                    )
                     client_agent = 'manual'
                     download_id = ''
 
-                if client_agent and client_agent.lower() not in core.NZB_CLIENTS:
+                if (
+                    client_agent
+                    and client_agent.lower() not in core.NZB_CLIENTS
+                ):
                     continue
 
                 input_name = os.path.basename(dir_name)
 
                 results = nzb.process(
-                    dir_name, input_name, 0,
+                    dir_name,
+                    input_name,
+                    0,
                     client_agent=client_agent,
                     download_id=download_id or None,
                     input_category=subsection,
