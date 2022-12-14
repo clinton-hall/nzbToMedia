@@ -9,6 +9,7 @@ import re
 import subprocess
 import sys
 import time
+import typing
 
 import eol
 
@@ -91,6 +92,7 @@ TORRENT_CLIENTS = [
     'manual',
 ]
 
+
 # sickbeard fork/branch constants
 FORK_DEFAULT = 'default'
 FORK_FAILED = 'failed'
@@ -105,7 +107,7 @@ FORK_SICKGEAR = 'SickGear'
 FORK_SICKGEAR_API = 'SickGear-api'
 FORK_STHENO = 'Stheno'
 
-FORKS = {
+FORKS: typing.Mapping[str, typing.Mapping] = {
     FORK_DEFAULT: {'dir': None},
     FORK_FAILED: {'dirName': None, 'failed': None},
     FORK_FAILED_TORRENT: {'dir': None, 'failed': None, 'process_method': None},
@@ -201,7 +203,10 @@ ALL_FORKS = {
     for k in set(
         list(
             itertools.chain.from_iterable(
-                [FORKS[x].keys() for x in FORKS.keys()],
+                [
+                    FORKS[x].keys()
+                    for x in FORKS.keys()
+                ],
             ),
         ),
     )
