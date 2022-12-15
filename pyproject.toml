@@ -53,6 +53,6 @@ include_package_data = true
 
 [tool.setuptools.packages.find]
 where = [""]
-include = ["core", "libs", "nzbTo*", "TorrentToMedia", "eol", "cleanup"]
+include = ["nzb2media", "nzbTo*", "TorrentToMedia"]
 
 [tool.setuptools_scm]

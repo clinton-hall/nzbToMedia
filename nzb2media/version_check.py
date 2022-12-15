@@ -12,7 +12,6 @@ import tarfile
 import traceback
 from urllib.request import urlretrieve
 
-import cleanup
 import nzb2media
 from nzb2media import github_api as github
 from nzb2media import logger
@@ -79,7 +78,6 @@ class CheckVersion:
     def update(self):
         if self.updater.need_update():
             result = self.updater.update()
-            cleanup.clean(cleanup.FOLDER_STRUCTURE)
             return result
 
 

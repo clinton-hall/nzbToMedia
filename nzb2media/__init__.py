@@ -11,8 +11,6 @@ import sys
 import time
 import typing
 
-import eol
-
 try:
     import win32event
 except ImportError:
@@ -1581,35 +1579,6 @@ def configure_utility_locations():
                 )
 
 
-def check_python():
-    """Check End-of-Life status for Python version."""
-    # Raise if end of life
-    eol.check()
-
-    # Warn if within grace period
-    grace_period = 365  # days
-    eol.warn_for_status(grace_period=-grace_period)
-
-    # Log warning if within grace period
-    days_left = eol.lifetime()
-    if days_left > 0:
-        logger.info(
-            'Python v{major}.{minor} will reach end of life in {x} days.'.format(
-                major=sys.version_info[0],
-                minor=sys.version_info[1],
-                x=days_left,
-            ),
-        )
-    else:
-        logger.info(
-            'Python v{major}.{minor} reached end of life {x} days ago.'.format(
-                major=sys.version_info[0],
-                minor=sys.version_info[1],
-                x=-days_left,
-            ),
-        )
-    if days_left <= grace_period:
-        logger.warning('Please upgrade to a more recent Python version.')
 
 
 def initialize(section=None):
@@ -1627,9 +1596,6 @@ def initialize(section=None):
 
     configure_migration()
     configure_logging_part_2()
-
-    # check python version
-    check_python()
 
     # initialize the main SB database
     main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)

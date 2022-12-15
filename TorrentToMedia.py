@@ -2,11 +2,6 @@ import datetime
 import os
 import sys
 
-import eol
-import cleanup
-eol.check()
-cleanup.clean(cleanup.FOLDER_STRUCTURE)
-
 import nzb2media
 from nzb2media import logger, main_db
 from nzb2media.auto_process import comics, games, movies, music, tv, books
