@@ -5,10 +5,10 @@ from subprocess import Popen
 
 import nzb2media
 from nzb2media import logger, transcoder
+from nzb2media.auto_process.common import ProcessResult
 from nzb2media.plugins.subtitles import import_subs
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.paths import remove_dir
-from nzb2media.auto_process.common import ProcessResult
 
 
 def external_script(output_destination, torrent_name, torrent_label, settings):

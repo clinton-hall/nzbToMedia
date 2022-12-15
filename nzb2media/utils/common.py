@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import os.path
-import typing
 import urllib.parse
 
 import nzb2media

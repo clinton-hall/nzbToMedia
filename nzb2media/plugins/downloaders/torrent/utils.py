@@ -4,12 +4,11 @@ import time
 
 import nzb2media
 from nzb2media import logger
-
-from .deluge import configure_client as deluge_client
-from .qbittorrent import configure_client as qbittorrent_client
-from .synology import configure_client as synology_client
-from .transmission import configure_client as transmission_client
-from .utorrent import configure_client as utorrent_client
+from nzb2media.plugins.downloaders.torrent.deluge import configure_client as deluge_client
+from nzb2media.plugins.downloaders.torrent.qbittorrent import configure_client as qbittorrent_client
+from nzb2media.plugins.downloaders.torrent.synology import configure_client as synology_client
+from nzb2media.plugins.downloaders.torrent.transmission import configure_client as transmission_client
+from nzb2media.plugins.downloaders.torrent.utorrent import configure_client as utorrent_client
 
 torrent_clients = {
     'deluge': deluge_client,

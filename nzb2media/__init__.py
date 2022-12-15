@@ -45,35 +45,31 @@ MYAPP = None
 
 from nzb2media import logger, main_db, version_check, databases, transcoder
 from nzb2media.configuration import config
-from nzb2media.plugins.downloaders.configuration import (
-    configure_nzbs,
-    configure_torrents,
-    configure_torrent_class,
-)
-from nzb2media.plugins.downloaders.utils import (
-    pause_torrent,
-    remove_torrent,
-    resume_torrent,
-)
+from nzb2media.plugins.downloaders.nzb.configuration import configure_nzbs
+from nzb2media.plugins.downloaders.torrent.configuration import configure_torrent_class
+from nzb2media.plugins.downloaders.torrent.configuration import configure_torrents
+from nzb2media.plugins.downloaders.torrent.utils import pause_torrent
+from nzb2media.plugins.downloaders.torrent.utils import remove_torrent
+from nzb2media.plugins.downloaders.torrent.utils import resume_torrent
 from nzb2media.plugins.plex import configure_plex
-from nzb2media.utils.processes import RunningProcess
-from nzb2media.utils.processes import restart
-from nzb2media.utils.files import copy_link
-from nzb2media.utils.files import extract_files
-from nzb2media.utils.files import list_media_files
-from nzb2media.utils.files import make_dir
-from nzb2media.utils.files import sanitize_name
-from nzb2media.utils.paths import rchmod
-from nzb2media.utils.paths import remove_dir
-from nzb2media.utils.paths import remove_read_only
 from nzb2media.utils.common import clean_dir
 from nzb2media.utils.common import flatten
 from nzb2media.utils.common import get_dirs
 from nzb2media.utils.download_info import get_download_info
 from nzb2media.utils.download_info import update_download_info_status
-from nzb2media.utils.parsers import parse_args
-from nzb2media.utils.network import wake_up
+from nzb2media.utils.files import copy_link
+from nzb2media.utils.files import extract_files
+from nzb2media.utils.files import list_media_files
+from nzb2media.utils.files import make_dir
+from nzb2media.utils.files import sanitize_name
 from nzb2media.utils.identification import category_search
+from nzb2media.utils.network import wake_up
+from nzb2media.utils.parsers import parse_args
+from nzb2media.utils.paths import rchmod
+from nzb2media.utils.paths import remove_dir
+from nzb2media.utils.paths import remove_read_only
+from nzb2media.utils.processes import RunningProcess
+from nzb2media.utils.processes import restart
 
 
 __version__ = '12.1.11'
