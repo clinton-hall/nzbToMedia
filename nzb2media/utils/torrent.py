@@ -4,18 +4,18 @@ import time
 
 import nzb2media
 from nzb2media import logger
-from nzb2media.plugins.downloaders.torrent.deluge import configure_client as deluge_client
-from nzb2media.plugins.downloaders.torrent.qbittorrent import configure_client as qbittorrent_client
-from nzb2media.plugins.downloaders.torrent.synology import configure_client as synology_client
-from nzb2media.plugins.downloaders.torrent.transmission import configure_client as transmission_client
-from nzb2media.plugins.downloaders.torrent.utorrent import configure_client as utorrent_client
+from nzb2media.torrent import deluge
+from nzb2media.torrent import qbittorrent
+from nzb2media.torrent import synology
+from nzb2media.torrent import transmission
+from nzb2media.torrent import utorrent
 
 torrent_clients = {
-    'deluge': deluge_client,
-    'qbittorrent': qbittorrent_client,
-    'transmission': transmission_client,
-    'utorrent': utorrent_client,
-    'synods': synology_client,
+    'deluge': deluge,
+    'qbittorrent': qbittorrent,
+    'transmission': transmission,
+    'utorrent': utorrent,
+    'synods': synology,
 }
 
 
@@ -23,9 +23,12 @@ def create_torrent_class(client_agent):
     if not nzb2media.APP_NAME == 'TorrentToMedia.py':
         return  # Skip loading Torrent for NZBs.
 
-    client = torrent_clients.get(client_agent)
-    if client:
-        return client()
+    try:
+        agent = torrent_clients[client_agent]
+    except KeyError:
+        return
+    else:
+        return agent.configure_client()
 
 
 def pause_torrent(client_agent, input_hash, input_id, input_name):

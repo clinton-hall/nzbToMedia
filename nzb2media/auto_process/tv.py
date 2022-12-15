@@ -16,8 +16,7 @@ from nzb2media import transcoder
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.auto_process.common import completed_download_handling
-from nzb2media.auto_process.managers.sickbeard import InitSickBeard
-from nzb2media.plugins.downloaders.nzb.utils import report_nzb
+from nzb2media.managers.sickbeard import InitSickBeard
 from nzb2media.plugins.subtitles import import_subs
 from nzb2media.plugins.subtitles import rename_subs
 from nzb2media.scene_exceptions import process_all_exceptions
@@ -25,6 +24,7 @@ from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.network import server_responding
+from nzb2media.utils.nzb import report_nzb
 from nzb2media.utils.paths import remote_dir
 from nzb2media.utils.paths import remove_dir
 

@@ -12,7 +12,6 @@ from nzb2media.auto_process import movies
 from nzb2media.auto_process import music
 from nzb2media.auto_process import tv
 from nzb2media.auto_process.common import ProcessResult
-from nzb2media.plugins.downloaders.nzb.utils import get_nzoid
 from nzb2media.plugins.plex import plex_update
 from nzb2media.user_scripts import external_script
 from nzb2media.utils.common import clean_dir
@@ -20,6 +19,7 @@ from nzb2media.utils.download_info import update_download_info_status
 from nzb2media.utils.encoding import char_replace
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import extract_files
+from nzb2media.utils.nzb import get_nzoid
 
 
 def process(
