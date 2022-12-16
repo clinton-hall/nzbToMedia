@@ -6,8 +6,8 @@ import shutil
 import stat
 import time
 
-import beets.mediafile
 import guessit
+import mediafile
 
 import nzb2media
 from nzb2media import extractor
@@ -19,15 +19,15 @@ from nzb2media.utils.paths import get_dir_size
 from nzb2media.utils.paths import make_dir
 
 
-def move_file(mediafile, path, link):
+def move_file(filename, path, link):
     logger.debug(
-        f'Found file {os.path.split(mediafile)[1]} in root directory {path}.',
+        f'Found file {os.path.split(filename)[1]} in root directory {path}.',
     )
     new_path = None
-    file_ext = os.path.splitext(mediafile)[1]
+    file_ext = os.path.splitext(filename)[1]
     try:
         if file_ext in nzb2media.AUDIO_CONTAINER:
-            f = beets.mediafile.MediaFile(mediafile)
+            f = mediafile.MediaFile(filename)
 
             # get artist and album info
             artist = f.artist
@@ -38,22 +38,22 @@ def move_file(mediafile, path, link):
                 path, f'{sanitize_name(artist)} - {sanitize_name(album)}',
             )
         elif file_ext in nzb2media.MEDIA_CONTAINER:
-            f = guessit.guessit(mediafile)
+            f = guessit.guessit(filename)
 
             # get title
             title = f.get('series') or f.get('title')
 
             if not title:
-                title = os.path.splitext(os.path.basename(mediafile))[0]
+                title = os.path.splitext(os.path.basename(filename))[0]
 
             new_path = os.path.join(path, sanitize_name(title))
     except Exception as e:
         logger.error(
-            f'Exception parsing name for media file: {os.path.split(mediafile)[1]}: {e}',
+            f'Exception parsing name for media file: {os.path.split(filename)[1]}: {e}',
         )
 
     if not new_path:
-        title = os.path.splitext(os.path.basename(mediafile))[0]
+        title = os.path.splitext(os.path.basename(filename))[0]
         new_path = os.path.join(path, sanitize_name(title))
 
     # # Removed as encoding of directory no-longer required
@@ -75,7 +75,7 @@ def move_file(mediafile, path, link):
         make_dir(new_path)
 
     newfile = os.path.join(
-        new_path, sanitize_name(os.path.split(mediafile)[1]),
+        new_path, sanitize_name(os.path.split(filename)[1]),
     )
     try:
         newfile = newfile.encode(nzb2media.SYS_ENCODING)
@@ -83,7 +83,7 @@ def move_file(mediafile, path, link):
         pass
 
     # link file to its new path
-    copy_link(mediafile, newfile, link)
+    copy_link(filename, newfile, link)
 
 
 def is_min_size(input_name, min_size):

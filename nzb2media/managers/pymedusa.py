@@ -7,7 +7,7 @@ import requests
 import nzb2media.utils.common
 from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
-from nzb2media.auto_process.managers.sickbeard import SickBeard
+from nzb2media.managers.sickbeard import SickBeard
 
 
 class PyMedusa(SickBeard):

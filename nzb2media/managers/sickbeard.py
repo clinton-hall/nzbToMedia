@@ -8,9 +8,7 @@ from requests_oauthlib import OAuth2Session
 
 import nzb2media
 from nzb2media import logger
-from nzb2media.auto_process.common import (
-    ProcessResult,
-)
+from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.paths import remote_dir
 
 

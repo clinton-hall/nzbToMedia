@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import nzb2media
-from nzb2media.plugins.downloaders.torrent.utils import create_torrent_class
+from nzb2media.utils.torrent import create_torrent_class
 
 
 def configure_torrents(config):
