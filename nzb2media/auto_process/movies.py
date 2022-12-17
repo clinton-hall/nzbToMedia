@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import os
 import time
 
@@ -23,6 +24,9 @@ from nzb2media.utils.network import server_responding
 from nzb2media.utils.nzb import report_nzb
 from nzb2media.utils.paths import remote_dir
 from nzb2media.utils.paths import remove_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def process(
@@ -86,9 +90,7 @@ def process(
         route = web_root
     base_url = nzb2media.utils.common.create_url(scheme, host, port, route)
     if not apikey:
-        logger.info(
-            'No CouchPotato or Radarr apikey entered. Performing transcoder functions only',
-        )
+        log.info('No CouchPotato or Radarr apikey entered. Performing transcoder functions only')
         release = None
     elif server_responding(base_url):
         if section == 'CouchPotato':
@@ -96,7 +98,7 @@ def process(
         else:
             release = None
     else:
-        logger.error('Server did not respond. Exiting', section)
+        log.error('Server did not respond. Exiting')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - {section} did not respond.',
         )
@@ -140,9 +142,7 @@ def process(
         )
         and extract
     ):
-        logger.debug(
-            f'Checking for archives to extract in directory: {dir_name}',
-        )
+        log.debug(f'Checking for archives to extract in directory: {dir_name}')
         nzb2media.extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
@@ -164,16 +164,10 @@ def process(
                 rename_subs(dir_name)
     if num_files and valid_files == num_files:
         if status:
-            logger.info(
-                f'Status shown as failed from Downloader, but {good_files} valid video files found. Setting as success.',
-                section,
-            )
+            log.info(f'Status shown as failed from Downloader, but {good_files} valid video files found. Setting as success.')
             status = 0
     elif num_files and valid_files < num_files:
-        logger.info(
-            'Status shown as success from Downloader, but corrupt video files found. Setting as failed.',
-            section,
-        )
+        log.info('Status shown as success from Downloader, but corrupt video files found. Setting as failed.')
         status = 1
         if (
             'NZBOP_VERSION' in os.environ
@@ -181,33 +175,21 @@ def process(
         ):
             print('[NZB] MARK=BAD')
         if good_files == num_files:
-            logger.debug(
-                f'Video marked as failed due to missing required language: {nzb2media.REQUIRE_LAN}',
-                section,
-            )
+            log.debug(f'Video marked as failed due to missing required language: {nzb2media.REQUIRE_LAN}')
         else:
-            logger.debug(
-                'Video marked as failed due to missing playable audio or video',
-                section,
-            )
+            log.debug('Video marked as failed due to missing playable audio or video')
         if (
             good_files < num_files and failure_link
         ):  # only report corrupt files
             failure_link += '&corrupt=true'
     elif client_agent == 'manual':
-        logger.warning(
-            f'No media files found in directory {dir_name} to manually process.',
-            section,
-        )
+        log.warning(f'No media files found in directory {dir_name} to manually process.')
         return ProcessResult(
             message='',
             status_code=0,  # Success (as far as this script is concerned)
         )
     else:
-        logger.warning(
-            f'No media files found in directory {dir_name}. Processing this as a failed download',
-            section,
-        )
+        log.warning(f'No media files found in directory {dir_name}. Processing this as a failed download')
         status = 1
         if (
             'NZBOP_VERSION' in os.environ
@@ -219,25 +201,15 @@ def process(
         if nzb2media.TRANSCODE == 1:
             result, new_dir_name = transcoder.transcode_directory(dir_name)
             if result == 0:
-                logger.debug(
-                    f'Transcoding succeeded for files in {dir_name}', section,
-                )
+                log.debug(f'Transcoding succeeded for files in {dir_name}')
                 dir_name = new_dir_name
 
-                logger.debug(
-                    f'Config setting \'chmodDirectory\' currently set to {oct(chmod_directory)}',
-                    section,
-                )
+                log.debug(f'Config setting \'chmodDirectory\' currently set to {oct(chmod_directory)}')
                 if chmod_directory:
-                    logger.info(
-                        f'Attempting to set the octal permission of \'{oct(chmod_directory)}\' on directory \'{dir_name}\'',
-                        section,
-                    )
+                    log.info(f'Attempting to set the octal permission of \'{oct(chmod_directory)}\' on directory \'{dir_name}\'')
                     nzb2media.rchmod(dir_name, chmod_directory)
             else:
-                logger.error(
-                    f'Transcoding failed for files in {dir_name}', section,
-                )
+                log.error(f'Transcoding failed for files in {dir_name}')
                 return ProcessResult(
                     message=f'{section}: Failed to post-process - Transcoding failed',
                     status_code=1,
@@ -252,13 +224,11 @@ def process(
                         client_agent in [nzb2media.TORRENT_CLIENT_AGENT, 'manual']
                         and nzb2media.USE_LINK == 'move-sym'
                 ):
-                    logger.debug(f'Renaming: {video} to: {video2}')
+                    log.debug(f'Renaming: {video} to: {video2}')
                     os.rename(video, video2)
 
         if not apikey:  # If only using Transcoder functions, exit here.
-            logger.info(
-                'No CouchPotato or Radarr or Watcher3 apikey entered. Processing completed.',
-            )
+            log.info('No CouchPotato or Radarr or Watcher3 apikey entered. Processing completed.')
             return ProcessResult(
                 message=f'{section}: Successfully post-processed {input_name}',
                 status_code=0,
@@ -280,10 +250,8 @@ def process(
                 command = 'renamer.scan'
 
             url = f'{base_url}{command}'
-            logger.debug(f'Opening URL: {url} with PARAMS: {params}', section)
-            logger.postprocess(
-                f'Starting {method} scan for {input_name}', section,
-            )
+            log.debug(f'Opening URL: {url} with PARAMS: {params}')
+            log.debug(f'Starting {method} scan for {input_name}')
 
         if section == 'Radarr':
             payload = {
@@ -294,12 +262,8 @@ def process(
             }
             if not download_id:
                 payload.pop('downloadClientId')
-            logger.debug(
-                f'Opening URL: {base_url} with PARAMS: {payload}', section,
-            )
-            logger.postprocess(
-                f'Starting DownloadedMoviesScan scan for {input_name}', section,
-            )
+            log.debug(f'Opening URL: {base_url} with PARAMS: {payload}')
+            log.debug(f'Starting DownloadedMoviesScan scan for {input_name}')
 
         if section == 'Watcher3':
             if input_name and os.path.isfile(
@@ -316,24 +280,20 @@ def process(
             }
             if not download_id:
                 payload.pop('guid')
-            logger.debug(
-                f'Opening URL: {base_url} with PARAMS: {payload}', section,
-            )
-            logger.postprocess(
-                f'Starting postprocessing scan for {input_name}', section,
-            )
+            log.debug(f'Opening URL: {base_url} with PARAMS: {payload}')
+            log.debug(f'Starting postprocessing scan for {input_name}')
 
         try:
             if section == 'CouchPotato':
-                r = requests.get(
+                response = requests.get(
                     url, params=params, verify=False, timeout=(30, 1800),
                 )
             elif section == 'Watcher3':
-                r = requests.post(
+                response = requests.post(
                     base_url, data=payload, verify=False, timeout=(30, 1800),
                 )
             else:
-                r = requests.post(
+                response = requests.post(
                     base_url,
                     data=json.dumps(payload),
                     headers=headers,
@@ -342,30 +302,25 @@ def process(
                     timeout=(30, 1800),
                 )
         except requests.ConnectionError:
-            logger.error('Unable to open URL', section)
+            log.error('Unable to open URL')
             return ProcessResult(
-                message='{0}: Failed to post-process - Unable to connect to {0}'.format(
-                    section,
-                ),
+                message=f'{section}: Failed to post-process - Unable to connect to {section}',
                 status_code=1,
             )
 
-        result = r.json()
-        if r.status_code not in [
+        result = response.json()
+        if response.status_code not in [
             requests.codes.ok,
             requests.codes.created,
             requests.codes.accepted,
         ]:
-            logger.error(f'Server returned status {r.status_code}', section)
+            log.error(f'Server returned status {response.status_code}')
             return ProcessResult(
-                message=f'{section}: Failed to post-process - Server returned status {r.status_code}',
+                message=f'{section}: Failed to post-process - Server returned status {response.status_code}',
                 status_code=1,
             )
         elif section == 'CouchPotato' and result['success']:
-            logger.postprocess(
-                f'SUCCESS: Finished {method} scan for folder {dir_name}',
-                section,
-            )
+            log.debug(f'SUCCESS: Finished {method} scan for folder {dir_name}')
             if method == 'manage':
                 return ProcessResult(
                     message=f'{section}: Successfully post-processed {input_name}',
@@ -374,13 +329,13 @@ def process(
         elif section == 'Radarr':
             try:
                 scan_id = int(result['id'])
-                logger.debug(f'Scan started with id: {scan_id}', section)
-            except Exception as e:
-                logger.warning(f'No scan id was returned due to: {e}', section)
+                log.debug(f'Scan started with id: {scan_id}')
+            except Exception as error:
+                log.warning(f'No scan id was returned due to: {error}')
                 scan_id = None
         elif section == 'Watcher3' and result['status'] == 'finished':
             update_movie_status = result['tasks']['update_movie_status']
-            logger.postprocess(f'Watcher3 updated status to {section}')
+            log.debug(f'Watcher3 updated status to {section}')
             if update_movie_status == 'Finished':
                 return ProcessResult(
                     message=f'{section}: Successfully post-processed {input_name}',
@@ -392,38 +347,26 @@ def process(
                     status_code=1,
                 )
         else:
-            logger.error(
-                f'FAILED: {method} scan was unable to finish for folder {dir_name}. exiting!',
-                section,
-            )
+            log.error(f'FAILED: {method} scan was unable to finish for folder {dir_name}. exiting!')
             return ProcessResult(
                 message=f'{section}: Failed to post-process - Server did not return success',
                 status_code=1,
             )
     else:
         nzb2media.FAILED = True
-        logger.postprocess(
-            f'FAILED DOWNLOAD DETECTED FOR {input_name}', section,
-        )
+        log.debug(f'FAILED DOWNLOAD DETECTED FOR {input_name}')
         if failure_link:
             report_nzb(failure_link, client_agent)
 
         if section == 'Radarr':
-            logger.postprocess(
-                f'SUCCESS: Sending failed download to {section} for CDH processing',
-                section,
-            )
+            log.debug(f'SUCCESS: Sending failed download to {section} for CDH processing')
             return ProcessResult(
-                message='{0}: Sending failed download back to {0}'.format(
-                    section,
-                ),
-                status_code=1,  # Return as failed to flag this in the downloader.
+                message=f'{section}: Sending failed download back to {section}',
+                status_code=1,
+                # Return as failed to flag this in the downloader.
             )  # Return failed flag, but log the event as successful.
         elif section == 'Watcher3':
-            logger.postprocess(
-                f'Sending failed download to {section} for CDH processing',
-                section,
-            )
+            log.debug(f'Sending failed download to {section} for CDH processing')
             path = remote_dir(dir_name) if remote_path else dir_name
             if input_name and os.path.isfile(
                 os.path.join(dir_name, input_name),
@@ -435,17 +378,16 @@ def process(
                 'guid': download_id,
                 'mode': 'failed',
             }
-            r = requests.post(
+            response = requests.post(
                 base_url, data=payload, verify=False, timeout=(30, 1800),
             )
-            result = r.json()
-            logger.postprocess(f'Watcher3 response: {result}')
+            result = response.json()
+            log.debug(f'Watcher3 response: {result}')
             if result['status'] == 'finished':
                 return ProcessResult(
-                    message='{0}: Sending failed download back to {0}'.format(
-                        section,
-                    ),
-                    status_code=1,  # Return as failed to flag this in the downloader.
+                    message=f'{section}: Sending failed download back to {section}',
+                    status_code=1,
+                    # Return as failed to flag this in the downloader.
                 )  # Return failed flag, but log the event as successful.
 
         if (
@@ -453,117 +395,93 @@ def process(
             and os.path.isdir(dir_name)
             and not os.path.dirname(dir_name) == dir_name
         ):
-            logger.postprocess(
-                f'Deleting failed files and folder {dir_name}', section,
-            )
+            log.debug(f'Deleting failed files and folder {dir_name}')
             remove_dir(dir_name)
 
         if not release_id and not media_id:
-            logger.error(
-                f'Could not find a downloaded movie in the database matching {input_name}, exiting!',
-                section,
-            )
+            log.error(f'Could not find a downloaded movie in the database matching {input_name}, exiting!')
             return ProcessResult(
-                message='{0}: Failed to post-process - Failed download not found in {0}'.format(
-                    section,
-                ),
+                message='{0}: Failed to post-process - Failed download not found in {0}'.format(section),
                 status_code=1,
             )
 
         if release_id:
-            logger.postprocess(
-                f'Setting failed release {input_name} to ignored ...', section,
-            )
+            log.debug(f'Setting failed release {input_name} to ignored ...')
 
             url = f'{base_url}release.ignore'
             params = {'id': release_id}
 
-            logger.debug(f'Opening URL: {url} with PARAMS: {params}', section)
+            log.debug(f'Opening URL: {url} with PARAMS: {params}')
 
             try:
-                r = requests.get(
-                    url, params=params, verify=False, timeout=(30, 120),
+                response = requests.get(
+                    url, params=params, verify=False,
+                    timeout=(30, 120),
                 )
             except requests.ConnectionError:
-                logger.error(f'Unable to open URL {url}', section)
+                log.error(f'Unable to open URL {url}')
                 return ProcessResult(
-                    message='{0}: Failed to post-process - Unable to connect to {0}'.format(
-                        section,
-                    ),
+                    message='{0}: Failed to post-process - Unable to connect to {0}'.format(section),
                     status_code=1,
                 )
 
-            result = r.json()
-            if r.status_code not in [
+            result = response.json()
+            if response.status_code not in [
                 requests.codes.ok,
                 requests.codes.created,
                 requests.codes.accepted,
             ]:
-                logger.error(
-                    f'Server returned status {r.status_code}', section,
-                )
+                log.error(f'Server returned status {response.status_code}')
                 return ProcessResult(
                     status_code=1,
-                    message=f'{section}: Failed to post-process - Server returned status {r.status_code}',
+                    message=f'{section}: Failed to post-process - Server returned status {response.status_code}',
                 )
             elif result['success']:
-                logger.postprocess(
-                    f'SUCCESS: {input_name} has been set to ignored ...',
-                    section,
-                )
+                log.debug(f'SUCCESS: {input_name} has been set to ignored ...')
             else:
-                logger.warning(
-                    f'FAILED: Unable to set {input_name} to ignored!', section,
-                )
+                log.warning(f'FAILED: Unable to set {input_name} to ignored!')
                 return ProcessResult(
                     message=f'{section}: Failed to post-process - Unable to set {input_name} to ignored',
                     status_code=1,
                 )
 
-        logger.postprocess(
-            'Trying to snatch the next highest ranked release.', section,
-        )
+        log.debug('Trying to snatch the next highest ranked release.')
 
         url = f'{base_url}movie.searcher.try_next'
-        logger.debug(f'Opening URL: {url}', section)
+        log.debug(f'Opening URL: {url}')
 
         try:
-            r = requests.get(
+            response = requests.get(
                 url,
                 params={'media_id': media_id},
                 verify=False,
                 timeout=(30, 600),
             )
         except requests.ConnectionError:
-            logger.error(f'Unable to open URL {url}', section)
+            log.error(f'Unable to open URL {url}')
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to connect to '
                 f'{section}',
             )
 
-        result = r.json()
-        if r.status_code not in [
+        result = response.json()
+        if response.status_code not in [
             requests.codes.ok,
             requests.codes.created,
             requests.codes.accepted,
         ]:
-            logger.error(f'Server returned status {r.status_code}', section)
+            log.error(f'Server returned status {response.status_code}')
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Server returned status '
-                f'{r.status_code}',
+                f'{response.status_code}',
             )
         elif result['success']:
-            logger.postprocess(
-                'SUCCESS: Snatched the next highest release ...', section,
-            )
+            log.debug('SUCCESS: Snatched the next highest release ...')
             return ProcessResult.success(
                 f'{section}: Successfully snatched next highest release',
             )
         else:
-            logger.postprocess(
-                'SUCCESS: Unable to find a new release to snatch now. CP will keep searching!',
-                section,
-            )
+            log.debug('SUCCESS: Unable to find a new release to snatch now. CP will keep searching!')
             return ProcessResult.success(
                 f'{section}: No new release found now. '
                 f'{section} will keep searching',
@@ -584,9 +502,7 @@ def process(
     # we will now check to see if CPS has finished renaming before returning to TorrentToMedia and unpausing.
     timeout = time.time() + 60 * wait_for
     while time.time() < timeout:  # only wait 2 (default) minutes, then return.
-        logger.postprocess(
-            'Checking for status change, please stand by ...', section,
-        )
+        log.debug('Checking for status change, please stand by ...')
         if section == 'CouchPotato':
             release = get_release(base_url, imdbid, download_id, release_id)
             scan_id = None
@@ -600,19 +516,13 @@ def process(
                     release_status_old is None
                 ):  # we didn't have a release before, but now we do.
                     title = release[release_id]['title']
-                    logger.postprocess(
-                        f'SUCCESS: Movie {title} has now been added to CouchPotato with release status of [{str(release_status_new).upper()}]',
-                        section,
-                    )
+                    log.debug(f'SUCCESS: Movie {title} has now been added to CouchPotato with release status of [{str(release_status_new).upper()}]')
                     return ProcessResult.success(
                         f'{section}: Successfully post-processed {input_name}',
                     )
 
                 if release_status_new != release_status_old:
-                    logger.postprocess(
-                        f'SUCCESS: Release {release_id} has now been marked with a status of [{str(release_status_new).upper()}]',
-                        section,
-                    )
+                    log.debug(f'SUCCESS: Release {release_id} has now been marked with a status of [{str(release_status_new).upper()}]')
                     return ProcessResult.success(
                         f'{section}: Successfully post-processed {input_name}',
                     )
@@ -622,33 +532,21 @@ def process(
             url = f'{base_url}/{scan_id}'
             command_status = command_complete(url, params, headers, section)
             if command_status:
-                logger.debug(
-                    f'The Scan command return status: {command_status}',
-                    section,
-                )
+                log.debug(f'The Scan command return status: {command_status}')
                 if command_status in ['completed']:
-                    logger.debug(
-                        'The Scan command has completed successfully. Renaming was successful.',
-                        section,
-                    )
+                    log.debug('The Scan command has completed successfully. Renaming was successful.')
                     return ProcessResult.success(
                         f'{section}: Successfully post-processed {input_name}',
                     )
                 elif command_status in ['failed']:
-                    logger.debug(
-                        'The Scan command has failed. Renaming was not successful.',
-                        section,
-                    )
+                    log.debug('The Scan command has failed. Renaming was not successful.')
                     # return ProcessResult(
                     #     message='{0}: Failed to post-process {1}'.format(section, input_name),
                     #     status_code=1,
                     # )
 
         if not os.path.isdir(dir_name):
-            logger.postprocess(
-                f'SUCCESS: Input Directory [{dir_name}] has been processed and removed',
-                section,
-            )
+            log.debug(f'SUCCESS: Input Directory [{dir_name}] has been processed and removed')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
@@ -656,10 +554,7 @@ def process(
         elif not list_media_files(
             dir_name, media=True, audio=False, meta=False, archives=True,
         ):
-            logger.postprocess(
-                f'SUCCESS: Input Directory [{dir_name}] has no remaining media files. This has been fully processed.',
-                section,
-            )
+            log.debug(f'SUCCESS: Input Directory [{dir_name}] has no remaining media files. This has been fully processed.')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
@@ -671,19 +566,12 @@ def process(
     if section == 'Radarr' and completed_download_handling(
         url2, headers, section=section,
     ):
-        logger.debug(
-            f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.',
-            section,
-        )
+        log.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.')
         return ProcessResult.success(
             f'{section}: Complete DownLoad Handling is enabled. Passing back '
             f'to {section}',
         )
-    logger.warning(
-        f'{input_name} does not appear to have changed status after {wait_for} minutes, Please check your logs.',
-        section,
-    )
-
+    log.warning(f'{input_name} does not appear to have changed status after {wait_for} minutes, Please check your logs.')
     return ProcessResult.failure(
         f'{section}: Failed to post-process - No change in status',
     )
@@ -702,33 +590,33 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
         params['id'] = release_id or imdb_id
 
     if not (release_id or imdb_id or download_id):
-        logger.debug('No information available to filter CP results')
+        log.debug('No information available to filter CP results')
         return results
 
     url = f'{base_url}{cmd}'
-    logger.debug(f'Opening URL: {url} with PARAMS: {params}')
+    log.debug(f'Opening URL: {url} with PARAMS: {params}')
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
-        logger.error(f'Unable to open URL {url}')
+        log.error(f'Unable to open URL {url}')
         return results
 
     try:
         result = r.json()
     except ValueError:
         # ValueError catches simplejson's JSONDecodeError and json's ValueError
-        logger.error('CouchPotato returned the following non-json data')
+        log.error('CouchPotato returned the following non-json data')
         for line in r.iter_lines():
-            logger.error(line)
+            log.error(line)
         return results
 
     if not result['success']:
         if 'error' in result:
-            logger.error(result['error'])
+            log.error(result['error'])
         else:
             id_param = params['id']
-            logger.error(f'no media found for id {id_param}')
+            log.error(f'no media found for id {id_param}')
         return results
 
     # Gather release info and return it back, no need to narrow results

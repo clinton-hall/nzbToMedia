@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import logging
+
 import requests
 
 import nzb2media
@@ -8,6 +10,9 @@ from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.network import server_responding
 from nzb2media.utils.paths import remote_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def process(
@@ -44,7 +49,7 @@ def process(
     # Begin processing
     url = nzb2media.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
-        logger.error('Server did not respond. Exiting', section)
+        log.error('Server did not respond. Exiting')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - {section} did not respond.',
         )
@@ -57,41 +62,39 @@ def process(
         'dir': remote_dir(dir_name) if remote_path else dir_name,
     }
 
-    logger.debug(f'Opening URL: {url} with params: {params}', section)
+    log.debug(f'Opening URL: {url} with params: {params}')
 
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 300))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
-        logger.error('Unable to open URL')
+        log.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}',
         )
 
-    logger.postprocess(f'{r.text}', section)
+    log.debug(response.text)
 
-    if r.status_code not in [
+    if response.status_code not in [
         requests.codes.ok,
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        logger.error(f'Server returned status {r.status_code}', section)
+        log.error(f'Server returned status {response.status_code}')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}',
+            f'{response.status_code}',
         )
-    elif r.text == 'OK':
-        logger.postprocess(
+    elif response.text == 'OK':
+        log.debug(
             f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian',
-            section,
         )
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.error(
+        log.error(
             f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian',
-            section,
         )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '

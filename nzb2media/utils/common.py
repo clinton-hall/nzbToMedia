@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os.path
 import urllib.parse
 
@@ -8,6 +9,9 @@ from nzb2media.utils.files import list_media_files
 from nzb2media.utils.files import move_file
 from nzb2media.utils.paths import clean_directory
 from nzb2media.utils.paths import flatten_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def flatten(output_destination):
@@ -32,7 +36,7 @@ def clean_dir(path, section, subsection):
 def process_dir(path, link):
     folders = []
 
-    logger.info(f'Searching {path} for mediafiles to post-process ...')
+    log.info(f'Searching {path} for mediafiles to post-process ...')
     dir_contents = os.listdir(path)
 
     # search for single files and move them into their own folder for post-processing
@@ -54,16 +58,12 @@ def process_dir(path, link):
     # Generate a list of media files
     mediafiles = (item for item in filepaths if os.path.isfile(item))
 
-    if any(sync_files):
-        logger.info('')
-    else:
+    if not any(sync_files):
         for mediafile in mediafiles:
             try:
                 move_file(mediafile, path, link)
-            except Exception as e:
-                logger.error(
-                    f'Failed to move {os.path.split(mediafile)[1]} to its own directory: {e}',
-                )
+            except Exception as error:
+                log.error(f'Failed to move {os.path.split(mediafile)[1]} to its own directory: {error}')
 
     # removeEmptyFolders(path, removeRoot=False)
 
@@ -98,25 +98,19 @@ def get_dirs(section, subsection, link='hard'):
 
     try:
         to_return.extend(process_dir(directory, link))
-    except Exception as e:
-        logger.error(
-            f'Failed to add directories from {watch_directory} for post-processing: {e}',
-        )
+    except Exception as error:
+        log.error(f'Failed to add directories from {watch_directory} for post-processing: {error}')
 
     if nzb2media.USE_LINK == 'move':
         try:
             output_directory = os.path.join(nzb2media.OUTPUT_DIRECTORY, subsection)
             if os.path.exists(output_directory):
                 to_return.extend(process_dir(output_directory, link))
-        except Exception as e:
-            logger.error(
-                f'Failed to add directories from {nzb2media.OUTPUT_DIRECTORY} for post-processing: {e}',
-            )
+        except Exception as error:
+            log.error(f'Failed to add directories from {nzb2media.OUTPUT_DIRECTORY} for post-processing: {error}')
 
     if not to_return:
-        logger.debug(
-            f'No directories identified in {section}:{subsection} for post-processing',
-        )
+        log.debug(f'No directories identified in {section}:{subsection} for post-processing')
 
     return list(set(to_return))
 

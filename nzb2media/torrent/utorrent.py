@@ -1,8 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 from utorrent.client import UTorrentClient
 
 import nzb2media
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def configure_client():
@@ -11,10 +16,10 @@ def configure_client():
     user = nzb2media.UTORRENT_USER
     password = nzb2media.UTORRENT_PASSWORD
 
-    logger.debug(f'Connecting to {agent}: {web_ui}')
+    log.debug(f'Connecting to {agent}: {web_ui}')
     try:
         client = UTorrentClient(web_ui, user, password)
     except Exception:
-        logger.error('Failed to connect to uTorrent')
+        log.error('Failed to connect to uTorrent')
     else:
         return client

@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import logging
+
 from syno.downloadstation import DownloadStation
 
 import nzb2media
+
+log = logging.getLogger(__name__)
 
 
 def configure_client():
@@ -12,10 +16,10 @@ def configure_client():
     user = nzb2media.SYNO_USER
     password = nzb2media.SYNO_PASSWORD
 
-    logger.debug(f'Connecting to {agent}: http://{host}:{port}')
+    log.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = DownloadStation(host, port, user, password)
     except Exception:
-        logger.error('Failed to connect to synology')
+        log.error('Failed to connect to synology')
     else:
         return client

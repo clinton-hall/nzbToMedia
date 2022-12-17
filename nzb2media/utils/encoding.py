@@ -1,8 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 
 import nzb2media
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def char_replace(name_in):
@@ -69,7 +73,7 @@ def convert_to_ascii(input_name, dir_name):
     encoded, base2 = char_replace(base)
     if encoded:
         dir_name = os.path.join(directory, base2)
-        logger.info(f'Renaming directory to: {base2}.', 'ENCODER')
+        log.info(f'Renaming directory to: {base2}.')
         os.rename(os.path.join(directory, base), dir_name)
         if 'NZBOP_SCRIPTDIR' in os.environ:
             print(f'[NZB] DIRECTORY={dir_name}')
@@ -78,9 +82,7 @@ def convert_to_ascii(input_name, dir_name):
         for subdirname in dirnames:
             encoded, subdirname2 = char_replace(subdirname)
             if encoded:
-                logger.info(
-                    f'Renaming directory to: {subdirname2}.', 'ENCODER',
-                )
+                log.info(f'Renaming directory to: {subdirname2}.')
                 os.rename(
                     os.path.join(dirname, subdirname),
                     os.path.join(dirname, subdirname2),
@@ -90,7 +92,7 @@ def convert_to_ascii(input_name, dir_name):
         for filename in filenames:
             encoded, filename2 = char_replace(filename)
             if encoded:
-                logger.info(f'Renaming file to: {filename2}.', 'ENCODER')
+                log.info(f'Renaming file to: {filename2}.')
                 os.rename(
                     os.path.join(dirname, filename),
                     os.path.join(dirname, filename2),

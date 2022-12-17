@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 import shutil
@@ -17,11 +18,12 @@ from nzb2media.utils.naming import sanitize_name
 from nzb2media.utils.paths import get_dir_size
 from nzb2media.utils.paths import make_dir
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 def move_file(filename, path, link):
-    logger.debug(
-        f'Found file {os.path.split(filename)[1]} in root directory {path}.',
-    )
+    log.debug(f'Found file {os.path.split(filename)[1]} in root directory {path}.')
     new_path = None
     file_ext = os.path.splitext(filename)[1]
     try:
@@ -46,10 +48,8 @@ def move_file(filename, path, link):
                 title = os.path.splitext(os.path.basename(filename))[0]
 
             new_path = os.path.join(path, sanitize_name(title))
-    except Exception as e:
-        logger.error(
-            f'Exception parsing name for media file: {os.path.split(filename)[1]}: {e}',
-        )
+    except Exception as error:
+        log.error(f'Exception parsing name for media file: {os.path.split(filename)[1]}: {error}')
 
     if not new_path:
         title = os.path.splitext(os.path.basename(filename))[0]
@@ -94,9 +94,7 @@ def is_min_size(input_name, min_size):
         try:
             input_size = get_dir_size(os.path.dirname(input_name))
         except Exception:
-            logger.error(
-                f'Failed to get file size for {input_name}', 'MINSIZE',
-            )
+            log.error(f'Failed to get file size for {input_name}')
             return True
 
     # Ignore files under a certain size
@@ -170,9 +168,7 @@ def list_media_files(
                     if delete_ignored == 1:
                         try:
                             os.unlink(path)
-                            logger.debug(
-                                f'Ignored file {cur_file} has been removed ...',
-                            )
+                            log.debug(f'Ignored file {cur_file} has been removed ...')
                         except Exception:
                             pass
                 else:
@@ -207,9 +203,7 @@ def list_media_files(
                 if delete_ignored == 1:
                     try:
                         os.unlink(full_cur_file)
-                        logger.debug(
-                            f'Ignored file {cur_file} has been removed ...',
-                        )
+                        log.debug(f'Ignored file {cur_file} has been removed ...')
                     except Exception:
                         pass
                 continue
@@ -239,7 +233,7 @@ def extract_files(src, dst=None, keep_archive=None):
                 extracted_folder.append(dir_path)
                 extracted_archive.append(archive_name)
         except Exception:
-            logger.error(f'Extraction failed for: {full_file_name}')
+            log.error(f'Extraction failed for: {full_file_name}')
 
     for folder in extracted_folder:
         for inputFile in list_media_files(
@@ -250,52 +244,34 @@ def extract_files(src, dst=None, keep_archive=None):
             archive_name = re.sub(r'part[0-9]+', '', archive_name)
             if archive_name not in extracted_archive or keep_archive:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
-            logger.info(
-                f'Removing extracted archive {full_file_name} from folder {folder} ...',
-            )
+            log.info(f'Removing extracted archive {full_file_name} from folder {folder} ...')
             try:
                 if not os.access(inputFile, os.W_OK):
                     os.chmod(inputFile, stat.S_IWUSR)
                 os.remove(inputFile)
                 time.sleep(1)
-            except Exception as e:
-                logger.error(f'Unable to remove file {inputFile} due to: {e}')
+            except Exception as error:
+                log.error(f'Unable to remove file {inputFile} due to: {error}')
 
 
 def backup_versioned_file(old_file, version):
     num_tries = 0
-
     new_file = f'{old_file}.v{version}'
-
     while not os.path.isfile(new_file):
         if not os.path.isfile(old_file):
-            logger.log(
-                f'Not creating backup, {old_file} doesn\'t exist', logger.DEBUG,
-            )
+            log.debug(f'Not creating backup, {old_file} doesn\'t exist')
             break
-
         try:
-            logger.log(
-                f'Trying to back up {old_file} to {new_file}',
-                logger.DEBUG,
-            )
+            log.debug(f'Trying to back up {old_file} to {new_file}')
             shutil.copy(old_file, new_file)
-            logger.log('Backup done', logger.DEBUG)
+            log.debug('Backup done')
             break
         except Exception as error:
-            logger.log(
-                f'Error while trying to back up {old_file} to {new_file} : {error}',
-                logger.WARNING,
-            )
+            log.warning(f'Error while trying to back up {old_file} to {new_file} : {error}')
             num_tries += 1
             time.sleep(1)
-            logger.log('Trying again.', logger.DEBUG)
-
+            log.debug('Trying again.')
         if num_tries >= 10:
-            logger.log(
-                f'Unable to back up {old_file} to {new_file} please do it manually.',
-                logger.ERROR,
-            )
+            log.error(f'Unable to back up {old_file} to {new_file} please do it manually.')
             return False
-
     return True

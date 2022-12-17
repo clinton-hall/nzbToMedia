@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 
@@ -7,6 +8,9 @@ import subliminal
 from babelfish import Language
 
 import nzb2media
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def import_subs(filename):
@@ -28,9 +32,7 @@ def import_subs(filename):
     if not languages:
         return
 
-    logger.info(
-        f'Attempting to download subtitles for {filename}', 'SUBTITLES',
-    )
+    log.info(f'Attempting to download subtitles for {filename}')
     try:
         video = subliminal.scan_video(filename)
         subtitles = subliminal.download_best_subtitles({video}, languages)
@@ -41,11 +43,8 @@ def import_subs(filename):
                 video.name, subtitle.language,
             )
             os.chmod(subtitle_path, 0o644)
-    except Exception as e:
-        logger.error(
-            f'Failed to download subtitles for {filename} due to: {e}',
-            'SUBTITLES',
-        )
+    except Exception as error:
+        log.error(f'Failed to download subtitles for {filename} due to: {error}')
 
 
 def rename_subs(path):
@@ -109,16 +108,12 @@ def rename_subs(path):
                 break
         new_sub = f'{new_sub}{ext}'  # add extension now
         if os.path.isfile(new_sub):  # Don't copy over existing - final check.
-            logger.debug(
-                f'Unable to rename sub file {sub} as destination {new_sub} already exists',
-            )
+            log.debug(f'Unable to rename sub file {sub} as destination {new_sub} already exists')
             continue
-        logger.debug(
-            f'Renaming sub file from {sub} to {new_sub}',
-        )
+        log.debug(f'Renaming sub file from {sub} to {new_sub}')
         renamed.append(new_sub)
         try:
             os.rename(sub, new_sub)
         except Exception as error:
-            logger.error(f'Unable to rename sub file due to: {error}')
+            log.error(f'Unable to rename sub file due to: {error}')
     return

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import re
 import shutil
@@ -7,6 +8,9 @@ import stat
 from functools import partial
 
 import nzb2media
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def onerror(func, path, exc_info):
@@ -29,11 +33,11 @@ def onerror(func, path, exc_info):
 
 
 def remove_dir(dir_name):
-    logger.info(f'Deleting {dir_name}')
+    log.info(f'Deleting {dir_name}')
     try:
         shutil.rmtree(dir_name, onerror=onerror)
     except Exception:
-        logger.error(f'Unable to delete folder {dir_name}')
+        log.error(f'Unable to delete folder {dir_name}')
 
 
 def make_dir(path):
@@ -77,7 +81,7 @@ def remove_empty_folders(path, remove_root=True):
         return
 
     # remove empty subfolders
-    logger.debug(f'Checking for empty folders in:{path}')
+    log.debug(f'Checking for empty folders in:{path}')
     files = os.listdir(path)
     if len(files):
         for f in files:
@@ -88,7 +92,7 @@ def remove_empty_folders(path, remove_root=True):
     # if folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0 and remove_root:
-        logger.debug(f'Removing empty folder:{path}')
+        log.debug(f'Removing empty folder:{path}')
         os.rmdir(path)
 
 
@@ -98,66 +102,51 @@ def remove_read_only(filename):
         file_attribute = os.stat(filename)[0]
         if not file_attribute & stat.S_IWRITE:
             # File is read-only, so make it writeable
-            logger.debug(
-                f'Read only mode on file {filename}. Attempting to make it writeable',
-            )
+            log.debug(f'Read only mode on file {filename}. Attempting to make it writeable')
             try:
                 os.chmod(filename, stat.S_IWRITE)
             except Exception:
-                logger.warning(
-                    f'Cannot change permissions of {filename}', logger.WARNING,
-                )
+                log.warning(f'Cannot change permissions of {filename}')
 
 
 def flatten_dir(destination, files):
-    logger.info(f'FLATTEN: Flattening directory: {destination}')
+    log.info(f'FLATTEN: Flattening directory: {destination}')
     for outputFile in files:
         dir_path = os.path.dirname(outputFile)
         file_name = os.path.basename(outputFile)
-
         if dir_path == destination:
             continue
-
         target = os.path.join(destination, file_name)
-
         try:
             shutil.move(outputFile, target)
         except Exception:
-            logger.error(f'Could not flatten {outputFile}', 'FLATTEN')
-
+            log.error(f'Could not flatten {outputFile}')
     remove_empty_folders(destination)  # Cleanup empty directories
 
 
 def clean_directory(path, files):
     if not os.path.exists(path):
-        logger.info(
-            f'Directory {path} has been processed and removed ...', 'CLEANDIR',
-        )
+        log.info(f'Directory {path} has been processed and removed ...')
         return
 
     if nzb2media.FORCE_CLEAN and not nzb2media.FAILED:
-        logger.info(f'Doing Forceful Clean of {path}', 'CLEANDIR')
+        log.info(f'Doing Forceful Clean of {path}')
         remove_dir(path)
         return
 
     if files:
-        logger.info(
-            f'Directory {path} still contains {len(files)} unprocessed file(s), skipping ...',
-            'CLEANDIRS',
-        )
+        log.info(f'Directory {path} still contains {len(files)} unprocessed file(s), skipping ...')
         return
 
-    logger.info(
-        f'Directory {path} has been processed, removing ...', 'CLEANDIRS',
-    )
+    log.info(f'Directory {path} has been processed, removing ...')
     try:
         shutil.rmtree(path, onerror=onerror)
     except Exception:
-        logger.error(f'Unable to delete directory {path}')
+        log.error(f'Unable to delete directory {path}')
 
 
 def rchmod(path, mod):
-    logger.log(f'Changing file mode of {path} to {oct(mod)}')
+    log.info(f'Changing file mode of {path} to {oct(mod)}')
     os.chmod(path, mod)
     if not os.path.isdir(path):
         return  # Skip files

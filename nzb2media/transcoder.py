@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import errno
 import json
+import logging
 import os
 import pathlib
 import platform
@@ -15,6 +16,9 @@ from babelfish import Language
 
 import nzb2media
 from nzb2media.utils.paths import make_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 __author__ = 'Justin'
 
@@ -34,10 +38,7 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         test_details, res = get_video_details(nzb2media.TEST_FILE)
         if res != 0 or test_details.get('error'):
             disable = True
-            logger.info(
-                'DISABLED: ffprobe failed to analyse test file. Stopping corruption check.',
-                'TRANSCODER',
-            )
+            log.info('DISABLED: ffprobe failed to analyse test file. Stopping corruption check.')
         if test_details.get('streams'):
             vid_streams = [
                 item
@@ -51,10 +52,7 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
             ]
             if not (len(vid_streams) > 0 and len(aud_streams) > 0):
                 disable = True
-                logger.info(
-                    'DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.',
-                    'TRANSCODER',
-                )
+                log.info('DISABLED: ffprobe failed to analyse streams from test file. Stopping corruption check.')
     if disable:
         if status:
             # if the download was 'failed', assume bad.
@@ -63,21 +61,15 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         else:
             return True
 
-    logger.info(
-        f'Checking [{video.name}] for corruption, please stand by ...',
-        'TRANSCODER',
-    )
+    log.info(f'Checking [{video.name}] for corruption, please stand by ...')
     video_details, result = get_video_details(video)
 
     if result != 0:
-        logger.error(f'FAILED: [{video.name}] is corrupted!', 'TRANSCODER')
+        log.error(f'FAILED: [{video.name}] is corrupted!')
         return False
     if video_details.get('error'):
         error_details = video_details.get('error')
-        logger.info(
-            f'FAILED: [{video.name}] returned error [{error_details}].',
-            'TRANSCODER',
-        )
+        log.info(f'FAILED: [{video.name}] returned error [{error_details}].')
         return False
     if video_details.get('streams'):
         video_streams = [
@@ -101,15 +93,10 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         else:
             valid_audio = audio_streams
         if len(video_streams) > 0 and len(valid_audio) > 0:
-            logger.info(
-                f'SUCCESS: [{video.name}] has no corruption.', 'TRANSCODER',
-            )
+            log.info(f'SUCCESS: [{video.name}] has no corruption.')
             return True
         else:
-            logger.info(
-                f'FAILED: [{video.name}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.',
-                'TRANSCODER',
-            )
+            log.info(f'FAILED: [{video.name}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.')
             return False
 
 
@@ -124,7 +111,7 @@ def zip_out(file, img, bitbucket):
             cmd, stdout=subprocess.PIPE, stderr=bitbucket,
         )
     except Exception:
-        logger.error(f'Extracting [{file}] has failed', 'TRANSCODER')
+        log.error(f'Extracting [{file}] has failed')
     return procin
 
 
@@ -186,7 +173,7 @@ def get_video_details(videofile, img=None, bitbucket=None):
             result = proc.returncode
             video_details = json.loads(out.decode())
         except Exception:
-            logger.error(f'Checking [{file}] has failed', 'TRANSCODER')
+            log.error(f'Checking [{file}] has failed')
     return video_details, result
 
 
@@ -781,9 +768,9 @@ def extract_subs(file, newfile_path, bitbucket):
             item
             for item in video_details['streams']
             if item['codec_type'] == 'subtitle'
-               and item['tags']['language'] in nzb2media.SLANGUAGES
-               and item['codec_name'] != 'hdmv_pgs_subtitle'
-               and item['codec_name'] != 'pgssub'
+            and item['tags']['language'] in nzb2media.SLANGUAGES
+            and item['codec_name'] != 'hdmv_pgs_subtitle'
+            and item['codec_name'] != 'pgssub'
         ]
     except Exception:
         sub_streams = [
@@ -823,7 +810,7 @@ def extract_subs(file, newfile_path, bitbucket):
         if platform.system() != 'Windows':
             command = nzb2media.NICENESS + command
 
-        logger.info(f'Extracting {lan} subtitle from: {file}')
+        log.info(f'Extracting {lan} subtitle from: {file}')
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
@@ -833,16 +820,16 @@ def extract_subs(file, newfile_path, bitbucket):
             out, err = proc.communicate()
             result = proc.returncode
         except Exception:
-            logger.error('Extracting subtitle has failed')
+            log.error('Extracting subtitle has failed')
 
         if result == 0:
             try:
                 shutil.copymode(file, output_file)
             except Exception:
                 pass
-            logger.info(f'Extracting {lan} subtitle from {file} has succeeded')
+            log.info(f'Extracting {lan} subtitle from {file} has succeeded')
         else:
-            logger.error('Extracting subtitles has failed')
+            log.error('Extracting subtitles has failed')
 
 
 def process_list(it, new_dir, bitbucket):
@@ -858,14 +845,14 @@ def process_list(it, new_dir, bitbucket):
             ext in ['.iso', '.bin', '.img']
             and ext not in nzb2media.IGNOREEXTENSIONS
         ):
-            logger.debug(f'Attempting to rip disk image: {item}', 'TRANSCODER')
+            log.debug(f'Attempting to rip disk image: {item}')
             new_list.extend(rip_iso(item, new_dir, bitbucket))
             rem_list.append(item)
         elif (
                 re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', item)
                 and '.vob' not in nzb2media.IGNOREEXTENSIONS
         ):
-            logger.debug(f'Found VIDEO_TS image file: {item}', 'TRANSCODER')
+            log.debug(f'Found VIDEO_TS image file: {item}')
             if not vts_path:
                 try:
                     vts_path = re.match('(.+VIDEO_TS)', item).groups()[0]
@@ -876,7 +863,7 @@ def process_list(it, new_dir, bitbucket):
                 re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', item)
                 and '.mts' not in nzb2media.IGNOREEXTENSIONS
         ):
-            logger.debug(f'Found MTS image file: {item}', 'TRANSCODER')
+            log.debug(f'Found MTS image file: {item}')
             if not mts_path:
                 try:
                     mts_path = re.match('(.+BDMV[/\\]SOURCE)', item).groups()[
@@ -912,17 +899,11 @@ def process_list(it, new_dir, bitbucket):
         it.extend(new_list)
         for item in rem_list:
             it.remove(item)
-        logger.debug(
-            f'Successfully extracted .vob file {new_list[0]} from disk image',
-            'TRANSCODER',
-        )
+        log.debug(f'Successfully extracted .vob file {new_list[0]} from disk image')
     elif new_list and not success:
         new_list = []
         rem_list = []
-        logger.error(
-            'Failed extracting .vob files from disk image. Stopping transcoding.',
-            'TRANSCODER',
-        )
+        log.error('Failed extracting .vob files from disk image. Stopping transcoding.')
     return it, rem_list, new_list, success
 
 
@@ -930,10 +911,7 @@ def mount_iso(
     item, new_dir, bitbucket,
 ):  # Currently only supports Linux Mount when permissions allow.
     if platform.system() == 'Windows':
-        logger.error(
-            f'No mounting options available under Windows for image file {item}',
-            'TRANSCODER',
-        )
+        log.error(f'No mounting options available under Windows for image file {item}')
         return []
     mount_point = os.path.join(os.path.dirname(os.path.abspath(item)), 'temp')
     make_dir(mount_point)
@@ -951,9 +929,7 @@ def mount_iso(
                 re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', full_path)
                 and '.vob' not in nzb2media.IGNOREEXTENSIONS
             ):
-                logger.debug(
-                    f'Found VIDEO_TS image file: {full_path}', 'TRANSCODER',
-                )
+                log.debug(f'Found VIDEO_TS image file: {full_path}')
                 try:
                     vts_path = re.match('(.+VIDEO_TS)', full_path).groups()[0]
                 except Exception:
@@ -963,9 +939,7 @@ def mount_iso(
                     re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path)
                     and '.mts' not in nzb2media.IGNOREEXTENSIONS
             ):
-                logger.debug(
-                    f'Found MTS image file: {full_path}', 'TRANSCODER',
-                )
+                log.debug(f'Found MTS image file: {full_path}')
                 try:
                     mts_path = re.match(
                         '(.+BDMV[/\\]STREAM)', full_path,
@@ -973,10 +947,7 @@ def mount_iso(
                 except Exception:
                     mts_path = os.path.split(full_path)[0]
                 return combine_mts(mts_path)
-    logger.error(
-        f'No VIDEO_TS or BDMV/SOURCE folder found in image file {mount_point}',
-        'TRANSCODER',
-    )
+    log.error(f'No VIDEO_TS or BDMV/SOURCE folder found in image file {mount_point}')
     return ['failure']  # If we got here, nothing matched our criteria
 
 
@@ -985,27 +956,18 @@ def rip_iso(item, new_dir, bitbucket):
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
     if not nzb2media.SEVENZIP:
-        logger.debug(
-            f'No 7zip installed. Attempting to mount image file {item}',
-            'TRANSCODER',
-        )
+        log.debug(f'No 7zip installed. Attempting to mount image file {item}')
         try:
             new_files = mount_iso(
                 item, new_dir, bitbucket,
             )  # Currently only works for Linux.
         except Exception:
-            logger.error(
-                f'Failed to mount and extract from image file {item}',
-                'TRANSCODER',
-            )
+            log.error(f'Failed to mount and extract from image file {item}')
             new_files = [failure_dir]
         return new_files
     cmd = [nzb2media.SEVENZIP, 'l', item]
     try:
-        logger.debug(
-            f'Attempting to extract .vob or .mts from image file {item}',
-            'TRANSCODER',
-        )
+        log.debug(f'Attempting to extract .vob or .mts from image file {item}')
         print_cmd(cmd)
         proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
         out, err = proc.communicate()
@@ -1077,13 +1039,10 @@ def rip_iso(item, new_dir, bitbucket):
             name = os.path.splitext(os.path.split(item)[1])[0]
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
-            logger.error(
-                f'No VIDEO_TS or BDMV/SOURCE folder found in image file. Attempting to mount and scan {item}',
-                'TRANSCODER',
-            )
+            log.error(f'No VIDEO_TS or BDMV/SOURCE folder found in image file. Attempting to mount and scan {item}')
             new_files = mount_iso(item, new_dir, bitbucket)
     except Exception:
-        logger.error(f'Failed to extract from image file {item}', 'TRANSCODER')
+        log.error(f'Failed to extract from image file {item}')
         new_files = [failure_dir]
     return new_files
 
@@ -1183,13 +1142,13 @@ def print_cmd(command):
     cmd = ''
     for item in command:
         cmd = f'{cmd} {item}'
-    logger.debug(f'calling command:{cmd}')
+    log.debug(f'calling command:{cmd}')
 
 
 def transcode_directory(dir_name):
     if not nzb2media.FFMPEG:
         return 1, dir_name
-    logger.info('Checking for files to be transcoded')
+    log.info('Checking for files to be transcoded')
     final_result = 0  # initialize as successful
     if nzb2media.OUTPUTVIDEOPATH:
         new_dir = nzb2media.OUTPUTVIDEOPATH
@@ -1229,15 +1188,15 @@ def transcode_directory(dir_name):
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfile_path)
-        except OSError as e:
+        except OSError as error:
             if (
-                e.errno != errno.ENOENT
+                error.errno != errno.ENOENT
             ):  # Ignore the error if it's just telling us that the file doesn't exist
-                logger.debug(f'Error when removing transcoding target: {e}')
-        except Exception as e:
-            logger.debug(f'Error when removing transcoding target: {e}')
+                log.debug(f'Error when removing transcoding target: {error}')
+        except Exception as error:
+            log.debug(f'Error when removing transcoding target: {error}')
 
-        logger.info(f'Transcoding video: {newfile_path}')
+        log.info(f'Transcoding video: {newfile_path}')
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
@@ -1256,15 +1215,15 @@ def transcode_directory(dir_name):
                 for vob in data['files']:
                     procin = zip_out(vob, img, bitbucket)
                     if procin:
-                        logger.debug(f'Feeding in file: {vob} to Transcoder')
+                        log.debug(f'Feeding in file: {vob} to Transcoder')
                         shutil.copyfileobj(procin.stdout, proc.stdin)
                         procin.stdout.close()
             out, err = proc.communicate()
             if err:
-                logger.error(f'Transcoder returned:{err} has failed')
+                log.error(f'Transcoder returned:{err} has failed')
             result = proc.returncode
         except Exception:
-            logger.error(f'Transcoding of video {newfile_path} has failed')
+            log.error(f'Transcoding of video {newfile_path} has failed')
 
         if nzb2media.SUBSDIR and result == 0 and isinstance(file, str):
             for sub in get_subs(file):
@@ -1282,7 +1241,7 @@ def transcode_directory(dir_name):
                 shutil.copymode(file, newfile_path)
             except Exception:
                 pass
-            logger.info(f'Transcoding of video to {newfile_path} succeeded')
+            log.info(f'Transcoding of video to {newfile_path} succeeded')
             if os.path.isfile(newfile_path) and (
                 file in new_list or not nzb2media.DUPLICATE
             ):
@@ -1291,9 +1250,7 @@ def transcode_directory(dir_name):
                 except Exception:
                     pass
         else:
-            logger.error(
-                f'Transcoding of video to {newfile_path} failed with result {result}',
-            )
+            log.error(f'Transcoding of video to {newfile_path} failed with result {result}')
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
     if nzb2media.MOUNTED:  # In case we mounted an .iso file, unmount here.

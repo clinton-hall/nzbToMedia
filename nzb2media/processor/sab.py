@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import logging
 import os
 
 from nzb2media.processor import nzb
 
-# Constants
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 MINIMUM_ARGUMENTS = 8
 
 
 def process_script():
     version = os.environ['SAB_VERSION']
-    logger.info(f'Script triggered from SABnzbd {version}.')
+    log.info(f'Script triggered from SABnzbd {version}.')
     return nzb.process(
         input_directory=os.environ['SAB_COMPLETE_DIR'],
         input_name=os.environ['SAB_FINAL_NAME'],
@@ -39,7 +42,7 @@ def process(args):
     8. Failure URL
     """
     version = '0.7.17+' if len(args) > MINIMUM_ARGUMENTS else ''
-    logger.info(f'Script triggered from SABnzbd {version}')
+    log.info(f'Script triggered from SABnzbd {version}')
     return nzb.process(
         input_directory=args[1],
         input_name=args[2],

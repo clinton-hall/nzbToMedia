@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import copy
+import logging
 import os
 import shutil
 from itertools import chain
@@ -9,10 +10,14 @@ import configobj
 
 import nzb2media
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 class Section(configobj.Section):
     def isenabled(self):
-        # checks if subsection enabled, returns true/false if subsection specified otherwise returns true/false in {}
+        # checks if subsection enabled, returns true/false if subsection
+        # specified otherwise returns true/false in {}
         if not self.sections:
             try:
                 value = list(ConfigObj.find_key(self, 'enabled'))[0]
@@ -118,7 +123,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(nzb2media.CONFIG_SPEC_FILE, nzb2media.CONFIG_FILE)
             CFG_OLD = config(nzb2media.CONFIG_FILE)
         except Exception as error:
-            logger.error(f'Error {error} when copying to .cfg')
+            log.error(f'Error {error} when copying to .cfg')
 
         try:
             # check for autoProcessMedia.cfg.spec and create if it does not exist
@@ -126,7 +131,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 shutil.copyfile(nzb2media.CONFIG_FILE, nzb2media.CONFIG_SPEC_FILE)
             CFG_NEW = config(nzb2media.CONFIG_SPEC_FILE)
         except Exception as error:
-            logger.error(f'Error {error} when copying to .spec')
+            log.error(f'Error {error} when copying to .spec')
 
         # check for autoProcessMedia.cfg and autoProcessMedia.cfg.spec and if they don't exist return and fail
         if CFG_NEW is None or CFG_OLD is None:
@@ -313,11 +318,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     os.environ['NZBPO_NDCATEGORY']
                     == os.environ['NZBPO_SBCATEGORY']
                 ):
-                    logger.warning(
-                        '{x} category is set for SickBeard and Sonarr. Please check your config in NZBGet'.format(
-                            x=os.environ['NZBPO_NDCATEGORY'],
-                        ),
-                    )
+                    log.warning('{x} category is set for SickBeard and Sonarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_NDCATEGORY']))
             if (
                 'NZBPO_RACATEGORY' in os.environ
                 and 'NZBPO_CPSCATEGORY' in os.environ
@@ -326,11 +327,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     os.environ['NZBPO_RACATEGORY']
                     == os.environ['NZBPO_CPSCATEGORY']
                 ):
-                    logger.warning(
-                        '{x} category is set for CouchPotato and Radarr. Please check your config in NZBGet'.format(
-                            x=os.environ['NZBPO_RACATEGORY'],
-                        ),
-                    )
+                    log.warning('{x} category is set for CouchPotato and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']))
             if (
                 'NZBPO_RACATEGORY' in os.environ
                 and 'NZBPO_W3CATEGORY' in os.environ
@@ -339,11 +336,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     os.environ['NZBPO_RACATEGORY']
                     == os.environ['NZBPO_W3CATEGORY']
                 ):
-                    logger.warning(
-                        '{x} category is set for Watcher3 and Radarr. Please check your config in NZBGet'.format(
-                            x=os.environ['NZBPO_RACATEGORY'],
-                        ),
-                    )
+                    log.warning('{x} category is set for Watcher3 and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']))
             if (
                 'NZBPO_W3CATEGORY' in os.environ
                 and 'NZBPO_CPSCATEGORY' in os.environ
@@ -352,11 +345,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     os.environ['NZBPO_W3CATEGORY']
                     == os.environ['NZBPO_CPSCATEGORY']
                 ):
-                    logger.warning(
-                        '{x} category is set for CouchPotato and Watcher3. Please check your config in NZBGet'.format(
-                            x=os.environ['NZBPO_W3CATEGORY'],
-                        ),
-                    )
+                    log.warning('{x} category is set for CouchPotato and Watcher3. Please check your config in NZBGet'.format(x=os.environ['NZBPO_W3CATEGORY']))
             if (
                 'NZBPO_LICATEGORY' in os.environ
                 and 'NZBPO_HPCATEGORY' in os.environ
@@ -365,11 +354,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                     os.environ['NZBPO_LICATEGORY']
                     == os.environ['NZBPO_HPCATEGORY']
                 ):
-                    logger.warning(
-                        '{x} category is set for HeadPhones and Lidarr. Please check your config in NZBGet'.format(
-                            x=os.environ['NZBPO_LICATEGORY'],
-                        ),
-                    )
+                    log.warning('{x} category is set for HeadPhones and Lidarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_LICATEGORY']))
             section = 'Nzb'
             key = 'NZBOP_DESTDIR'
             if key in os.environ:
@@ -1118,14 +1103,14 @@ class ConfigObj(configobj.ConfigObj, Section):
                 cfg_new[section][os.environ[env_cat_key]]['enabled'] = 1
 
         except Exception as error:
-            logger.debug(f'Error {error} when applying NZBGet config')
+            log.debug(f'Error {error} when applying NZBGet config')
 
         try:
             # write our new config to autoProcessMedia.cfg
             cfg_new.filename = nzb2media.CONFIG_FILE
             cfg_new.write()
         except Exception as error:
-            logger.debug(f'Error {error} when writing changes to .cfg')
+            log.debug(f'Error {error} when writing changes to .cfg')
 
         return cfg_new
 

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import socket
 import subprocess
@@ -15,6 +16,9 @@ if os.name == 'nt':
     from win32event import CreateMutex
     from win32api import CloseHandle, GetLastError
     from winerror import ERROR_ALREADY_EXISTS
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class WindowsProcess:
@@ -109,8 +113,7 @@ def restart():
 
     if popen_list:
         popen_list += SYS_ARGV
-        logger.log(f'Restarting nzbToMedia with {popen_list}')
-        logger.close()
+        log.info(f'Restarting nzbToMedia with {popen_list}')
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()
         status = p.returncode

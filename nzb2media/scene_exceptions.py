@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import platform
 import re
@@ -8,6 +9,10 @@ import subprocess
 
 import nzb2media
 from nzb2media.utils.files import list_media_files
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 reverse_list = [
     r'\.\d{2}e\d{2}s\.',
@@ -112,14 +117,11 @@ def rename_file(filename, newfile_path):
             + '.NTM'
             + os.path.splitext(newfile_path)[1]
         )
-    logger.debug(
-        f'Replacing file name {filename} with download name {newfile_path}',
-        'EXCEPTION',
-    )
+    log.error(f'Replacing file name {filename} with download name {newfile_path}')
     try:
         os.rename(filename, newfile_path)
     except Exception as error:
-        logger.error(f'Unable to rename file due to: {error}', 'EXCEPTION')
+        log.error(f'Unable to rename file due to: {error}')
 
 
 def replace_filename(filename, dirname, name):
@@ -129,20 +131,12 @@ def replace_filename(filename, dirname, name):
         is not None
     ):
         newname = os.path.basename(dirname).replace(' ', '.')
-        logger.debug(
-            f'Replacing file name {head} with directory name {newname}',
-            'EXCEPTION',
-        )
+        log.debug(f'Replacing file name {head} with directory name {newname}')
     elif media_pattern.search(name.replace(' ', '.').lower()) is not None:
         newname = name.replace(' ', '.')
-        logger.debug(
-            f'Replacing file name {head} with download name {newname}',
-            'EXCEPTION',
-        )
+        log.debug(f'Replacing file name {head} with download name {newname}')
     else:
-        logger.warning(
-            f'No name replacement determined for {head}', 'EXCEPTION',
-        )
+        log.warning(f'No name replacement determined for {head}')
         newname = name
     newfile = newname + file_extension
     newfile_path = os.path.join(dirname, newfile)
@@ -168,10 +162,7 @@ def reverse_filename(filename, dirname, name):
     else:
         newname = head[::-1].title()
     newname = newname.replace(' ', '.')
-    logger.debug(
-        f'Reversing filename {head} to {newname}',
-        'EXCEPTION',
-    )
+    log.debug(f'Reversing filename {head} to {newname}')
     newfile = newname + file_extension
     newfile_path = os.path.join(dirname, newfile)
     return newfile_path
@@ -199,16 +190,11 @@ def rename_script(dirname):
                 )
                 if os.path.isfile(dest):
                     continue
-                logger.debug(
-                    f'Renaming file {orig} to {dest}',
-                    'EXCEPTION',
-                )
+                log.debug(f'Renaming file {orig} to {dest}')
                 try:
                     os.rename(orig, dest)
                 except Exception as error:
-                    logger.error(
-                        f'Unable to rename file due to: {error}', 'EXCEPTION',
-                    )
+                    log.error(f'Unable to rename file due to: {error}')
 
 
 def par2(dirname):
@@ -230,12 +216,12 @@ def par2(dirname):
             bitbucket = open('NUL')
         else:
             bitbucket = open('/dev/null')
-        logger.info(f'Running par2 on file {parfile}.', 'PAR2')
+        log.info(f'Running par2 on file {parfile}.')
         command = [nzb2media.PAR2CMD, 'r', parfile, '*']
         cmd = ''
         for item in command:
             cmd = f'{cmd} {item}'
-        logger.debug(f'calling command:{cmd}', 'PAR2')
+        log.debug(f'calling command:{cmd}')
         try:
             proc = subprocess.Popen(
                 command, stdout=bitbucket, stderr=bitbucket,
@@ -243,11 +229,9 @@ def par2(dirname):
             proc.communicate()
             result = proc.returncode
         except Exception:
-            logger.error(
-                f'par2 file processing for {parfile} has failed', 'PAR2',
-            )
+            log.error(f'par2 file processing for {parfile} has failed')
         if result == 0:
-            logger.info('par2 file processing succeeded', 'PAR2')
+            log.info('par2 file processing succeeded')
         os.chdir(pwd)
         bitbucket.close()
 
