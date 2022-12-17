@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import itertools
 import locale
+import logging
 import os
 import pathlib
 import platform
@@ -10,6 +11,9 @@ import subprocess
 import sys
 import time
 import typing
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 try:
     import win32event
@@ -43,7 +47,6 @@ CONFIG_TV_FILE = APP_ROOT / 'autoProcessTv.cfg'
 TEST_FILE = APP_ROOT / 'tests' / 'test.mp4'
 MYAPP = None
 
-from nzb2media import logger
 from nzb2media import main_db
 from nzb2media import version_check
 from nzb2media import databases
@@ -418,9 +421,7 @@ def configure_migration():
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
     if not config.migrate():
-        logger.error(
-            f'Unable to migrate config file {CONFIG_FILE}, exiting ...',
-        )
+        log.error(f'Unable to migrate config file {CONFIG_FILE}, exiting ...')
         if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
         else:
@@ -431,7 +432,7 @@ def configure_migration():
         CFG = config.addnzbget()
 
     else:  # load newly migrated config
-        logger.info(f'Loading config from [{CONFIG_FILE}]')
+        log.info(f'Loading config from [{CONFIG_FILE}]')
         CFG = config()
 
 
@@ -449,7 +450,7 @@ def configure_logging_part_2():
 
     if LOG_ENV:
         for item in os.environ:
-            logger.info(f'{item}: {os.environ[item]}', 'ENVIRONMENT')
+            log.info(f'{item}: {os.environ[item]}')
 
 
 def configure_general():
@@ -494,7 +495,7 @@ def configure_updates():
 
     # Check for updates via GitHUB
     if version_checker.check_for_new_version() and AUTO_UPDATE:
-        logger.info('Auto-Updating nzbToMedia, Please wait ...')
+        log.info('Auto-Updating nzbToMedia, Please wait ...')
         if version_checker.update():
             # restart nzbToMedia
             try:
@@ -503,14 +504,10 @@ def configure_updates():
                 pass
             restart()
         else:
-            logger.error(
-                'Update failed, not restarting. Check your log for more information.',
-            )
+            log.error('Update failed, not restarting. Check your log for more information.')
 
     # Set Current Version
-    logger.info(
-        f'nzbToMedia Version:{NZBTOMEDIA_VERSION} Branch:{GIT_BRANCH} ({platform.system()} {platform.release()})',
-    )
+    log.info(f'nzbToMedia Version:{NZBTOMEDIA_VERSION} Branch:{GIT_BRANCH} ({platform.system()} {platform.release()})')
 
 
 def configure_wake_on_lan():
@@ -1425,22 +1422,14 @@ def configure_utility_locations():
 
         if not (os.path.isfile(FFMPEG)):  # problem
             FFMPEG = None
-            logger.warning(
-                'Failed to locate ffmpeg.exe. Transcoding disabled!',
-            )
-            logger.warning(
-                'Install ffmpeg with x264 support to enable this feature  ...',
-            )
+            log.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
+            log.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
         if not (os.path.isfile(FFPROBE)):
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning(
-                    'Failed to locate ffprobe.exe. Video corruption detection disabled!',
-                )
-                logger.warning(
-                    'Install ffmpeg with x264 support to enable this feature  ...',
-                )
+                log.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')
+                log.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
     else:
         if SYS_PATH:
@@ -1476,9 +1465,7 @@ def configure_utility_locations():
                 pass
         if not SEVENZIP:
             SEVENZIP = None
-            logger.warning(
-                'Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!',
-            )
+            log.warning('Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
         try:
             PAR2CMD = (
                 subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE)
@@ -1490,9 +1477,7 @@ def configure_utility_locations():
             pass
         if not PAR2CMD:
             PAR2CMD = None
-            logger.warning(
-                'Failed to locate par2. Repair and rename using par files will not be possible!',
-            )
+            log.warning('Failed to locate par2. Repair and rename using par files will not be possible!')
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(
             os.path.join(FFMPEG_PATH, 'ffmpeg'),
             os.X_OK,
@@ -1529,10 +1514,8 @@ def configure_utility_locations():
                     pass
         if not FFMPEG:
             FFMPEG = None
-            logger.warning('Failed to locate ffmpeg. Transcoding disabled!')
-            logger.warning(
-                'Install ffmpeg with x264 support to enable this feature  ...',
-            )
+            log.warning('Failed to locate ffmpeg. Transcoding disabled!')
+            log.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
         if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(
             os.path.join(FFMPEG_PATH, 'ffprobe'),
@@ -1571,14 +1554,8 @@ def configure_utility_locations():
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
-                logger.warning(
-                    'Failed to locate ffprobe. Video corruption detection disabled!',
-                )
-                logger.warning(
-                    'Install ffmpeg with x264 support to enable this feature  ...',
-                )
-
-
+                log.warning('Failed to locate ffprobe. Video corruption detection disabled!')
+                log.warning('Install ffmpeg with x264 support to enable this feature  ...')
 
 
 def initialize(section=None):
@@ -1590,9 +1567,6 @@ def initialize(section=None):
     configure_logging()
     configure_process()
     configure_locale()
-
-    # init logging
-    logger.ntm_log_instance.init_logging()
 
     configure_migration()
     configure_logging_part_2()

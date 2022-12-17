@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import re
 import sqlite3
 import time
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def db_filename(filename='nzbtomedia.db', suffix=None):
@@ -53,15 +56,12 @@ class DBConnection:
         while attempt < 5:
             try:
                 if args is None:
-                    logger.log(f'{self.filename}: {query}', logger.DB)
+                    log.debug(f'{self.filename}: {query}')
                     cursor = self.connection.cursor()
                     cursor.execute(query)
                     sql_result = cursor.fetchone()[0]
                 else:
-                    logger.log(
-                        f'{self.filename}: {query} with args {args}',
-                        logger.DB,
-                    )
+                    log.debug(f'{self.filename}: {query} with args {args}')
                     cursor = self.connection.cursor()
                     cursor.execute(query, args)
                     sql_result = cursor.fetchone()[0]
@@ -73,16 +73,14 @@ class DBConnection:
                     'unable to open database file' in error.args[0]
                     or 'database is locked' in error.args[0]
                 ):
-                    logger.log(f'DB error: {error}', logger.WARNING)
+                    log.warning(f'DB error: {error}')
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(f'DB error: {error}', logger.ERROR)
+                    log.error(f'DB error: {error}')
                     raise
             except sqlite3.DatabaseError as error:
-                logger.log(
-                    f'Fatal error executing query: {error}', logger.ERROR,
-                )
+                log.error(f'Fatal error executing query: {error}')
                 raise
 
         return sql_result
@@ -99,21 +97,16 @@ class DBConnection:
                 for qu in querylist:
                     if len(qu) == 1:
                         if log_transaction:
-                            logger.log(qu[0], logger.DEBUG)
+                            log.debug(qu[0])
                         sql_result.append(self.connection.execute(qu[0]))
                     elif len(qu) > 1:
                         if log_transaction:
-                            logger.log(
-                                f'{qu[0]} with args {qu[1]}', logger.DEBUG,
-                            )
+                            log.debug(f'{qu[0]} with args {qu[1]}')
                         sql_result.append(
                             self.connection.execute(qu[0], qu[1]),
                         )
                 self.connection.commit()
-                logger.log(
-                    f'Transaction with {len(querylist)} query\'s executed',
-                    logger.DEBUG,
-                )
+                log.debug(f'Transaction with {len(querylist)} query\'s executed')
                 return sql_result
             except sqlite3.OperationalError as error:
                 sql_result = []
@@ -123,18 +116,16 @@ class DBConnection:
                     'unable to open database file' in error.args[0]
                     or 'database is locked' in error.args[0]
                 ):
-                    logger.log(f'DB error: {error}', logger.WARNING)
+                    log.warning(f'DB error: {error}')
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(f'DB error: {error}', logger.ERROR)
+                    log.error(f'DB error: {error}')
                     raise
             except sqlite3.DatabaseError as error:
                 if self.connection:
                     self.connection.rollback()
-                logger.log(
-                    f'Fatal error executing query: {error}', logger.ERROR,
-                )
+                log.error(f'Fatal error executing query: {error}')
                 raise
 
         return sql_result
@@ -149,13 +140,10 @@ class DBConnection:
         while attempt < 5:
             try:
                 if args is None:
-                    logger.log(f'{self.filename}: {query}', logger.DB)
+                    log.debug(f'{self.filename}: {query}')
                     sql_result = self.connection.execute(query)
                 else:
-                    logger.log(
-                        f'{self.filename}: {query} with args {args}',
-                        logger.DB,
-                    )
+                    log.debug(f'{self.filename}: {query} with args {args}')
                     sql_result = self.connection.execute(query, args)
                 self.connection.commit()
                 # get out of the connection attempt loop since we were successful
@@ -165,16 +153,14 @@ class DBConnection:
                     'unable to open database file' in error.args[0]
                     or 'database is locked' in error.args[0]
                 ):
-                    logger.log(f'DB error: {error}', logger.WARNING)
+                    log.warning(f'DB error: {error}')
                     attempt += 1
                     time.sleep(1)
                 else:
-                    logger.log(f'DB error: {error}', logger.ERROR)
+                    log.error(f'DB error: {error}')
                     raise
             except sqlite3.DatabaseError as error:
-                logger.log(
-                    f'Fatal error executing query: {error}', logger.ERROR,
-                )
+                log.error(f'Fatal error executing query: {error}')
                 raise
 
         return sql_result
@@ -240,7 +226,7 @@ class DBSanityCheck:
 
 
 def upgrade_database(connection, schema):
-    logger.log('Checking database structure...', logger.MESSAGE)
+    log.info('Checking database structure...')
     _process_upgrade(connection, schema)
 
 
@@ -252,15 +238,9 @@ def pretty_name(class_name):
 
 def _process_upgrade(connection, upgrade_class):
     instance = upgrade_class(connection)
-    logger.log(
-        f'Checking {pretty_name(upgrade_class.__name__)} database upgrade',
-        logger.DEBUG,
-    )
+    log.debug(f'Checking {pretty_name(upgrade_class.__name__)} database upgrade')
     if not instance.test():
-        logger.log(
-            f'Database upgrade required: {pretty_name(upgrade_class.__name__)}',
-            logger.MESSAGE,
-        )
+        log.info(f'Database upgrade required: {pretty_name(upgrade_class.__name__)}')
         try:
             instance.execute()
         except sqlite3.DatabaseError as error:
@@ -268,15 +248,9 @@ def _process_upgrade(connection, upgrade_class):
                 f'Error in {upgrade_class.__name__}: {error}',
             )
             raise
-        logger.log(
-            f'{upgrade_class.__name__} upgrade completed',
-            logger.DEBUG,
-        )
+        log.debug(f'{upgrade_class.__name__} upgrade completed')
     else:
-        logger.log(
-            f'{upgrade_class.__name__} upgrade not required',
-            logger.DEBUG,
-        )
+        log.debug(f'{upgrade_class.__name__} upgrade not required')
 
     for upgradeSubClass in upgrade_class.__subclasses__():
         _process_upgrade(connection, upgradeSubClass)

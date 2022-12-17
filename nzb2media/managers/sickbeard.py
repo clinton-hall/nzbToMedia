@@ -1,15 +1,18 @@
 from __future__ import annotations
 
 import copy
+import logging
 
 import requests
 from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.paths import remote_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class InitSickBeard:
@@ -61,7 +64,7 @@ class InitSickBeard:
         # config settings
         if nzb2media.FORK_SET:
             # keep using determined fork for multiple (manual) post-processing
-            logger.info(
+            log.info(
                 f'{self.section}:{self.input_category} fork already set to '
                 f'{nzb2media.FORK_SET[0]}',
             )
@@ -88,7 +91,7 @@ class InitSickBeard:
         protocol = 'https://' if self.ssl else 'http://'
 
         if self.section == 'NzbDrone':
-            logger.info(f'Attempting to verify {self.input_category} fork')
+            log.info(f'Attempting to verify {self.input_category} fork')
             url = nzb2media.utils.common.create_url(
                 scheme=protocol,
                 host=self.host,
@@ -97,20 +100,20 @@ class InitSickBeard:
             )
             headers = {'X-Api-Key': self.apikey}
             try:
-                r = requests.get(
+                response = requests.get(
                     url,
                     headers=headers,
                     stream=True,
                     verify=False,
                 )
             except requests.ConnectionError:
-                logger.warning(
+                log.warning(
                     f'Could not connect to {self.section}:'
                     f'{self.input_category} to verify fork!',
                 )
 
-            if not r.ok:
-                logger.warning(
+            if not response.ok:
+                log.warning(
                     f'Connection to {self.section}:{self.input_category} '
                     f'failed! Check your configuration',
                 )
@@ -118,7 +121,7 @@ class InitSickBeard:
             self.fork = ['default', {}]
 
         elif self.section == 'SiCKRAGE':
-            logger.info(f'Attempting to verify {self.input_category} fork')
+            log.info(f'Attempting to verify {self.input_category} fork')
 
             if self.api_version >= 2:
                 url = nzb2media.utils.common.create_url(
@@ -156,27 +159,27 @@ class InitSickBeard:
                         password=self.sso_password,
                     )
                     token = oauth_token['access_token']
-                    r = requests.get(
+                    response = requests.get(
                         url,
                         headers={f'Authorization': f'Bearer {token}'},
                         stream=True,
                         verify=False,
                     )
                 else:
-                    r = requests.get(
+                    response = requests.get(
                         url,
                         params=api_params,
                         stream=True,
                         verify=False,
                     )
 
-                if not r.ok:
-                    logger.warning(
+                if not response.ok:
+                    log.warning(
                         f'Connection to {self.section}:{self.input_category} '
                         f'failed! Check your configuration',
                     )
             except requests.ConnectionError:
-                logger.warning(
+                log.warning(
                     f'Could not connect to {self.section}:'
                     f'{self.input_category} to verify API version!',
                 )
@@ -198,9 +201,7 @@ class InitSickBeard:
         elif self.fork == 'auto':
             self.detect_fork()
 
-        logger.info(
-            f'{self.section}:{self.input_category} fork set to {self.fork[0]}',
-        )
+        log.info(f'{self.section}:{self.input_category} fork set to {self.fork[0]}')
         nzb2media.FORK_SET = self.fork
         self.fork, self.fork_params = self.fork[0], self.fork[1]
         # This will create the fork object, and attach to self.fork_obj.
@@ -212,15 +213,15 @@ class InitSickBeard:
         try:
             json_data = r.json()
         except ValueError:
-            logger.error('Failed to get JSON data from response')
-            logger.debug('Response received')
+            log.error('Failed to get JSON data from response')
+            log.debug('Response received')
             raise
 
         try:
             json_data = json_data['data']
         except KeyError:
-            logger.error('Failed to get data from JSON')
-            logger.debug(f'Response received: {json_data}')
+            log.error('Failed to get data from JSON')
+            log.debug(f'Response received: {json_data}')
             raise
         else:
             if isinstance(json_data, str):
@@ -232,13 +233,11 @@ class InitSickBeard:
             # Find excess parameters
             excess_parameters = set(params).difference(optional_parameters)
             excess_parameters.remove('cmd')  # Don't remove cmd from api params
-            logger.debug(
-                f'Removing excess parameters: ' f'{sorted(excess_parameters)}',
-            )
+            log.debug(f'Removing excess parameters: ' f'{sorted(excess_parameters)}')
             rem_params.extend(excess_parameters)
             return rem_params, True
         except:
-            logger.error('Failed to identify optionalParameters')
+            log.error('Failed to identify optionalParameters')
             return rem_params, False
 
     def detect_fork(self):
@@ -246,7 +245,7 @@ class InitSickBeard:
         detected = False
         params = nzb2media.ALL_FORKS
         rem_params = []
-        logger.info(f'Attempting to auto-detect {self.input_category} fork')
+        log.info(f'Attempting to auto-detect {self.input_category} fork')
         # Define the order to test.
         # Default must be first since default fork doesn't reject parameters.
         # Then in order of most unique parameters.
@@ -270,7 +269,7 @@ class InitSickBeard:
 
         # attempting to auto-detect fork
         try:
-            s = requests.Session()
+            session = requests.Session()
 
             if not self.apikey and self.username and self.password:
                 login = nzb2media.utils.common.create_url(
@@ -283,54 +282,54 @@ class InitSickBeard:
                     'username': self.username,
                     'password': self.password,
                 }
-                r = s.get(login, verify=False, timeout=(30, 60))
-                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
-                    login_params['_xsrf'] = r.cookies.get('_xsrf')
-                s.post(login, data=login_params, stream=True, verify=False)
-            r = s.get(
+                response = session.get(login, verify=False, timeout=(30, 60))
+                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                    login_params['_xsrf'] = response.cookies.get('_xsrf')
+                session.post(login, data=login_params, stream=True, verify=False)
+            response = session.get(
                 url,
                 auth=(self.username, self.password),
                 params=api_params,
                 verify=False,
             )
         except requests.ConnectionError:
-            logger.info(
+            log.info(
                 f'Could not connect to {self.section}:{self.input_category} '
                 f'to perform auto-fork detection!',
             )
-            r = []
+            response = []
 
-        if r and r.ok:
+        if response and response.ok:
             if self.apikey:
-                rem_params, found = self._api_check(r, params, rem_params)
+                rem_params, found = self._api_check(response, params, rem_params)
                 if found:
                     params['cmd'] = 'sg.postprocess'
                 else:  # try different api set for non-SickGear forks.
                     api_params = {'cmd': 'help', 'subject': 'postprocess'}
                     try:
                         if not self.apikey and self.username and self.password:
-                            r = s.get(
+                            response = session.get(
                                 url,
                                 auth=(self.username, self.password),
                                 params=api_params,
                                 verify=False,
                             )
                         else:
-                            r = s.get(url, params=api_params, verify=False)
+                            response = session.get(url, params=api_params, verify=False)
                     except requests.ConnectionError:
-                        logger.info(
+                        log.info(
                             f'Could not connect to {self.section}:'
                             f'{self.input_category} to perform auto-fork '
                             f'detection!',
                         )
-                    rem_params, found = self._api_check(r, params, rem_params)
+                    rem_params, found = self._api_check(response, params, rem_params)
                     params['cmd'] = 'postprocess'
             else:
                 # Find excess parameters
                 rem_params.extend(
                     param
                     for param in params
-                    if f'name="{param}"' not in r.text
+                    if f'name="{param}"' not in response.text
                 )
 
             # Remove excess params
@@ -344,18 +343,18 @@ class InitSickBeard:
 
         if detected:
             self.fork = fork
-            logger.info(
+            log.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
                 f'successful ...',
             )
         elif rem_params:
-            logger.info(
+            log.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
                 f'found custom params {params}',
             )
             self.fork = ['custom', params]
         else:
-            logger.info(
+            log.info(
                 f'{self.section}:{self.input_category} fork auto-detection '
                 f'failed',
             )
@@ -372,12 +371,12 @@ class InitSickBeard:
             'Medusa-api': PyMedusaApiV1,
             'Medusa-apiv2': PyMedusaApiV2,
         }
-        logger.debug(f'Create object for fork {self.fork}')
+        log.debug(f'Create object for fork {self.fork}')
         if self.fork and mapped_forks.get(self.fork):
             # Create the fork object and pass self (SickBeardInit) to it for all the data, like Config.
             self.fork_obj = mapped_forks[self.fork](self)
         else:
-            logger.info(
+            log.info(
                 f'{self.section}:{self.input_category} Could not create a '
                 f'fork object for {self.fork}. Probaly class not added yet.',
             )
@@ -538,10 +537,7 @@ class SickBeard:
     def api_call(self) -> ProcessResult:
         """Perform a base sickbeard api call."""
         self._process_fork_prarams()
-        logger.debug(
-            f'Opening URL: {self.url} with params: {self.sb_init.fork_params}',
-            self.sb_init.section,
-        )
+        log.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}')
         try:
             if (
                 not self.sb_init.apikey
@@ -560,9 +556,9 @@ class SickBeard:
                     'username': self.sb_init.username,
                     'password': self.sb_init.password,
                 }
-                r = self.session.get(login, verify=False, timeout=(30, 60))
-                if r.status_code in [401, 403] and r.cookies.get('_xsrf'):
-                    login_params['_xsrf'] = r.cookies.get('_xsrf')
+                response = self.session.get(login, verify=False, timeout=(30, 60))
+                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                    login_params['_xsrf'] = response.cookies.get('_xsrf')
                 self.session.post(
                     login,
                     data=login_params,
@@ -579,10 +575,7 @@ class SickBeard:
                 timeout=(30, 1800),
             )
         except requests.ConnectionError:
-            logger.error(
-                f'Unable to open URL: {self.url}',
-                self.sb_init.section,
-            )
+            log.error(f'Unable to open URL: {self.url}')
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
                 f'connect to {self.sb_init.section}',
@@ -594,10 +587,7 @@ class SickBeard:
                 requests.codes.accepted,
             ]
             if response.status_code not in successful_statuses:
-                logger.error(
-                    f'Server returned status {response.status_code}',
-                    self.sb_init.section,
-                )
+                log.error(f'Server returned status {response.status_code}')
                 result = ProcessResult.failure(
                     f'{self.sb_init.section}: Failed to post-process - Server '
                     f'returned status {response.status_code}',
@@ -615,7 +605,7 @@ class SickBeard:
         for line in response.iter_lines():
             if line:
                 line = line.decode('utf-8')
-                logger.postprocess(line, self.sb_init.section)
+                log.postprocess(line)
                 # if 'Moving file from' in line:
                 #     input_name = os.path.split(line)[1]
                 # if 'added to the queue' in line:

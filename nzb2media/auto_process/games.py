@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 
 import requests
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.network import server_responding
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def process(
@@ -47,7 +50,7 @@ def process(
     # Begin processing
     url = nzb2media.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
-        logger.error('Server did not respond. Exiting', section)
+        log.error('Server did not respond. Exiting')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - {section} did not respond.',
         )
@@ -67,36 +70,30 @@ def process(
         'status': download_status,
     }
 
-    logger.debug(f'Opening URL: {url}', section)
+    log.debug(f'Opening URL: {url}')
 
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
-        logger.error('Unable to open URL')
+        log.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}',
         )
 
     result = r.json()
-    logger.postprocess(result, section)
+    log.debug(result)
     if library:
-        logger.postprocess(f'moving files to library: {library}', section)
+        log.debug(f'moving files to library: {library}')
         try:
             shutil.move(dir_name, os.path.join(library, input_name))
         except Exception:
-            logger.error(
-                f'Unable to move {dir_name} to {os.path.join(library, input_name)}',
-                section,
-            )
+            log.error(f'Unable to move {dir_name} to {os.path.join(library, input_name)}')
             return ProcessResult.failure(
                 f'{section}: Failed to post-process - Unable to move files',
             )
     else:
-        logger.error(
-            'No library specified to move files to. Please edit your configuration.',
-            section,
-        )
+        log.error('No library specified to move files to. Please edit your configuration.')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - No library defined in '
             f'{section}',
@@ -107,24 +104,18 @@ def process(
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        logger.error(f'Server returned status {r.status_code}', section)
+        log.error(f'Server returned status {r.status_code}')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}',
         )
     elif result['success']:
-        logger.postprocess(
-            f'SUCCESS: Status for {gamez_id} has been set to {download_status} in Gamez',
-            section,
-        )
+        log.debug(f'SUCCESS: Status for {gamez_id} has been set to {download_status} in Gamez')
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.error(
-            f'FAILED: Status for {gamez_id} has NOT been updated in Gamez',
-            section,
-        )
+        log.error(f'FAILED: Status for {gamez_id} has NOT been updated in Gamez')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from {section} '
             f'was not as expected.',

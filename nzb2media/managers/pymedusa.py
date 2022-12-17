@@ -1,13 +1,16 @@
 from __future__ import annotations
 
+import logging
 import time
 
 import requests
 
 import nzb2media.utils.common
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.managers.sickbeard import SickBeard
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 class PyMedusa(SickBeard):
@@ -39,10 +42,7 @@ class PyMedusaApiV1(SickBeard):
 
     def api_call(self) -> ProcessResult:
         self._process_fork_prarams()
-        logger.debug(
-            f'Opening URL: {self.url} with params: {self.sb_init.fork_params}',
-            self.sb_init.section,
-        )
+        log.debug(f'Opening URL: {self.url} with params: {self.sb_init.fork_params}')
         try:
             response = self.session.get(
                 self.url,
@@ -53,10 +53,7 @@ class PyMedusaApiV1(SickBeard):
                 timeout=(30, 1800),
             )
         except requests.ConnectionError:
-            logger.error(
-                f'Unable to open URL: {self.url}',
-                self.sb_init.section,
-            )
+            log.error(f'Unable to open URL: {self.url}')
             return ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Unable to '
                 f'connect to {self.sb_init.section}',
@@ -68,10 +65,7 @@ class PyMedusaApiV1(SickBeard):
             requests.codes.accepted,
         ]
         if response.status_code not in successful_status_codes:
-            logger.error(
-                f'Server returned status {response.status_code}',
-                self.sb_init.section,
-            )
+            log.error(f'Server returned status {response.status_code}')
             result = ProcessResult.failure(
                 f'{self.sb_init.section}: Failed to post-process - Server '
                 f'returned status {response.status_code}',
@@ -99,7 +93,7 @@ class PyMedusaApiV2(SickBeard):
         # Check for an apikey
         # This is required with using fork = medusa-apiv2
         if not sb_init.apikey:
-            logger.error(
+            log.error(
                 'For the section SickBeard `fork = medusa-apiv2` you also '
                 'need to configure an `apikey`',
             )
@@ -120,10 +114,7 @@ class PyMedusaApiV2(SickBeard):
         try:
             response = self.session.get(url, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
-            logger.error(
-                'Unable to get postprocess identifier status',
-                self.sb_init.section,
-            )
+            log.error('Unable to get postprocess identifier status')
             return False
 
         try:
@@ -135,7 +126,7 @@ class PyMedusaApiV2(SickBeard):
 
     def api_call(self) -> ProcessResult:
         self._process_fork_prarams()
-        logger.debug(f'Opening URL: {self.url}', self.sb_init.section)
+        log.debug(f'Opening URL: {self.url}')
         payload = self.sb_init.fork_params
         payload['resource'] = self.sb_init.fork_params['nzbName']
         del payload['nzbName']
@@ -156,10 +147,7 @@ class PyMedusaApiV2(SickBeard):
                 timeout=(30, 1800),
             )
         except requests.ConnectionError:
-            logger.error(
-                'Unable to send postprocess request',
-                self.sb_init.section,
-            )
+            log.error('Unable to send postprocess request')
             return ProcessResult.failure(
                 f'{self.sb_init.section}: Unable to send postprocess request '
                 f'to PyMedusa',
@@ -170,7 +158,7 @@ class PyMedusaApiV2(SickBeard):
             try:
                 jdata = response.json()
             except ValueError:
-                logger.debug('No data returned from provider')
+                log.debug('No data returned from provider')
                 return ProcessResult.failure('No data returned from provider')
         else:
             jdata = {}
@@ -197,7 +185,7 @@ class PyMedusaApiV2(SickBeard):
         # Log Medusa's PP logs here.
         if response.get('output'):
             for line in response['output']:
-                logger.postprocess(line, self.sb_init.section)
+                log.postprocess(line)
 
         # For now this will most likely always be True.
         # In the future we could return an exit state for when the PP in

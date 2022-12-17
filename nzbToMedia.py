@@ -1,23 +1,26 @@
+import logging
 import os
 import sys
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.processor import nzbget, sab, manual
 from nzb2media.processor.nzb import process
 from nzb2media.auto_process.common import ProcessResult
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def main(args, section=None):
     # Initialize the config
     nzb2media.initialize(section)
 
-    logger.info('#########################################################')
-    logger.info(f'## ..::[{os.path.basename(__file__)}]::.. ##')
-    logger.info('#########################################################')
+    log.info('#########################################################')
+    log.info(f'## ..::[{os.path.basename(__file__)}]::.. ##')
+    log.info('#########################################################')
 
     # debug command line options
-    logger.debug(f'Options passed into nzbToMedia: {args}')
+    log.debug(f'Options passed into nzbToMedia: {args}')
 
     # Post-Processing Result
     result = ProcessResult(
@@ -36,22 +39,22 @@ def main(args, section=None):
         result = sab.process(args)
     # Generic program
     elif len(args) > 5 and args[5] == 'generic':
-        logger.info('Script triggered from generic program')
+        log.info('Script triggered from generic program')
         result = process(args[1], input_name=args[2], input_category=args[3], download_id=args[4])
     elif nzb2media.NZB_NO_MANUAL:
-        logger.warning('Invalid number of arguments received from client, and no_manual set')
+        log.warning('Invalid number of arguments received from client, and no_manual set')
     else:
         manual.process()
 
     if result.status_code == 0:
-        logger.info(f'The {args[0]} script completed successfully.')
+        log.info(f'The {args[0]} script completed successfully.')
         if result.message:
             print(result.message + '!')
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11
             del nzb2media.MYAPP
             return nzb2media.NZBGET_POSTPROCESS_SUCCESS
     else:
-        logger.error(f'A problem was reported in the {args[0]} script.')
+        log.error(f'A problem was reported in the {args[0]} script.')
         if result.message:
             print(result.message + '!')
         if 'NZBOP_SCRIPTDIR' in os.environ:  # return code for nzbget v11

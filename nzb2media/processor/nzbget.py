@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import logging
 import os
 import sys
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.processor import nzb
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def parse_download_id():
@@ -35,7 +38,7 @@ def _parse_total_status():
     status_summary = os.environ['NZBPP_TOTALSTATUS']
     if status_summary != 'SUCCESS':
         status = os.environ['NZBPP_STATUS']
-        logger.info(f'Download failed with status {status}.')
+        log.info(f'Download failed with status {status}.')
         return 1
     return 0
 
@@ -44,14 +47,14 @@ def _parse_par_status():
     """Parse nzbget par status from environment."""
     par_status = os.environ['NZBPP_PARSTATUS']
     if par_status == '1' or par_status == '4':
-        logger.warning('Par-repair failed, setting status \'failed\'')
+        log.warning('Par-repair failed, setting status \'failed\'')
         return 1
     return 0
 
 
 def _parse_unpack_status():
     if os.environ['NZBPP_UNPACKSTATUS'] == '1':
-        logger.warning('Unpack failed, setting status \'failed\'')
+        log.warning('Unpack failed, setting status \'failed\'')
         return 1
     return 0
 
@@ -65,17 +68,11 @@ def _parse_health_status():
         # Unpack was skipped due to nzb-file properties
         # or due to errors during par-check
         if int(os.environ['NZBPP_HEALTH']) < 1000:
-            logger.warning(
-                'Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'',
-            )
+            log.warning('Download health is compromised and Par-check/repair disabled or no .par2 files found. Setting status \'failed\'')
             status = 1
         else:
-            logger.info(
-                'Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful',
-            )
-        logger.info(
-            'Please check your Par-check/repair settings for future downloads.',
-        )
+            log.info('Par-check/repair disabled or no .par2 files found, and Unpack not required. Health is ok so handle as though download successful')
+        log.info('Please check your Par-check/repair settings for future downloads.')
     return status
 
 
@@ -95,11 +92,9 @@ def check_version():
     version = os.environ['NZBOP_VERSION']
     # Check if the script is called from nzbget 11.0 or later
     if version[0:5] < '11.0':
-        logger.error(
-            f'NZBGet Version {version} is not supported. Please update NZBGet.',
-        )
+        log.error(f'NZBGet Version {version} is not supported. Please update NZBGet.')
         sys.exit(nzb2media.NZBGET_POSTPROCESS_ERROR)
-    logger.info(f'Script triggered from NZBGet Version {version}.')
+    log.info(f'Script triggered from NZBGet Version {version}.')
 
 
 def process():

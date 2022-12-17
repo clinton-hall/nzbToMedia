@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 import requests
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def configure_plex(config):
@@ -36,9 +40,7 @@ def plex_update(category):
     section = None
     if not nzb2media.PLEX_SECTION:
         return
-    logger.debug(
-        f'Attempting to update Plex Library for category {category}.', 'PLEX',
-    )
+    log.debug(f'Attempting to update Plex Library for category {category}.')
     for item in nzb2media.PLEX_SECTION:
         if item[0] == category:
             section = item[1]
@@ -46,6 +48,6 @@ def plex_update(category):
     if section:
         url = f'{url}{section}/refresh?X-Plex-Token={nzb2media.PLEX_TOKEN}'
         requests.get(url, timeout=(60, 120), verify=False)
-        logger.debug('Plex Library has been refreshed.', 'PLEX')
+        log.debug('Plex Library has been refreshed.')
     else:
-        logger.debug('Could not identify section for plex update', 'PLEX')
+        log.debug('Could not identify section for plex update')

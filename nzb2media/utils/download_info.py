@@ -1,24 +1,25 @@
 from __future__ import annotations
 
 import datetime
+import logging
 
-from nzb2media import logger
 from nzb2media import main_db
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 database = main_db.DBConnection()
 
 
 def update_download_info_status(input_name, status):
-    msg = 'Updating DB download status of {0} to {1}'
+    log.debug(f'Updating DB download status of {input_name} to {status}')
     action = 'UPDATE downloads SET status=?, last_update=? WHERE input_name=?'
     args = [status, datetime.date.today().toordinal(), input_name]
-    logger.db(msg.format(input_name, status))
     database.action(action, args)
 
 
 def get_download_info(input_name, status):
-    msg = 'Getting download info for {0} from the DB'
+    log.debug(f'Getting download info for {input_name} from the DB')
     action = 'SELECT * FROM downloads WHERE input_name=? AND status=?'
     args = [input_name, status]
-    logger.db(msg.format(input_name))
     return database.select(action, args)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import platform
 import shutil
@@ -11,13 +12,16 @@ from time import sleep
 
 import nzb2media
 
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
+
 
 def extract(file_path, output_destination):
     success = 0
     # Using Windows
     if platform.system() == 'Windows':
         if not os.path.exists(nzb2media.SEVENZIP):
-            nzb2media.logger.error('EXTRACTOR: Could not find 7-zip, Exiting')
+            log.error('EXTRACTOR: Could not find 7-zip, Exiting')
             return False
         wscriptlocation = os.path.join(
             os.environ['WINDIR'], 'system32', 'wscript.exe',
@@ -109,20 +113,14 @@ def extract(file_path, output_destination):
                             ):  # we do have '7za'
                                 extract_commands[k] = ['7za', 'x', '-y']
                             else:
-                                nzb2media.logger.error(
-                                    f'EXTRACTOR: {cmd} not found, disabling support for {k}',
-                                )
+                                log.error(f'EXTRACTOR: {cmd} not found, disabling support for {k}')
                                 del extract_commands[k]
             devnull.close()
         else:
-            nzb2media.logger.warning(
-                'EXTRACTOR: Cannot determine which tool to use when called from Transmission',
-            )
+            log.warning('EXTRACTOR: Cannot determine which tool to use when called from Transmission')
 
         if not extract_commands:
-            nzb2media.logger.warning(
-                'EXTRACTOR: No archive extracting programs found, plugin will be disabled',
-            )
+            log.warning('EXTRACTOR: No archive extracting programs found, plugin will be disabled')
 
     ext = os.path.splitext(file_path)
     cmd = []
@@ -150,7 +148,7 @@ def extract(file_path, output_destination):
         if ext[1] in extract_commands:
             cmd = extract_commands[ext[1]]
         else:
-            nzb2media.logger.debug(f'EXTRACTOR: Unknown file type: {ext[1]}')
+            log.debug(f'EXTRACTOR: Unknown file type: {ext[1]}')
             return False
 
         # Create outputDestination folder
@@ -166,8 +164,8 @@ def extract(file_path, output_destination):
     else:
         passwords = []
 
-    nzb2media.logger.info(f'Extracting {file_path} to {output_destination}')
-    nzb2media.logger.debug(f'Extracting {cmd} {file_path} {output_destination}')
+    log.info(f'Extracting {file_path} to {output_destination}')
+    log.debug(f'Extracting {cmd} {file_path} {output_destination}')
 
     orig_files = []
     orig_dirs = []
@@ -192,19 +190,17 @@ def extract(file_path, output_destination):
         else:
             cmd = nzb2media.NICENESS + cmd
         cmd2 = cmd
-        if not 'gunzip' in cmd:  # gunzip doesn't support password
+        if 'gunzip' not in cmd:  # gunzip doesn't support password
             cmd2.append('-p-')  # don't prompt for password.
         p = Popen(
             cmd2, stdout=devnull, stderr=devnull, startupinfo=info,
         )  # should extract files fine.
         res = p.wait()
         if res == 0:  # Both Linux and Windows return 0 for successful.
-            nzb2media.logger.info(
-                f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}',
-            )
+            log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}')
             success = 1
         elif len(passwords) > 0 and not 'gunzip' in cmd:
-            nzb2media.logger.info('EXTRACTOR: Attempting to extract with passwords')
+            log.info('EXTRACTOR: Attempting to extract with passwords')
             for password in passwords:
                 if (
                     password == ''
@@ -219,17 +215,13 @@ def extract(file_path, output_destination):
                 )  # should extract files fine.
                 res = p.wait()
                 if (res >= 0 and platform == 'Windows') or res == 0:
-                    nzb2media.logger.info(
-                        f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}',
-                    )
+                    log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}')
                     success = 1
                     break
                 else:
                     continue
     except Exception:
-        nzb2media.logger.error(
-            f'EXTRACTOR: Extraction failed for {file_path}. Could not call command {cmd}',
-        )
+        log.error(f'EXTRACTOR: Extraction failed for {file_path}. Could not call command {cmd}')
         os.chdir(pwd)
         return False
 
@@ -256,7 +248,5 @@ def extract(file_path, output_destination):
                         pass
         return True
     else:
-        nzb2media.logger.error(
-            f'EXTRACTOR: Extraction failed for {file_path}. Result was {res}',
-        )
+        log.error(f'EXTRACTOR: Extraction failed for {file_path}. Result was {res}')
         return False

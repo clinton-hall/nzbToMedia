@@ -1,9 +1,13 @@
 from __future__ import annotations
 
+import logging
+
 from transmissionrpc.client import Client as TransmissionClient
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def configure_client():
@@ -13,10 +17,10 @@ def configure_client():
     user = nzb2media.TRANSMISSION_USER
     password = nzb2media.TRANSMISSION_PASSWORD
 
-    logger.debug(f'Connecting to {agent}: http://{host}:{port}')
+    log.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = TransmissionClient(host, port, user, password)
     except Exception:
-        logger.error('Failed to connect to Transmission')
+        log.error('Failed to connect to Transmission')
     else:
         return client

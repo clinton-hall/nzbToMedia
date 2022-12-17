@@ -1,17 +1,20 @@
 from __future__ import annotations
 
+import logging
 import os
 
 import requests
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def get_nzoid(input_name):
     nzoid = None
     slots = []
-    logger.debug('Searching for nzoid from SAbnzbd ...')
+    log.debug('Searching for nzoid from SAbnzbd ...')
     if 'http' in nzb2media.SABNZBD_HOST:
         base_url = f'{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
     else:
@@ -25,7 +28,7 @@ def get_nzoid(input_name):
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
-        logger.error('Unable to open URL')
+        log.error('Unable to open URL')
         return nzoid  # failure
     try:
         result = r.json()
@@ -37,12 +40,12 @@ def get_nzoid(input_name):
             ],
         )
     except Exception:
-        logger.warning('Data from SABnzbd queue could not be parsed')
+        log.warning('Data from SABnzbd queue could not be parsed')
     params['mode'] = 'history'
     try:
         r = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
-        logger.error('Unable to open URL')
+        log.error('Unable to open URL')
         return nzoid  # failure
     try:
         result = r.json()
@@ -54,21 +57,21 @@ def get_nzoid(input_name):
             ],
         )
     except Exception:
-        logger.warning('Data from SABnzbd history could not be parsed')
+        log.warning('Data from SABnzbd history could not be parsed')
     try:
         for nzo_id, name in slots:
             if name in [input_name, clean_name]:
                 nzoid = nzo_id
-                logger.debug(f'Found nzoid: {nzoid}')
+                log.debug(f'Found nzoid: {nzoid}')
                 break
     except Exception:
-        logger.warning('Data from SABnzbd could not be parsed')
+        log.warning('Data from SABnzbd could not be parsed')
     return nzoid
 
 
 def report_nzb(failure_link, client_agent):
     # Contact indexer site
-    logger.info('Sending failure notification to indexer site')
+    log.info('Sending failure notification to indexer site')
     if client_agent == 'nzbget':
         headers = {'User-Agent': 'NZBGet / nzbToMedia.py'}
     elif client_agent == 'sabnzbd':
@@ -77,6 +80,6 @@ def report_nzb(failure_link, client_agent):
         return
     try:
         requests.post(failure_link, headers=headers, timeout=(30, 300))
-    except Exception as e:
-        logger.error(f'Unable to open URL {failure_link} due to {e}')
+    except Exception as error:
+        log.error(f'Unable to open URL {failure_link} due to {error}')
     return

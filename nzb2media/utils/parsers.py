@@ -1,9 +1,12 @@
 from __future__ import annotations
 
+import logging
 import os
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def parse_other(args):
@@ -100,7 +103,7 @@ def parse_synods(args):
     input_id = f'dbid_{torrent_id}'
     # res = nzb2media.TORRENT_CLASS.tasks_list(additional_param='detail')
     res = nzb2media.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
-    logger.debug(f'result from syno {res}')
+    log.debug(f'result from syno {res}')
     if res['success']:
         try:
             tasks = res['data']['tasks']
@@ -108,7 +111,7 @@ def parse_synods(args):
             input_id = task['id']
             input_directory = task['additional']['detail']['destination']
         except:
-            logger.error('unable to find download details in Synology DS')
+            log.error('unable to find download details in Synology DS')
         # Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
         if not os.path.isdir(input_directory):
             for root in ['/volume1/', '/volume2/', '/volume3/', '/volume4/']:

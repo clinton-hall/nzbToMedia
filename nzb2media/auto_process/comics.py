@@ -1,16 +1,19 @@
 from __future__ import annotations
 
+import logging
 import os
 
 import requests
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.network import server_responding
 from nzb2media.utils.paths import remote_dir
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def process(
@@ -49,7 +52,7 @@ def process(
     # Begin processing
     url = nzb2media.utils.common.create_url(scheme, host, port, web_root)
     if not server_responding(url):
-        logger.error('Server did not respond. Exiting', section)
+        log.error('Server did not respond. Exiting')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - {section} did not respond.',
         )
@@ -73,13 +76,13 @@ def process(
 
     success = False
 
-    logger.debug(f'Opening URL: {url}', section)
+    log.debug(f'Opening URL: {url}')
     try:
         r = requests.post(
             url, params=params, stream=True, verify=False, timeout=(30, 300),
         )
     except requests.ConnectionError:
-        logger.error('Unable to open URL', section)
+        log.error('Unable to open URL')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}',
@@ -89,7 +92,7 @@ def process(
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        logger.error(f'Server returned status {r.status_code}', section)
+        log.error(f'Server returned status {r.status_code}')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
             f'{r.status_code}',
@@ -97,21 +100,19 @@ def process(
 
     for line in r.text.split('\n'):
         if line:
-            logger.postprocess(line, section)
+            log.debug(line)
         if 'Post Processing SUCCESSFUL' in line:
             success = True
 
     if success:
-        logger.postprocess(
-            'SUCCESS: This issue has been processed successfully', section,
-        )
+        log.debug('SUCCESS: This issue has been processed successfully')
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
     else:
-        logger.warning(
-            'The issue does not appear to have successfully processed. Please check your Logs',
-            section,
+        log.warning(
+            'The issue does not appear to have successfully processed. '
+            'Please check your Logs',
         )
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Returned log from '

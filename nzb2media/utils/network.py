@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import socket
 import struct
 import time
@@ -7,7 +8,9 @@ import time
 import requests
 
 import nzb2media
-from nzb2media import logger
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 
 def make_wake_on_lan_packet(mac_address):
@@ -29,7 +32,7 @@ def wake_on_lan(ethernet_address):
         connection.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         connection.sendto(magic_packet, ('<broadcast>', 9))
 
-    logger.info(f'WakeOnLan sent for mac: {ethernet_address}')
+    log.info(f'WakeOnLan sent for mac: {ethernet_address}')
 
 
 def test_connection(host, port):
@@ -50,37 +53,37 @@ def wake_up():
     mac = wol['mac']
     max_attempts = 4
 
-    logger.info('Trying to wake On lan.')
+    log.info('Trying to wake On lan.')
 
     for attempt in range(0, max_attempts):
-        logger.info(f'Attempt {attempt + 1} of {max_attempts}')
+        log.info(f'Attempt {attempt + 1} of {max_attempts}')
         if test_connection(host, port) == 'Up':
-            logger.info(f'System with mac: {mac} has been woken.')
+            log.info(f'System with mac: {mac} has been woken.')
             break
         wake_on_lan(mac)
         time.sleep(20)
     else:
         if test_connection(host, port) == 'Down':  # final check.
             msg = 'System with mac: {0} has not woken after {1} attempts.'
-            logger.warning(msg.format(mac, max_attempts))
+            log.warning(msg.format(mac, max_attempts))
 
-    logger.info('Continuing with the rest of the script.')
+    log.info('Continuing with the rest of the script.')
 
 
 def server_responding(base_url):
-    logger.debug(f'Attempting to connect to server at {base_url}', 'SERVER')
+    log.debug(f'Attempting to connect to server at {base_url}')
     try:
         requests.get(base_url, timeout=(60, 120), verify=False)
     except (requests.ConnectionError, requests.exceptions.Timeout):
-        logger.error(f'Server failed to respond at {base_url}', 'SERVER')
+        log.error(f'Server failed to respond at {base_url}')
         return False
     else:
-        logger.debug(f'Server responded at {base_url}', 'SERVER')
+        log.debug(f'Server responded at {base_url}')
         return True
 
 
 def find_download(client_agent, download_id):
-    logger.debug(f'Searching for Download on {client_agent} ...')
+    log.debug(f'Searching for Download on {client_agent} ...')
     if client_agent == 'utorrent':
         torrents = nzb2media.TORRENT_CLASS.list()[1]['torrents']
         for torrent in torrents:
@@ -116,7 +119,7 @@ def find_download(client_agent, download_id):
                 url, params=params, verify=False, timeout=(30, 120),
             )
         except requests.ConnectionError:
-            logger.error('Unable to open URL')
+            log.error('Unable to open URL')
             return False  # failure
 
         result = r.json()

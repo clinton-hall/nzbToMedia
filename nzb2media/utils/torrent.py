@@ -1,14 +1,17 @@
 from __future__ import annotations
 
+import logging
 import time
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.torrent import deluge
 from nzb2media.torrent import qbittorrent
 from nzb2media.torrent import synology
 from nzb2media.torrent import transmission
 from nzb2media.torrent import utorrent
+
+log = logging.getLogger(__name__)
+log.addHandler(logging.NullHandler())
 
 torrent_clients = {
     'deluge': deluge,
@@ -32,9 +35,7 @@ def create_torrent_class(client_agent):
 
 
 def pause_torrent(client_agent, input_hash, input_id, input_name):
-    logger.debug(
-        f'Stopping torrent {input_name} in {client_agent} while processing',
-    )
+    log.debug(f'Stopping torrent {input_name} in {client_agent} while processing')
     try:
         if client_agent == 'utorrent' and nzb2media.TORRENT_CLASS != '':
             nzb2media.TORRENT_CLASS.stop(input_hash)
@@ -48,15 +49,13 @@ def pause_torrent(client_agent, input_hash, input_id, input_name):
             nzb2media.TORRENT_CLASS.pause(input_hash)
         time.sleep(5)
     except Exception:
-        logger.warning(
-            f'Failed to stop torrent {input_name} in {client_agent}',
-        )
+        log.warning(f'Failed to stop torrent {input_name} in {client_agent}')
 
 
 def resume_torrent(client_agent, input_hash, input_id, input_name):
     if not nzb2media.TORRENT_RESUME == 1:
         return
-    logger.debug(f'Starting torrent {input_name} in {client_agent}')
+    log.debug(f'Starting torrent {input_name} in {client_agent}')
     try:
         if client_agent == 'utorrent' and nzb2media.TORRENT_CLASS != '':
             nzb2media.TORRENT_CLASS.start(input_hash)
@@ -70,14 +69,12 @@ def resume_torrent(client_agent, input_hash, input_id, input_name):
             nzb2media.TORRENT_CLASS.resume(input_hash)
         time.sleep(5)
     except Exception:
-        logger.warning(
-            f'Failed to start torrent {input_name} in {client_agent}',
-        )
+        log.warning(f'Failed to start torrent {input_name} in {client_agent}')
 
 
 def remove_torrent(client_agent, input_hash, input_id, input_name):
     if nzb2media.DELETE_ORIGINAL == 1 or nzb2media.USE_LINK == 'move':
-        logger.debug(f'Deleting torrent {input_name} from {client_agent}')
+        log.debug(f'Deleting torrent {input_name} from {client_agent}')
         try:
             if client_agent == 'utorrent' and nzb2media.TORRENT_CLASS != '':
                 nzb2media.TORRENT_CLASS.removedata(input_hash)
@@ -92,8 +89,6 @@ def remove_torrent(client_agent, input_hash, input_id, input_name):
                 nzb2media.TORRENT_CLASS.delete_permanently(input_hash)
             time.sleep(5)
         except Exception:
-            logger.warning(
-                f'Failed to delete torrent {input_name} in {client_agent}',
-            )
+            log.warning(f'Failed to delete torrent {input_name} in {client_agent}')
     else:
         resume_torrent(client_agent, input_hash, input_id, input_name)
