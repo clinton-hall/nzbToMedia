@@ -2,7 +2,6 @@ import os
 import sys
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.processor import nzbget, sab, manual
 from nzb2media.processor.nzb import process
 from nzb2media.auto_process.common import ProcessResult

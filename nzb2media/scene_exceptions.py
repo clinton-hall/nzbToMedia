@@ -7,7 +7,6 @@ import shlex
 import subprocess
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.utils.files import list_media_files
 
 reverse_list = [

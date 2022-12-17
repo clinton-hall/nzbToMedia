@@ -11,7 +11,6 @@ import mediafile
 
 import nzb2media
 from nzb2media import extractor
-from nzb2media import logger
 from nzb2media.utils.links import copy_link
 from nzb2media.utils.naming import is_sample
 from nzb2media.utils.naming import sanitize_name

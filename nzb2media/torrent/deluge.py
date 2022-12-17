@@ -3,7 +3,6 @@ from __future__ import annotations
 from deluge_client import DelugeRPCClient
 
 import nzb2media
-from nzb2media import logger
 
 
 def configure_client():

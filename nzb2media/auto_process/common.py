@@ -4,8 +4,6 @@ import typing
 
 import requests
 
-from nzb2media import logger
-
 
 class ProcessResult(typing.NamedTuple):
     status_code: int

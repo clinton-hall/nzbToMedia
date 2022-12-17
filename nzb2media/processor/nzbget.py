@@ -4,7 +4,6 @@ import os
 import sys
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.processor import nzb
 
 

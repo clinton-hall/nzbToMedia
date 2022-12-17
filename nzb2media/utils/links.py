@@ -5,7 +5,6 @@ import shutil
 
 import linktastic
 
-from nzb2media import logger
 from nzb2media.utils.paths import make_dir
 
 try:

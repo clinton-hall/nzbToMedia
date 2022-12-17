@@ -6,7 +6,6 @@ import re
 import guessit
 import requests
 
-from nzb2media import logger
 from nzb2media.utils.naming import sanitize_name
 
 

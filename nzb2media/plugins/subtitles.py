@@ -7,7 +7,6 @@ import subliminal
 from babelfish import Language
 
 import nzb2media
-from nzb2media import logger
 
 
 def import_subs(filename):

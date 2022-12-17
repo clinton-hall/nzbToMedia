@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import nzb2media
-from nzb2media import logger
 
 
 def parse_other(args):

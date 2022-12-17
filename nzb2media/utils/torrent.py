@@ -3,7 +3,6 @@ from __future__ import annotations
 import time
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.torrent import deluge
 from nzb2media.torrent import qbittorrent
 from nzb2media.torrent import synology

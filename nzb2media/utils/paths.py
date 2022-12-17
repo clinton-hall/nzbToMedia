@@ -7,7 +7,6 @@ import stat
 from functools import partial
 
 import nzb2media
-from nzb2media import logger
 
 
 def onerror(func, path, exc_info):

@@ -6,7 +6,6 @@ import shutil
 import requests
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii

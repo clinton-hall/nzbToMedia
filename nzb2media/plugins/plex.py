@@ -3,7 +3,6 @@ from __future__ import annotations
 import requests
 
 import nzb2media
-from nzb2media import logger
 
 
 def configure_plex(config):

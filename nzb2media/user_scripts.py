@@ -4,7 +4,7 @@ import os
 from subprocess import Popen
 
 import nzb2media
-from nzb2media import logger, transcoder
+from nzb2media import transcoder
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.plugins.subtitles import import_subs
 from nzb2media.utils.files import list_media_files

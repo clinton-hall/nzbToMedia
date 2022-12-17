@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import os
 
-from nzb2media import logger
 from nzb2media.processor import nzb
 
 # Constants

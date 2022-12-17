@@ -9,7 +9,6 @@ import typing
 import nzb2media
 from nzb2media import APP_FILENAME
 from nzb2media import SYS_ARGV
-from nzb2media import logger
 from nzb2media import version_check
 
 if os.name == 'nt':

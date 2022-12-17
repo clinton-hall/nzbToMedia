@@ -5,7 +5,6 @@ import os
 import requests
 
 import nzb2media
-from nzb2media import logger
 
 
 def get_nzoid(input_name):

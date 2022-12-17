@@ -3,7 +3,6 @@ from __future__ import annotations
 import os
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.processor import nzb
 from nzb2media.utils.common import get_dirs

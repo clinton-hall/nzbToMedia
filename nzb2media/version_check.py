@@ -14,7 +14,6 @@ from urllib.request import urlretrieve
 
 import nzb2media
 from nzb2media import github_api as github
-from nzb2media import logger
 
 
 class CheckVersion:

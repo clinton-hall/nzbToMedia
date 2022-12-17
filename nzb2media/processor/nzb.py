@@ -3,7 +3,6 @@ from __future__ import annotations
 import datetime
 
 import nzb2media
-from nzb2media import logger
 from nzb2media import main_db
 from nzb2media.auto_process import books
 from nzb2media.auto_process import comics

@@ -8,7 +8,6 @@ from itertools import chain
 import configobj
 
 import nzb2media
-from nzb2media import logger
 
 
 class Section(configobj.Section):

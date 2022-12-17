@@ -5,7 +5,6 @@ import sqlite3
 import time
 
 import nzb2media
-from nzb2media import logger
 
 
 def db_filename(filename='nzbtomedia.db', suffix=None):

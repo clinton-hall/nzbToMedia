@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from nzb2media import logger
 from nzb2media import main_db
 from nzb2media.utils.files import backup_versioned_file
 

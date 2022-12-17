@@ -14,7 +14,6 @@ import time
 from babelfish import Language
 
 import nzb2media
-from nzb2media import logger
 from nzb2media.utils.paths import make_dir
 
 __author__ = 'Justin'

@@ -7,7 +7,6 @@ import time
 import requests
 
 import nzb2media
-from nzb2media import logger
 
 
 def make_wake_on_lan_packet(mac_address):

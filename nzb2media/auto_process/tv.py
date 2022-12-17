@@ -11,7 +11,6 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import nzb2media
-from nzb2media import logger
 from nzb2media import transcoder
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete

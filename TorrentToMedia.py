@@ -3,7 +3,7 @@ import os
 import sys
 
 import nzb2media
-from nzb2media import logger, main_db
+from nzb2media import main_db
 from nzb2media.auto_process import comics, games, movies, music, tv, books
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.plugins.plex import plex_update

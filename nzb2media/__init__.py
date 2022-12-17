@@ -43,7 +43,6 @@ CONFIG_TV_FILE = APP_ROOT / 'autoProcessTv.cfg'
 TEST_FILE = APP_ROOT / 'tests' / 'test.mp4'
 MYAPP = None
 
-from nzb2media import logger
 from nzb2media import main_db
 from nzb2media import version_check
 from nzb2media import databases

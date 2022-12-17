@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import datetime
 
-from nzb2media import logger
 from nzb2media import main_db
 
 database = main_db.DBConnection()
