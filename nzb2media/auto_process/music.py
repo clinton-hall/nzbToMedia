@@ -218,7 +218,7 @@ def process(
                 and os.path.isdir(dir_name)
                 and not os.path.dirname(dir_name) == dir_name
             ):
-                log.postprocess(f'Deleting failed files and folder {dir_name}')
+                log.debug(f'Deleting failed files and folder {dir_name}')
                 remove_dir(dir_name)
             # Return as failed to flag this in the downloader.
             return ProcessResult.failure(

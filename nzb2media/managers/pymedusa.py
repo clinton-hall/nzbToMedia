@@ -185,7 +185,7 @@ class PyMedusaApiV2(SickBeard):
         # Log Medusa's PP logs here.
         if response.get('output'):
             for line in response['output']:
-                log.postprocess(line)
+                log.debug(line)
 
         # For now this will most likely always be True.
         # In the future we could return an exit state for when the PP in

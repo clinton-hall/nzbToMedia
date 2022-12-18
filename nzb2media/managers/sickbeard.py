@@ -605,7 +605,7 @@ class SickBeard:
         for line in response.iter_lines():
             if line:
                 line = line.decode('utf-8')
-                log.postprocess(line)
+                log.debug(line)
                 # if 'Moving file from' in line:
                 #     input_name = os.path.split(line)[1]
                 # if 'added to the queue' in line:
