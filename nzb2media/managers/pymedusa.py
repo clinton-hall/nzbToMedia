@@ -58,7 +58,7 @@ class PyMedusaApiV2(SickBeard):
         # Check for an apikey
         # This is required with using fork = medusa-apiv2
         if not sb_init.apikey:
-            log.error('For the section SickBeard `fork = medusa-apiv2` you also ' 'need to configure an `apikey`')
+            log.error('For the SECTION SickBeard `fork = medusa-apiv2` you also ' 'need to configure an `apikey`')
             raise ValueError('Missing apikey for fork: medusa-apiv2')
 
     @property

@@ -60,7 +60,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     log.debug(f'Determined Directory: {input_directory} | Name: {input_name} | Category: {input_category}')
 
-    # auto-detect section
+    # auto-detect SECTION
     section = nzb2media.CFG.findsection(input_category).isenabled()
     if section is None:  # Check for user_scripts for 'ALL' and 'UNCAT'
         if usercat in nzb2media.CATEGORIES:
@@ -122,10 +122,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     log.debug(f'Scanning files in directory: {input_directory}')
 
-    if section_name in ['HeadPhones', 'Lidarr']:
-        nzb2media.NOFLATTEN.extend(
-            input_category,
-        )  # Make sure we preserve folder structure for HeadPhones.
+    if section_name in {'HeadPhones', 'Lidarr'}:
+        # Make sure we preserve folder structure for HeadPhones.
+        nzb2media.NOFLATTEN.extend(input_category)
 
     now = datetime.datetime.now()
 
@@ -138,10 +137,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         log.debug(f'Found 1 file to process: {input_directory}')
     else:
         log.debug(f'Found {len(input_files)} files in {input_directory}')
-    for inputFile in input_files:
-        file_path = os.path.dirname(inputFile)
-        file_name, file_ext = os.path.splitext(os.path.basename(inputFile))
-        full_file_name = os.path.basename(inputFile)
+    for input_file in input_files:
+        file_path = os.path.dirname(input_file)
+        file_name, file_ext = os.path.splitext(os.path.basename(input_file))
+        full_file_name = os.path.basename(input_file)
 
         target_file = nzb2media.os.path.join(output_destination, full_file_name)
         if input_category in nzb2media.NOFLATTEN:
@@ -152,9 +151,9 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                 log.debug(f'Setting outputDestination to {os.path.dirname(target_file)} to preserve folder structure')
         if root == 1:
             if not found_file:
-                log.debug(f'Looking for {input_name} in: {inputFile}')
+                log.debug(f'Looking for {input_name} in: {input_file}')
             if any([
-                nzb2media.sanitize_name(input_name) in nzb2media.sanitize_name(inputFile),
+                nzb2media.sanitize_name(input_name) in nzb2media.sanitize_name(input_file),
                 nzb2media.sanitize_name(file_name) in nzb2media.sanitize_name(input_name),
             ]):
                 found_file = True
@@ -163,8 +162,8 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
                 continue
 
         if root == 2:
-            mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(inputFile))
-            ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(inputFile))
+            mtime_lapse = now - datetime.datetime.fromtimestamp(os.path.getmtime(input_file))
+            ctime_lapse = now - datetime.datetime.fromtimestamp(os.path.getctime(input_file))
 
             if not found_file:
                 log.debug('Looking for files with modified/created dates less than 5 minutes old.')
@@ -176,10 +175,10 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
         if torrent_no_link == 0:
             try:
-                nzb2media.copy_link(inputFile, target_file, nzb2media.USE_LINK)
+                nzb2media.copy_link(input_file, target_file, nzb2media.USE_LINK)
                 nzb2media.remove_read_only(target_file)
             except Exception:
-                log.error(f'Failed to link: {inputFile} to {target_file}')
+                log.error(f'Failed to link: {input_file} to {target_file}')
 
     input_name, output_destination = convert_to_ascii(input_name, output_destination)
 
@@ -192,7 +191,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         nzb2media.flatten(output_destination)
 
     # Now check if video files exist in destination:
-    if section_name in ['SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr', 'Watcher3']:
+    if section_name in {'SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr', 'CouchPotato', 'Radarr', 'Watcher3'}:
         num_videos = len(
             nzb2media.list_media_files(output_destination, media=True, audio=False, meta=False, archives=False),
         )
@@ -232,7 +231,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             'Mylar': comics.process,
             'Gamez': games.process,
         }
-        if input_hash and section_name in ['SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr']:
+        if input_hash and section_name in {'SickBeard', 'SiCKRAGE', 'NzbDrone', 'Sonarr'}:
             input_hash = input_hash.upper()
         processor = process_map[section_name]
         result = processor(
@@ -358,4 +357,4 @@ def main(args):
 
 
 if __name__ == '__main__':
-    exit(main(sys.argv))
+    sys.exit(main(sys.argv))

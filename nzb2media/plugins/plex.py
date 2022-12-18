@@ -26,7 +26,8 @@ def configure_plex(config):
 def plex_update(category):
     if nzb2media.FAILED:
         return
-    url = '{scheme}://{host}:{port}/library/sections/'.format(scheme='https' if nzb2media.PLEX_SSL else 'http', host=nzb2media.PLEX_HOST, port=nzb2media.PLEX_PORT)
+    scheme = 'https' if nzb2media.PLEX_SSL else 'http'
+    url = f'{scheme}://{nzb2media.PLEX_HOST}:{nzb2media.PLEX_PORT}/library/sections/'
     section = None
     if not nzb2media.PLEX_SECTION:
         return
@@ -39,4 +40,4 @@ def plex_update(category):
         requests.get(url, timeout=(60, 120), verify=False)
         log.debug('Plex Library has been refreshed.')
     else:
-        log.debug('Could not identify section for plex update')
+        log.debug('Could not identify SECTION for plex update')

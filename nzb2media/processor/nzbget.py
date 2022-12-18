@@ -19,8 +19,7 @@ def parse_download_id():
             return os.environ[download_id_key]
         except KeyError:
             pass
-    else:
-        return ''
+    return ''
 
 
 def parse_failure_link():
@@ -40,7 +39,7 @@ def _parse_total_status():
 def _parse_par_status():
     """Parse nzbget par status from environment."""
     par_status = os.environ['NZBPP_PARSTATUS']
-    if par_status == '1' or par_status == '4':
+    if par_status in {'1', '4'}:
         log.warning('Par-repair failed, setting status \'failed\'')
         return 1
     return 0

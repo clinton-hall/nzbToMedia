@@ -267,7 +267,8 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             remove_dir(dir_name)
         if not release_id and not media_id:
             log.error(f'Could not find a downloaded movie in the database matching {input_name}, exiting!')
-            return ProcessResult(message='{0}: Failed to post-process - Failed download not found in {0}'.format(section), status_code=1)
+            msg = f'{section}: Failed to post-process - Failed download not found in {section}'
+            return ProcessResult(message=msg, status_code=1)
         if release_id:
             log.debug(f'Setting failed release {input_name} to ignored ...')
             url = f'{base_url}release.ignore'
@@ -277,7 +278,8 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
                 response = requests.get(url, params=params, verify=False, timeout=(30, 120))
             except requests.ConnectionError:
                 log.error(f'Unable to open URL {url}')
-                return ProcessResult(message='{0}: Failed to post-process - Unable to connect to {0}'.format(section), status_code=1)
+                msg = f'{section}: Failed to post-process - Unable to connect to {section}'
+                return ProcessResult(message=msg, status_code=1)
             result = response.json()
             if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
                 log.error(f'Server returned status {response.status_code}')
@@ -338,12 +340,12 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             command_status = command_complete(url, params, headers, section)
             if command_status:
                 log.debug(f'The Scan command return status: {command_status}')
-                if command_status in ['completed']:
+                if command_status in {'completed'}:
                     log.debug('The Scan command has completed successfully. Renaming was successful.')
                     return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
-                if command_status in ['failed']:
+                if command_status in {'failed'}:
                     log.debug('The Scan command has failed. Renaming was not successful.')
-                    # return ProcessResult(message='{0}: Failed to post-process {1}'.format(section, input_name), status_code=1)
+                    # return ProcessResult(message='{0}: Failed to post-process {1}'.format(SECTION, input_name), status_code=1)
         if not os.path.isdir(dir_name):
             log.debug(f'SUCCESS: Input Directory [{dir_name}] has been processed and removed')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
@@ -353,7 +355,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         # pause and let CouchPotatoServer/Radarr catch its breath
         time.sleep(10 * wait_for)
     # The status hasn't changed. we have waited wait_for minutes which is more than enough. uTorrent can resume seeding now.
-    if section == 'Radarr' and completed_download_handling(url2, headers, section=section):
+    if section == 'Radarr' and completed_download_handling(url2, headers):
         log.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.')
         return ProcessResult.success(f'{section}: Complete DownLoad Handling is enabled. Passing back to {section}')
     log.warning(f'{input_name} does not appear to have changed status after {wait_for} minutes, Please check your logs.')

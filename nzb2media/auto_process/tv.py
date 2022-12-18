@@ -105,7 +105,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             # Re-raise the error if it wasn't about the directory not existing
             if error.errno != errno.EEXIST:
                 raise
-    if 'process_method' not in fork_params or (client_agent in ['nzbget', 'sabnzbd'] and nzb_extraction_by != 'Destination'):
+    if 'process_method' not in fork_params or (client_agent in {'nzbget', 'sabnzbd'} and nzb_extraction_by != 'Destination'):
         if input_name:
             process_all_exceptions(input_name, dir_name)
             input_name, dir_name = convert_to_ascii(input_name, dir_name)
@@ -185,8 +185,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             fork_params['nzbName'] = input_name
         for param in copy.copy(fork_params):
             if param == 'failed':
-                if status > 1:
-                    status = 1
+                status = min(status, 1)
                 fork_params[param] = status
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
@@ -201,7 +200,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
                     fork_params[param] = 'manual'
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
-            if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
+            if param in {'dir_name', 'dir', 'proc_dir', 'process_directory', 'path'}:
                 fork_params[param] = dir_name
                 if remote_path:
                     fork_params[param] = remote_dir(dir_name)
@@ -210,12 +209,12 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
                     fork_params[param] = process_method
                 else:
                     del fork_params[param]
-            if param in ['force', 'force_replace']:
+            if param in {'force', 'force_replace'}:
                 if force:
                     fork_params[param] = force
                 else:
                     del fork_params[param]
-            if param in ['delete_on', 'delete']:
+            if param in {'delete_on', 'delete'}:
                 if delete_on:
                     fork_params[param] = delete_on
                 else:
@@ -228,7 +227,9 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             if param == 'force_next':
                 fork_params[param] = 1
         # delete any unused params so we don't pass them to SB by mistake
-        [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
+        for key, val in list(fork_params.items()):
+            if val is None:
+                del fork_params[key]
     if status == 0:
         if section == 'NzbDrone' and not apikey:
             log.info('No Sonarr apikey entered. Processing completed.')
@@ -291,7 +292,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
                 login = f'{web_root}/login'
                 login_params = {'username': username, 'password': password}
                 response = session.get(login, verify=False, timeout=(30, 60))
-                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                if response.status_code in {401, 403} and response.cookies.get('_xsrf'):
                     login_params['_xsrf'] = response.cookies.get('_xsrf')
                 session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
             response = session.get(url, auth=(username, password), params=fork_params, stream=True, verify=False, timeout=(30, 1800))
@@ -362,7 +363,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         while num < 6:  # set up wait_for minutes to see if command completes..
             time.sleep(10 * wait_for)
             command_status = command_complete(url, params, headers, section)
-            if command_status and command_status in ['completed', 'failed']:
+            if command_status and command_status in {'completed', 'failed'}:
                 break
             num += 1
         if command_status:
@@ -370,14 +371,14 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         if not os.path.exists(dir_name):
             log.debug(f'The directory {dir_name} has been removed. Renaming was successful.')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
-        if command_status and command_status in ['completed']:
+        if command_status and command_status in {'completed'}:
             log.debug('The Scan command has completed successfully. Renaming was successful.')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
-        if command_status and command_status in ['failed']:
+        if command_status and command_status in {'failed'}:
             log.debug('The Scan command has failed. Renaming was not successful.')
-            # return ProcessResult.failure(f'{section}: Failed to post-process {input_name}')
+            # return ProcessResult.failure(f'{SECTION}: Failed to post-process {input_name}')
         url2 = nzb2media.utils.common.create_url(scheme, host, port, route2)
-        if completed_download_handling(url2, headers, section=section):
+        if completed_download_handling(url2, headers):
             log.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.')
             return ProcessResult(message=f'{section}: Complete DownLoad Handling is enabled. Passing back to {section}', status_code=status)
         log.warning('The Scan command did not return a valid status. Renaming was not successful.')

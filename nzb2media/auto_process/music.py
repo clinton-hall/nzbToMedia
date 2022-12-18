@@ -67,16 +67,16 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
     # if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
-    #     logger.info('Status shown as failed from Downloader, but valid video files found. Setting as successful.', section)
+    #     logger.info('Status shown as failed from Downloader, but valid video files found. Setting as successful.', SECTION)
     #     status = 0
     if status == 0 and section == 'HeadPhones':
         params = {'apikey': apikey, 'cmd': 'forceProcess', 'dir': remote_dir(dir_name) if remote_path else dir_name}
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
-        if res.status_code in [0, 1]:
+        if res.status_code in {0, 1}:
             return res
         params = {'apikey': apikey, 'cmd': 'forceProcess', 'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]}
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
-        if res.status_code in [0, 1]:
+        if res.status_code in {0, 1}:
             return res
         # The status hasn't changed. uTorrent can resume seeding now.
         log.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs')
@@ -110,7 +110,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         while num < 6:  # set up wait_for minutes to see if command completes..
             time.sleep(10 * wait_for)
             command_status = command_complete(url, params, headers, section)
-            if command_status and command_status in ['completed', 'failed']:
+            if command_status and command_status in {'completed', 'failed'}:
                 break
             num += 1
         if command_status:
@@ -118,12 +118,12 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         if not os.path.exists(dir_name):
             log.debug(f'The directory {dir_name} has been removed. Renaming was successful.')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
-        if command_status and command_status in ['completed']:
+        if command_status and command_status in {'completed'}:
             log.debug('The Scan command has completed successfully. Renaming was successful.')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
-        if command_status and command_status in ['failed']:
+        if command_status and command_status in {'failed'}:
             log.debug('The Scan command has failed. Renaming was not successful.')
-            # return ProcessResult.failure(f'{section}: Failed to post-process {input_name}')
+            # return ProcessResult.failure(f'{SECTION}: Failed to post-process {input_name}')
         else:
             log.debug(f'The Scan command did not return status completed. Passing back to {section} to attempt complete download handling.')
             return ProcessResult(message=f'{section}: Passing back to {section} to attempt Complete Download Handling', status_code=status)

@@ -39,7 +39,8 @@ def clean_file_name(filename):
     return filename.strip()
 
 
-def is_sample(input_name):
+def is_sample(input_name) -> bool:
     # Ignore 'sample' in files
     if re.search('(^|[\\W_])sample\\d*[\\W_]', input_name.lower()):
         return True
+    return False

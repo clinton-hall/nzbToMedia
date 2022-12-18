@@ -50,7 +50,7 @@ def command_complete(url, params, headers, section):
         return None
 
 
-def completed_download_handling(url2, headers, section='MAIN'):
+def completed_download_handling(url2, headers):
     try:
         response = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
     except requests.ConnectionError:

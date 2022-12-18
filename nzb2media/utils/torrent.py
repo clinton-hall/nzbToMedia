@@ -15,14 +15,15 @@ log.addHandler(logging.NullHandler())
 torrent_clients = {'deluge': deluge, 'qbittorrent': qbittorrent, 'transmission': transmission, 'utorrent': utorrent, 'synods': synology}
 
 
-def create_torrent_class(client_agent):
+def create_torrent_class(client_agent) -> object | None:
     if nzb2media.APP_NAME != 'TorrentToMedia.py':
-        return  # Skip loading Torrent for NZBs.
+        return None  # Skip loading Torrent for NZBs.
     try:
         agent = torrent_clients[client_agent]
     except KeyError:
-        return
+        return None
     else:
+        deluge.configure_client()
         return agent.configure_client()
 
 

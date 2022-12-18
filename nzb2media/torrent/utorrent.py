@@ -20,5 +20,6 @@ def configure_client():
         client = UTorrentClient(web_ui, user, password)
     except Exception:
         log.error('Failed to connect to uTorrent')
+        return None
     else:
         return client

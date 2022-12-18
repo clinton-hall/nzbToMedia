@@ -10,9 +10,16 @@ import typing
 import nzb2media
 
 if os.name == 'nt':
+    # pylint: disable-next=no-name-in-module
     from win32event import CreateMutex
-    from win32api import CloseHandle, GetLastError
+
+    # pylint: disable-next=no-name-in-module
+    from win32api import CloseHandle
+
+    # pylint: disable-next=no-name-in-module
+    from win32api import GetLastError
     from winerror import ERROR_ALREADY_EXISTS
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -100,7 +107,7 @@ def restart():
     install_type = nzb2media.version_check.CheckVersion().install_type
     status = 0
     popen_list = []
-    if install_type in ('git', 'source'):
+    if install_type in {'git', 'source'}:
         popen_list = [sys.executable, nzb2media.APP_FILENAME]
     if popen_list:
         popen_list += nzb2media.SYS_ARGV

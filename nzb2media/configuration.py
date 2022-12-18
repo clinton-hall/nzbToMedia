@@ -39,6 +39,7 @@ class Section(configobj.Section):
             for key in [k for (k, v) in to_return.items() if not v]:
                 del to_return[key]
             return to_return
+        return None
 
     def findsection(self, key):
         to_return = copy.deepcopy(self)
@@ -82,7 +83,7 @@ class Section(configobj.Section):
 
 
 class ConfigObj(configobj.ConfigObj, Section):
-    def __init__(self, infile=None, *args, **kw):
+    def __init__(self, infile, *args, **kw):
         if infile is None:
             infile = nzb2media.CONFIG_FILE
         super().__init__(os.fspath(infile), *args, **kw)
@@ -130,7 +131,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             if CFG_OLD[section].sections:
                 subsections.update({section: CFG_OLD[section].sections})
             for option, value in CFG_OLD[section].items():
-                if option in ['category', 'cpsCategory', 'sbCategory', 'srCategory', 'hpCategory', 'mlCategory', 'gzCategory', 'raCategory', 'ndCategory', 'W3Category']:
+                if option in {'category', 'cpsCategory', 'sbCategory', 'srCategory', 'hpCategory', 'mlCategory', 'gzCategory', 'raCategory', 'ndCategory', 'W3Category'}:
                     if not isinstance(value, list):
                         value = [value]
                     # add subsection
@@ -140,31 +141,31 @@ class ConfigObj(configobj.ConfigObj, Section):
 
         def cleanup_values(values, section):
             for option, value in values.items():
-                if section in ['CouchPotato']:
+                if section in {'CouchPotato'}:
                     if option == ['outputDirectory']:
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)
-                if section in ['CouchPotato', 'HeadPhones', 'Gamez', 'Mylar']:
-                    if option in ['username', 'password']:
+                if section in {'CouchPotato', 'HeadPhones', 'Gamez', 'Mylar'}:
+                    if option in {'username', 'password'}:
                         values.pop(option)
-                if section in ['Mylar']:
+                if section in {'Mylar'}:
                     if option == 'wait_for':  # remove old format
                         values.pop(option)
-                if section in ['SickBeard', 'NzbDrone']:
+                if section in {'SickBeard', 'NzbDrone'}:
                     if option == 'failed_fork':  # change this old format
                         values['failed'] = 'auto'
                         values.pop(option)
                     if option == 'outputDirectory':  # move this to new location format
                         CFG_NEW['Torrent'][option] = os.path.split(os.path.normpath(value))[0]
                         values.pop(option)
-                if section in ['Torrent']:
-                    if option in ['compressedExtensions', 'mediaExtensions', 'metaExtensions', 'minSampleSize']:
+                if section in {'Torrent'}:
+                    if option in {'compressedExtensions', 'mediaExtensions', 'metaExtensions', 'minSampleSize'}:
                         CFG_NEW['Extensions'][option] = value
                         values.pop(option)
                     if option == 'useLink':  # Sym links supported now as well.
-                        if value in ['1', 1]:
+                        if value in {'1', 1}:
                             value = 'hard'
-                        elif value in ['0', 0]:
+                        elif value in {'0', 0}:
                             value = 'no'
                         values[option] = value
                     if option == 'forceClean':
@@ -173,8 +174,8 @@ class ConfigObj(configobj.ConfigObj, Section):
                     if option == 'qBittorrenHost':  # We had a typo that is now fixed.
                         CFG_NEW['Torrent']['qBittorrentHost'] = value
                         values.pop(option)
-                if section in ['Transcoder']:
-                    if option in ['niceness']:
+                if section in {'Transcoder'}:
+                    if option in {'niceness'}:
                         CFG_NEW['Posix'][option] = value
                         values.pop(option)
                 if option == 'remote_path':
@@ -225,7 +226,7 @@ class ConfigObj(configobj.ConfigObj, Section):
                 process_section(section, subsection)
             elif section in CFG_OLD.keys():
                 process_section(section, subsection)
-        # migrate SiCRKAGE settings from SickBeard section to new dedicated SiCRKAGE section
+        # migrate SiCRKAGE settings from SickBeard SECTION to new dedicated SiCRKAGE SECTION
         if CFG_OLD['SickBeard']['tv']['enabled'] and CFG_OLD['SickBeard']['tv']['fork'] == 'sickrage-api':
             for option, value in CFG_OLD['SickBeard']['tv'].items():
                 if option in CFG_NEW['SiCKRAGE']['tv']:
@@ -233,7 +234,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             # set API version to 1 if API key detected and no SSO username is set
             if CFG_NEW['SiCKRAGE']['tv']['apikey'] and not CFG_NEW['SiCKRAGE']['tv']['sso_username']:
                 CFG_NEW['SiCKRAGE']['tv']['api_version'] = 1
-            # disable SickBeard section
+            # disable SickBeard SECTION
             CFG_NEW['SickBeard']['tv']['enabled'] = 0
             CFG_NEW['SickBeard']['tv']['fork'] = 'auto'
         # create a backup of our old config
@@ -247,23 +248,33 @@ class ConfigObj(configobj.ConfigObj, Section):
     @staticmethod
     def addnzbget():
         # load configs into memory
-        cfg_new = Config()
+        cfg_new = Config(None)
         try:
             if 'NZBPO_NDCATEGORY' in os.environ and 'NZBPO_SBCATEGORY' in os.environ:
                 if os.environ['NZBPO_NDCATEGORY'] == os.environ['NZBPO_SBCATEGORY']:
-                    log.warning('{x} category is set for SickBeard and Sonarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_NDCATEGORY']))
+                    _cat = os.environ['NZBPO_NDCATEGORY']
+                    msg = f'{_cat} category is set for SickBeard and Sonarr. Please check your config in NZBGet'
+                    log.warning(msg)
             if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
                 if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
-                    log.warning('{x} category is set for CouchPotato and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']))
+                    _cat = os.environ['NZBPO_RACATEGORY']
+                    msg = f'{_cat} category is set for CouchPotato and Radarr. Please check your config in NZBGet'
+                    log.warning(msg)
             if 'NZBPO_RACATEGORY' in os.environ and 'NZBPO_W3CATEGORY' in os.environ:
                 if os.environ['NZBPO_RACATEGORY'] == os.environ['NZBPO_W3CATEGORY']:
-                    log.warning('{x} category is set for Watcher3 and Radarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_RACATEGORY']))
+                    _cat = os.environ['NZBPO_RACATEGORY']
+                    msg = f'{_cat} category is set for Watcher3 and Radarr. Please check your config in NZBGet'
+                    log.warning(msg)
             if 'NZBPO_W3CATEGORY' in os.environ and 'NZBPO_CPSCATEGORY' in os.environ:
                 if os.environ['NZBPO_W3CATEGORY'] == os.environ['NZBPO_CPSCATEGORY']:
-                    log.warning('{x} category is set for CouchPotato and Watcher3. Please check your config in NZBGet'.format(x=os.environ['NZBPO_W3CATEGORY']))
+                    _cat = os.environ['NZBPO_W3CATEGORY']
+                    msg = f'{_cat} category is set for CouchPotato and Watcher3. Please check your config in NZBGet'
+                    log.warning(msg)
             if 'NZBPO_LICATEGORY' in os.environ and 'NZBPO_HPCATEGORY' in os.environ:
                 if os.environ['NZBPO_LICATEGORY'] == os.environ['NZBPO_HPCATEGORY']:
-                    log.warning('{x} category is set for HeadPhones and Lidarr. Please check your config in NZBGet'.format(x=os.environ['NZBPO_LICATEGORY']))
+                    _cat = os.environ['NZBPO_LICATEGORY']
+                    msg = f'{_cat} category is set for HeadPhones and Lidarr. Please check your config in NZBGet'
+                    log.warning(msg)
             section = 'Nzb'
             key = 'NZBOP_DESTDIR'
             if key in os.environ:
@@ -273,8 +284,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'General'
             env_keys = ['AUTO_UPDATE', 'CHECK_MEDIA', 'REQUIRE_LAN', 'SAFE_MODE', 'NO_EXTRACT_FAILED']
             cfg_keys = ['auto_update', 'check_media', 'require_lan', 'safe_mode', 'no_extract_failed']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -282,8 +293,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'Network'
             env_keys = ['MOUNTPOINTS']
             cfg_keys = ['mount_points']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -293,8 +304,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH', 'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path', 'wait_for', 'watch_dir', 'omdbapikey']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_CPS{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_CPS{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -311,8 +322,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'METHOD', 'DELETE_FAILED', 'REMOTE_PATH', 'WAIT_FOR', 'WATCH_DIR', 'OMDBAPIKEY']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'method', 'delete_failed', 'remote_path', 'wait_for', 'watch_dir', 'omdbapikey']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_W3{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_W3{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -329,8 +340,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'USERNAME', 'PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
             cfg_keys = ['enabled', 'host', 'port', 'apikey', 'username', 'password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_SB{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_SB{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -347,8 +358,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'HOST', 'PORT', 'APIKEY', 'API_VERSION', 'SSO_USERNAME', 'SSO_PASSWORD', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'REMOTE_PATH', 'PROCESS_METHOD']
             cfg_keys = ['enabled', 'host', 'port', 'apikey', 'api_version', 'sso_username', 'sso_password', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'remote_path', 'process_method']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_SR{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_SR{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -365,8 +376,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WAIT_FOR', 'WATCH_DIR', 'REMOTE_PATH', 'DELETE_FAILED']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'wait_for', 'watch_dir', 'remote_path', 'delete_failed']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_HP{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_HP{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -381,8 +392,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'HOST', 'PORT', 'USERNAME', 'PASSWORD', 'APIKEY', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
             cfg_keys = ['enabled', 'host', 'port', 'username', 'password', 'apikey', 'ssl', 'web_root', 'watch_dir', 'remote_path']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_MY{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_MY{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -395,8 +406,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'LIBRARY', 'REMOTE_PATH']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'library', 'remote_path']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_GZ{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_GZ{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -409,8 +420,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'APIKEY', 'HOST', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'REMOTE_PATH']
             cfg_keys = ['enabled', 'apikey', 'host', 'port', 'ssl', 'web_root', 'watch_dir', 'remote_path']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_LL{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_LL{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -424,8 +435,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             # new cfgKey added for importMode
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'importMode']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_ND{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_ND{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -443,8 +454,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             # new cfgKey added for importMode
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path', 'omdbapikey', 'importMode']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_RA{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_RA{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -461,8 +472,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['ENABLED', 'HOST', 'APIKEY', 'PORT', 'SSL', 'WEB_ROOT', 'WATCH_DIR', 'FORK', 'DELETE_FAILED', 'TORRENT_NOLINK', 'NZBEXTRACTIONBY', 'WAIT_FOR', 'DELETE_FAILED', 'REMOTE_PATH']
             cfg_keys = ['enabled', 'host', 'apikey', 'port', 'ssl', 'web_root', 'watch_dir', 'fork', 'delete_failed', 'Torrent_NoLink', 'nzbExtractionBy', 'wait_for', 'delete_failed', 'remote_path']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_LI{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_LI{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]
@@ -475,8 +486,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'Extensions'
             env_keys = ['COMPRESSEDEXTENSIONS', 'MEDIAEXTENSIONS', 'METAEXTENSIONS']
             cfg_keys = ['compressedExtensions', 'mediaExtensions', 'metaExtensions']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -484,8 +495,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'Posix'
             env_keys = ['NICENESS', 'IONICE_CLASS', 'IONICE_CLASSDATA']
             cfg_keys = ['niceness', 'ionice_class', 'ionice_classdata']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -493,8 +504,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'Transcoder'
             env_keys = ['TRANSCODE', 'DUPLICATE', 'IGNOREEXTENSIONS', 'OUTPUTFASTSTART', 'OUTPUTVIDEOPATH', 'PROCESSOUTPUT', 'AUDIOLANGUAGE', 'ALLAUDIOLANGUAGES', 'SUBLANGUAGES', 'ALLSUBLANGUAGES', 'EMBEDSUBS', 'BURNINSUBTITLE', 'EXTRACTSUBS', 'EXTERNALSUBDIR', 'OUTPUTDEFAULT', 'OUTPUTVIDEOEXTENSION', 'OUTPUTVIDEOCODEC', 'VIDEOCODECALLOW', 'OUTPUTVIDEOPRESET', 'OUTPUTVIDEOFRAMERATE', 'OUTPUTVIDEOBITRATE', 'OUTPUTAUDIOCODEC', 'AUDIOCODECALLOW', 'OUTPUTAUDIOBITRATE', 'OUTPUTQUALITYPERCENT', 'GETSUBS', 'OUTPUTAUDIOTRACK2CODEC', 'AUDIOCODEC2ALLOW', 'OUTPUTAUDIOTRACK2BITRATE', 'OUTPUTAUDIOOTHERCODEC', 'AUDIOOTHERCODECALLOW', 'OUTPUTAUDIOOTHERBITRATE', 'OUTPUTSUBTITLECODEC', 'OUTPUTAUDIOCHANNELS', 'OUTPUTAUDIOTRACK2CHANNELS', 'OUTPUTAUDIOOTHERCHANNELS', 'OUTPUTVIDEORESOLUTION']
             cfg_keys = ['transcode', 'duplicate', 'ignoreExtensions', 'outputFastStart', 'outputVideoPath', 'processOutput', 'audioLanguage', 'allAudioLanguages', 'subLanguages', 'allSubLanguages', 'embedSubs', 'burnInSubtitle', 'extractSubs', 'externalSubDir', 'outputDefault', 'outputVideoExtension', 'outputVideoCodec', 'VideoCodecAllow', 'outputVideoPreset', 'outputVideoFramerate', 'outputVideoBitrate', 'outputAudioCodec', 'AudioCodecAllow', 'outputAudioBitrate', 'outputQualityPercent', 'getSubs', 'outputAudioTrack2Codec', 'AudioCodec2Allow', 'outputAudioTrack2Bitrate', 'outputAudioOtherCodec', 'AudioOtherCodecAllow', 'outputAudioOtherBitrate', 'outputSubtitleCodec', 'outputAudioChannels', 'outputAudioTrack2Channels', 'outputAudioOtherChannels', 'outputVideoResolution']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -502,8 +513,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             section = 'WakeOnLan'
             env_keys = ['WAKE', 'HOST', 'PORT', 'MAC']
             cfg_keys = ['wake', 'host', 'port', 'mac']
-            for index in range(len(env_keys)):
-                key = f'NZBPO_WOL{env_keys[index]}'
+            for index, env_key in enumerate(env_keys):
+                key = f'NZBPO_WOL{env_key}'
                 if key in os.environ:
                     option = cfg_keys[index]
                     value = os.environ[key]
@@ -513,8 +524,8 @@ class ConfigObj(configobj.ConfigObj, Section):
             env_keys = ['USER_SCRIPT_MEDIAEXTENSIONS', 'USER_SCRIPT_PATH', 'USER_SCRIPT_PARAM', 'USER_SCRIPT_RUNONCE', 'USER_SCRIPT_SUCCESSCODES', 'USER_SCRIPT_CLEAN', 'USDELAY', 'USREMOTE_PATH']
             cfg_keys = ['user_script_mediaExtensions', 'user_script_path', 'user_script_param', 'user_script_runOnce', 'user_script_successCodes', 'user_script_clean', 'delay', 'remote_path']
             if env_cat_key in os.environ:
-                for index in range(len(env_keys)):
-                    key = f'NZBPO_{env_keys[index]}'
+                for index, env_key in enumerate(env_keys):
+                    key = f'NZBPO_{env_key}'
                     if key in os.environ:
                         option = cfg_keys[index]
                         value = os.environ[key]

@@ -26,7 +26,7 @@ __author__ = 'Justin'
 def is_video_good(video: pathlib.Path, status, require_lan=None):
     file_ext = video.suffix
     disable = False
-    if file_ext not in nzb2media.MEDIA_CONTAINER or not nzb2media.FFPROBE or not nzb2media.CHECK_MEDIA or file_ext in ['.iso'] or (status > 0 and nzb2media.NOEXTRACTFAILED):
+    if file_ext not in nzb2media.MEDIA_CONTAINER or not nzb2media.FFPROBE or not nzb2media.CHECK_MEDIA or file_ext in {'.iso'} or (status > 0 and nzb2media.NOEXTRACTFAILED):
         disable = True
     else:
         test_details, res = get_video_details(nzb2media.TEST_FILE)
@@ -205,7 +205,7 @@ def build_commands(file, new_dir, movie_name):
             video_cmd.extend(['-level', str(nzb2media.VLEVEL)])
         if nzb2media.ACODEC:
             audio_cmd.extend(['-c:a', nzb2media.ACODEC])
-            if nzb2media.ACODEC in ['aac', 'dts']:
+            if nzb2media.ACODEC in {'aac', 'dts'}:
                 # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
                 audio_cmd.extend(['-strict', '-2'])
         else:
@@ -240,17 +240,21 @@ def build_commands(file, new_dir, movie_name):
             video_cmd.extend(['-c:v', 'copy'])
         else:
             video_cmd.extend(['-c:v', nzb2media.VCODEC])
-        if nzb2media.VFRAMERATE and not (nzb2media.VFRAMERATE * 0.999 <= frame_rate <= nzb2media.VFRAMERATE * 1.001):
+        if nzb2media.VFRAMERATE and not nzb2media.VFRAMERATE * 0.999 <= frame_rate <= nzb2media.VFRAMERATE * 1.001:
             video_cmd.extend(['-r', str(nzb2media.VFRAMERATE)])
         if scale:
             w_scale = width / float(scale.split(':')[0])
             h_scale = height / float(scale.split(':')[1])
             if w_scale > h_scale:  # widescreen, Scale by width only.
-                scale = '{width}:{height}'.format(width=scale.split(':')[0], height=int((height / w_scale) / 2) * 2)
+                _width = scale.split(':')[0]
+                _height = int((height / w_scale) / 2) * 2
+                scale = f'{_width}:{_height}'
                 if w_scale > 1:
                     video_cmd.extend(['-vf', f'scale={scale}'])
             else:  # lower or matching ratio, scale by height only.
-                scale = '{width}:{height}'.format(width=int((width / h_scale) / 2) * 2, height=scale.split(':')[1])
+                _width = int((width / h_scale) / 2) * 2
+                _height = scale.split(':')[1]
+                scale = f'{_width}:{_height}'
                 if h_scale > 1:
                     video_cmd.extend(['-vf', f'scale={scale}'])
         if nzb2media.VBITRATE:
@@ -266,7 +270,8 @@ def build_commands(file, new_dir, movie_name):
             video_cmd[1] = nzb2media.VCODEC
         if nzb2media.VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
             video_cmd = ['-c:v', 'copy']
-        map_cmd.extend(['-map', '0:{index}'.format(index=video['index'])])
+        _index = video['index']
+        map_cmd.extend(['-map', f'0:{_index}'])
         break  # Only one video needed
     used_audio = 0
     a_mapped = []
@@ -297,27 +302,31 @@ def build_commands(file, new_dir, movie_name):
         except Exception:
             audio4 = []
         if audio2:  # right (or only) language and codec...
-            map_cmd.extend(['-map', '0:{index}'.format(index=audio2[0]['index'])])
+            _index = audio2[0]['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             a_mapped.extend([audio2[0]['index']])
             bitrate = int(float(audio2[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio2[0].get('channels', 0)))
             audio_cmd.extend([f'-c:a:{used_audio}', 'copy'])
         elif audio1:  # right (or only) language, wrong codec.
-            map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]['index'])])
+            _index = audio1[0]['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             a_mapped.extend([audio1[0]['index']])
             bitrate = int(float(audio1[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio1[0].get('channels', 0)))
             audio_cmd.extend([f'-c:a:{used_audio}', nzb2media.ACODEC if nzb2media.ACODEC else 'copy'])
         elif audio4:
             # wrong language, right codec.
-            map_cmd.extend(['-map', '0:{index}'.format(index=audio4[0]['index'])])
+            _index = audio4[0]['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             a_mapped.extend([audio4[0]['index']])
             bitrate = int(float(audio4[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio4[0].get('channels', 0)))
             audio_cmd.extend([f'-c:a:{used_audio}', 'copy'])
         elif audio3:
             # wrong language, wrong codec. just pick the default audio track
-            map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]['index'])])
+            _index = audio3[0]['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             a_mapped.extend([audio3[0]['index']])
             bitrate = int(float(audio3[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio3[0].get('channels', 0)))
@@ -326,7 +335,7 @@ def build_commands(file, new_dir, movie_name):
             audio_cmd.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = nzb2media.ACODEC
-        if nzb2media.ABITRATE and not (nzb2media.ABITRATE * 0.9 < bitrate < nzb2media.ABITRATE * 1.1):
+        if nzb2media.ABITRATE and not nzb2media.ABITRATE * 0.9 < bitrate < nzb2media.ABITRATE * 1.1:
             audio_cmd.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = nzb2media.ACODEC
@@ -334,7 +343,7 @@ def build_commands(file, new_dir, movie_name):
             audio_cmd.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
             if audio_cmd[1] == 'copy':
                 audio_cmd[1] = nzb2media.ACODEC
-        if audio_cmd[1] in ['aac', 'dts']:
+        if audio_cmd[1] in {'aac', 'dts'}:
             audio_cmd[2:2] = ['-strict', '-2']
         if nzb2media.ACODEC2_ALLOW:
             used_audio += 1
@@ -347,13 +356,15 @@ def build_commands(file, new_dir, movie_name):
             except Exception:
                 audio6 = []
             if audio5:  # right language and codec.
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio5[0]['index'])])
+                _index = audio5[0]['index']
+                map_cmd.extend(['-map', f'0:{_index}'])
                 a_mapped.extend([audio5[0]['index']])
                 bitrate = int(float(audio5[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio5[0].get('channels', 0)))
                 audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
             elif audio1:  # right language wrong codec.
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio1[0]['index'])])
+                _index = audio1[0]['index']
+                map_cmd.extend(['-map', f'0:{_index}'])
                 a_mapped.extend([audio1[0]['index']])
                 bitrate = int(float(audio1[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio1[0].get('channels', 0)))
@@ -362,14 +373,16 @@ def build_commands(file, new_dir, movie_name):
                 else:
                     audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
             elif audio6:  # wrong language, right codec
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio6[0]['index'])])
+                _index = audio6[0]['index']
+                map_cmd.extend(['-map', f'0:{_index}'])
                 a_mapped.extend([audio6[0]['index']])
                 bitrate = int(float(audio6[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio6[0].get('channels', 0)))
                 audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
             elif audio3:
                 # wrong language, wrong codec just pick the default audio track
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio3[0]['index'])])
+                _inded = audio3[0]['index']
+                map_cmd.extend(['-map', f'0:{_index}'])
                 a_mapped.extend([audio3[0]['index']])
                 bitrate = int(float(audio3[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio3[0].get('channels', 0)))
@@ -381,7 +394,7 @@ def build_commands(file, new_dir, movie_name):
                 audio_cmd2.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS2)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = nzb2media.ACODEC2
-            if nzb2media.ABITRATE2 and not (nzb2media.ABITRATE2 * 0.9 < bitrate < nzb2media.ABITRATE2 * 1.1):
+            if nzb2media.ABITRATE2 and not nzb2media.ABITRATE2 * 0.9 < bitrate < nzb2media.ABITRATE2 * 1.1:
                 audio_cmd2.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE2)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = nzb2media.ACODEC2
@@ -389,7 +402,7 @@ def build_commands(file, new_dir, movie_name):
                 audio_cmd2.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
                 if audio_cmd2[1] == 'copy':
                     audio_cmd2[1] = nzb2media.ACODEC2
-            if audio_cmd2[1] in ['aac', 'dts']:
+            if audio_cmd2[1] in {'aac', 'dts'}:
                 audio_cmd2[2:2] = ['-strict', '-2']
             if a_mapped[1] == a_mapped[0] and audio_cmd2[1:] == audio_cmd[1:]:
                 # check for duplicate output track.
@@ -403,7 +416,8 @@ def build_commands(file, new_dir, movie_name):
                 if audio['index'] in a_mapped:
                     continue
                 used_audio += 1
-                map_cmd.extend(['-map', '0:{index}'.format(index=audio['index'])])
+                _index = audio['index']
+                map_cmd.extend(['-map', f'0:{_index}'])
                 audio_cmd3 = []
                 bitrate = int(float(audio.get('bit_rate', 0))) / 1000
                 channels = int(float(audio.get('channels', 0)))
@@ -418,7 +432,7 @@ def build_commands(file, new_dir, movie_name):
                     audio_cmd3.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS3)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = nzb2media.ACODEC3
-                if nzb2media.ABITRATE3 and not (nzb2media.ABITRATE3 * 0.9 < bitrate < nzb2media.ABITRATE3 * 1.1):
+                if nzb2media.ABITRATE3 and not nzb2media.ABITRATE3 * 0.9 < bitrate < nzb2media.ABITRATE3 * 1.1:
                     audio_cmd3.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE3)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = nzb2media.ACODEC3
@@ -426,7 +440,7 @@ def build_commands(file, new_dir, movie_name):
                     audio_cmd3.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
                     if audio_cmd3[1] == 'copy':
                         audio_cmd3[1] = nzb2media.ACODEC3
-                if audio_cmd3[1] in ['aac', 'dts']:
+                if audio_cmd3[1] in {'aac', 'dts'}:
                     audio_cmd3[2:2] = ['-strict', '-2']
                 audio_cmd.extend(audio_cmd3)
     s_mapped = []
@@ -445,17 +459,18 @@ def build_commands(file, new_dir, movie_name):
         for sub in subs1:
             if nzb2media.BURN and not burnt and os.path.isfile(input_file):
                 subloc = 0
-                for index in range(len(sub_streams)):
-                    if sub_streams[index]['index'] == sub['index']:
+                for index, sub_stream in enumerate(sub_streams):
+                    if sub_stream['index'] == sub['index']:
                         subloc = index
                         break
                 video_cmd.extend(['-vf', f'subtitles={input_file}:si={subloc}'])
                 burnt = 1
             if not nzb2media.ALLOWSUBS:
                 break
-            if sub['codec_name'] in ['dvd_subtitle', 'VobSub'] and nzb2media.SCODEC == 'mov_text':  # We can't convert these.
-                continue
-            map_cmd.extend(['-map', '0:{index}'.format(index=sub['index'])])
+            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and nzb2media.SCODEC == 'mov_text':
+                continue  # We can't convert these.
+            _inded = sub['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             s_mapped.extend([sub['index']])
     if nzb2media.SINCLUDE:
         for sub in sub_streams:
@@ -463,9 +478,10 @@ def build_commands(file, new_dir, movie_name):
                 break
             if sub['index'] in s_mapped:
                 continue
-            if sub['codec_name'] in ['dvd_subtitle', 'VobSub'] and nzb2media.SCODEC == 'mov_text':  # We can't convert these.
+            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and nzb2media.SCODEC == 'mov_text':  # We can't convert these.
                 continue
-            map_cmd.extend(['-map', '0:{index}'.format(index=sub['index'])])
+            _index = sub['index']
+            map_cmd.extend(['-map', f'0:{_index}'])
             s_mapped.extend([sub['index']])
     if nzb2media.OUTPUTFASTSTART:
         other_cmd.extend(['-movflags', '+faststart'])
@@ -580,7 +596,7 @@ def extract_subs(file, newfile_path):
             log.error('Extracting subtitles has failed')
 
 
-def process_list(iterable, new_dir):
+def process_list(iterable):
     rem_list = []
     new_list = []
     combine = []
@@ -589,9 +605,9 @@ def process_list(iterable, new_dir):
     success = True
     for item in iterable:
         ext = os.path.splitext(item)[1].lower()
-        if ext in ['.iso', '.bin', '.img'] and ext not in nzb2media.IGNOREEXTENSIONS:
+        if ext in {'.iso', '.bin', '.img'} and ext not in nzb2media.IGNOREEXTENSIONS:
             log.debug(f'Attempting to rip disk image: {item}')
-            new_list.extend(rip_iso(item, new_dir))
+            new_list.extend(rip_iso(item))
             rem_list.append(item)
         elif re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', item) and '.vob' not in nzb2media.IGNOREEXTENSIONS:
             log.debug(f'Found VIDEO_TS image file: {item}')
@@ -638,7 +654,7 @@ def process_list(iterable, new_dir):
     return iterable, rem_list, new_list, success
 
 
-def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permissions allow.
+def mount_iso(item):  # Currently only supports Linux Mount when permissions allow.
     if platform.system() == 'Windows':
         log.error(f'No mounting options available under Windows for image file {item}')
         return []
@@ -670,7 +686,7 @@ def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permis
     return ['failure']  # If we got here, nothing matched our criteria
 
 
-def rip_iso(item, new_dir):
+def rip_iso(item):
     new_files = []
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
@@ -678,7 +694,7 @@ def rip_iso(item, new_dir):
         log.debug(f'No 7zip installed. Attempting to mount image file {item}')
         try:
             # Currently only works for Linux.
-            new_files = mount_iso(item, new_dir)
+            new_files = mount_iso(item)
         except Exception:
             log.error(f'Failed to mount and extract from image file {item}')
             new_files = [failure_dir]
@@ -730,7 +746,7 @@ def rip_iso(item, new_dir):
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
             log.error(f'No VIDEO_TS or BDMV/SOURCE folder found in image file. Attempting to mount and scan {item}')
-            new_files = mount_iso(item, new_dir)
+            new_files = mount_iso(item)
     except Exception:
         log.error(f'Failed to extract from image file {item}')
         new_files = [failure_dir]
@@ -832,7 +848,7 @@ def transcode_directory(dir_name):
         new_dir = dir_name
     movie_name = os.path.splitext(os.path.split(dir_name)[1])[0]
     file_list = nzb2media.list_media_files(dir_name, media=True, audio=False, meta=False, archives=False)
-    file_list, rem_list, new_list, success = process_list(file_list, new_dir)
+    file_list, rem_list, new_list, success = process_list(file_list)
     if not success:
         return 1, dir_name
     for file in file_list:

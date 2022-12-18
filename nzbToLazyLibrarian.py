@@ -2,6 +2,6 @@ import sys
 
 import nzbToMedia
 
-section = 'LazyLibrarian'
-result = nzbToMedia.main(sys.argv, section)
+SECTION = 'LazyLibrarian'
+result = nzbToMedia.main(sys.argv, SECTION)
 sys.exit(result)

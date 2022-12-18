@@ -38,7 +38,8 @@ class CheckVersion:
     def run(self):
         self.check_for_new_version()
 
-    def find_install_type(self):
+    @staticmethod
+    def find_install_type():
         """
         Determine how this copy of SB was installed.
         returns: type of installation. Possible values are:
@@ -77,13 +78,16 @@ class CheckVersion:
 
 
 class UpdateManager:
-    def get_github_repo_user(self):
+    @staticmethod
+    def get_github_repo_user():
         return nzb2media.GIT_USER
 
-    def get_github_repo(self):
+    @staticmethod
+    def get_github_repo():
         return nzb2media.GIT_REPO
 
-    def get_github_branch(self):
+    @staticmethod
+    def get_github_branch():
         return nzb2media.GIT_BRANCH
 
 
@@ -98,7 +102,8 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._num_commits_ahead = 0
 
-    def _git_error(self):
+    @staticmethod
+    def _git_error():
         log.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
 
     def _find_working_git(self):
@@ -134,9 +139,10 @@ class GitUpdateManager(UpdateManager):
         log.debug('Unable to find your git executable - Set git_path in your autoProcessMedia.cfg OR delete your .git folder and run from source to enable updates.')
         return None
 
-    def _run_git(self, git_path, args):
-        result = None
-        proc_err = None
+    @staticmethod
+    def _run_git(git_path, args):
+        result = ''
+        proc_err = ''
         if not git_path:
             log.debug('No git specified, can\'t use git commands')
             proc_status = 1
@@ -157,7 +163,7 @@ class GitUpdateManager(UpdateManager):
         if proc_status == 0:
             log.debug(f'{cmd} : returned successful')
             proc_status = 0
-        elif nzb2media.LOG_GIT and proc_status in (1, 128):
+        elif nzb2media.LOG_GIT and proc_status in {1, 128}:
             log.debug(f'{cmd} returned : {result}')
         else:
             if nzb2media.LOG_GIT:
@@ -234,7 +240,8 @@ class GitUpdateManager(UpdateManager):
         if self._num_commits_ahead:
             log.error(f'Local branch is ahead of {self.branch}. Automatic update not possible.')
         elif self._num_commits_behind:
-            log.info('There is a newer version available (you\'re {x} commit{s} behind)'.format(x=self._num_commits_behind, s='s' if self._num_commits_behind > 1 else ''))
+            _plural = 's' if self._num_commits_behind > 1 else ''
+            log.info(f'There is a newer version available (you\'re {self._num_commits_behind} commit{_plural} behind)')
         else:
             return
 
@@ -280,7 +287,7 @@ class SourceUpdateManager(UpdateManager):
             self._cur_commit_hash = None
             return
         try:
-            with open(version_file) as fin:
+            with open(version_file, encoding='utf-8') as fin:
                 self._cur_commit_hash = fin.read().strip(' \n\r')
         except OSError as error:
             log.debug(f'Unable to open \'version.txt\': {error}')
@@ -338,7 +345,8 @@ class SourceUpdateManager(UpdateManager):
         if not self._cur_commit_hash:
             log.error('Unknown current version number, don\'t know if we should update or not')
         elif self._num_commits_behind > 0:
-            log.info('There is a newer version available (you\'re {x} commit{s} behind)'.format(x=self._num_commits_behind, s='s' if self._num_commits_behind > 1 else ''))
+            _plural = 's' if self._num_commits_behind > 1 else ''
+            log.info(f'There is a newer version available (you\'re {self._num_commits_behind} commit{_plural} behind)')
         else:
             return
 
@@ -387,7 +395,7 @@ class SourceUpdateManager(UpdateManager):
                     # Avoid DLL access problem on WIN32/64
                     # These files needing to be updated manually
                     # or find a way to kill the access from memory
-                    if curfile in ('unrar.dll', 'unrar64.dll'):
+                    if curfile in {'unrar.dll', 'unrar64.dll'}:
                         try:
                             os.chmod(new_path, stat.S_IWRITE)
                             os.remove(new_path)
@@ -402,7 +410,7 @@ class SourceUpdateManager(UpdateManager):
                     os.renames(old_path, new_path)
             # update version.txt with commit hash
             try:
-                with open(version_path, 'w') as ver_file:
+                with open(version_path, 'w', encoding='utf-8') as ver_file:
                     ver_file.write(self._newest_commit_hash)
             except OSError as error:
                 log.error(f'Unable to write version file, update not complete: {error}')

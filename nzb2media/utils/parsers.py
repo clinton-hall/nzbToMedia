@@ -67,7 +67,7 @@ def parse_deluge(args):
     return input_directory, input_name, input_category, input_hash, input_id
 
 
-def parse_transmission(args):
+def parse_transmission():
     # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
     input_directory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
     input_name = os.getenv('TR_TORRENT_NAME')
@@ -77,7 +77,7 @@ def parse_transmission(args):
     return input_directory, input_name, input_category, input_hash, input_id
 
 
-def parse_synods(args):
+def parse_synods():
     # Synology/Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
     input_directory = ''
     input_id = ''

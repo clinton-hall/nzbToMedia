@@ -10,14 +10,15 @@ from nzb2media.utils.paths import make_dir
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
 try:
     from jaraco.windows.filesystem import islink, readlink
 except ImportError:
-    if os.name == 'nt':
-        raise
-    else:
+    if os.name != 'nt':
         from os.path import islink
         from os import readlink
+    else:
+        raise
 
 
 def copy_link(src, target_link, use_link):

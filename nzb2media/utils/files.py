@@ -67,7 +67,7 @@ def move_file(filename, path, link):
     copy_link(filename, newfile, link)
 
 
-def is_min_size(input_name, min_size):
+def is_min_size(input_name, min_size) -> bool:
     file_name, file_ext = os.path.splitext(os.path.basename(input_name))
     # audio files we need to check directory size not file size
     input_size = os.path.getsize(input_name)
@@ -80,6 +80,7 @@ def is_min_size(input_name, min_size):
     # Ignore files under a certain size
     if input_size > min_size * 1048576:
         return True
+    return False
 
 
 def is_archive_file(filename):

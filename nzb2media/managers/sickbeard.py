@@ -49,7 +49,7 @@ class InitSickBeard:
             self.protocol = 'https://' if self.ssl else 'http://'
 
     def auto_fork(self):
-        # auto-detect correct section
+        # auto-detect correct SECTION
         # config settings
         if nzb2media.FORK_SET:
             # keep using determined fork for multiple (manual) post-processing
@@ -159,7 +159,7 @@ class InitSickBeard:
                 login = nzb2media.utils.common.create_url(scheme=self.protocol, host=self.host, port=self.port, path=f'{self.web_root}/login')
                 login_params = {'username': self.username, 'password': self.password}
                 response = session.get(login, verify=False, timeout=(30, 60))
-                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                if response.status_code in {401, 403} and response.cookies.get('_xsrf'):
                     login_params['_xsrf'] = response.cookies.get('_xsrf')
                 session.post(login, data=login_params, stream=True, verify=False)
             response = session.get(url, auth=(self.username, self.password), params=api_params, verify=False)
@@ -274,8 +274,7 @@ class SickBeard:
             fork_params['nzbName'] = self.input_name
         for param in copy.copy(fork_params):
             if param == 'failed':
-                if self.failed > 1:
-                    self.failed = 1
+                self.failed = min(self.failed, 1)
                 fork_params[param] = self.failed
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
@@ -291,7 +290,7 @@ class SickBeard:
                     fork_params[param] = 'manual'
                 if 'proc_type' in fork_params:
                     del fork_params['proc_type']
-            if param in ['dir_name', 'dir', 'proc_dir', 'process_directory', 'path']:
+            if param in {'dir_name', 'dir', 'proc_dir', 'process_directory', 'path'}:
                 fork_params[param] = self.dir_name
                 if self.remote_path:
                     fork_params[param] = remote_dir(self.dir_name)
@@ -303,12 +302,12 @@ class SickBeard:
                     fork_params[param] = self.process_method
                 else:
                     del fork_params[param]
-            if param in ['force', 'force_replace']:
+            if param in {'force', 'force_replace'}:
                 if self.force:
                     fork_params[param] = self.force
                 else:
                     del fork_params[param]
-            if param in ['delete_on', 'delete']:
+            if param in {'delete_on', 'delete'}:
                 if self.delete_on:
                     fork_params[param] = self.delete_on
                 else:
@@ -326,7 +325,9 @@ class SickBeard:
             if param == 'force_next':
                 fork_params[param] = 1
         # delete any unused params so we don't pass them to SB by mistake
-        [fork_params.pop(k) for k, v in list(fork_params.items()) if v is None]
+        for key, value in list(fork_params.items()):
+            if value is None:
+                del fork_params[key]
 
     def api_call(self) -> ProcessResult:
         """Perform a base sickbeard api call."""
@@ -339,7 +340,7 @@ class SickBeard:
                 login = nzb2media.utils.common.create_url(self.sb_init.protocol, self.sb_init.host, self.sb_init.port, route)
                 login_params = {'username': self.sb_init.username, 'password': self.sb_init.password}
                 response = self.session.get(login, verify=False, timeout=(30, 60))
-                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                if response.status_code in {401, 403} and response.cookies.get('_xsrf'):
                     login_params['_xsrf'] = response.cookies.get('_xsrf')
                 self.session.post(login, data=login_params, stream=True, verify=False, timeout=(30, 60))
             response = self.session.get(self.url, auth=(self.sb_init.username, self.sb_init.password), params=self.sb_init.fork_params, stream=True, verify=False, timeout=(30, 1800))

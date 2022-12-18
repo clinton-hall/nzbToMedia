@@ -84,7 +84,7 @@ def replace_filename(filename, dirname, name):
     return newfile_path
 
 
-def reverse_filename(filename, dirname, name):
+def reverse_filename(filename, dirname):
     head, file_extension = os.path.splitext(os.path.basename(filename))
     na_parts = season_pattern.search(head)
     if na_parts is not None:
@@ -118,7 +118,7 @@ def rename_script(dirname):
                 dirname = directory
                 break
     if rename_file:
-        with open(rename_file) as fin:
+        with open(rename_file, encoding='utf-8') as fin:
             rename_lines = [line.strip() for line in fin]
         for line in rename_lines:
             if re.search('^(mv|Move)', line, re.IGNORECASE):

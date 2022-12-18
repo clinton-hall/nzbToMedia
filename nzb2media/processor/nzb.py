@@ -44,7 +44,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         control_value_dict = {'input_directory': input_directory1}
         new_value_dict = {'input_name': input_name1, 'input_hash': download_id, 'input_id': download_id, 'client_agent': client_agent, 'status': 0, 'last_update': datetime.date.today().toordinal()}
         my_db.upsert('downloads', new_value_dict, control_value_dict)
-    # auto-detect section
+    # auto-detect SECTION
     if input_category is None:
         input_category = 'UNCAT'
     usercat = input_category

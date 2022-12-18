@@ -115,7 +115,7 @@ FORCE_CLEAN = None
 SAFE_MODE = None
 NOEXTRACTFAILED = None
 NZB_CLIENT_AGENT = None
-SABNZBD_HOST = None
+SABNZBD_HOST = ''
 SABNZBD_PORT = None
 SABNZBD_APIKEY = None
 NZB_DEFAULT_DIRECTORY = None
@@ -256,7 +256,7 @@ def configure_locale():
     except (locale.Error, OSError):
         pass
     # For OSes that are poorly configured I'll just randomly force UTF-8
-    if not SYS_ENCODING or SYS_ENCODING in ('ANSI_X3.4-1968', 'US-ASCII', 'ASCII'):
+    if not SYS_ENCODING or SYS_ENCODING in {'ANSI_X3.4-1968', 'US-ASCII', 'ASCII'}:
         SYS_ENCODING = 'UTF-8'
 
 
@@ -275,7 +275,7 @@ def configure_migration():
         CFG = Config.addnzbget()
     else:  # load newly migrated config
         log.info(f'Loading config from [{CONFIG_FILE}]')
-        CFG = Config()
+        CFG = Config(None)
 
 
 def configure_logging_part_2():
@@ -605,7 +605,7 @@ def configure_transcoder():
         ABITRATE3 = transcode_defaults[DEFAULTS]['ABITRATE3']
         SCODEC = transcode_defaults[DEFAULTS]['SCODEC']
     transcode_defaults = {}  # clear memory
-    if transcode_defaults in ['mp4-scene-release'] and not OUTPUTQUALITYPERCENT:
+    if transcode_defaults in {'mp4-scene-release'} and not OUTPUTQUALITYPERCENT:
         OUTPUTQUALITYPERCENT = 100
     if VEXTENSION in allow_subs:
         ALLOWSUBS = 1
@@ -643,7 +643,7 @@ def configure_passwords_file():
 def configure_sections(section):
     global SECTIONS
     global CATEGORIES
-    # check for script-defied section and if None set to allow sections
+    # check for script-defied SECTION and if None set to allow sections
     SECTIONS = CFG[tuple(x for x in CFG if CFG[x].sections and CFG[x].isenabled()) if not section else (section,)]
     for section, subsections in SECTIONS.items():
         CATEGORIES.extend([subsection for subsection in subsections if CFG[section][subsection].isenabled()])
@@ -662,11 +662,11 @@ def configure_utility_locations():
         FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
         SEVENZIP = os.path.join(APP_ROOT, 'nzb2media', 'extractor', 'bin', platform.machine(), '7z.exe')
         SHOWEXTRACT = int(str(CFG['Windows']['show_extraction']), 0)
-        if not (os.path.isfile(FFMPEG)):  # problem
+        if not os.path.isfile(FFMPEG):  # problem
             FFMPEG = None
             log.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
             log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-        if not (os.path.isfile(FFPROBE)):
+        if not os.path.isfile(FFPROBE):
             FFPROBE = None
             if CHECK_MEDIA:
                 log.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')

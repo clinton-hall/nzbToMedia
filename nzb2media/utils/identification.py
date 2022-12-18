@@ -13,8 +13,8 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-def find_imdbid(dir_name, input_name, omdb_api_key):
-    imdbid = None
+def find_imdbid(dir_name, input_name, omdb_api_key) -> str:
+    imdbid = ''
     log.info(f'Attemping imdbID lookup for {input_name}')
     # find imdbid in dirName
     log.info('Searching folder and file names for imdbID ...')
@@ -56,13 +56,13 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
         url = 'http://www.omdbapi.com'
         if not omdb_api_key:
             log.info('Unable to determine imdbID: No api key provided for omdbapi.com.')
-            return
+            return ''
         log.debug(f'Opening URL: {url}')
         try:
             response = requests.get(url, params={'apikey': omdb_api_key, 'y': year, 't': title}, verify=False, timeout=(60, 300))
         except requests.ConnectionError:
             log.error(f'Unable to open URL {url}')
-            return
+            return ''
         try:
             results = response.json()
         except Exception:

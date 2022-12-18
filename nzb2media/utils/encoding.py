@@ -33,7 +33,7 @@ def char_replace(name_in):
                 encoding = 'cp850'
                 break
             # Detect ISO-8859-15
-            elif (character >= 0xA6) & (character <= 0xFF):
+            if (character >= 0xA6) & (character <= 0xFF):
                 encoding = 'iso-8859-15'
                 break
         else:
@@ -42,11 +42,11 @@ def char_replace(name_in):
                 encoding = 'utf-8'
                 break
             # Detect CP850
-            elif (character >= 0x80) & (character <= 0xA5):
+            if (character >= 0x80) & (character <= 0xA5):
                 encoding = 'cp850'
                 break
             # Detect ISO-8859-15
-            elif (character >= 0xA6) & (character <= 0xFF):
+            if (character >= 0xA6) & (character <= 0xFF):
                 encoding = 'iso-8859-15'
                 break
     if encoding:

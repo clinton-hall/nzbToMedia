@@ -11,9 +11,11 @@ class GitHub:
         self.github_repo = github_repo
         self.branch = branch
 
-    def _access_api(self, path, params=None):
+    @staticmethod
+    def _access_api(path, params=None):
         """Access API at given an API path and optional parameters."""
-        url = 'https://api.github.com/{path}'.format(path='/'.join(path))
+        route = '/'.join(path)
+        url = f'https://api.github.com/{route}'
         data = requests.get(url, params=params, verify=False)
         return data.json() if data.ok else []
 

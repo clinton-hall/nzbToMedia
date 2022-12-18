@@ -2,6 +2,6 @@ import sys
 
 import nzbToMedia
 
-section = 'HeadPhones'
-result = nzbToMedia.main(sys.argv, section)
+SECTION = 'HeadPhones'
+result = nzbToMedia.main(sys.argv, SECTION)
 sys.exit(result)

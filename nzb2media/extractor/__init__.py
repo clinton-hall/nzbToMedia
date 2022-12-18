@@ -61,15 +61,15 @@ def extract(file_path, output_destination):
             log.warning('EXTRACTOR: No archive extracting programs found, plugin will be disabled')
     ext = os.path.splitext(file_path)
     cmd = []
-    if ext[1] in ('.gz', '.bz2', '.lzma'):
+    if ext[1] in {'.gz', '.bz2', '.lzma'}:
         # Check if this is a tar
         if os.path.splitext(ext[0])[1] == '.tar':
             cmd = extract_commands[f'.tar{ext[1]}']
         else:  # Try gunzip
             cmd = extract_commands[ext[1]]
-    elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in ('.rar', '.zip', '.7z'):
+    elif ext[1] in {'.1', '.01', '.001'} and os.path.splitext(ext[0])[1] in {'.rar', '.zip', '.7z'}:
         cmd = extract_commands[os.path.splitext(ext[0])[1]]
-    elif ext[1] in ('.cb7', '.cba', '.cbr', '.cbt', '.cbz'):
+    elif ext[1] in {'.cb7', '.cba', '.cbr', '.cbt', '.cbz'}:
         # don't extract these comic book archives.
         return False
     else:
@@ -81,7 +81,7 @@ def extract(file_path, output_destination):
         # Create outputDestination folder
         nzb2media.make_dir(output_destination)
     if nzb2media.PASSWORDS_FILE and os.path.isfile(os.path.normpath(nzb2media.PASSWORDS_FILE)):
-        with open(os.path.normpath(nzb2media.PASSWORDS_FILE)) as fin:
+        with open(os.path.normpath(nzb2media.PASSWORDS_FILE), encoding='utf-8') as fin:
             passwords = [line.strip() for line in fin]
     else:
         passwords = []
@@ -128,8 +128,6 @@ def extract(file_path, output_destination):
                     log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}')
                     success = 1
                     break
-                else:
-                    continue
     except Exception:
         log.error(f'EXTRACTOR: Extraction failed for {file_path}. Could not call command {cmd}')
         os.chdir(pwd)

@@ -25,7 +25,7 @@ def db_filename(filename='nzbtomedia.db', suffix=None):
 
 
 class DBConnection:
-    def __init__(self, filename='nzbtomedia.db', suffix=None, row_type=None):
+    def __init__(self, filename='nzbtomedia.db'):
         self.filename = filename
         self.connection = sqlite3.connect(db_filename(filename), 20)
         self.connection.row_factory = sqlite3.Row
@@ -151,9 +151,14 @@ class DBConnection:
 
         changes_before = self.connection.total_changes
         items = list(value_dict.values()) + list(key_dict.values())
-        self.action('UPDATE {table} SET {params} WHERE {conditions}'.format(table=table_name, params=', '.join(gen_params(value_dict)), conditions=' AND '.join(gen_params(key_dict))), items)
+        _params = ', '.join(gen_params(value_dict))
+        _conditions = ' AND '.join(gen_params(key_dict))
+        self.action(f'UPDATE {table_name} SET {_params} WHERE {_conditions}', items)
         if self.connection.total_changes == changes_before:
-            self.action('INSERT OR IGNORE INTO {table} ({columns}) VALUES ({values})'.format(table=table_name, columns=', '.join(map(str, value_dict.keys())), values=', '.join(['?'] * len(value_dict.values()))), list(value_dict.values()))
+            _cols = ', '.join(map(str, value_dict.keys()))
+            values = list(value_dict.values())
+            _vals = ', '.join(['?'] * len(values))
+            self.action(f'INSERT OR IGNORE INTO {table_name} ({_cols}) VALUES ({_vals})', values)
 
     def table_info(self, table_name):
         # FIXME ? binding is not supported here, but I cannot find a way to escape a string manually

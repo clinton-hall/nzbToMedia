@@ -26,7 +26,7 @@ def onerror(func, path, exc_info):
         os.chmod(path, stat.S_IWUSR)
         func(path)
     else:
-        raise Exception
+        raise Exception(exc_info)
 
 
 def remove_dir(dir_name):

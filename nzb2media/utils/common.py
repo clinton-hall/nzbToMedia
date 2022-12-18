@@ -35,9 +35,9 @@ def process_dir(path, link):
     dir_contents = os.listdir(path)
     # search for single files and move them into their own folder for post-processing
     # Generate list of sync files
-    sync_files = (item for item in dir_contents if os.path.splitext(item)[1] in ['.!sync', '.bts'])
+    sync_files = (item for item in dir_contents if os.path.splitext(item)[1] in {'.!sync', '.bts'})
     # Generate a list of file paths
-    filepaths = (os.path.join(path, item) for item in dir_contents if item not in ['Thumbs.db', 'thumbs.db'])
+    filepaths = (os.path.join(path, item) for item in dir_contents if item not in {'Thumbs.db', 'thumbs.db'})
     # Generate a list of media files
     mediafiles = (item for item in filepaths if os.path.isfile(item))
     if not any(sync_files):
@@ -53,7 +53,7 @@ def process_dir(path, link):
     directories = (path for path in path_contents if os.path.isdir(path))
     for directory in directories:
         dir_contents = os.listdir(directory)
-        sync_files = (item for item in dir_contents if os.path.splitext(item)[1] in ['.!sync', '.bts'])
+        sync_files = (item for item in dir_contents if os.path.splitext(item)[1] in {'.!sync', '.bts'})
         if not any(dir_contents) or any(sync_files):
             continue
         folders.append(directory)

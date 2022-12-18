@@ -2,6 +2,6 @@ import sys
 
 import nzbToMedia
 
-section = 'NzbDrone'
-result = nzbToMedia.main(sys.argv, section)
+SECTION = 'NzbDrone'
+result = nzbToMedia.main(sys.argv, SECTION)
 sys.exit(result)
