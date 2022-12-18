@@ -15,7 +15,6 @@ def configure_client():
     port = nzb2media.SYNO_PORT
     user = nzb2media.SYNO_USER
     password = nzb2media.SYNO_PASSWORD
-
     log.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = DownloadStation(host, port, user, password)

@@ -8,6 +8,7 @@ import time
 import requests
 
 import nzb2media
+import nzb2media.utils.common
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.scene_exceptions import process_all_exceptions
@@ -22,118 +23,64 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-def process(
-    *,
-    section: str,
-    dir_name: str,
-    input_name: str = '',
-    status: int = 0,
-    client_agent: str = 'manual',
-    download_id: str = '',
-    input_category: str = '',
-    failure_link: str = '',
-) -> ProcessResult:
+def process(*, section: str, dir_name: str, input_name: str = '', status: int = 0, input_category: str = '', **kwargs) -> ProcessResult:
+    log.debug(f'Unused kwargs: {kwargs}')
     # Get configuration
     if nzb2media.CFG is None:
         raise RuntimeError('Configuration not loaded.')
     cfg = nzb2media.CFG[section][input_category]
-
     # Base URL
     ssl = int(cfg.get('ssl', 0))
     scheme = 'https' if ssl else 'http'
     host = cfg['host']
     port = cfg['port']
     web_root = cfg.get('web_root', '')
-
     # Authentication
     apikey = cfg.get('apikey', '')
-
     # Params
     delete_failed = int(cfg.get('delete_failed', 0))
     remote_path = int(cfg.get('remote_path', 0))
     wait_for = int(cfg.get('wait_for', 2))
-
     # Misc
     if status > 0 and nzb2media.NOEXTRACTFAILED:
         extract = 0
     else:
         extract = int(cfg.get('extract', 0))
-
     # Begin processing
     route = f'{web_root}/api/v1' if section == 'Lidarr' else f'{web_root}/api'
     url = nzb2media.utils.common.create_url(scheme, host, port, route)
     if not server_responding(url):
         log.error('Server did not respond. Exiting')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - {section} did not respond.',
-        )
-
-    if not os.path.isdir(dir_name) and os.path.isfile(
-        dir_name,
-    ):  # If the input directory is a file, assume single file download and split dir/name.
+        return ProcessResult.failure(f'{section}: Failed to post-process - {section} did not respond.')
+    if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
         dir_name = os.path.split(os.path.normpath(dir_name))[0]
-
     specific_path = os.path.join(dir_name, str(input_name))
     clean_name = os.path.splitext(specific_path)
     if clean_name[1] == '.nzb':
         specific_path = clean_name[0]
     if os.path.isdir(specific_path):
         dir_name = specific_path
-
     process_all_exceptions(input_name, dir_name)
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
-
-    if (
-        not list_media_files(
-            dir_name, media=False, audio=True, meta=False, archives=False,
-        )
-        and list_media_files(
-            dir_name, media=False, audio=False, meta=False, archives=True,
-        )
-        and extract
-    ):
+    if not list_media_files(dir_name, media=False, audio=True, meta=False, archives=False) and list_media_files(dir_name, media=False, audio=False, meta=False, archives=True) and extract:
         log.debug(f'Checking for archives to extract in directory: {dir_name}')
         extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
-
     # if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
     #     logger.info('Status shown as failed from Downloader, but valid video files found. Setting as successful.', section)
     #     status = 0
-
     if status == 0 and section == 'HeadPhones':
-
-        params = {
-            'apikey': apikey,
-            'cmd': 'forceProcess',
-            'dir': remote_dir(dir_name) if remote_path else dir_name,
-        }
-
-        res = force_process(
-            params, url, apikey, input_name, dir_name, section, wait_for,
-        )
+        params = {'apikey': apikey, 'cmd': 'forceProcess', 'dir': remote_dir(dir_name) if remote_path else dir_name}
+        res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
         if res.status_code in [0, 1]:
             return res
-
-        params = {
-            'apikey': apikey,
-            'cmd': 'forceProcess',
-            'dir': os.path.split(remote_dir(dir_name))[0]
-            if remote_path
-            else os.path.split(dir_name)[0],
-        }
-
-        res = force_process(
-            params, url, apikey, input_name, dir_name, section, wait_for,
-        )
+        params = {'apikey': apikey, 'cmd': 'forceProcess', 'dir': os.path.split(remote_dir(dir_name))[0] if remote_path else os.path.split(dir_name)[0]}
+        res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
         if res.status_code in [0, 1]:
             return res
-
         # The status hasn't changed. uTorrent can resume seeding now.
         log.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - No change in wanted status',
-        )
-
+        return ProcessResult.failure(f'{section}: Failed to post-process - No change in wanted status')
     if status == 0 and section == 'Lidarr':
         route = f'{web_root}/api/v1/command'
         url = nzb2media.utils.common.create_url(scheme, host, port, route)
@@ -146,31 +93,17 @@ def process(
             data = {'name': 'Rename', 'path': dir_name}
         try:
             log.debug(f'Opening URL: {url} with data: {data}')
-            response = requests.post(
-                url,
-                data=json.dumps(data),
-                headers=headers,
-                stream=True,
-                verify=False,
-                timeout=(30, 1800),
-            )
+            response = requests.post(url, data=json.dumps(data), headers=headers, stream=True, verify=False, timeout=(30, 1800))
         except requests.ConnectionError:
             log.error(f'Unable to open URL: {url}')
-            return ProcessResult.failure(
-                f'{section}: Failed to post-process - Unable to connect to '
-                f'{section}',
-            )
-
+            return ProcessResult.failure(f'{section}: Failed to post-process - Unable to connect to {section}')
         try:
             res = response.json()
             scan_id = int(res['id'])
             log.debug(f'Scan started with id: {scan_id}')
         except Exception as error:
             log.warning(f'No scan id was returned due to: {error}')
-            return ProcessResult.failure(
-                f'{section}: Failed to post-process - Unable to start scan',
-            )
-
+            return ProcessResult.failure(f'{section}: Failed to post-process - Unable to start scan')
         num = 0
         params = {}
         url = f'{url}/{scan_id}'
@@ -182,141 +115,80 @@ def process(
             num += 1
         if command_status:
             log.debug(f'The Scan command return status: {command_status}')
-
         if not os.path.exists(dir_name):
             log.debug(f'The directory {dir_name} has been removed. Renaming was successful.')
-            return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}',
-            )
-
+            return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
         if command_status and command_status in ['completed']:
             log.debug('The Scan command has completed successfully. Renaming was successful.')
-            return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}',
-            )
-
+            return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
         if command_status and command_status in ['failed']:
             log.debug('The Scan command has failed. Renaming was not successful.')
-            # return ProcessResult.failure(
-            #     f'{section}: Failed to post-process {input_name}'
-            # )
+            # return ProcessResult.failure(f'{section}: Failed to post-process {input_name}')
         else:
             log.debug(f'The Scan command did not return status completed. Passing back to {section} to attempt complete download handling.')
-            return ProcessResult(
-                message=f'{section}: Passing back to {section} to attempt '
-                f'Complete Download Handling',
-                status_code=status,
-            )
-
+            return ProcessResult(message=f'{section}: Passing back to {section} to attempt Complete Download Handling', status_code=status)
     else:
         if section == 'Lidarr':
             log.debug(f'FAILED: The download failed. Sending failed download to {section} for CDH processing')
             # Return as failed to flag this in the downloader.
-            return ProcessResult.failure(
-                f'{section}: Download Failed. Sending back to {section}',
-            )
+            return ProcessResult.failure(f'{section}: Download Failed. Sending back to {section}')
         log.warning('FAILED DOWNLOAD DETECTED')
-        if (
-            delete_failed
-            and os.path.isdir(dir_name)
-            and not os.path.dirname(dir_name) == dir_name
-        ):
+        if delete_failed and os.path.isdir(dir_name) and not os.path.dirname(dir_name) == dir_name:
             log.debug(f'Deleting failed files and folder {dir_name}')
             remove_dir(dir_name)
         # Return as failed to flag this in the downloader.
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process. {section} does not '
-            f'support failed downloads',
-        )
-
+        return ProcessResult.failure(f'{section}: Failed to post-process. {section} does not support failed downloads')
     return ProcessResult.failure()
 
 
 def get_status(url, apikey, dir_name):
     log.debug(f'Attempting to get current status for release:{os.path.basename(dir_name)}')
-
-    params = {
-        'apikey': apikey,
-        'cmd': 'getHistory',
-    }
-
+    params = {'apikey': apikey, 'cmd': 'getHistory'}
     log.debug(f'Opening URL: {url} with PARAMS: {params}')
-
     try:
         response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.RequestException:
         log.error('Unable to open URL')
         return None
-
     try:
         result = response.json()
     except ValueError:
         # ValueError catches simplejson's JSONDecodeError and json's ValueError
         return None
-
     for album in result:
         if os.path.basename(dir_name) == album['FolderName']:
             return album['Status'].lower()
 
 
-def force_process(
-    params, url, apikey, input_name, dir_name, section, wait_for,
-):
+def force_process(params, url, apikey, input_name, dir_name, section, wait_for):
     release_status = get_status(url, apikey, dir_name)
     if not release_status:
         log.error(f'Could not find a status for {input_name}, is it in the wanted list ?')
-
     log.debug(f'Opening URL: {url} with PARAMS: {params}')
-
     try:
         response = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
         log.error(f'Unable to open URL {url}')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Unable to connect to '
-            f'{section}',
-        )
-
+        return ProcessResult.failure(f'{section}: Failed to post-process - Unable to connect to {section}')
     log.debug(f'Result: {response.text}')
-
-    if response.status_code not in [
-        requests.codes.ok,
-        requests.codes.created,
-        requests.codes.accepted,
-    ]:
+    if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         log.error(f'Server returned status {response.status_code}')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Server returned status {response.status_code}',
-        )
-
+        return ProcessResult.failure(f'{section}: Failed to post-process - Server returned status {response.status_code}')
     if response.text == 'OK':
         log.debug(f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...')
     else:
         log.error(f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.',
-        )
-
+        return ProcessResult.failure(f'{section}: Failed to post-process - Returned log from {section} was not as expected.')
     # we will now wait for this album to be processed before returning to TorrentToMedia and unpausing.
     timeout = time.time() + 60 * wait_for
     while time.time() < timeout:
         current_status = get_status(url, apikey, dir_name)
-        if (
-            current_status is not None and current_status != release_status
-        ):  # Something has changed. CPS must have processed this movie.
+        if current_status is not None and current_status != release_status:  # Something has changed. CPS must have processed this movie.
             log.debug(f'SUCCESS: This release is now marked as status [{current_status}]')
-            return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}',
-            )
+            return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
         if not os.path.isdir(dir_name):
             log.debug(f'SUCCESS: The input directory {dir_name} has been removed Processing must have finished.')
-            return ProcessResult.success(
-                f'{section}: Successfully post-processed {input_name}',
-            )
+            return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
         time.sleep(10 * wait_for)
     # The status hasn't changed.
-    return ProcessResult(
-        message='no change',
-        status_code=2,
-    )
+    return ProcessResult(message='no change', status_code=2)

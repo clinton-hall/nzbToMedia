@@ -12,20 +12,12 @@ from nzb2media.torrent import utorrent
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-torrent_clients = {
-    'deluge': deluge,
-    'qbittorrent': qbittorrent,
-    'transmission': transmission,
-    'utorrent': utorrent,
-    'synods': synology,
-}
+torrent_clients = {'deluge': deluge, 'qbittorrent': qbittorrent, 'transmission': transmission, 'utorrent': utorrent, 'synods': synology}
 
 
 def create_torrent_class(client_agent):
     if nzb2media.APP_NAME != 'TorrentToMedia.py':
         return  # Skip loading Torrent for NZBs.
-
     try:
         agent = torrent_clients[client_agent]
     except KeyError:

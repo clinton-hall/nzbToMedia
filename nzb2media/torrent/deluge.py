@@ -16,7 +16,6 @@ def configure_client():
     port = nzb2media.DELUGE_PORT
     user = nzb2media.DELUGE_USER
     password = nzb2media.DELUGE_PASSWORD
-
     log.debug(f'Connecting to {agent}: http://{host}:{port}')
     client = DelugeRPCClient(host, port, user, password)
     try:

@@ -13,13 +13,7 @@ log.addHandler(logging.NullHandler())
 
 def parse_download_id():
     """Parse nzbget download_id from environment."""
-    download_id_keys = [
-        'NZBPR_COUCHPOTATO',
-        'NZBPR_DRONE',
-        'NZBPR_SONARR',
-        'NZBPR_RADARR',
-        'NZBPR_LIDARR',
-    ]
+    download_id_keys = ['NZBPR_COUCHPOTATO', 'NZBPR_DRONE', 'NZBPR_SONARR', 'NZBPR_RADARR', 'NZBPR_LIDARR']
     for download_id_key in download_id_keys:
         try:
             return os.environ[download_id_key]
@@ -102,12 +96,4 @@ def process():
     status = parse_status()
     download_id = parse_download_id()
     failure_link = parse_failure_link()
-    return nzb.process(
-        input_directory=os.environ['NZBPP_DIRECTORY'],
-        input_name=os.environ['NZBPP_NZBNAME'],
-        status=status,
-        client_agent='nzbget',
-        download_id=download_id,
-        input_category=os.environ['NZBPP_CATEGORY'],
-        failure_link=failure_link,
-    )
+    return nzb.process(input_directory=os.environ['NZBPP_DIRECTORY'], input_name=os.environ['NZBPP_NZBNAME'], status=status, client_agent='nzbget', download_id=download_id, input_category=os.environ['NZBPP_CATEGORY'], failure_link=failure_link)

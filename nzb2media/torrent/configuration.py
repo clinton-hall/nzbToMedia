@@ -6,17 +6,10 @@ from nzb2media.utils.torrent import create_torrent_class
 
 def configure_torrents(config):
     torrent_config = config['Torrent']
-    nzb2media.TORRENT_CLIENT_AGENT = torrent_config[
-        'clientAgent'
-    ]  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
-    nzb2media.OUTPUT_DIRECTORY = torrent_config[
-        'outputDirectory'
-    ]  # /abs/path/to/complete/
-    nzb2media.TORRENT_DEFAULT_DIRECTORY = torrent_config[
-        'default_downloadDirectory'
-    ]
+    nzb2media.TORRENT_CLIENT_AGENT = torrent_config['clientAgent']  # utorrent | deluge | transmission | rtorrent | vuze | qbittorrent | synods | other
+    nzb2media.OUTPUT_DIRECTORY = torrent_config['outputDirectory']  # /abs/path/to/complete/
+    nzb2media.TORRENT_DEFAULT_DIRECTORY = torrent_config['default_downloadDirectory']
     nzb2media.TORRENT_NO_MANUAL = int(torrent_config['no_manual'], 0)
-
     configure_torrent_linking(torrent_config)
     configure_flattening(torrent_config)
     configure_torrent_deletion(torrent_config)
@@ -41,9 +34,7 @@ def configure_flattening(config):
 
 
 def configure_torrent_categories(config):
-    nzb2media.CATEGORIES = config[
-        'categories'
-    ]  # music,music_videos,pictures,software
+    nzb2media.CATEGORIES = config['categories']  # music,music_videos,pictures,software
     if isinstance(nzb2media.CATEGORIES, str):
         nzb2media.CATEGORIES = nzb2media.CATEGORIES.split(',')
 
@@ -62,9 +53,7 @@ def configure_torrent_deletion(config):
 
 
 def configure_utorrent(config):
-    nzb2media.UTORRENT_WEB_UI = config[
-        'uTorrentWEBui'
-    ]  # http://localhost:8090/gui/
+    nzb2media.UTORRENT_WEB_UI = config['uTorrentWEBui']  # http://localhost:8090/gui/
     nzb2media.UTORRENT_USER = config['uTorrentUSR']  # mysecretusr
     nzb2media.UTORRENT_PASSWORD = config['uTorrentPWD']  # mysecretpwr
 

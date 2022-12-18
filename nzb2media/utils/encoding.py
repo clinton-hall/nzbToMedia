@@ -38,9 +38,7 @@ def char_replace(name_in):
                 break
         else:
             # Detect UTF-8
-            if ((character == 0xC2) | (character == 0xC3)) & (
-                (next_character >= 0xA0) & (next_character <= 0xFF)
-            ):
+            if ((character == 0xC2) | (character == 0xC3)) & ((next_character >= 0xA0) & (next_character <= 0xFF)):
                 encoding = 'utf-8'
                 break
             # Detect CP850
@@ -60,19 +58,13 @@ def char_replace(name_in):
 
 
 def convert_to_ascii(input_name, dir_name):
-
     ascii_convert = int(nzb2media.CFG['ASCII']['convert'])
-    if (
-        ascii_convert == 0 or os.name == 'nt'
-    ):  # just return if we don't want to convert or on windows os and '\' is replaced!.
+    if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and '\' is replaced!.
         return input_name, dir_name
-
     encoded, input_name = char_replace(input_name)
-
     directory, base = os.path.split(dir_name)
     if not base:  # ended with '/'
         directory, base = os.path.split(directory)
-
     encoded, base2 = char_replace(base)
     if encoded:
         dir_name = os.path.join(directory, base2)
@@ -80,25 +72,16 @@ def convert_to_ascii(input_name, dir_name):
         os.rename(os.path.join(directory, base), dir_name)
         if 'NZBOP_SCRIPTDIR' in os.environ:
             print(f'[NZB] DIRECTORY={dir_name}')
-
     for dirname, dirnames, _ in os.walk(dir_name, topdown=False):
         for subdirname in dirnames:
             encoded, subdirname2 = char_replace(subdirname)
             if encoded:
                 log.info(f'Renaming directory to: {subdirname2}.')
-                os.rename(
-                    os.path.join(dirname, subdirname),
-                    os.path.join(dirname, subdirname2),
-                )
-
+                os.rename(os.path.join(dirname, subdirname), os.path.join(dirname, subdirname2))
     for dirname, _, filenames in os.walk(dir_name):
         for filename in filenames:
             encoded, filename2 = char_replace(filename)
             if encoded:
                 log.info(f'Renaming file to: {filename2}.')
-                os.rename(
-                    os.path.join(dirname, filename),
-                    os.path.join(dirname, filename2),
-                )
-
+                os.rename(os.path.join(dirname, filename), os.path.join(dirname, filename2))
     return input_name, dir_name

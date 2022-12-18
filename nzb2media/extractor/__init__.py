@@ -6,9 +6,9 @@ import platform
 import shutil
 import stat
 import subprocess
-from subprocess import call
-from subprocess import Popen
 from subprocess import DEVNULL
+from subprocess import Popen
+from subprocess import call
 from time import sleep
 
 import nzb2media
@@ -24,68 +24,18 @@ def extract(file_path, output_destination):
         if not os.path.exists(nzb2media.SEVENZIP):
             log.error('EXTRACTOR: Could not find 7-zip, Exiting')
             return False
-        wscriptlocation = os.path.join(
-            os.environ['WINDIR'], 'system32', 'wscript.exe',
-        )
-        invislocation = os.path.join(
-            nzb2media.APP_ROOT, 'nzb2media', 'extractor', 'bin', 'invisible.vbs',
-        )
-        cmd_7zip = [
-            wscriptlocation,
-            invislocation,
-            str(nzb2media.SHOWEXTRACT),
-            nzb2media.SEVENZIP,
-            'x',
-            '-y',
-        ]
-        ext_7zip = [
-            '.rar',
-            '.zip',
-            '.tar.gz',
-            'tgz',
-            '.tar.bz2',
-            '.tbz',
-            '.tar.lzma',
-            '.tlz',
-            '.7z',
-            '.xz',
-            '.gz',
-        ]
+        wscriptlocation = os.path.join(os.environ['WINDIR'], 'system32', 'wscript.exe')
+        invislocation = os.path.join(nzb2media.APP_ROOT, 'nzb2media', 'extractor', 'bin', 'invisible.vbs')
+        cmd_7zip = [wscriptlocation, invislocation, str(nzb2media.SHOWEXTRACT), nzb2media.SEVENZIP, 'x', '-y']
+        ext_7zip = ['.rar', '.zip', '.tar.gz', 'tgz', '.tar.bz2', '.tbz', '.tar.lzma', '.tlz', '.7z', '.xz', '.gz']
         extract_commands = dict.fromkeys(ext_7zip, cmd_7zip)
     # Using unix
     else:
-        required_cmds = [
-            'unrar',
-            'unzip',
-            'tar',
-            'unxz',
-            'unlzma',
-            '7zr',
-            'bunzip2',
-            'gunzip',
-        ]
+        required_cmds = ['unrar', 'unzip', 'tar', 'unxz', 'unlzma', '7zr', 'bunzip2', 'gunzip']
         # ## Possible future suport:
         # gunzip: gz (cmd will delete original archive)
         # ## the following do not extract to dest dir
-        # '.xz': ['xz', '-d --keep'],
-        # '.lzma': ['xz', '-d --format=lzma --keep'],
-        # '.bz2': ['bzip2', '-d --keep'],
-
-        extract_commands = {
-            '.rar': ['unrar', 'x', '-o+', '-y'],
-            '.tar': ['tar', '-xf'],
-            '.zip': ['unzip'],
-            '.tar.gz': ['tar', '-xzf'],
-            '.tgz': ['tar', '-xzf'],
-            '.tar.bz2': ['tar', '-xjf'],
-            '.tbz': ['tar', '-xjf'],
-            '.tar.lzma': ['tar', '--lzma', '-xf'],
-            '.tlz': ['tar', '--lzma', '-xf'],
-            '.tar.xz': ['tar', '--xz', '-xf'],
-            '.txz': ['tar', '--xz', '-xf'],
-            '.7z': ['7zr', 'x'],
-            '.gz': ['gunzip'],
-        }
+        # '.xz': ['xz', '-d --keep'], # '.lzma': ['xz', '-d --format=lzma --keep'], # '.bz2': ['bzip2', '-d --keep'], extract_commands = {            '.rar': ['unrar', 'x', '-o+', '-y'], '.tar': ['tar', '-xf'], '.zip': ['unzip'], '.tar.gz': ['tar', '-xzf'], '.tgz': ['tar', '-xzf'], '.tar.bz2': ['tar', '-xjf'], '.tbz': ['tar', '-xjf'], '.tar.lzma': ['tar', '--lzma', '-xf'], '.tlz': ['tar', '--lzma', '-xf'], '.tar.xz': ['tar', '--xz', '-xf'], '.txz': ['tar', '--xz', '-xf'], '.7z': ['7zr', 'x'], '.gz': ['gunzip'], }
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
             for cmd in required_cmds:
@@ -107,10 +57,8 @@ def extract(file_path, output_destination):
                                 del extract_commands[key]
         else:
             log.warning('EXTRACTOR: Cannot determine which tool to use when called from Transmission')
-
         if not extract_commands:
             log.warning('EXTRACTOR: No archive extracting programs found, plugin will be disabled')
-
     ext = os.path.splitext(file_path)
     cmd = []
     if ext[1] in ('.gz', '.bz2', '.lzma'):
@@ -130,24 +78,15 @@ def extract(file_path, output_destination):
         else:
             log.debug(f'EXTRACTOR: Unknown file type: {ext[1]}')
             return False
-
         # Create outputDestination folder
         nzb2media.make_dir(output_destination)
-
-    if nzb2media.PASSWORDS_FILE and os.path.isfile(
-        os.path.normpath(nzb2media.PASSWORDS_FILE),
-    ):
+    if nzb2media.PASSWORDS_FILE and os.path.isfile(os.path.normpath(nzb2media.PASSWORDS_FILE)):
         with open(os.path.normpath(nzb2media.PASSWORDS_FILE)) as fin:
-            passwords = [
-                line.strip()
-                for line in fin
-            ]
+            passwords = [line.strip() for line in fin]
     else:
         passwords = []
-
     log.info(f'Extracting {file_path} to {output_destination}')
     log.debug(f'Extracting {cmd} {file_path} {output_destination}')
-
     orig_files = []
     orig_dirs = []
     for directory, subdirs, files in os.walk(output_destination):
@@ -155,12 +94,9 @@ def extract(file_path, output_destination):
             orig_dirs.append(os.path.join(directory, subdir))
         for file in files:
             orig_files.append(os.path.join(directory, file))
-
     pwd = os.getcwd()  # Get our Present Working Directory
-    os.chdir(
-        output_destination,
-    )  # Not all unpack commands accept full paths, so just extract into this directory
-
+    # Not all unpack commands accept full paths, so just extract into this directory
+    os.chdir(output_destination)
     try:  # now works same for nt and *nix
         info = None
         cmd.append(file_path)  # add filePath to final cmd arg.
@@ -180,9 +116,7 @@ def extract(file_path, output_destination):
         elif len(passwords) > 0 and 'gunzip' not in cmd:
             log.info('EXTRACTOR: Attempting to extract with passwords')
             for password in passwords:
-                if (
-                    password == ''
-                ):  # if edited in windows or otherwise if blank lines.
+                if password == '':  # if edited in windows or otherwise if blank lines.
                     continue
                 cmd2 = cmd
                 # append password here.
@@ -200,8 +134,6 @@ def extract(file_path, output_destination):
         log.error(f'EXTRACTOR: Extraction failed for {file_path}. Could not call command {cmd}')
         os.chdir(pwd)
         return False
-
-    devnull.close()
     os.chdir(pwd)  # Go back to our Original Working Directory
     if success:
         # sleep to let files finish writing to disk
@@ -217,9 +149,7 @@ def extract(file_path, output_destination):
             for file in files:
                 if not os.path.join(directory, file) in orig_files:
                     try:
-                        shutil.copymode(
-                            file_path, os.path.join(directory, file),
-                        )
+                        shutil.copymode(file_path, os.path.join(directory, file))
                     except Exception:
                         pass
         return True

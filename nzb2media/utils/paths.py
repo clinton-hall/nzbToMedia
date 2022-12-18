@@ -16,12 +16,9 @@ log.addHandler(logging.NullHandler())
 def onerror(func, path, exc_info):
     """
     Error handler for ``shutil.rmtree``.
-
     If the error is due to an access error (read only file)
     it attempts to add write permission and then retries.
-
     If the error is for another reason it re-raises the error.
-
     Usage : ``shutil.rmtree(path, onerror=onerror)``
     """
     if not os.access(path, os.W_OK):
@@ -69,17 +66,13 @@ def remote_dir(path):
 
 def get_dir_size(input_path):
     prepend = partial(os.path.join, input_path)
-    return sum(
-        (os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f))
-        for f in map(prepend, os.listdir(input_path))
-    )
+    return sum((os.path.getsize(f) if os.path.isfile(f) else get_dir_size(f)) for f in map(prepend, os.listdir(input_path)))
 
 
 def remove_empty_folders(path, remove_root=True):
     """Remove empty folders."""
     if not os.path.isdir(path):
         return
-
     # remove empty subfolders
     log.debug(f'Checking for empty folders in:{path}')
     files = os.listdir(path)
@@ -88,7 +81,6 @@ def remove_empty_folders(path, remove_root=True):
             fullpath = os.path.join(path, each_file)
             if os.path.isdir(fullpath):
                 remove_empty_folders(fullpath)
-
     # if folder empty, delete it
     files = os.listdir(path)
     if len(files) == 0 and remove_root:
@@ -128,16 +120,13 @@ def clean_directory(path, files):
     if not os.path.exists(path):
         log.info(f'Directory {path} has been processed and removed ...')
         return
-
     if nzb2media.FORCE_CLEAN and not nzb2media.FAILED:
         log.info(f'Doing Forceful Clean of {path}')
         remove_dir(path)
         return
-
     if files:
         log.info(f'Directory {path} still contains {len(files)} unprocessed file(s), skipping ...')
         return
-
     log.info(f'Directory {path} has been processed, removing ...')
     try:
         shutil.rmtree(path, onerror=onerror)
@@ -150,7 +139,6 @@ def rchmod(path, mod):
     os.chmod(path, mod)
     if not os.path.isdir(path):
         return  # Skip files
-
     for root, dirs, files in os.walk(path):
         for each_dir in dirs:
             os.chmod(os.path.join(root, each_dir), mod)

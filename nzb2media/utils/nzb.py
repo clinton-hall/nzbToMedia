@@ -20,11 +20,7 @@ def get_nzoid(input_name):
     else:
         base_url = f'http://{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
     url = base_url
-    params = {
-        'apikey': nzb2media.SABNZBD_APIKEY,
-        'mode': 'queue',
-        'output': 'json',
-    }
+    params = {'apikey': nzb2media.SABNZBD_APIKEY, 'mode': 'queue', 'output': 'json'}
     try:
         response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
@@ -33,12 +29,7 @@ def get_nzoid(input_name):
     try:
         result = response.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
-        slots.extend(
-            [
-                (slot['nzo_id'], slot['filename'])
-                for slot in result['queue']['slots']
-            ],
-        )
+        slots.extend([(slot['nzo_id'], slot['filename']) for slot in result['queue']['slots']])
     except Exception:
         log.warning('Data from SABnzbd queue could not be parsed')
     params['mode'] = 'history'
@@ -50,12 +41,7 @@ def get_nzoid(input_name):
     try:
         result = response.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
-        slots.extend(
-            [
-                (slot['nzo_id'], slot['name'])
-                for slot in result['history']['slots']
-            ],
-        )
+        slots.extend([(slot['nzo_id'], slot['name']) for slot in result['history']['slots']])
     except Exception:
         log.warning('Data from SABnzbd history could not be parsed')
     try:

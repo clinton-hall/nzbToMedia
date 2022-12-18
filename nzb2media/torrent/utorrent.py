@@ -15,7 +15,6 @@ def configure_client():
     web_ui = nzb2media.UTORRENT_WEB_UI
     user = nzb2media.UTORRENT_USER
     password = nzb2media.UTORRENT_PASSWORD
-
     log.debug(f'Connecting to {agent}: {web_ui}')
     try:
         client = UTorrentClient(web_ui, user, password)

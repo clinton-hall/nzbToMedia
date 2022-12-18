@@ -26,12 +26,10 @@ def wake_on_lan(ethernet_address):
     """Send a WakeOnLan request."""
     # Create the WoL magic packet
     magic_packet = make_wake_on_lan_packet(ethernet_address)
-
     # ...and send it to the broadcast address using UDP
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as connection:
         connection.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         connection.sendto(magic_packet, ('<broadcast>', 9))
-
     log.info(f'WakeOnLan sent for mac: {ethernet_address}')
 
 
@@ -52,9 +50,7 @@ def wake_up():
     port = int(wol['port'])
     mac = wol['mac']
     max_attempts = 4
-
     log.info('Trying to wake On lan.')
-
     for attempt in range(0, max_attempts):
         log.info(f'Attempt {attempt + 1} of {max_attempts}')
         if test_connection(host, port) == 'Up':
@@ -66,7 +62,6 @@ def wake_up():
         if test_connection(host, port) == 'Down':  # final check.
             msg = 'System with mac: {0} has not woken after {1} attempts.'
             log.warning(msg.format(mac, max_attempts))
-
     log.info('Continuing with the rest of the script.')
 
 
@@ -108,20 +103,12 @@ def find_download(client_agent, download_id):
         else:
             base_url = f'http://{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
         url = base_url
-        params = {
-            'apikey': nzb2media.SABNZBD_APIKEY,
-            'mode': 'get_files',
-            'output': 'json',
-            'value': download_id,
-        }
+        params = {'apikey': nzb2media.SABNZBD_APIKEY, 'mode': 'get_files', 'output': 'json', 'value': download_id}
         try:
-            response = requests.get(
-                url, params=params, verify=False, timeout=(30, 120),
-            )
+            response = requests.get(url, params=params, verify=False, timeout=(30, 120))
         except requests.ConnectionError:
             log.error('Unable to open URL')
             return False  # failure
-
         result = response.json()
         if result['files']:
             return True

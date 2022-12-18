@@ -13,7 +13,6 @@ if os.name == 'nt':
     from win32event import CreateMutex
     from win32api import CloseHandle, GetLastError
     from winerror import ERROR_ALREADY_EXISTS
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -76,7 +75,6 @@ class PosixProcess:
                 self.lasterror = False
         else:
             self.lasterror = False
-
         if not self.lasterror:
             # Write my pid into pidFile to keep multiple copies of program
             # from running
@@ -100,18 +98,14 @@ else:
 
 def restart():
     install_type = nzb2media.version_check.CheckVersion().install_type
-
     status = 0
     popen_list = []
-
     if install_type in ('git', 'source'):
         popen_list = [sys.executable, nzb2media.APP_FILENAME]
-
     if popen_list:
         popen_list += nzb2media.SYS_ARGV
         log.info(f'Restarting nzbToMedia with {popen_list}')
         with subprocess.Popen(popen_list, cwd=os.getcwd()) as proc:
             proc.wait()
             status = proc.returncode
-
     os._exit(status)

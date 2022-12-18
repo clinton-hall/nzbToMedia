@@ -34,22 +34,11 @@ class ProcessResult(typing.NamedTuple):
 
 def command_complete(url, params, headers, section):
     try:
-        respone = requests.get(
-            url,
-            params=params,
-            headers=headers,
-            stream=True,
-            verify=False,
-            timeout=(30, 60),
-        )
+        respone = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
         log.error(f'Unable to open URL: {url}')
         return None
-    if respone.status_code not in [
-        requests.codes.ok,
-        requests.codes.created,
-        requests.codes.accepted,
-    ]:
+    if respone.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         log.error(f'Server returned status {respone.status_code}')
         return None
     try:
@@ -63,22 +52,11 @@ def command_complete(url, params, headers, section):
 
 def completed_download_handling(url2, headers, section='MAIN'):
     try:
-        response = requests.get(
-            url2,
-            params={},
-            headers=headers,
-            stream=True,
-            verify=False,
-            timeout=(30, 60),
-        )
+        response = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
         log.error(f'Unable to open URL: {url2}')
         return False
-    if response.status_code not in [
-        requests.codes.ok,
-        requests.codes.created,
-        requests.codes.accepted,
-    ]:
+    if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
         log.error(f'Server returned status {response.status_code}')
         return False
     try:
