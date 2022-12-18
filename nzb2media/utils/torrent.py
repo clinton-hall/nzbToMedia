@@ -23,7 +23,7 @@ torrent_clients = {
 
 
 def create_torrent_class(client_agent):
-    if not nzb2media.APP_NAME == 'TorrentToMedia.py':
+    if nzb2media.APP_NAME != 'TorrentToMedia.py':
         return  # Skip loading Torrent for NZBs.
 
     try:
@@ -53,7 +53,7 @@ def pause_torrent(client_agent, input_hash, input_id, input_name):
 
 
 def resume_torrent(client_agent, input_hash, input_id, input_name):
-    if not nzb2media.TORRENT_RESUME == 1:
+    if nzb2media.TORRENT_RESUME != 1:
         return
     log.debug(f'Starting torrent {input_name} in {client_agent}')
     try:
