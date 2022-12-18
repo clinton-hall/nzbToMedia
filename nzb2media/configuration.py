@@ -101,15 +101,15 @@ class ConfigObj(configobj.ConfigObj, Section):
         self.interpolation = False
 
     @staticmethod
-    def find_key(node, kv):
+    def find_key(node, value):
         if isinstance(node, list):
             for i in node:
-                yield from ConfigObj.find_key(i, kv)
+                yield from ConfigObj.find_key(i, value)
         elif isinstance(node, dict):
-            if kv in node:
-                yield node[kv]
+            if value in node:
+                yield node[value]
             for j in node.values():
-                yield from ConfigObj.find_key(j, kv)
+                yield from ConfigObj.find_key(j, value)
 
     @staticmethod
     def migrate():
@@ -121,7 +121,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             # check for autoProcessMedia.cfg and create if it does not exist
             if not nzb2media.CONFIG_FILE.is_file():
                 shutil.copyfile(nzb2media.CONFIG_SPEC_FILE, nzb2media.CONFIG_FILE)
-            CFG_OLD = config(nzb2media.CONFIG_FILE)
+            CFG_OLD = Config(nzb2media.CONFIG_FILE)
         except Exception as error:
             log.error(f'Error {error} when copying to .cfg')
 
@@ -129,7 +129,7 @@ class ConfigObj(configobj.ConfigObj, Section):
             # check for autoProcessMedia.cfg.spec and create if it does not exist
             if not nzb2media.CONFIG_SPEC_FILE.is_file():
                 shutil.copyfile(nzb2media.CONFIG_FILE, nzb2media.CONFIG_SPEC_FILE)
-            CFG_NEW = config(nzb2media.CONFIG_SPEC_FILE)
+            CFG_NEW = Config(nzb2media.CONFIG_SPEC_FILE)
         except Exception as error:
             log.error(f'Error {error} when copying to .spec')
 
@@ -307,7 +307,7 @@ class ConfigObj(configobj.ConfigObj, Section):
     @staticmethod
     def addnzbget():
         # load configs into memory
-        cfg_new = config()
+        cfg_new = Config()
 
         try:
             if (
@@ -1117,4 +1117,4 @@ class ConfigObj(configobj.ConfigObj, Section):
 
 configobj.Section = Section
 configobj.ConfigObj = ConfigObj
-config = ConfigObj
+Config = ConfigObj

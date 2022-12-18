@@ -94,27 +94,27 @@ def extract(file_path, output_destination):
                     stdout=devnull,
                     stderr=devnull,
                 ):  # note, returns 0 if exists, or 1 if doesn't exist.
-                    for k, v in extract_commands.items():
-                        if cmd in v[0]:
+                    for key, val in extract_commands.items():
+                        if cmd in val[0]:
                             if not call(
                                 ['which', '7zr'],
                                 stdout=devnull,
                                 stderr=devnull,
                             ):  # we do have '7zr'
-                                extract_commands[k] = ['7zr', 'x', '-y']
+                                extract_commands[key] = ['7zr', 'x', '-y']
                             elif not call(
                                 ['which', '7z'], stdout=devnull, stderr=devnull,
                             ):  # we do have '7z'
-                                extract_commands[k] = ['7z', 'x', '-y']
+                                extract_commands[key] = ['7z', 'x', '-y']
                             elif not call(
                                 ['which', '7za'],
                                 stdout=devnull,
                                 stderr=devnull,
                             ):  # we do have '7za'
-                                extract_commands[k] = ['7za', 'x', '-y']
+                                extract_commands[key] = ['7za', 'x', '-y']
                             else:
-                                log.error(f'EXTRACTOR: {cmd} not found, disabling support for {k}')
-                                del extract_commands[k]
+                                log.error(f'EXTRACTOR: {cmd} not found, disabling support for {key}')
+                                del extract_commands[key]
             devnull.close()
         else:
             log.warning('EXTRACTOR: Cannot determine which tool to use when called from Transmission')
@@ -246,6 +246,5 @@ def extract(file_path, output_destination):
                     except Exception:
                         pass
         return True
-    else:
-        log.error(f'EXTRACTOR: Extraction failed for {file_path}. Result was {res}')
-        return False
+    log.error(f'EXTRACTOR: Extraction failed for {file_path}. Result was {res}')
+    return False

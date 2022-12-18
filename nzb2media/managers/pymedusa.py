@@ -168,19 +168,19 @@ class PyMedusaApiV2(SickBeard):
             return ProcessResult.failure()
 
         wait_for = int(self.sb_init.config.get('wait_for', 2))
-        n = 0
+        num = 0
         response = {}
 
         queue_item_identifier = jdata['queueItem']['identifier']
         url = f'{self.url}/{queue_item_identifier}'
-        while n < 12:  # set up wait_for minutes to see if command completes..
+        while num < 12:  # set up wait_for minutes to see if command completes..
             time.sleep(5 * wait_for)
             response = self._get_identifier_status(url)
             if response and response.get('success'):
                 break
             if 'error' in response:
                 break
-            n += 1
+            num += 1
 
         # Log Medusa's PP logs here.
         if response.get('output'):

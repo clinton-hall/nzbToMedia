@@ -28,21 +28,21 @@ def move_file(filename, path, link):
     file_ext = os.path.splitext(filename)[1]
     try:
         if file_ext in nzb2media.AUDIO_CONTAINER:
-            f = mediafile.MediaFile(filename)
+            guess = mediafile.MediaFile(filename)
 
             # get artist and album info
-            artist = f.artist
-            album = f.album
+            artist = guess.artist
+            album = guess.album
 
             # create new path
             new_path = os.path.join(
                 path, f'{sanitize_name(artist)} - {sanitize_name(album)}',
             )
         elif file_ext in nzb2media.MEDIA_CONTAINER:
-            f = guessit.guessit(filename)
+            guess = guessit.guessit(filename)
 
             # get title
-            title = f.get('series') or f.get('title')
+            title = guess.get('series') or guess.get('title')
 
             if not title:
                 title = os.path.splitext(os.path.basename(filename))[0]
@@ -217,11 +217,11 @@ def extract_files(src, dst=None, keep_archive=None):
     extracted_folder = []
     extracted_archive = []
 
-    for inputFile in list_media_files(
+    for input_file in list_media_files(
         src, media=False, audio=False, meta=False, archives=True,
     ):
-        dir_path = os.path.dirname(inputFile)
-        full_file_name = os.path.basename(inputFile)
+        dir_path = os.path.dirname(input_file)
+        full_file_name = os.path.basename(input_file)
         archive_name = os.path.splitext(full_file_name)[0]
         archive_name = re.sub(r'part[0-9]+', '', archive_name)
 
@@ -229,29 +229,29 @@ def extract_files(src, dst=None, keep_archive=None):
             continue  # no need to extract this, but keep going to look for other archives and sub directories.
 
         try:
-            if extractor.extract(inputFile, dst or dir_path):
+            if extractor.extract(input_file, dst or dir_path):
                 extracted_folder.append(dir_path)
                 extracted_archive.append(archive_name)
         except Exception:
             log.error(f'Extraction failed for: {full_file_name}')
 
     for folder in extracted_folder:
-        for inputFile in list_media_files(
+        for input_file in list_media_files(
             folder, media=False, audio=False, meta=False, archives=True,
         ):
-            full_file_name = os.path.basename(inputFile)
+            full_file_name = os.path.basename(input_file)
             archive_name = os.path.splitext(full_file_name)[0]
             archive_name = re.sub(r'part[0-9]+', '', archive_name)
             if archive_name not in extracted_archive or keep_archive:
                 continue  # don't remove if we haven't extracted this archive, or if we want to preserve them.
             log.info(f'Removing extracted archive {full_file_name} from folder {folder} ...')
             try:
-                if not os.access(inputFile, os.W_OK):
-                    os.chmod(inputFile, stat.S_IWUSR)
-                os.remove(inputFile)
+                if not os.access(input_file, os.W_OK):
+                    os.chmod(input_file, stat.S_IWUSR)
+                os.remove(input_file)
                 time.sleep(1)
             except Exception as error:
-                log.error(f'Unable to remove file {inputFile} due to: {error}')
+                log.error(f'Unable to remove file {input_file} due to: {error}')
 
 
 def backup_versioned_file(old_file, version):

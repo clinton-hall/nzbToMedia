@@ -115,14 +115,14 @@ def find_download(client_agent, download_id):
             'value': download_id,
         }
         try:
-            r = requests.get(
+            response = requests.get(
                 url, params=params, verify=False, timeout=(30, 120),
             )
         except requests.ConnectionError:
             log.error('Unable to open URL')
             return False  # failure
 
-        result = r.json()
+        result = response.json()
         if result['files']:
             return True
     return False

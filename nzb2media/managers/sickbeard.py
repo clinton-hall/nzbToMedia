@@ -52,9 +52,9 @@ class InitSickBeard:
             'stheno': 'Stheno',
         }
         _val = cfg.get('fork', 'auto')
-        f1 = replace.get(_val, _val)
+        fork_name = replace.get(_val, _val)
         try:
-            self.fork = f1, nzb2media.FORKS[f1]
+            self.fork = fork_name, nzb2media.FORKS[fork_name]
         except KeyError:
             self.fork = 'auto'
             self.protocol = 'https://' if self.ssl else 'http://'
@@ -83,9 +83,9 @@ class InitSickBeard:
             'stheno': 'Stheno',
         }
         _val = cfg.get('fork', 'auto')
-        f1 = replace.get(_val.lower(), _val)
+        fork_name = replace.get(_val.lower(), _val)
         try:
-            self.fork = f1, nzb2media.FORKS[f1]
+            self.fork = fork_name, nzb2media.FORKS[fork_name]
         except KeyError:
             self.fork = 'auto'
         protocol = 'https://' if self.ssl else 'http://'
@@ -209,9 +209,9 @@ class InitSickBeard:
         return self.fork, self.fork_params
 
     @staticmethod
-    def _api_check(r, params, rem_params):
+    def _api_check(response, params, rem_params):
         try:
-            json_data = r.json()
+            json_data = response.json()
         except ValueError:
             log.error('Failed to get JSON data from response')
             log.debug('Response received')

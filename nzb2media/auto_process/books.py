@@ -84,18 +84,15 @@ def process(
             f'{section}: Failed to post-process - Server returned status '
             f'{response.status_code}',
         )
-    elif response.text == 'OK':
+    if response.text == 'OK':
         log.debug(
             f'SUCCESS: ForceProcess for {dir_name} has been started in LazyLibrarian',
         )
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
-    else:
-        log.error(
-            f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian',
-        )
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.',
-        )
+    log.error(f'FAILED: ForceProcess of {dir_name} has Failed in LazyLibrarian')
+    return ProcessResult.failure(
+        f'{section}: Failed to post-process - Returned log from {section} '
+        f'was not as expected.',
+    )

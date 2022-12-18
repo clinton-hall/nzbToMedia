@@ -29,14 +29,10 @@ def copy_link(src, target_link, use_link):
     if src != target_link and os.path.exists(target_link):
         log.info('MEDIAFILE already exists in the TARGET folder, skipping ...')
         return True
-    elif (
-        src == target_link
-        and os.path.isfile(target_link)
-        and os.path.isfile(src)
-    ):
+    if src == target_link and os.path.isfile(target_link) and os.path.isfile(src):
         log.info('SOURCE AND TARGET files are the same, skipping ...')
         return True
-    elif src == os.path.dirname(target_link):
+    if src == os.path.dirname(target_link):
         log.info('SOURCE AND TARGET folders are the same, skipping ...')
         return True
 
@@ -50,20 +46,20 @@ def copy_link(src, target_link, use_link):
             log.info('Directory junction linking SOURCE FOLDER -> TARGET FOLDER')
             linktastic.dirlink(src, target_link)
             return True
-        elif use_link == 'hard':
+        if use_link == 'hard':
             log.info('Hard linking SOURCE MEDIAFILE -> TARGET FOLDER')
             linktastic.link(src, target_link)
             return True
-        elif use_link == 'sym':
+        if use_link == 'sym':
             log.info('Sym linking SOURCE MEDIAFILE -> TARGET FOLDER')
             linktastic.symlink(src, target_link)
             return True
-        elif use_link == 'move-sym':
+        if use_link == 'move-sym':
             log.info('Sym linking SOURCE MEDIAFILE -> TARGET FOLDER')
             shutil.move(src, target_link)
             linktastic.symlink(target_link, src)
             return True
-        elif use_link == 'move':
+        if use_link == 'move':
             log.info('Moving SOURCE MEDIAFILE -> TARGET FOLDER')
             shutil.move(src, target_link)
             return True

@@ -147,17 +147,17 @@ def reverse_filename(filename, dirname, name):
     head, file_extension = os.path.splitext(os.path.basename(filename))
     na_parts = season_pattern.search(head)
     if na_parts is not None:
-        word_p = word_pattern.findall(na_parts.group(2))
-        if word_p:
+        match = word_pattern.findall(na_parts.group(2))
+        if match:
             new_words = ''
-            for wp in word_p:
-                if wp[0] == '.':
+            for group in match:
+                if group[0] == '.':
                     new_words += '.'
-                new_words += re.sub(r'\W', '', wp)
+                new_words += re.sub(r'\W', '', group)
         else:
             new_words = na_parts.group(2)
-        for cr in char_replace:
-            new_words = re.sub(cr[0], cr[1], new_words)
+        for each_char in char_replace:
+            new_words = re.sub(each_char[0], each_char[1], new_words)
         newname = new_words[::-1] + na_parts.group(1)[::-1]
     else:
         newname = head[::-1].title()

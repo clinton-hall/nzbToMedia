@@ -76,8 +76,7 @@ def process(
                 message='',
                 status_code=-1,
             )
-        else:
-            usercat = 'ALL'
+        usercat = 'ALL'
     if len(section) > 1:
         log.error(f'Category:[{input_category}] is not unique, {section.keys()} are using it. Please rename it or disable all other sections using the same category name in your autoProcessMedia.cfg and try again.')
         return ProcessResult(

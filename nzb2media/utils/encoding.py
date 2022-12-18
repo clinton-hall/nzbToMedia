@@ -15,37 +15,40 @@ def char_replace(name_in):
     # UTF-8: 1st hex code 0xC2-0xC3 followed by a 2nd hex code 0xA1-0xFF
     # ISO-8859-15: 0xA6-0xFF
     # The function will detect if Name contains a special character
-    # If there is special character, detects if it is a UTF-8, CP850 or ISO-8859-15 encoding
+    # If there is special character, detects if it is a UTF-8, CP850 or
+    # ISO-8859-15 encoding
     encoded = False
     encoding = None
     if isinstance(name_in, str):
         return encoded, name_in
     name = bytes(name_in)
-    for Idx in range(len(name)):
+    for idx, character in enumerate(name):
         # print('Trying to intuit the encoding')
         # /!\ detection is done 2char by 2char for UTF-8 special character
-        if (len(name) != 1) & (Idx < (len(name) - 1)):
+        try:
+            next_character = name[idx + 1]
+        except IndexError:
+            # Detect CP850
+            if (character >= 0x80) & (character <= 0xA5):
+                encoding = 'cp850'
+                break
+            # Detect ISO-8859-15
+            elif (character >= 0xA6) & (character <= 0xFF):
+                encoding = 'iso-8859-15'
+                break
+        else:
             # Detect UTF-8
-            if ((name[Idx] == 0xC2) | (name[Idx] == 0xC3)) & (
-                (name[Idx + 1] >= 0xA0) & (name[Idx + 1] <= 0xFF)
+            if ((character == 0xC2) | (character == 0xC3)) & (
+                (next_character >= 0xA0) & (next_character <= 0xFF)
             ):
                 encoding = 'utf-8'
                 break
             # Detect CP850
-            elif (name[Idx] >= 0x80) & (name[Idx] <= 0xA5):
+            elif (character >= 0x80) & (character <= 0xA5):
                 encoding = 'cp850'
                 break
             # Detect ISO-8859-15
-            elif (name[Idx] >= 0xA6) & (name[Idx] <= 0xFF):
-                encoding = 'iso-8859-15'
-                break
-        else:
-            # Detect CP850
-            if (name[Idx] >= 0x80) & (name[Idx] <= 0xA5):
-                encoding = 'cp850'
-                break
-            # Detect ISO-8859-15
-            elif (name[Idx] >= 0xA6) & (name[Idx] <= 0xFF):
+            elif (character >= 0xA6) & (character <= 0xFF):
                 encoding = 'iso-8859-15'
                 break
     if encoding:

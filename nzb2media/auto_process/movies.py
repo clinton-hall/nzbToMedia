@@ -320,7 +320,7 @@ def process(
                 message=f'{section}: Failed to post-process - Server returned status {response.status_code}',
                 status_code=1,
             )
-        elif section == 'CouchPotato' and result['success']:
+        if section == 'CouchPotato' and result['success']:
             log.debug(f'SUCCESS: Finished {method} scan for folder {dir_name}')
             if method == 'manage':
                 return ProcessResult(
@@ -342,11 +342,10 @@ def process(
                     message=f'{section}: Successfully post-processed {input_name}',
                     status_code=status,
                 )
-            else:
-                return ProcessResult(
-                    message=f'{section}: Failed to post-process - changed status to {update_movie_status}',
-                    status_code=1,
-                )
+            return ProcessResult(
+                message=f'{section}: Failed to post-process - changed status to {update_movie_status}',
+                status_code=1,
+            )
         else:
             log.error(f'FAILED: {method} scan was unable to finish for folder {dir_name}. exiting!')
             return ProcessResult(
@@ -366,7 +365,7 @@ def process(
                 status_code=1,
                 # Return as failed to flag this in the downloader.
             )  # Return failed flag, but log the event as successful.
-        elif section == 'Watcher3':
+        if section == 'Watcher3':
             log.debug(f'Sending failed download to {section} for CDH processing')
             path = remote_dir(dir_name) if remote_path else dir_name
             if input_name and os.path.isfile(
@@ -437,7 +436,7 @@ def process(
                     status_code=1,
                     message=f'{section}: Failed to post-process - Server returned status {response.status_code}',
                 )
-            elif result['success']:
+            if result['success']:
                 log.debug(f'SUCCESS: {input_name} has been set to ignored ...')
             else:
                 log.warning(f'FAILED: Unable to set {input_name} to ignored!')
@@ -476,17 +475,17 @@ def process(
                 f'{section}: Failed to post-process - Server returned status '
                 f'{response.status_code}',
             )
-        elif result['success']:
+
+        if result['success']:
             log.debug('SUCCESS: Snatched the next highest release ...')
             return ProcessResult.success(
                 f'{section}: Successfully snatched next highest release',
             )
-        else:
-            log.debug('SUCCESS: Unable to find a new release to snatch now. CP will keep searching!')
-            return ProcessResult.success(
-                f'{section}: No new release found now. '
-                f'{section} will keep searching',
-            )
+        log.debug('SUCCESS: Unable to find a new release to snatch now. CP will keep searching!')
+        return ProcessResult.success(
+            f'{section}: No new release found now. '
+            f'{section} will keep searching',
+        )
 
     # Added a release that was not in the wanted list so confirm rename
     # successful by finding this movie media.list.
@@ -539,7 +538,7 @@ def process(
                     return ProcessResult.success(
                         f'{section}: Successfully post-processed {input_name}',
                     )
-                elif command_status in ['failed']:
+                if command_status in ['failed']:
                     log.debug('The Scan command has failed. Renaming was not successful.')
                     # return ProcessResult(
                     #     message='{0}: Failed to post-process {1}'.format(section, input_name),
@@ -552,7 +551,7 @@ def process(
                 f'{section}: Successfully post-processed {input_name}',
             )
 
-        elif not list_media_files(
+        if not list_media_files(
             dir_name, media=True, audio=False, meta=False, archives=True,
         ):
             log.debug(f'SUCCESS: Input Directory [{dir_name}] has no remaining media files. This has been fully processed.')
@@ -598,17 +597,17 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
     log.debug(f'Opening URL: {url} with PARAMS: {params}')
 
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 60))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
         log.error(f'Unable to open URL {url}')
         return results
 
     try:
-        result = r.json()
+        result = response.json()
     except ValueError:
         # ValueError catches simplejson's JSONDecodeError and json's ValueError
         log.error('CouchPotato returned the following non-json data')
-        for line in r.iter_lines():
+        for line in response.iter_lines():
             log.error(line)
         return results
 
@@ -623,8 +622,8 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
     # Gather release info and return it back, no need to narrow results
     if release_id:
         try:
-            cur_id = result[section]['_id']
-            results[cur_id] = result[section]
+            key = result[section]['_id']
+            results[key] = result[section]
             return results
         except Exception:
             pass
@@ -651,38 +650,38 @@ def get_release(base_url, imdb_id=None, download_id=None, release_id=None):
                     ):
                         continue
 
-                cur_id = release['_id']
-                results[cur_id] = release
-                results[cur_id]['title'] = movie['title']
+                key = release['_id']
+                results[key] = release
+                results[key]['title'] = movie['title']
             except Exception:
                 continue
 
     # Narrow results by removing old releases by comparing their last_edit field
     if len(results) > 1:
         rem_id = set()
-        for id1, x1 in results.items():
-            for x2 in results.values():
+        for key, val1 in results.items():
+            for val2 in results.values():
                 try:
-                    if x2['last_edit'] > x1['last_edit']:
-                        rem_id.add(id1)
+                    if val2['last_edit'] > val1['last_edit']:
+                        rem_id.add(key)
                 except Exception:
                     continue
-        for id in rem_id:
-            results.pop(id)
+        for ea_id in rem_id:
+            results.pop(ea_id)
 
     # Search downloads on clients for a match to try and narrow our results down to 1
     if len(results) > 1:
         rem_id = set()
-        for cur_id, x in results.items():
+        for key, val1 in results.items():
             try:
                 if not find_download(
-                    str(x['download_info']['downloader']).lower(),
-                    x['download_info']['id'],
+                    str(val1['download_info']['downloader']).lower(),
+                    val1['download_info']['id'],
                 ):
-                    rem_id.add(cur_id)
+                    rem_id.add(key)
             except Exception:
                 continue
-        for id in rem_id:
-            results.pop(id)
+        for ea_id in rem_id:
+            results.pop(ea_id)
 
     return results

@@ -59,8 +59,7 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
             # if the download was 'failed', assume bad.
             # If it was successful, assume good.
             return False
-        else:
-            return True
+        return True
 
     log.info(f'Checking [{video.name}] for corruption, please stand by ...')
     video_details, result = get_video_details(video)
@@ -96,9 +95,8 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         if len(video_streams) > 0 and len(valid_audio) > 0:
             log.info(f'SUCCESS: [{video.name}] has no corruption.')
             return True
-        else:
-            log.info(f'FAILED: [{video.name}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.')
-            return False
+        log.info(f'FAILED: [{video.name}] has {len(video_streams)} video streams and {len(audio_streams)} audio streams. Assume corruption.')
+        return False
 
 
 def zip_out(file, img):
@@ -191,8 +189,7 @@ def check_vid_file(video_details, result):
     ]
     if len(video_streams) > 0 and len(audio_streams) > 0:
         return True
-    else:
-        return False
+    return False
 
 
 def build_commands(file, new_dir, movie_name):
@@ -328,7 +325,7 @@ def build_commands(file, new_dir, movie_name):
 
     for video in video_streams:
         codec = video['codec_name']
-        fr = video.get('avg_frame_rate', 0)
+        frame_rate = video.get('avg_frame_rate', 0)
         width = video.get('width', 0)
         height = video.get('height', 0)
         scale = nzb2media.VRESOLUTION
@@ -337,7 +334,7 @@ def build_commands(file, new_dir, movie_name):
         else:
             video_cmd.extend(['-c:v', nzb2media.VCODEC])
         if nzb2media.VFRAMERATE and not (
-                nzb2media.VFRAMERATE * 0.999 <= fr <= nzb2media.VFRAMERATE * 1.001
+                nzb2media.VFRAMERATE * 0.999 <= frame_rate <= nzb2media.VFRAMERATE * 1.001
         ):
             video_cmd.extend(['-r', str(nzb2media.VFRAMERATE)])
         if scale:
@@ -612,7 +609,7 @@ def build_commands(file, new_dir, movie_name):
 
     s_mapped = []
     burnt = 0
-    n = 0
+    num = 0
     for lan in nzb2media.SLANGUAGES:
         try:
             subs1 = [
@@ -702,14 +699,14 @@ def build_commands(file, new_dir, movie_name):
             if metlan:
                 meta_cmd.extend(
                     [
-                        f'-metadata:s:s:{len(s_mapped) + n}',
+                        f'-metadata:s:s:{len(s_mapped) + num}',
                         f'language={metlan.alpha3}',
                     ],
                 )
-            n += 1
-            map_cmd.extend(['-map', f'{n}:0'])
+            num += 1
+            map_cmd.extend(['-map', f'{num}:0'])
 
-    if not nzb2media.ALLOWSUBS or (not s_mapped and not n):
+    if not nzb2media.ALLOWSUBS or (not s_mapped and not num):
         sub_cmd.extend(['-sn'])
     else:
         if nzb2media.SCODEC:
@@ -774,19 +771,19 @@ def extract_subs(file, newfile_path):
             and item['codec_name'] != 'pgssub'
         ]
     num = len(sub_streams)
-    for n in range(num):
-        sub = sub_streams[n]
+    for ea_num in range(num):
+        sub = sub_streams[ea_num]
         idx = sub['index']
         lan = sub.get('tags', {}).get('language', 'unk')
 
         if num == 1:
             output_file = os.path.join(subdir, f'{name}.srt')
             if os.path.isfile(output_file):
-                output_file = os.path.join(subdir, f'{name}.{n}.srt')
+                output_file = os.path.join(subdir, f'{name}.{ea_num}.srt')
         else:
             output_file = os.path.join(subdir, f'{name}.{lan}.srt')
             if os.path.isfile(output_file):
-                output_file = os.path.join(subdir, f'{name}.{lan}.{n}.srt')
+                output_file = os.path.join(subdir, f'{name}.{lan}.{ea_num}.srt')
 
         command = [
             nzb2media.FFMPEG,
@@ -825,14 +822,14 @@ def extract_subs(file, newfile_path):
             log.error('Extracting subtitles has failed')
 
 
-def process_list(it, new_dir):
+def process_list(iterable, new_dir):
     rem_list = []
     new_list = []
     combine = []
     vts_path = None
     mts_path = None
     success = True
-    for item in it:
+    for item in iterable:
         ext = os.path.splitext(item)[1].lower()
         if (
             ext in ['.iso', '.bin', '.img']
@@ -889,15 +886,15 @@ def process_list(it, new_dir):
             success = False
             break
     if success and new_list:
-        it.extend(new_list)
+        iterable.extend(new_list)
         for item in rem_list:
-            it.remove(item)
+            iterable.remove(item)
         log.debug(f'Successfully extracted .vob file {new_list[0]} from disk image')
     elif new_list and not success:
         new_list = []
         rem_list = []
         log.error('Failed extracting .vob files from disk image. Stopping transcoding.')
-    return it, rem_list, new_list, success
+    return iterable, rem_list, new_list, success
 
 
 def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permissions allow.
@@ -926,9 +923,9 @@ def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permis
                 except Exception:
                     vts_path = os.path.split(full_path)[0]
                 return combine_vts(vts_path)
-            elif (
-                    re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path)
-                    and '.mts' not in nzb2media.IGNOREEXTENSIONS
+            if (
+                re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path)
+                and '.mts' not in nzb2media.IGNOREEXTENSIONS
             ):
                 log.debug(f'Found MTS image file: {full_path}')
                 try:
@@ -974,14 +971,14 @@ def rip_iso(item, new_dir):
         ]
         combined = []
         if file_list:  # handle DVD
-            for n in range(99):
+            for title_set in range(99):
                 concat = []
-                m = 1
+                part = 1
                 while True:
-                    vts_name = f'VIDEO_TS{os.sep}VTS_{n + 1:02d}_{m:d}.VOB'
+                    vts_name = f'VIDEO_TS{os.sep}VTS_{title_set + 1:02d}_{part:d}.VOB'
                     if vts_name in file_list:
                         concat.append(vts_name)
-                        m += 1
+                        part += 1
                     else:
                         break
                 if not concat:
@@ -991,7 +988,7 @@ def rip_iso(item, new_dir):
                     continue
                 name = '{name}.cd{x}'.format(
                     name=os.path.splitext(os.path.split(item)[1])[0],
-                    x=n + 1,
+                    x=title_set + 1,
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
         else:  # check BlueRay for BDMV/STREAM/XXXX.MTS
@@ -1012,17 +1009,17 @@ def rip_iso(item, new_dir):
                 mts_list.sort(
                     key=lambda f: int(''.join(filter(str.isdigit, f))),
                 )
-            n = 0
+            title_set = 0
             for mts_name in mts_list:
                 concat = []
-                n += 1
+                title_set += 1
                 concat.append(mts_name)
                 if nzb2media.CONCAT:
                     combined.extend(concat)
                     continue
                 name = '{name}.cd{x}'.format(
                     name=os.path.splitext(os.path.split(item)[1])[0],
-                    x=n,
+                    x=title_set,
                 )
                 new_files.append({item: {'name': name, 'files': concat}})
         if nzb2media.CONCAT and combined:
@@ -1045,14 +1042,14 @@ def combine_vts(vts_path):
         name = os.path.basename(os.path.dirname(name))
     else:
         name = os.path.basename(name)
-    for n in range(99):
+    for title_set in range(99):
         concat = []
-        m = 1
+        part = 1
         while True:
-            vts_name = f'VTS_{n + 1:02d}_{m:d}.VOB'
+            vts_name = f'VTS_{title_set + 1:02d}_{part:d}.VOB'
             if os.path.isfile(os.path.join(vts_path, vts_name)):
                 concat.append(os.path.join(vts_path, vts_name))
-                m += 1
+                part += 1
             else:
                 break
         if not concat:
@@ -1062,7 +1059,7 @@ def combine_vts(vts_path):
             continue
         name = '{name}.cd{x}'.format(
             name=name,
-            x=n + 1,
+            x=title_set + 1,
         )
         new_files.append({vts_path: {'name': name, 'files': concat}})
     if nzb2media.CONCAT:
@@ -1078,7 +1075,7 @@ def combine_mts(mts_path):
         name = os.path.basename(os.path.dirname(name))
     else:
         name = os.path.basename(name)
-    n = 0
+    num = 0
     mts_list = [
         f
         for f in os.listdir(mts_path)
@@ -1096,10 +1093,10 @@ def combine_mts(mts_path):
             continue
         name = '{name}.cd{x}'.format(
             name=name,
-            x=n + 1,
+            x=num + 1,
         )
         new_files.append({mts_path: {'name': name, 'files': concat}})
-        n += 1
+        num += 1
     if nzb2media.CONCAT:
         new_files.append({mts_path: {'name': name, 'files': combined}})
     return new_files
@@ -1112,11 +1109,11 @@ def combine_cd(combine):
         for ea_item in combine
     }:
         concat = ''
-        for n in range(99):
+        for num in range(99):
             files = [
                 file
                 for file in combine
-                if n + 1
+                if num + 1
                 == int(re.match('.+[cC][dD]([0-9]+).', file).groups()[0])
                 and item in file
             ]

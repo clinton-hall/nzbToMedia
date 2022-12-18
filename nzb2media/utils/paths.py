@@ -84,8 +84,8 @@ def remove_empty_folders(path, remove_root=True):
     log.debug(f'Checking for empty folders in:{path}')
     files = os.listdir(path)
     if len(files):
-        for f in files:
-            fullpath = os.path.join(path, f)
+        for each_file in files:
+            fullpath = os.path.join(path, each_file)
             if os.path.isdir(fullpath):
                 remove_empty_folders(fullpath)
 
@@ -111,16 +111,16 @@ def remove_read_only(filename):
 
 def flatten_dir(destination, files):
     log.info(f'FLATTEN: Flattening directory: {destination}')
-    for outputFile in files:
-        dir_path = os.path.dirname(outputFile)
-        file_name = os.path.basename(outputFile)
+    for output_file in files:
+        dir_path = os.path.dirname(output_file)
+        file_name = os.path.basename(output_file)
         if dir_path == destination:
             continue
         target = os.path.join(destination, file_name)
         try:
-            shutil.move(outputFile, target)
+            shutil.move(output_file, target)
         except Exception:
-            log.error(f'Could not flatten {outputFile}')
+            log.error(f'Could not flatten {output_file}')
     remove_empty_folders(destination)  # Cleanup empty directories
 
 
@@ -152,7 +152,7 @@ def rchmod(path, mod):
         return  # Skip files
 
     for root, dirs, files in os.walk(path):
-        for d in dirs:
-            os.chmod(os.path.join(root, d), mod)
-        for f in files:
-            os.chmod(os.path.join(root, f), mod)
+        for each_dir in dirs:
+            os.chmod(os.path.join(root, each_dir), mod)
+        for each_file in files:
+            os.chmod(os.path.join(root, each_file), mod)

@@ -393,33 +393,32 @@ def process(
         if section == 'SickBeard':
             if init_sickbeard.fork_obj:
                 return init_sickbeard.fork_obj.api_call()
-            else:
-                s = requests.Session()
+            session = requests.Session()
 
-                log.debug(f'Opening URL: {url} with params: {fork_params}')
-                if not apikey and username and password:
-                    login = f'{web_root}/login'
-                    login_params = {'username': username, 'password': password}
-                    response = s.get(login, verify=False, timeout=(30, 60))
-                    if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
-                        login_params['_xsrf'] = response.cookies.get('_xsrf')
-                    s.post(
-                        login,
-                        data=login_params,
-                        stream=True,
-                        verify=False,
-                        timeout=(30, 60),
-                    )
-                response = s.get(
-                    url,
-                    auth=(username, password),
-                    params=fork_params,
+            log.debug(f'Opening URL: {url} with params: {fork_params}')
+            if not apikey and username and password:
+                login = f'{web_root}/login'
+                login_params = {'username': username, 'password': password}
+                response = session.get(login, verify=False, timeout=(30, 60))
+                if response.status_code in [401, 403] and response.cookies.get('_xsrf'):
+                    login_params['_xsrf'] = response.cookies.get('_xsrf')
+                session.post(
+                    login,
+                    data=login_params,
                     stream=True,
                     verify=False,
-                    timeout=(30, 1800),
+                    timeout=(30, 60),
                 )
+            response = session.get(
+                url,
+                auth=(username, password),
+                params=fork_params,
+                stream=True,
+                verify=False,
+                timeout=(30, 1800),
+            )
         elif section == 'SiCKRAGE':
-            s = requests.Session()
+            session = requests.Session()
 
             if api_version >= 2 and sso_username and sso_password:
                 oauth = OAuth2Session(
@@ -433,7 +432,7 @@ def process(
                     username=sso_username,
                     password=sso_password,
                 )
-                s.headers.update(
+                session.headers.update(
                     {'Authorization': 'Bearer ' + oauth_token['access_token']},
                 )
 
@@ -454,7 +453,7 @@ def process(
             else:
                 params = fork_params
 
-            response = s.get(
+            response = session.get(
                 url,
                 params=params,
                 stream=True,
@@ -542,29 +541,33 @@ def process(
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
-    elif section == 'NzbDrone' and started:
-        n = 0
+
+    if section == 'NzbDrone' and started:
+        num = 0
         params = {}
         url = f'{url}/{scan_id}'
-        while n < 6:  # set up wait_for minutes to see if command completes..
+        while num < 6:  # set up wait_for minutes to see if command completes..
             time.sleep(10 * wait_for)
             command_status = command_complete(url, params, headers, section)
             if command_status and command_status in ['completed', 'failed']:
                 break
-            n += 1
+            num += 1
         if command_status:
             log.debug(f'The Scan command return status: {command_status}')
+
         if not os.path.exists(dir_name):
             log.debug(f'The directory {dir_name} has been removed. Renaming was successful.')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
-        elif command_status and command_status in ['completed']:
+
+        if command_status and command_status in ['completed']:
             log.debug('The Scan command has completed successfully. Renaming was successful.')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
-        elif command_status and command_status in ['failed']:
+
+        if command_status and command_status in ['failed']:
             log.debug('The Scan command has failed. Renaming was not successful.')
             # return ProcessResult.failure(
             #     f'{section}: Failed to post-process {input_name}'
@@ -578,14 +581,12 @@ def process(
                 f'Passing back to {section}',
                 status_code=status,
             )
-        else:
-            log.warning('The Scan command did not return a valid status. Renaming was not successful.')
-            return ProcessResult.failure(
-                f'{section}: Failed to post-process {input_name}',
-            )
-    else:
-        # We did not receive Success confirmation.
+        log.warning('The Scan command did not return a valid status. Renaming was not successful.')
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.',
+            f'{section}: Failed to post-process {input_name}',
         )
+    # We did not receive Success confirmation.
+    return ProcessResult.failure(
+        f'{section}: Failed to post-process - Returned log from {section} '
+        f'was not as expected.',
+    )

@@ -16,7 +16,7 @@ from subprocess import PIPE, DEVNULL
 from nzb2media import main_db
 from nzb2media import version_check
 from nzb2media import databases
-from nzb2media.configuration import config
+from nzb2media.configuration import Config
 from nzb2media.nzb.configuration import configure_nzbs
 from nzb2media.plugins.plex import configure_plex
 from nzb2media.torrent.configuration import configure_torrent_class
@@ -410,7 +410,7 @@ def configure_migration():
     global CFG
 
     # run migrate to convert old cfg to new style cfg plus fix any cfg missing values/options.
-    if not config.migrate():
+    if not Config.migrate():
         log.error(f'Unable to migrate config file {CONFIG_FILE}, exiting ...')
         if 'NZBOP_SCRIPTDIR' in os.environ:
             pass  # We will try and read config from Environment.
@@ -419,11 +419,11 @@ def configure_migration():
 
     # run migrate to convert NzbGet data from old cfg style to new cfg style
     if 'NZBOP_SCRIPTDIR' in os.environ:
-        CFG = config.addnzbget()
+        CFG = Config.addnzbget()
 
     else:  # load newly migrated config
         log.info(f'Loading config from [{CONFIG_FILE}]')
-        CFG = config()
+        CFG = Config()
 
 
 def configure_logging_part_2():

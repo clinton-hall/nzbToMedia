@@ -72,7 +72,7 @@ def process(
     log.debug(f'Opening URL: {url}')
 
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 300))
+        resposne = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
         log.error('Unable to open URL')
         return ProcessResult.failure(
@@ -80,7 +80,7 @@ def process(
             f'{section}',
         )
 
-    result = r.json()
+    result = resposne.json()
     log.debug(result)
     if library:
         log.debug(f'moving files to library: {library}')
@@ -98,24 +98,23 @@ def process(
             f'{section}',
         )
 
-    if r.status_code not in [
+    if resposne.status_code not in [
         requests.codes.ok,
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        log.error(f'Server returned status {r.status_code}')
+        log.error(f'Server returned status {resposne.status_code}')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}',
+            f'{resposne.status_code}',
         )
-    elif result['success']:
+    if result['success']:
         log.debug(f'SUCCESS: Status for {gamez_id} has been set to {download_status} in Gamez')
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
-    else:
-        log.error(f'FAILED: Status for {gamez_id} has NOT been updated in Gamez')
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Returned log from {section} '
-            f'was not as expected.',
-        )
+    log.error(f'FAILED: Status for {gamez_id} has NOT been updated in Gamez')
+    return ProcessResult.failure(
+        f'{section}: Failed to post-process - Returned log from {section} '
+        f'was not as expected.',
+    )

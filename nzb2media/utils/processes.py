@@ -24,23 +24,22 @@ class WindowsProcess:
         # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}
         _path_str = os.fspath(nzb2media.PID_FILE).replace('\\', '/')
         self.mutexname = f'nzbtomedia_{_path_str}'
-        self.CreateMutex = CreateMutex
-        self.CloseHandle = CloseHandle
-        self.GetLastError = GetLastError
-        self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
+        self.create_mutex = CreateMutex
+        self.close_handle = CloseHandle
+        self.get_last_error = GetLastError
+        self.error_already_exists = ERROR_ALREADY_EXISTS
 
     def alreadyrunning(self):
-        self.mutex = self.CreateMutex(None, 0, self.mutexname)
-        self.lasterror = self.GetLastError()
-        if self.lasterror == self.ERROR_ALREADY_EXISTS:
-            self.CloseHandle(self.mutex)
+        self.mutex = self.create_mutex(None, 0, self.mutexname)
+        self.lasterror = self.get_last_error()
+        if self.lasterror == self.error_already_exists:
+            self.close_handle(self.mutex)
             return True
-        else:
-            return False
+        return False
 
     def __del__(self):
         if self.mutex:
-            self.CloseHandle(self.mutex)
+            self.close_handle(self.mutex)
 
 
 class PosixProcess:
@@ -54,16 +53,16 @@ class PosixProcess:
             self.lock_socket.bind(f'\0{self.pidpath}')
             self.lasterror = False
             return self.lasterror
-        except OSError as e:
-            if 'Address already in use' in str(e):
+        except OSError as error:
+            if 'Address already in use' in str(error):
                 self.lasterror = True
                 return self.lasterror
         except AttributeError:
             pass
-        if os.path.exists(self.pidpath):
+        if self.pidpath.exists():
             # Make sure it is not a 'stale' pidFile
             try:
-                pid = int(open(self.pidpath).read().strip())
+                pid = int(self.pidpath.read_text().strip())
             except Exception:
                 pid = None
             # Check list of running pids, if not running it is stale so overwrite
@@ -79,9 +78,9 @@ class PosixProcess:
             self.lasterror = False
 
         if not self.lasterror:
-            # Write my pid into pidFile to keep multiple copies of program from running
-            with self.pidpath.open(mode='w') as fp:
-                fp.write(os.getpid())
+            # Write my pid into pidFile to keep multiple copies of program
+            # from running
+            self.pidpath.write_text(os.getpid())
         return self.lasterror
 
     def __del__(self):

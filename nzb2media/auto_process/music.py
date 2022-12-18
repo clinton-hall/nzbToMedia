@@ -134,7 +134,7 @@ def process(
             f'{section}: Failed to post-process - No change in wanted status',
         )
 
-    elif status == 0 and section == 'Lidarr':
+    if status == 0 and section == 'Lidarr':
         route = f'{web_root}/api/v1/command'
         url = nzb2media.utils.common.create_url(scheme, host, port, route)
         headers = {'X-Api-Key': apikey}
@@ -146,7 +146,7 @@ def process(
             data = {'name': 'Rename', 'path': dir_name}
         try:
             log.debug(f'Opening URL: {url} with data: {data}')
-            r = requests.post(
+            response = requests.post(
                 url,
                 data=json.dumps(data),
                 headers=headers,
@@ -162,7 +162,7 @@ def process(
             )
 
         try:
-            res = r.json()
+            res = response.json()
             scan_id = int(res['id'])
             log.debug(f'Scan started with id: {scan_id}')
         except Exception as error:
@@ -171,28 +171,31 @@ def process(
                 f'{section}: Failed to post-process - Unable to start scan',
             )
 
-        n = 0
+        num = 0
         params = {}
         url = f'{url}/{scan_id}'
-        while n < 6:  # set up wait_for minutes to see if command completes..
+        while num < 6:  # set up wait_for minutes to see if command completes..
             time.sleep(10 * wait_for)
             command_status = command_complete(url, params, headers, section)
             if command_status and command_status in ['completed', 'failed']:
                 break
-            n += 1
+            num += 1
         if command_status:
             log.debug(f'The Scan command return status: {command_status}')
+
         if not os.path.exists(dir_name):
             log.debug(f'The directory {dir_name} has been removed. Renaming was successful.')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
-        elif command_status and command_status in ['completed']:
+
+        if command_status and command_status in ['completed']:
             log.debug('The Scan command has completed successfully. Renaming was successful.')
             return ProcessResult.success(
                 f'{section}: Successfully post-processed {input_name}',
             )
-        elif command_status and command_status in ['failed']:
+
+        if command_status and command_status in ['failed']:
             log.debug('The Scan command has failed. Renaming was not successful.')
             # return ProcessResult.failure(
             #     f'{section}: Failed to post-process {input_name}'
@@ -212,20 +215,19 @@ def process(
             return ProcessResult.failure(
                 f'{section}: Download Failed. Sending back to {section}',
             )
-        else:
-            log.warning('FAILED DOWNLOAD DETECTED')
-            if (
-                delete_failed
-                and os.path.isdir(dir_name)
-                and not os.path.dirname(dir_name) == dir_name
-            ):
-                log.debug(f'Deleting failed files and folder {dir_name}')
-                remove_dir(dir_name)
-            # Return as failed to flag this in the downloader.
-            return ProcessResult.failure(
-                f'{section}: Failed to post-process. {section} does not '
-                f'support failed downloads',
-            )
+        log.warning('FAILED DOWNLOAD DETECTED')
+        if (
+            delete_failed
+            and os.path.isdir(dir_name)
+            and not os.path.dirname(dir_name) == dir_name
+        ):
+            log.debug(f'Deleting failed files and folder {dir_name}')
+            remove_dir(dir_name)
+        # Return as failed to flag this in the downloader.
+        return ProcessResult.failure(
+            f'{section}: Failed to post-process. {section} does not '
+            f'support failed downloads',
+        )
 
     return ProcessResult.failure()
 
@@ -241,13 +243,13 @@ def get_status(url, apikey, dir_name):
     log.debug(f'Opening URL: {url} with PARAMS: {params}')
 
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.RequestException:
         log.error('Unable to open URL')
         return None
 
     try:
-        result = r.json()
+        result = response.json()
     except ValueError:
         # ValueError catches simplejson's JSONDecodeError and json's ValueError
         return None
@@ -267,7 +269,7 @@ def force_process(
     log.debug(f'Opening URL: {url} with PARAMS: {params}')
 
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 300))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 300))
     except requests.ConnectionError:
         log.error(f'Unable to open URL {url}')
         return ProcessResult.failure(
@@ -275,18 +277,19 @@ def force_process(
             f'{section}',
         )
 
-    log.debug(f'Result: {r.text}')
+    log.debug(f'Result: {response.text}')
 
-    if r.status_code not in [
+    if response.status_code not in [
         requests.codes.ok,
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        log.error(f'Server returned status {r.status_code}')
+        log.error(f'Server returned status {response.status_code}')
         return ProcessResult.failure(
-            f'{section}: Failed to post-process - Server returned status {r.status_code}',
+            f'{section}: Failed to post-process - Server returned status {response.status_code}',
         )
-    elif r.text == 'OK':
+
+    if response.text == 'OK':
         log.debug(f'SUCCESS: Post-Processing started for {input_name} in folder {dir_name} ...')
     else:
         log.error(f'FAILED: Post-Processing has NOT started for {input_name} in folder {dir_name}. exiting!')

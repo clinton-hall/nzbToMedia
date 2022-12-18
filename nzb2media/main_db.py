@@ -37,14 +37,13 @@ class DBConnection:
         result = None
         try:
             result = self.select('SELECT db_version FROM db_version')
-        except sqlite3.OperationalError as e:
-            if 'no such table: db_version' in e.args[0]:
+        except sqlite3.OperationalError as error:
+            if 'no such table: db_version' in error.args[0]:
                 return 0
 
         if result:
             return int(result[0]['db_version'])
-        else:
-            return 0
+        return 0
 
     def fetch(self, query, args=None):
         if query is None:
@@ -94,16 +93,16 @@ class DBConnection:
 
         while attempt < 5:
             try:
-                for qu in querylist:
-                    if len(qu) == 1:
+                for query in querylist:
+                    if len(query) == 1:
                         if log_transaction:
-                            log.debug(qu[0])
-                        sql_result.append(self.connection.execute(qu[0]))
-                    elif len(qu) > 1:
+                            log.debug(query[0])
+                        sql_result.append(self.connection.execute(query[0]))
+                    elif len(query) > 1:
                         if log_transaction:
-                            log.debug(f'{qu[0]} with args {qu[1]}')
+                            log.debug(f'{query[0]} with args {query[1]}')
                         sql_result.append(
-                            self.connection.execute(qu[0], qu[1]),
+                            self.connection.execute(query[0], query[1]),
                         )
                 self.connection.commit()
                 log.debug(f'Transaction with {len(querylist)} query\'s executed')
@@ -252,8 +251,8 @@ def _process_upgrade(connection, upgrade_class):
     else:
         log.debug(f'{upgrade_class.__name__} upgrade not required')
 
-    for upgradeSubClass in upgrade_class.__subclasses__():
-        _process_upgrade(connection, upgradeSubClass)
+    for upgrade_sub_class in upgrade_class.__subclasses__():
+        _process_upgrade(connection, upgrade_sub_class)
 
 
 # Base migration class. All future DB changes should be subclassed from this class
@@ -283,8 +282,7 @@ class SchemaUpgrade:
         result = self.connection.select('SELECT db_version FROM db_version')
         if result:
             return int(result[-1]['db_version'])
-        else:
-            return 0
+        return 0
 
     def inc_db_version(self):
         new_version = self.check_db_version() + 1

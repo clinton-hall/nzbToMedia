@@ -77,7 +77,7 @@ def process(
 
     log.debug(f'Opening URL: {url}')
     try:
-        r = requests.post(
+        response = requests.post(
             url, params=params, stream=True, verify=False, timeout=(30, 300),
         )
     except requests.ConnectionError:
@@ -86,18 +86,18 @@ def process(
             f'{section}: Failed to post-process - Unable to connect to '
             f'{section}',
         )
-    if r.status_code not in [
+    if response.status_code not in [
         requests.codes.ok,
         requests.codes.created,
         requests.codes.accepted,
     ]:
-        log.error(f'Server returned status {r.status_code}')
+        log.error(f'Server returned status {response.status_code}')
         return ProcessResult.failure(
             f'{section}: Failed to post-process - Server returned status '
-            f'{r.status_code}',
+            f'{response.status_code}',
         )
 
-    for line in r.text.split('\n'):
+    for line in response.text.split('\n'):
         if line:
             log.debug(line)
         if 'Post Processing SUCCESSFUL' in line:
@@ -108,12 +108,11 @@ def process(
         return ProcessResult.success(
             f'{section}: Successfully post-processed {input_name}',
         )
-    else:
-        log.warning(
-            'The issue does not appear to have successfully processed. '
-            'Please check your Logs',
-        )
-        return ProcessResult.failure(
-            f'{section}: Failed to post-process - Returned log from '
-            f'{section} was not as expected.',
-        )
+    log.warning(
+        'The issue does not appear to have successfully processed. '
+        'Please check your Logs',
+    )
+    return ProcessResult.failure(
+        f'{section}: Failed to post-process - Returned log from '
+        f'{section} was not as expected.',
+    )

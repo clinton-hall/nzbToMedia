@@ -123,8 +123,7 @@ class GitUpdateManager(UpdateManager):
         if exit_status == 0:
             log.debug(f'Using: {main_git}')
             return main_git
-        else:
-            log.debug(f'Not using: {main_git}')
+        log.debug(f'Not using: {main_git}')
 
         # trying alternatives
 
@@ -148,8 +147,7 @@ class GitUpdateManager(UpdateManager):
                 if exit_status == 0:
                     log.debug(f'Using: {cur_git}')
                     return cur_git
-                else:
-                    log.debug(f'Not using: {cur_git}')
+                log.debug(f'Not using: {cur_git}')
 
         # Still haven't found a working git
         log.debug(
@@ -230,8 +228,7 @@ class GitUpdateManager(UpdateManager):
             if self._cur_commit_hash:
                 nzb2media.NZBTOMEDIA_VERSION = self._cur_commit_hash
             return True
-        else:
-            return False
+        return False
 
     def _find_git_branch(self):
         nzb2media.NZBTOMEDIA_BRANCH = self.get_github_branch()
@@ -277,8 +274,7 @@ class GitUpdateManager(UpdateManager):
             if not re.match('^[a-z0-9]+$', cur_commit_hash):
                 log.debug('Output doesn\'t look like a hash, not using it')
                 return
-            else:
-                self._newest_commit_hash = cur_commit_hash
+            self._newest_commit_hash = cur_commit_hash
         else:
             log.debug('git didn\'t return newest commit hash')
             return
@@ -315,15 +311,15 @@ class GitUpdateManager(UpdateManager):
 
         if not self._cur_commit_hash:
             return True
-        else:
-            try:
-                self._check_github_for_update()
-            except Exception as error:
-                log.error(f'Unable to contact github, can\'t check for update: {error!r}')
-                return False
 
-            if self._num_commits_behind > 0:
-                return True
+        try:
+            self._check_github_for_update()
+        except Exception as error:
+            log.error(f'Unable to contact github, can\'t check for update: {error!r}')
+            return False
+
+        if self._num_commits_behind > 0:
+            return True
 
         return False
 
@@ -363,8 +359,8 @@ class SourceUpdateManager(UpdateManager):
             return
 
         try:
-            with open(version_file) as fp:
-                self._cur_commit_hash = fp.read().strip(' \n\r')
+            with open(version_file) as fin:
+                self._cur_commit_hash = fin.read().strip(' \n\r')
         except OSError as error:
             log.debug(f'Unable to open \'version.txt\': {error}')
 
@@ -401,14 +397,14 @@ class SourceUpdateManager(UpdateManager):
         self._num_commits_behind = 0
         self._newest_commit_hash = None
 
-        gh = github.GitHub(
+        repository = github.GitHub(
             self.github_repo_user, self.github_repo, self.branch,
         )
 
         # try to get newest commit hash and commits behind directly by
         # comparing branch and current commit
         if self._cur_commit_hash:
-            branch_compared = gh.compare(
+            branch_compared = repository.compare(
                 base=self.branch, head=self._cur_commit_hash,
             )
 
@@ -423,13 +419,13 @@ class SourceUpdateManager(UpdateManager):
         # fall back and iterate over last 100 (items per page in gh_api) commits
         if not self._newest_commit_hash:
 
-            for curCommit in gh.commits():
+            for cur_commit in repository.commits():
                 if not self._newest_commit_hash:
-                    self._newest_commit_hash = curCommit['sha']
+                    self._newest_commit_hash = cur_commit['sha']
                     if not self._cur_commit_hash:
                         break
 
-                if curCommit['sha'] == self._cur_commit_hash:
+                if cur_commit['sha'] == self._cur_commit_hash:
                     break
 
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100

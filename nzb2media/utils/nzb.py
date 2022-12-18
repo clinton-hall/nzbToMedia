@@ -26,12 +26,12 @@ def get_nzoid(input_name):
         'output': 'json',
     }
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
         log.error('Unable to open URL')
         return nzoid  # failure
     try:
-        result = r.json()
+        result = response.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend(
             [
@@ -43,12 +43,12 @@ def get_nzoid(input_name):
         log.warning('Data from SABnzbd queue could not be parsed')
     params['mode'] = 'history'
     try:
-        r = requests.get(url, params=params, verify=False, timeout=(30, 120))
+        response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:
         log.error('Unable to open URL')
         return nzoid  # failure
     try:
-        result = r.json()
+        result = response.json()
         clean_name = os.path.splitext(os.path.split(input_name)[1])[0]
         slots.extend(
             [

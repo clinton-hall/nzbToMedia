@@ -19,16 +19,16 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
     # find imdbid in dirName
     log.info('Searching folder and file names for imdbID ...')
-    m = re.search(r'\b(tt\d{7,8})\b', dir_name + input_name)
-    if m:
-        imdbid = m.group(1)
+    match = re.search(r'\b(tt\d{7,8})\b', dir_name + input_name)
+    if match:
+        imdbid = match.group(1)
         log.info(f'Found imdbID [{imdbid}]')
         return imdbid
     if os.path.isdir(dir_name):
         for file in os.listdir(dir_name):
-            m = re.search(r'\b(tt\d{7,8})\b', file)
-            if m:
-                imdbid = m.group(1)
+            match = re.search(r'\b(tt\d{7,8})\b', file)
+            if match:
+                imdbid = match.group(1)
                 log.info(f'Found imdbID [{imdbid}] via file name')
                 return imdbid
     if 'NZBPR__DNZB_MOREINFO' in os.environ:
@@ -37,9 +37,9 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             regex = re.compile(
                 r'^http://www.imdb.com/title/(tt[0-9]+)/$', re.IGNORECASE,
             )
-            m = regex.match(dnzb_more_info)
-            if m:
-                imdbid = m.group(1)
+            match = regex.match(dnzb_more_info)
+            if match:
+                imdbid = match.group(1)
                 log.info(f'Found imdbID [{imdbid}] from DNZB-MoreInfo')
                 return imdbid
     log.info('Searching IMDB for imdbID ...')
@@ -67,7 +67,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
         log.debug(f'Opening URL: {url}')
 
         try:
-            r = requests.get(
+            response = requests.get(
                 url,
                 params={'apikey': omdb_api_key, 'y': year, 't': title},
                 verify=False,
@@ -78,7 +78,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             return
 
         try:
-            results = r.json()
+            results = response.json()
         except Exception:
             log.error('No json data returned from omdbapi.com')
 
