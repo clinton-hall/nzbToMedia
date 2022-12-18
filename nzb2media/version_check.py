@@ -535,7 +535,7 @@ class SourceUpdateManager(UpdateManager):
                 with open(version_path, 'w') as ver_file:
                     ver_file.write(self._newest_commit_hash)
             except OSError as error:
-                log.error('Unable to write version file, update not complete: {msg}'.format(msg=error),)
+                log.error(f'Unable to write version file, update not complete: {error}')
                 return False
 
         except Exception as error:

@@ -87,7 +87,7 @@ def rename_subs(path):
                     lan = Language.fromname(word.lower())
                 if lan:
                     break
-            except:  # if we didn't find a language, try next word.
+            except Exception:  # if we didn't find a language, try next word.
                 continue
         # rename the sub file as name.lan.ext
         if not lan:

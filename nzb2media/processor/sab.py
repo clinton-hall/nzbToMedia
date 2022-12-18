@@ -26,7 +26,8 @@ def process_script():
 
 
 def process(args):
-    """
+    """Process job from SABnzb.
+
     SABnzbd arguments:
     1. The final directory of the job (full path)
     2. The original name of the NZB file

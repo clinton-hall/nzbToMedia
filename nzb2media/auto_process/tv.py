@@ -394,8 +394,7 @@ def process(
             else:
                 s = requests.Session()
 
-                log.debug(f'Opening URL: {url} with params: {fork_params}', section,
-                )
+                log.debug(f'Opening URL: {url} with params: {fork_params}')
                 if not apikey and username and password:
                     login = f'{web_root}/login'
                     login_params = {'username': username, 'password': password}
@@ -569,7 +568,7 @@ def process(
             #     f'{section}: Failed to post-process {input_name}'
             # )
 
-        url2 = nzb2media.utils.common.create_url(scheme, host, port, route)
+        url2 = nzb2media.utils.common.create_url(scheme, host, port, route2)
         if completed_download_handling(url2, headers, section=section):
             log.debug(f'The Scan command did not return status completed, but complete Download Handling is enabled. Passing back to {section}.')
             return ProcessResult(

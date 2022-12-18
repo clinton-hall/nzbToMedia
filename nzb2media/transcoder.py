@@ -922,7 +922,7 @@ def mount_iso(
     nzb2media.MOUNTED = (
         mount_point  # Allows us to verify this has been done and then cleanup.
     )
-    for root, dirs, files in os.walk(mount_point):
+    for root, _dirs, files in os.walk(mount_point):
         for file in files:
             full_path = os.path.join(root, file)
             if (
@@ -1118,7 +1118,8 @@ def combine_mts(mts_path):
 def combine_cd(combine):
     new_files = []
     for item in {
-        re.match('(.+)[cC][dD][0-9].', item).groups()[0] for item in combine
+        re.match('(.+)[cC][dD][0-9].', ea_item).groups()[0]
+        for ea_item in combine
     }:
         concat = ''
         for n in range(99):

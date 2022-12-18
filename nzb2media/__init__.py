@@ -202,13 +202,11 @@ FORKS: typing.Mapping[str, typing.Mapping] = {
 ALL_FORKS = {
     k: None
     for k in set(
-        list(
-            itertools.chain.from_iterable(
-                [
-                    FORKS[x].keys()
-                    for x in FORKS.keys()
-                ],
-            ),
+        itertools.chain.from_iterable(
+            [
+                FORKS[x].keys()
+                for x in FORKS.keys()
+            ],
         ),
     )
 }

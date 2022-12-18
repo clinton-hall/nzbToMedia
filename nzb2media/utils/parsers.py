@@ -110,7 +110,7 @@ def parse_synods(args):
             task = [task for task in tasks if task['id'] == input_id][0]
             input_id = task['id']
             input_directory = task['additional']['detail']['destination']
-        except:
+        except Exception:
             log.error('unable to find download details in Synology DS')
         # Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
         if not os.path.isdir(input_directory):

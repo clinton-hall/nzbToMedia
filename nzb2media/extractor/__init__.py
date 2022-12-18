@@ -199,7 +199,7 @@ def extract(file_path, output_destination):
         if res == 0:  # Both Linux and Windows return 0 for successful.
             log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}')
             success = 1
-        elif len(passwords) > 0 and not 'gunzip' in cmd:
+        elif len(passwords) > 0 and 'gunzip' not in cmd:
             log.info('EXTRACTOR: Attempting to extract with passwords')
             for password in passwords:
                 if (

@@ -11,7 +11,6 @@ import nzb2media
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.scene_exceptions import process_all_exceptions
-from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.network import server_responding

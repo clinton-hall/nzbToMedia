@@ -161,7 +161,7 @@ class InitSickBeard:
                     token = oauth_token['access_token']
                     response = requests.get(
                         url,
-                        headers={f'Authorization': f'Bearer {token}'},
+                        headers={'Authorization': f'Bearer {token}'},
                         stream=True,
                         verify=False,
                     )
@@ -236,7 +236,7 @@ class InitSickBeard:
             log.debug(f'Removing excess parameters: ' f'{sorted(excess_parameters)}')
             rem_params.extend(excess_parameters)
             return rem_params, True
-        except:
+        except Exception:
             log.error('Failed to identify optionalParameters')
             return rem_params, False
 

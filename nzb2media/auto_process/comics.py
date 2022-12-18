@@ -7,7 +7,6 @@ import requests
 
 import nzb2media
 from nzb2media.auto_process.common import ProcessResult
-from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.network import server_responding
 from nzb2media.utils.paths import remote_dir
