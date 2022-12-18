@@ -160,52 +160,49 @@ class GitUpdateManager(UpdateManager):
 
     def _run_git(self, git_path, args):
 
-        proc_out = None
+        result = None
         proc_err = None
 
         if not git_path:
             log.debug('No git specified, can\'t use git commands')
             proc_status = 1
-            return proc_out, proc_err, proc_status
+            return result, proc_err, proc_status
 
         cmd = f'{git_path} {args}'
 
         try:
             log.debug(f'Executing {cmd} with your shell in {nzb2media.APP_ROOT}')
-            proc = subprocess.Popen(
+            with subprocess.Popen(
                 cmd,
                 stdin=PIPE,
                 stdout=PIPE,
                 stderr=STDOUT,
                 shell=True,
                 cwd=nzb2media.APP_ROOT,
-            )
-            proc_out, proc_err = proc.communicate()
-            proc_status = proc.returncode
+            ) as proc:
+                proc_out, proc_err = proc.communicate()
+                proc_status = proc.returncode
 
-            proc_out = proc_out.decode('utf-8')
-
-            if proc_out:
-                proc_out = proc_out.strip()
             if nzb2media.LOG_GIT:
-                log.debug(f'git output: {proc_out}')
+                msg = proc_out.decode('utf-8').strip()
+                log.debug(f'git output: {msg}')
 
         except OSError:
             log.error(f'Command {cmd} didn\'t work')
             proc_status = 1
 
-        proc_status = 128 if ('fatal:' in proc_out) or proc_err else proc_status
+        proc_status = 128 if ('fatal:' in result) or proc_err else proc_status
         if proc_status == 0:
             log.debug(f'{cmd} : returned successful')
             proc_status = 0
         elif nzb2media.LOG_GIT and proc_status in (1, 128):
-            log.debug(f'{cmd} returned : {proc_out}')
+            log.debug(f'{cmd} returned : {result}')
         else:
             if nzb2media.LOG_GIT:
-                log.debug(f'{cmd} returned : {proc_out}, treat as error for now')
+                log.debug(f'{cmd} returned : {result}, treat as error for now')
             proc_status = 1
 
-        return proc_out, proc_err, proc_status
+        return result, proc_err, proc_status
 
     def _find_installed_version(self):
         """
@@ -480,9 +477,8 @@ class SourceUpdateManager(UpdateManager):
 
             # extract to sb-update dir
             log.info(f'Extracting file {tar_download_path}')
-            tar = tarfile.open(tar_download_path)
-            tar.extractall(sb_update_dir)
-            tar.close()
+            with tarfile.open(tar_download_path) as tar:
+                tar.extractall(sb_update_dir)
 
             # delete .tar.gz
             log.info(f'Deleting file {tar_download_path}')

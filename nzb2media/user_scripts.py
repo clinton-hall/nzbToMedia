@@ -118,20 +118,20 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                     cmd = f'{cmd} {item}'
                 log.info(f'Running script {cmd} on file {file_path}.')
                 try:
-                    proc = Popen(command)
-                    res = proc.wait()
-                    if (
-                        str(res) in nzb2media.USER_SCRIPT_SUCCESSCODES
-                    ):  # Linux returns 0 for successful.
+                    with Popen(command) as proc:
+                        res = proc.wait()
+                except Exception:
+                    log.error(f'UserScript {command[0]} has failed')
+                    result = 1
+                else:
+                    if str(res) in nzb2media.USER_SCRIPT_SUCCESSCODES:
+                        # Linux returns 0 for successful.
                         log.info(f'UserScript {command[0]} was successfull')
                         result = 0
                     else:
                         log.error(f'UserScript {command[0]} has failed with return code: {res}')
                         log.info(f'If the UserScript completed successfully you should add {res} to the user_script_successCodes')
-                        result = int(1)
-                except Exception:
-                    log.error(f'UserScript {command[0]} has failed')
-                    result = int(1)
+                        result = 1
                 final_result += result
 
     num_files_new = 0

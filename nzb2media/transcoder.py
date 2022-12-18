@@ -100,16 +100,16 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
 
 
 def zip_out(file, img):
-    proc = None
     if os.path.isfile(file):
         cmd = ['cat', file]
     else:
         cmd = [nzb2media.SEVENZIP, '-so', 'e', img, file]
     try:
-        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
+        with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
+            return proc
     except Exception:
         log.error(f'Extracting [{file}] has failed')
-    return proc
+        return None
 
 
 def get_video_details(videofile, img=None):
@@ -136,13 +136,15 @@ def get_video_details(videofile, img=None):
         print_cmd(command)
         if img:
             procin = zip_out(file, img)
-            proc = subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout)
+            with subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout) as proc:
+                proc_out, proc_err = proc.communicate()
+                result = proc.returncode
             procin.stdout.close()
         else:
-            proc = subprocess.Popen(command, stdout=PIPE)
-        out, err = proc.communicate()
-        result = proc.returncode
-        video_details = json.loads(out.decode())
+            with subprocess.Popen(command, stdout=PIPE) as proc:
+                proc_out, proc_err = proc.communicate()
+                result = proc.returncode
+        video_details = json.loads(proc_out.decode())
     except Exception:
         try:  # try this again without -show error in case of ffmpeg limitation
             command = [
@@ -158,13 +160,15 @@ def get_video_details(videofile, img=None):
             print_cmd(command)
             if img:
                 procin = zip_out(file, img)
-                proc = subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout)
+                with subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout) as proc:
+                    proc_out, proc_err = proc.communicate()
+                    result = proc.returncode
                 procin.stdout.close()
             else:
-                proc = subprocess.Popen(command, stdout=PIPE)
-            out, err = proc.communicate()
-            result = proc.returncode
-            video_details = json.loads(out.decode())
+                with subprocess.Popen(command, stdout=PIPE) as proc:
+                    proc_out, proc_err = proc.communicate()
+                    result = proc.returncode
+            video_details = json.loads(proc_out.decode())
         except Exception:
             log.error(f'Checking [{file}] has failed')
     return video_details, result
@@ -804,11 +808,9 @@ def extract_subs(file, newfile_path):
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
         try:
-            proc = subprocess.Popen(
-                command, stdout=DEVNULL, stderr=DEVNULL,
-            )
-            proc_out, proc_error = proc.communicate()
-            result = proc.returncode
+            with subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL) as proc:
+                proc_out, proc_error = proc.communicate()
+                result = proc.returncode
         except Exception:
             log.error('Extracting subtitle has failed')
 
@@ -905,8 +907,8 @@ def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permis
     make_dir(mount_point)
     cmd = ['mount', '-o', 'loop', item, mount_point]
     print_cmd(cmd)
-    proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
-    out, err = proc.communicate()
+    with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
+        proc_out, proc_err = proc.communicate()
     nzb2media.MOUNTED = (
         mount_point  # Allows us to verify this has been done and then cleanup.
     )
@@ -956,13 +958,13 @@ def rip_iso(item, new_dir):
     try:
         log.debug(f'Attempting to extract .vob or .mts from image file {item}')
         print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
-        out, err = proc.communicate()
+        with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
+            proc_out, proc_err = proc.communicate()
         file_match_gen = (
             re.match(
                 r'.+(VIDEO_TS[/\\]VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb])', line,
             )
-            for line in out.decode().splitlines()
+            for line in proc_out.decode().splitlines()
         )
         file_list = [
             file_match.groups()[0]
@@ -994,7 +996,7 @@ def rip_iso(item, new_dir):
         else:  # check BlueRay for BDMV/STREAM/XXXX.MTS
             mts_list_gen = (
                 re.match(r'.+(BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]).', line)
-                for line in out.decode().splitlines()
+                for line in proc_out.decode().splitlines()
             )
             mts_list = [
                 file_match.groups()[0]
@@ -1182,17 +1184,18 @@ def transcode_directory(dir_name):
         result = 1  # set result to failed in case call fails.
         try:
             if isinstance(file, str):
-                proc = subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE)
+                with subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE) as proc:
+                    out, err = proc.communicate()
             else:
                 img, data = next(file.items())
-                proc = subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE, stdin=PIPE)
-                for vob in data['files']:
-                    procin = zip_out(vob, img)
-                    if procin:
-                        log.debug(f'Feeding in file: {vob} to Transcoder')
-                        shutil.copyfileobj(procin.stdout, proc.stdin)
-                        procin.stdout.close()
-            out, err = proc.communicate()
+                with subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE, stdin=PIPE) as proc:
+                    for vob in data['files']:
+                        procin = zip_out(vob, img)
+                        if procin:
+                            log.debug(f'Feeding in file: {vob} to Transcoder')
+                            shutil.copyfileobj(procin.stdout, proc.stdin)
+                            procin.stdout.close()
+                    out, err = proc.communicate()
             if err:
                 log.error(f'Transcoder returned:{err} has failed')
             result = proc.returncode
@@ -1231,8 +1234,8 @@ def transcode_directory(dir_name):
         time.sleep(5)  # play it safe and avoid failing to unmount.
         cmd = ['umount', '-l', nzb2media.MOUNTED]
         print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
-        out, err = proc.communicate()
+        with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
+            proc_out, proc_err = proc.communicate()
         time.sleep(5)
         os.rmdir(nzb2media.MOUNTED)
         nzb2media.MOUNTED = None

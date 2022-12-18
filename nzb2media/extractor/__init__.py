@@ -8,6 +8,7 @@ import stat
 import subprocess
 from subprocess import call
 from subprocess import Popen
+from subprocess import DEVNULL
 from time import sleep
 
 import nzb2media
@@ -87,35 +88,23 @@ def extract(file_path, output_destination):
         }
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
-            devnull = open(os.devnull, 'w')
             for cmd in required_cmds:
-                if call(
-                    ['which', cmd],
-                    stdout=devnull,
-                    stderr=devnull,
-                ):  # note, returns 0 if exists, or 1 if doesn't exist.
+                if call(['which', cmd], stdout=DEVNULL, stderr=DEVNULL):
+                    # note, returns 0 if exists, or 1 if doesn't exist.
                     for key, val in extract_commands.items():
                         if cmd in val[0]:
-                            if not call(
-                                ['which', '7zr'],
-                                stdout=devnull,
-                                stderr=devnull,
-                            ):  # we do have '7zr'
+                            if not call(['which', '7zr'], stdout=DEVNULL, stderr=DEVNULL):
+                                # we do have '7zr'
                                 extract_commands[key] = ['7zr', 'x', '-y']
-                            elif not call(
-                                ['which', '7z'], stdout=devnull, stderr=devnull,
-                            ):  # we do have '7z'
+                            elif not call(['which', '7z'], stdout=DEVNULL, stderr=DEVNULL):
+                                # we do have '7z'
                                 extract_commands[key] = ['7z', 'x', '-y']
-                            elif not call(
-                                ['which', '7za'],
-                                stdout=devnull,
-                                stderr=devnull,
-                            ):  # we do have '7za'
+                            elif not call(['which', '7za'], stdout=DEVNULL, stderr=DEVNULL):
+                                # we do have '7za'
                                 extract_commands[key] = ['7za', 'x', '-y']
                             else:
                                 log.error(f'EXTRACTOR: {cmd} not found, disabling support for {key}')
                                 del extract_commands[key]
-            devnull.close()
         else:
             log.warning('EXTRACTOR: Cannot determine which tool to use when called from Transmission')
 
@@ -130,19 +119,10 @@ def extract(file_path, output_destination):
             cmd = extract_commands[f'.tar{ext[1]}']
         else:  # Try gunzip
             cmd = extract_commands[ext[1]]
-    elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in (
-        '.rar',
-        '.zip',
-        '.7z',
-    ):
+    elif ext[1] in ('.1', '.01', '.001') and os.path.splitext(ext[0])[1] in ('.rar', '.zip', '.7z'):
         cmd = extract_commands[os.path.splitext(ext[0])[1]]
-    elif ext[1] in (
-        '.cb7',
-        '.cba',
-        '.cbr',
-        '.cbt',
-        '.cbz',
-    ):  # don't extract these comic book archives.
+    elif ext[1] in ('.cb7', '.cba', '.cbr', '.cbt', '.cbz'):
+        # don't extract these comic book archives.
         return False
     else:
         if ext[1] in extract_commands:
@@ -157,10 +137,11 @@ def extract(file_path, output_destination):
     if nzb2media.PASSWORDS_FILE and os.path.isfile(
         os.path.normpath(nzb2media.PASSWORDS_FILE),
     ):
-        passwords = [
-            line.strip()
-            for line in open(os.path.normpath(nzb2media.PASSWORDS_FILE))
-        ]
+        with open(os.path.normpath(nzb2media.PASSWORDS_FILE)) as fin:
+            passwords = [
+                line.strip()
+                for line in fin
+            ]
     else:
         passwords = []
 
@@ -179,7 +160,6 @@ def extract(file_path, output_destination):
     os.chdir(
         output_destination,
     )  # Not all unpack commands accept full paths, so just extract into this directory
-    devnull = open(os.devnull, 'w')
 
     try:  # now works same for nt and *nix
         info = None
@@ -192,9 +172,8 @@ def extract(file_path, output_destination):
         cmd2 = cmd
         if 'gunzip' not in cmd:  # gunzip doesn't support password
             cmd2.append('-p-')  # don't prompt for password.
-        res = Popen(
-            cmd2, stdout=devnull, stderr=devnull, startupinfo=info,
-        ).wait()  # should extract files fine.
+        with Popen(cmd2, stdout=DEVNULL, stderr=DEVNULL, startupinfo=info) as proc:
+            res = proc.wait()  # should extract files fine.
         if res == 0:  # Both Linux and Windows return 0 for successful.
             log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}')
             success = 1
@@ -209,10 +188,8 @@ def extract(file_path, output_destination):
                 # append password here.
                 passcmd = f'-p{password}'
                 cmd2.append(passcmd)
-                proc = Popen(
-                    cmd2, stdout=devnull, stderr=devnull, startupinfo=info,
-                )
-                res = proc.wait()  # should extract files fine.
+                with Popen(cmd2, stdout=DEVNULL, stderr=DEVNULL, startupinfo=info) as proc:
+                    res = proc.wait()  # should extract files fine.
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}')
                     success = 1

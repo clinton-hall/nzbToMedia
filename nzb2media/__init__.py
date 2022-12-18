@@ -37,13 +37,13 @@ except ImportError:
 
 
 def which(name):
-    proc = subprocess.Popen(['which', name], stdout=PIPE)
-    try:
-        proc_out, proc_err = proc.communicate()
-    except Exception:
-        return ''
-    else:
-        return proc_out.strip().decode()
+    with subprocess.Popen(['which', name], stdout=PIPE) as proc:
+        try:
+            proc_out, proc_err = proc.communicate()
+        except Exception:
+            return ''
+        else:
+            return proc_out.strip().decode()
 
 
 def module_path(module=__file__):
@@ -544,8 +544,8 @@ def configure_remote_paths():
 def configure_niceness():
     global NICENESS
     try:
-        proc = subprocess.Popen(['nice'], stdout=DEVNULL, stderr=DEVNULL)
-        proc.communicate()
+        with subprocess.Popen(['nice'], stdout=DEVNULL, stderr=DEVNULL) as proc:
+            proc.communicate()
         niceness = CFG['Posix']['niceness']
         if (
             len(niceness.split(',')) > 1
@@ -556,8 +556,8 @@ def configure_niceness():
     except Exception:
         pass
     try:
-        proc = subprocess.Popen(['ionice'], stdout=DEVNULL, stderr=DEVNULL)
-        proc.communicate()
+        with subprocess.Popen(['ionice'], stdout=DEVNULL, stderr=DEVNULL) as proc:
+            proc.communicate()
         try:
             ionice = CFG['Posix']['ionice_class']
             NICENESS.extend(['ionice', f'-c{int(ionice)}'])

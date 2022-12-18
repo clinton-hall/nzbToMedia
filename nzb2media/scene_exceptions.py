@@ -177,7 +177,11 @@ def rename_script(dirname):
                 dirname = directory
                 break
     if rename_file:
-        rename_lines = [line.strip() for line in open(rename_file)]
+        with open(rename_file) as fin:
+            rename_lines = [
+                line.strip()
+                for line in fin
+            ]
         for line in rename_lines:
             if re.search('^(mv|Move)', line, re.IGNORECASE):
                 cmd = shlex.split(line)[1:]
@@ -219,9 +223,9 @@ def par2(dirname):
             cmd = f'{cmd} {item}'
         log.debug(f'calling command:{cmd}')
         try:
-            proc = subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL)
-            proc.communicate()
-            result = proc.returncode
+            with subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL) as proc:
+                proc.communicate()
+                result = proc.returncode
         except Exception:
             log.error(f'par2 file processing for {parfile} has failed')
         if result == 0:

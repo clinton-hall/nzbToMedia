@@ -110,8 +110,8 @@ def restart():
     if popen_list:
         popen_list += nzb2media.SYS_ARGV
         log.info(f'Restarting nzbToMedia with {popen_list}')
-        proc = subprocess.Popen(popen_list, cwd=os.getcwd())
-        proc.wait()
-        status = proc.returncode
+        with subprocess.Popen(popen_list, cwd=os.getcwd()) as proc:
+            proc.wait()
+            status = proc.returncode
 
     os._exit(status)
