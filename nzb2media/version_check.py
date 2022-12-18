@@ -116,7 +116,7 @@ class GitUpdateManager(UpdateManager):
         else:
             main_git = 'git'
 
-        log.debug('Checking if we can use git commands: {git} {cmd}'.format(git=main_git, cmd=test_cmd))
+        log.debug(f'Checking if we can use git commands: {main_git} {test_cmd}')
         output, err, exit_status = self._run_git(main_git, test_cmd)
 
         if exit_status == 0:
@@ -141,7 +141,7 @@ class GitUpdateManager(UpdateManager):
             log.debug('Trying known alternative git locations')
 
             for cur_git in alternative_git:
-                log.debug('Checking if we can use git commands: {git} {cmd}'.format(git=cur_git, cmd=test_cmd))
+                log.debug(f'Checking if we can use git commands: {cur_git} {test_cmd}')
                 output, err, exit_status = self._run_git(cur_git, test_cmd)
 
                 if exit_status == 0:
@@ -172,7 +172,7 @@ class GitUpdateManager(UpdateManager):
         cmd = f'{git_path} {args}'
 
         try:
-            log.debug('Executing {cmd} with your shell in {directory}'.format(cmd=cmd, directory=nzb2media.APP_ROOT))
+            log.debug(f'Executing {cmd} with your shell in {nzb2media.APP_ROOT}')
             p = subprocess.Popen(
                 cmd,
                 stdin=subprocess.PIPE,
@@ -203,7 +203,7 @@ class GitUpdateManager(UpdateManager):
             log.debug(f'{cmd} returned : {output}')
         else:
             if nzb2media.LOG_GIT:
-                log.debug('{cmd} returned : {output}, treat as error for now'.format(cmd=cmd, output=output))
+                log.debug(f'{cmd} returned : {output}, treat as error for now')
             exit_status = 1
 
         return output, err, exit_status
@@ -297,11 +297,11 @@ class GitUpdateManager(UpdateManager):
                 log.debug('git didn\'t return numbers for behind and ahead, not using it')
                 return
 
-        log.debug('cur_commit = {current} % (newest_commit)= {new}, num_commits_behind = {x}, num_commits_ahead = {y}'.format(current=self._cur_commit_hash, new=self._newest_commit_hash, x=self._num_commits_behind, y=self._num_commits_ahead))
+        log.debug(f'cur_commit = {self._cur_commit_hash} % (newest_commit)= {self._newest_commit_hash}, num_commits_behind = {self._num_commits_behind}, num_commits_ahead = {self._num_commits_ahead}')
 
     def set_newest_text(self):
         if self._num_commits_ahead:
-            log.error('Local branch is ahead of {branch}. Automatic update not possible.'.format(branch=self.branch))
+            log.error(f'Local branch is ahead of {self.branch}. Automatic update not possible.')
         elif self._num_commits_behind:
             log.info('There is a newer version available (you\'re {x} commit{s} behind)'.format(x=self._num_commits_behind, s='s' if self._num_commits_behind > 1 else ''))
         else:
@@ -434,7 +434,7 @@ class SourceUpdateManager(UpdateManager):
                 # when _cur_commit_hash doesn't match anything _num_commits_behind == 100
                 self._num_commits_behind += 1
 
-        log.debug('cur_commit = {current} % (newest_commit)= {new}, num_commits_behind = {x}'.format(current=self._cur_commit_hash, new=self._newest_commit_hash, x=self._num_commits_behind))
+        log.debug(f'cur_commit = {self._cur_commit_hash} % (newest_commit)= {self._newest_commit_hash}, num_commits_behind = {self._num_commits_behind}')
 
     def set_newest_text(self):
 
@@ -451,7 +451,7 @@ class SourceUpdateManager(UpdateManager):
     def update(self):
         """Download and install latest source tarball from github."""
         tar_download_url = (
-            'https://github.com/{org}/{repo}/tarball/{branch}'.format(org=self.github_repo_user, repo=self.github_repo, branch=self.branch)
+            f'https://github.com/{self.github_repo_user}/{self.github_repo}/tarball/{self.branch}'
         )
         version_path = os.path.join(nzb2media.APP_ROOT, 'version.txt')
 
@@ -474,11 +474,11 @@ class SourceUpdateManager(UpdateManager):
             urlretrieve(tar_download_url, tar_download_path)
 
             if not os.path.isfile(tar_download_path):
-                log.error('Unable to retrieve new version from {url}, can\'t update'.format(url=tar_download_url))
+                log.error(f'Unable to retrieve new version from {tar_download_url}, can\'t update')
                 return False
 
             if not tarfile.is_tarfile(tar_download_path):
-                log.error('Retrieved version from {url} is corrupt, can\'t update'.format(url=tar_download_url))
+                log.error(f'Retrieved version from {tar_download_url} is corrupt, can\'t update')
                 return False
 
             # extract to sb-update dir
@@ -503,7 +503,7 @@ class SourceUpdateManager(UpdateManager):
             content_dir = os.path.join(sb_update_dir, update_dir_contents[0])
 
             # walk temp folder and move files to main folder
-            log.info('Moving files from {source} to {destination}'.format(source=content_dir, destination=nzb2media.APP_ROOT))
+            log.info(f'Moving files from {content_dir} to {nzb2media.APP_ROOT}')
             for dirname, _, filenames in os.walk(
                 content_dir,
             ):  # @UnusedVariable
@@ -521,7 +521,7 @@ class SourceUpdateManager(UpdateManager):
                             os.remove(new_path)
                             os.renames(old_path, new_path)
                         except Exception as error:
-                            log.debug('Unable to update {path}: {msg}'.format(path=new_path, msg=error))
+                            log.debug(f'Unable to update {new_path}: {error}')
                             # Trash the updated file without moving in new path
                             os.remove(old_path)
                         continue
