@@ -192,10 +192,9 @@ def extract(file_path, output_destination):
         cmd2 = cmd
         if 'gunzip' not in cmd:  # gunzip doesn't support password
             cmd2.append('-p-')  # don't prompt for password.
-        p = Popen(
+        res = Popen(
             cmd2, stdout=devnull, stderr=devnull, startupinfo=info,
-        )  # should extract files fine.
-        res = p.wait()
+        ).wait()  # should extract files fine.
         if res == 0:  # Both Linux and Windows return 0 for successful.
             log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination}')
             success = 1
@@ -210,10 +209,10 @@ def extract(file_path, output_destination):
                 # append password here.
                 passcmd = f'-p{password}'
                 cmd2.append(passcmd)
-                p = Popen(
+                proc = Popen(
                     cmd2, stdout=devnull, stderr=devnull, startupinfo=info,
-                )  # should extract files fine.
-                res = p.wait()
+                )
+                res = proc.wait()  # should extract files fine.
                 if (res >= 0 and platform == 'Windows') or res == 0:
                     log.info(f'EXTRACTOR: Extraction was successful for {file_path} to {output_destination} using password: {password}')
                     success = 1

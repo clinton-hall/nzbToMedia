@@ -11,6 +11,7 @@ import stat
 import subprocess
 import tarfile
 import traceback
+from subprocess import PIPE, STDOUT
 from urllib.request import urlretrieve
 
 import nzb2media
@@ -161,52 +162,52 @@ class GitUpdateManager(UpdateManager):
 
     def _run_git(self, git_path, args):
 
-        output = None
-        err = None
+        proc_out = None
+        proc_err = None
 
         if not git_path:
             log.debug('No git specified, can\'t use git commands')
-            exit_status = 1
-            return output, err, exit_status
+            proc_status = 1
+            return proc_out, proc_err, proc_status
 
         cmd = f'{git_path} {args}'
 
         try:
             log.debug(f'Executing {cmd} with your shell in {nzb2media.APP_ROOT}')
-            p = subprocess.Popen(
+            proc = subprocess.Popen(
                 cmd,
-                stdin=subprocess.PIPE,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.STDOUT,
+                stdin=PIPE,
+                stdout=PIPE,
+                stderr=STDOUT,
                 shell=True,
                 cwd=nzb2media.APP_ROOT,
             )
-            output, err = p.communicate()
-            exit_status = p.returncode
+            proc_out, proc_err = proc.communicate()
+            proc_status = proc.returncode
 
-            output = output.decode('utf-8')
+            proc_out = proc_out.decode('utf-8')
 
-            if output:
-                output = output.strip()
+            if proc_out:
+                proc_out = proc_out.strip()
             if nzb2media.LOG_GIT:
-                log.debug(f'git output: {output}')
+                log.debug(f'git output: {proc_out}')
 
         except OSError:
             log.error(f'Command {cmd} didn\'t work')
-            exit_status = 1
+            proc_status = 1
 
-        exit_status = 128 if ('fatal:' in output) or err else exit_status
-        if exit_status == 0:
+        proc_status = 128 if ('fatal:' in proc_out) or proc_err else proc_status
+        if proc_status == 0:
             log.debug(f'{cmd} : returned successful')
-            exit_status = 0
-        elif nzb2media.LOG_GIT and exit_status in (1, 128):
-            log.debug(f'{cmd} returned : {output}')
+            proc_status = 0
+        elif nzb2media.LOG_GIT and proc_status in (1, 128):
+            log.debug(f'{cmd} returned : {proc_out}')
         else:
             if nzb2media.LOG_GIT:
-                log.debug(f'{cmd} returned : {output}, treat as error for now')
-            exit_status = 1
+                log.debug(f'{cmd} returned : {proc_out}, treat as error for now')
+            proc_status = 1
 
-        return output, err, exit_status
+        return proc_out, proc_err, proc_status
 
     def _find_installed_version(self):
         """

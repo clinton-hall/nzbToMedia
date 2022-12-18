@@ -2,10 +2,10 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
 import re
 import shlex
 import subprocess
+from subprocess import DEVNULL
 
 import nzb2media
 from nzb2media.utils.files import list_media_files
@@ -212,10 +212,6 @@ def par2(dirname):
     if nzb2media.PAR2CMD and parfile:
         pwd = os.getcwd()  # Get our Present Working Directory
         os.chdir(dirname)  # set directory to run par on.
-        if platform.system() == 'Windows':
-            bitbucket = open('NUL')
-        else:
-            bitbucket = open('/dev/null')
         log.info(f'Running par2 on file {parfile}.')
         command = [nzb2media.PAR2CMD, 'r', parfile, '*']
         cmd = ''
@@ -223,9 +219,7 @@ def par2(dirname):
             cmd = f'{cmd} {item}'
         log.debug(f'calling command:{cmd}')
         try:
-            proc = subprocess.Popen(
-                command, stdout=bitbucket, stderr=bitbucket,
-            )
+            proc = subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL)
             proc.communicate()
             result = proc.returncode
         except Exception:
@@ -233,7 +227,6 @@ def par2(dirname):
         if result == 0:
             log.info('par2 file processing succeeded')
         os.chdir(pwd)
-        bitbucket.close()
 
 
 # dict for custom groups

@@ -118,8 +118,8 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
                     cmd = f'{cmd} {item}'
                 log.info(f'Running script {cmd} on file {file_path}.')
                 try:
-                    p = Popen(command)
-                    res = p.wait()
+                    proc = Popen(command)
+                    res = proc.wait()
                     if (
                         str(res) in nzb2media.USER_SCRIPT_SUCCESSCODES
                     ):  # Linux returns 0 for successful.

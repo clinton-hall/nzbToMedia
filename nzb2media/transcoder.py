@@ -11,6 +11,7 @@ import shutil
 import subprocess
 import sys
 import time
+from subprocess import PIPE, DEVNULL
 
 from babelfish import Language
 
@@ -100,22 +101,20 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
             return False
 
 
-def zip_out(file, img, bitbucket):
-    procin = None
+def zip_out(file, img):
+    proc = None
     if os.path.isfile(file):
         cmd = ['cat', file]
     else:
         cmd = [nzb2media.SEVENZIP, '-so', 'e', img, file]
     try:
-        procin = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=bitbucket,
-        )
+        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
     except Exception:
         log.error(f'Extracting [{file}] has failed')
-    return procin
+    return proc
 
 
-def get_video_details(videofile, img=None, bitbucket=None):
+def get_video_details(videofile, img=None):
     video_details = {}
     result = 1
     file = videofile
@@ -138,13 +137,11 @@ def get_video_details(videofile, img=None, bitbucket=None):
         ]
         print_cmd(command)
         if img:
-            procin = zip_out(file, img, bitbucket)
-            proc = subprocess.Popen(
-                command, stdout=subprocess.PIPE, stdin=procin.stdout,
-            )
+            procin = zip_out(file, img)
+            proc = subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout)
             procin.stdout.close()
         else:
-            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            proc = subprocess.Popen(command, stdout=PIPE)
         out, err = proc.communicate()
         result = proc.returncode
         video_details = json.loads(out.decode())
@@ -162,13 +159,11 @@ def get_video_details(videofile, img=None, bitbucket=None):
             ]
             print_cmd(command)
             if img:
-                procin = zip_out(file, img, bitbucket)
-                proc = subprocess.Popen(
-                    command, stdout=subprocess.PIPE, stdin=procin.stdout,
-                )
+                procin = zip_out(file, img)
+                proc = subprocess.Popen(command, stdout=PIPE, stdin=procin.stdout)
                 procin.stdout.close()
             else:
-                proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=PIPE)
             out, err = proc.communicate()
             result = proc.returncode
             video_details = json.loads(out.decode())
@@ -200,7 +195,7 @@ def check_vid_file(video_details, result):
         return False
 
 
-def build_commands(file, new_dir, movie_name, bitbucket):
+def build_commands(file, new_dir, movie_name):
     if isinstance(file, str):
         input_file = file
         if 'concat:' in file:
@@ -228,16 +223,14 @@ def build_commands(file, new_dir, movie_name, bitbucket):
         new_file = []
         rem_vid = []
         for vid in data['files']:
-            video_details, result = get_video_details(vid, img, bitbucket)
+            video_details, result = get_video_details(vid, img)
             if not check_vid_file(
                 video_details, result,
             ):  # lets not transcode menu or other clips that don't have audio and video.
                 rem_vid.append(vid)
         data['files'] = [f for f in data['files'] if f not in rem_vid]
         new_file = {img: {'name': data['name'], 'files': data['files']}}
-        video_details, result = get_video_details(
-            data['files'][0], img, bitbucket,
-        )
+        video_details, result = get_video_details(data['files'][0], img)
         input_file = '-'
         file = '-'
 
@@ -752,7 +745,7 @@ def get_subs(file):
     return subfiles
 
 
-def extract_subs(file, newfile_path, bitbucket):
+def extract_subs(file, newfile_path):
     video_details, result = get_video_details(file)
     if not video_details:
         return
@@ -815,9 +808,9 @@ def extract_subs(file, newfile_path, bitbucket):
         result = 1  # set result to failed in case call fails.
         try:
             proc = subprocess.Popen(
-                command, stdout=bitbucket, stderr=bitbucket,
+                command, stdout=DEVNULL, stderr=DEVNULL,
             )
-            out, err = proc.communicate()
+            proc_out, proc_error = proc.communicate()
             result = proc.returncode
         except Exception:
             log.error('Extracting subtitle has failed')
@@ -832,7 +825,7 @@ def extract_subs(file, newfile_path, bitbucket):
             log.error('Extracting subtitles has failed')
 
 
-def process_list(it, new_dir, bitbucket):
+def process_list(it, new_dir):
     rem_list = []
     new_list = []
     combine = []
@@ -846,7 +839,7 @@ def process_list(it, new_dir, bitbucket):
             and ext not in nzb2media.IGNOREEXTENSIONS
         ):
             log.debug(f'Attempting to rip disk image: {item}')
-            new_list.extend(rip_iso(item, new_dir, bitbucket))
+            new_list.extend(rip_iso(item, new_dir))
             rem_list.append(item)
         elif (
                 re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', item)
@@ -907,9 +900,7 @@ def process_list(it, new_dir, bitbucket):
     return it, rem_list, new_list, success
 
 
-def mount_iso(
-    item, new_dir, bitbucket,
-):  # Currently only supports Linux Mount when permissions allow.
+def mount_iso(item, new_dir):  # Currently only supports Linux Mount when permissions allow.
     if platform.system() == 'Windows':
         log.error(f'No mounting options available under Windows for image file {item}')
         return []
@@ -917,7 +908,7 @@ def mount_iso(
     make_dir(mount_point)
     cmd = ['mount', '-o', 'loop', item, mount_point]
     print_cmd(cmd)
-    proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+    proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
     out, err = proc.communicate()
     nzb2media.MOUNTED = (
         mount_point  # Allows us to verify this has been done and then cleanup.
@@ -951,16 +942,15 @@ def mount_iso(
     return ['failure']  # If we got here, nothing matched our criteria
 
 
-def rip_iso(item, new_dir, bitbucket):
+def rip_iso(item, new_dir):
     new_files = []
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
     if not nzb2media.SEVENZIP:
         log.debug(f'No 7zip installed. Attempting to mount image file {item}')
         try:
-            new_files = mount_iso(
-                item, new_dir, bitbucket,
-            )  # Currently only works for Linux.
+            # Currently only works for Linux.
+            new_files = mount_iso(item, new_dir)
         except Exception:
             log.error(f'Failed to mount and extract from image file {item}')
             new_files = [failure_dir]
@@ -969,7 +959,7 @@ def rip_iso(item, new_dir, bitbucket):
     try:
         log.debug(f'Attempting to extract .vob or .mts from image file {item}')
         print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
         out, err = proc.communicate()
         file_match_gen = (
             re.match(
@@ -1040,7 +1030,7 @@ def rip_iso(item, new_dir, bitbucket):
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
             log.error(f'No VIDEO_TS or BDMV/SOURCE folder found in image file. Attempting to mount and scan {item}')
-            new_files = mount_iso(item, new_dir, bitbucket)
+            new_files = mount_iso(item, new_dir)
     except Exception:
         log.error(f'Failed to extract from image file {item}')
         new_files = [failure_dir]
@@ -1159,19 +1149,12 @@ def transcode_directory(dir_name):
         make_dir(new_dir)
     else:
         new_dir = dir_name
-    if platform.system() == 'Windows':
-        bitbucket = open('NUL')
-    else:
-        bitbucket = open('/dev/null')
     movie_name = os.path.splitext(os.path.split(dir_name)[1])[0]
     file_list = nzb2media.list_media_files(
         dir_name, media=True, audio=False, meta=False, archives=False,
     )
-    file_list, rem_list, new_list, success = process_list(
-        file_list, new_dir, bitbucket,
-    )
+    file_list, rem_list, new_list, success = process_list(file_list, new_dir)
     if not success:
-        bitbucket.close()
         return 1, dir_name
 
     for file in file_list:
@@ -1180,12 +1163,12 @@ def transcode_directory(dir_name):
             and os.path.splitext(file)[1] in nzb2media.IGNOREEXTENSIONS
         ):
             continue
-        command, file = build_commands(file, new_dir, movie_name, bitbucket)
+        command, file = build_commands(file, new_dir, movie_name)
         newfile_path = command[-1]
 
         # transcoding files may remove the original file, so make sure to extract subtitles first
         if nzb2media.SEXTRACT and isinstance(file, str):
-            extract_subs(file, newfile_path, bitbucket)
+            extract_subs(file, newfile_path)
 
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfile_path)
@@ -1202,19 +1185,12 @@ def transcode_directory(dir_name):
         result = 1  # set result to failed in case call fails.
         try:
             if isinstance(file, str):
-                proc = subprocess.Popen(
-                    command, stdout=bitbucket, stderr=subprocess.PIPE,
-                )
+                proc = subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE)
             else:
                 img, data = next(file.items())
-                proc = subprocess.Popen(
-                    command,
-                    stdout=bitbucket,
-                    stderr=subprocess.PIPE,
-                    stdin=subprocess.PIPE,
-                )
+                proc = subprocess.Popen(command, stdout=DEVNULL, stderr=PIPE, stdin=PIPE)
                 for vob in data['files']:
-                    procin = zip_out(vob, img, bitbucket)
+                    procin = zip_out(vob, img)
                     if procin:
                         log.debug(f'Feeding in file: {vob} to Transcoder')
                         shutil.copyfileobj(procin.stdout, proc.stdin)
@@ -1258,7 +1234,7 @@ def transcode_directory(dir_name):
         time.sleep(5)  # play it safe and avoid failing to unmount.
         cmd = ['umount', '-l', nzb2media.MOUNTED]
         print_cmd(cmd)
-        proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=bitbucket)
+        proc = subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL)
         out, err = proc.communicate()
         time.sleep(5)
         os.rmdir(nzb2media.MOUNTED)
@@ -1278,5 +1254,4 @@ def transcode_directory(dir_name):
         not nzb2media.PROCESSOUTPUT and nzb2media.DUPLICATE
     ):  # We postprocess the original files to CP/SB
         new_dir = dir_name
-    bitbucket.close()
     return final_result, new_dir

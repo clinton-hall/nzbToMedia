@@ -11,6 +11,7 @@ import subprocess
 import sys
 import time
 import typing
+from subprocess import PIPE, DEVNULL
 
 from nzb2media import main_db
 from nzb2media import version_check
@@ -33,6 +34,16 @@ try:
 except ImportError:
     if sys.platform == 'win32':
         sys.exit('Please install pywin32')
+
+
+def which(name):
+    proc = subprocess.Popen(['which', name], stdout=PIPE)
+    try:
+        proc_out, proc_err = proc.communicate()
+    except Exception:
+        return ''
+    else:
+        return proc_out.strip().decode()
 
 
 def module_path(module=__file__):
@@ -288,7 +299,7 @@ MOUNTED = None
 GETSUBS = False
 TRANSCODE = None
 CONCAT = None
-FFMPEG_PATH = None
+FFMPEG_PATH = ''
 SYS_PATH = None
 DUPLICATE = None
 IGNOREEXTENSIONS = []
@@ -532,40 +543,36 @@ def configure_remote_paths():
 
 def configure_niceness():
     global NICENESS
-
-    with open(os.devnull, 'w') as devnull:
+    try:
+        proc = subprocess.Popen(['nice'], stdout=DEVNULL, stderr=DEVNULL)
+        proc.communicate()
+        niceness = CFG['Posix']['niceness']
+        if (
+            len(niceness.split(',')) > 1
+        ):  # Allow passing of absolute command, not just value.
+            NICENESS.extend(niceness.split(','))
+        else:
+            NICENESS.extend(['nice', f'-n{int(niceness)}'])
+    except Exception:
+        pass
+    try:
+        proc = subprocess.Popen(['ionice'], stdout=DEVNULL, stderr=DEVNULL)
+        proc.communicate()
         try:
-            subprocess.Popen(
-                ['nice'], stdout=devnull, stderr=devnull,
-            ).communicate()
-            niceness = CFG['Posix']['niceness']
-            if (
-                len(niceness.split(',')) > 1
-            ):  # Allow passing of absolute command, not just value.
-                NICENESS.extend(niceness.split(','))
+            ionice = CFG['Posix']['ionice_class']
+            NICENESS.extend(['ionice', f'-c{int(ionice)}'])
+        except Exception:
+            pass
+        try:
+            if 'ionice' in NICENESS:
+                ionice = CFG['Posix']['ionice_classdata']
+                NICENESS.extend([f'-n{int(ionice)}'])
             else:
-                NICENESS.extend(['nice', f'-n{int(niceness)}'])
+                NICENESS.extend(['ionice', f'-n{int(ionice)}'])
         except Exception:
             pass
-        try:
-            subprocess.Popen(
-                ['ionice'], stdout=devnull, stderr=devnull,
-            ).communicate()
-            try:
-                ionice = CFG['Posix']['ionice_class']
-                NICENESS.extend(['ionice', f'-c{int(ionice)}'])
-            except Exception:
-                pass
-            try:
-                if 'ionice' in NICENESS:
-                    ionice = CFG['Posix']['ionice_classdata']
-                    NICENESS.extend([f'-n{int(ionice)}'])
-                else:
-                    NICENESS.extend(['ionice', f'-n{int(ionice)}'])
-            except Exception:
-                pass
-        except Exception:
-            pass
+    except Exception:
+        pass
 
 
 def configure_containers():
@@ -1413,123 +1420,36 @@ def configure_utility_locations():
     else:
         if SYS_PATH:
             os.environ['PATH'] += ':' + SYS_PATH
-        try:
-            SEVENZIP = (
-                subprocess.Popen(['which', '7z'], stdout=subprocess.PIPE)
-                .communicate()[0]
-                .strip()
-                .decode()
-            )
-        except Exception:
-            pass
+
+        SEVENZIP = which('7z') or which('7zr') or which('7za')
         if not SEVENZIP:
-            try:
-                SEVENZIP = (
-                    subprocess.Popen(['which', '7zr'], stdout=subprocess.PIPE)
-                    .communicate()[0]
-                    .strip()
-                    .decode()
-                )
-            except Exception:
-                pass
-        if not SEVENZIP:
-            try:
-                SEVENZIP = (
-                    subprocess.Popen(['which', '7za'], stdout=subprocess.PIPE)
-                    .communicate()[0]
-                    .strip()
-                    .decode()
-                )
-            except Exception:
-                pass
-        if not SEVENZIP:
-            SEVENZIP = None
             log.warning('Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
-        try:
-            PAR2CMD = (
-                subprocess.Popen(['which', 'par2'], stdout=subprocess.PIPE)
-                .communicate()[0]
-                .strip()
-                .decode()
-            )
-        except Exception:
-            pass
+
+        PAR2CMD = which('par2')
         if not PAR2CMD:
             PAR2CMD = None
             log.warning('Failed to locate par2. Repair and rename using par files will not be possible!')
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffmpeg')) or os.access(
-            os.path.join(FFMPEG_PATH, 'ffmpeg'),
-            os.X_OK,
-        ):
-            FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avconv')) or os.access(
-            os.path.join(FFMPEG_PATH, 'avconv'),
-            os.X_OK,
-        ):
-            FFMPEG = os.path.join(FFMPEG_PATH, 'avconv')
+
+        ffmpeg_bin = os.path.join(FFMPEG_PATH, 'ffmpeg')
+        avconv_bin = os.path.join(FFMPEG_PATH, 'avconv')
+        if os.path.isfile(ffmpeg_bin) or os.access(ffmpeg_bin, os.X_OK):
+            FFMPEG = ffmpeg_bin
+        elif os.path.isfile(avconv_bin) or os.access(avconv_bin, os.X_OK):
+            FFMPEG = avconv_bin
         else:
-            try:
-                FFMPEG = (
-                    subprocess.Popen(
-                        ['which', 'ffmpeg'], stdout=subprocess.PIPE,
-                    )
-                    .communicate()[0]
-                    .strip()
-                    .decode()
-                )
-            except Exception:
-                pass
-            if not FFMPEG:
-                try:
-                    FFMPEG = (
-                        subprocess.Popen(
-                            ['which', 'avconv'], stdout=subprocess.PIPE,
-                        )
-                        .communicate()[0]
-                        .strip()
-                        .decode()
-                    )
-                except Exception:
-                    pass
+            FFMPEG = which('ffmpeg') or which('avconv')
         if not FFMPEG:
             FFMPEG = None
             log.warning('Failed to locate ffmpeg. Transcoding disabled!')
             log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-
-        if os.path.isfile(os.path.join(FFMPEG_PATH, 'ffprobe')) or os.access(
-            os.path.join(FFMPEG_PATH, 'ffprobe'),
-            os.X_OK,
-        ):
-            FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe')
-        elif os.path.isfile(os.path.join(FFMPEG_PATH, 'avprobe')) or os.access(
-            os.path.join(FFMPEG_PATH, 'avprobe'),
-            os.X_OK,
-        ):
-            FFPROBE = os.path.join(FFMPEG_PATH, 'avprobe')
+        ffprobe_bin = os.path.join(FFMPEG_PATH, 'ffprobe')
+        avprobe_bin = os.path.join(FFMPEG_PATH, 'avprobe')
+        if os.path.isfile(ffprobe_bin) or os.access(ffprobe_bin, os.X_OK):
+            FFPROBE = ffprobe_bin
+        elif os.path.isfile(avprobe_bin) or os.access(avprobe_bin, os.X_OK):
+            FFPROBE = avprobe_bin
         else:
-            try:
-                FFPROBE = (
-                    subprocess.Popen(
-                        ['which', 'ffprobe'], stdout=subprocess.PIPE,
-                    )
-                    .communicate()[0]
-                    .strip()
-                    .decode()
-                )
-            except Exception:
-                pass
-            if not FFPROBE:
-                try:
-                    FFPROBE = (
-                        subprocess.Popen(
-                            ['which', 'avprobe'], stdout=subprocess.PIPE,
-                        )
-                        .communicate()[0]
-                        .strip()
-                        .decode()
-                    )
-                except Exception:
-                    pass
+            FFPROBE = which('ffprobe') or which('avprobe')
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
