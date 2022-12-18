@@ -12,6 +12,19 @@ import sys
 import time
 import typing
 
+from nzb2media import main_db
+from nzb2media import version_check
+from nzb2media import databases
+from nzb2media.configuration import config
+from nzb2media.nzb.configuration import configure_nzbs
+from nzb2media.plugins.plex import configure_plex
+from nzb2media.torrent.configuration import configure_torrent_class
+from nzb2media.torrent.configuration import configure_torrents
+from nzb2media.utils.files import make_dir
+from nzb2media.utils.network import wake_up
+from nzb2media.utils.processes import RunningProcess
+from nzb2media.utils.processes import restart
+
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
@@ -46,38 +59,6 @@ CONFIG_MOVIE_FILE = APP_ROOT / 'autoProcessMovie.cfg'
 CONFIG_TV_FILE = APP_ROOT / 'autoProcessTv.cfg'
 TEST_FILE = APP_ROOT / 'tests' / 'test.mp4'
 MYAPP = None
-
-from nzb2media import main_db
-from nzb2media import version_check
-from nzb2media import databases
-from nzb2media import transcoder
-from nzb2media.configuration import config
-from nzb2media.nzb.configuration import configure_nzbs
-from nzb2media.plugins.plex import configure_plex
-from nzb2media.torrent.configuration import configure_torrent_class
-from nzb2media.torrent.configuration import configure_torrents
-from nzb2media.utils.common import clean_dir
-from nzb2media.utils.common import flatten
-from nzb2media.utils.common import get_dirs
-from nzb2media.utils.download_info import get_download_info
-from nzb2media.utils.download_info import update_download_info_status
-from nzb2media.utils.files import copy_link
-from nzb2media.utils.files import extract_files
-from nzb2media.utils.files import list_media_files
-from nzb2media.utils.files import make_dir
-from nzb2media.utils.files import sanitize_name
-from nzb2media.utils.identification import category_search
-from nzb2media.utils.network import wake_up
-from nzb2media.utils.parsers import parse_args
-from nzb2media.utils.paths import rchmod
-from nzb2media.utils.paths import remove_dir
-from nzb2media.utils.paths import remove_read_only
-from nzb2media.utils.processes import RunningProcess
-from nzb2media.utils.processes import restart
-from nzb2media.utils.torrent import pause_torrent
-from nzb2media.utils.torrent import remove_torrent
-from nzb2media.utils.torrent import resume_torrent
-
 
 __version__ = '12.1.11'
 

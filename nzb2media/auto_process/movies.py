@@ -16,11 +16,13 @@ from nzb2media.plugins.subtitles import import_subs
 from nzb2media.plugins.subtitles import rename_subs
 from nzb2media.scene_exceptions import process_all_exceptions
 from nzb2media.utils.encoding import convert_to_ascii
+from nzb2media.utils.files import extract_files
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.identification import find_imdbid
 from nzb2media.utils.network import find_download
 from nzb2media.utils.network import server_responding
 from nzb2media.utils.nzb import report_nzb
+from nzb2media.utils.paths import rchmod
 from nzb2media.utils.paths import remote_dir
 from nzb2media.utils.paths import remove_dir
 
@@ -142,7 +144,7 @@ def process(
         and extract
     ):
         log.debug(f'Checking for archives to extract in directory: {dir_name}')
-        nzb2media.extract_files(dir_name)
+        extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
     good_files = 0
@@ -206,7 +208,7 @@ def process(
                 log.debug(f'Config setting \'chmodDirectory\' currently set to {oct(chmod_directory)}')
                 if chmod_directory:
                     log.info(f'Attempting to set the octal permission of \'{oct(chmod_directory)}\' on directory \'{dir_name}\'')
-                    nzb2media.rchmod(dir_name, chmod_directory)
+                    rchmod(dir_name, chmod_directory)
             else:
                 log.error(f'Transcoding failed for files in {dir_name}')
                 return ProcessResult(

@@ -8,9 +8,6 @@ import sys
 import typing
 
 import nzb2media
-from nzb2media import APP_FILENAME
-from nzb2media import SYS_ARGV
-from nzb2media import version_check
 
 if os.name == 'nt':
     from win32event import CreateMutex
@@ -103,16 +100,16 @@ else:
 
 
 def restart():
-    install_type = version_check.CheckVersion().install_type
+    install_type = nzb2media.version_check.CheckVersion().install_type
 
     status = 0
     popen_list = []
 
     if install_type in ('git', 'source'):
-        popen_list = [sys.executable, APP_FILENAME]
+        popen_list = [sys.executable, nzb2media.APP_FILENAME]
 
     if popen_list:
-        popen_list += SYS_ARGV
+        popen_list += nzb2media.SYS_ARGV
         log.info(f'Restarting nzbToMedia with {popen_list}')
         p = subprocess.Popen(popen_list, cwd=os.getcwd())
         p.wait()

@@ -12,6 +12,7 @@ from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.scene_exceptions import process_all_exceptions
 from nzb2media.utils.encoding import convert_to_ascii
+from nzb2media.utils.files import extract_files
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.network import server_responding
 from nzb2media.utils.paths import remote_dir
@@ -92,7 +93,7 @@ def process(
         and extract
     ):
         log.debug(f'Checking for archives to extract in directory: {dir_name}')
-        nzb2media.extract_files(dir_name)
+        extract_files(dir_name)
         input_name, dir_name = convert_to_ascii(input_name, dir_name)
 
     # if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
