@@ -1,0 +1,7 @@
+black
+bump2version
+mypy
+pre-commit
+pylint[spelling]
+pytest
+tox
