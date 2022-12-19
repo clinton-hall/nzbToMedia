@@ -53,7 +53,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_directory, input_name, input_category,
         root, nzb2media.CATEGORIES,
     )
-    if input_category == '':
+    if not input_category:
         input_category = 'UNCAT'
 
     usercat = input_category
@@ -132,7 +132,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         input_files = nzb2media.list_media_files(input_directory, archives=False, other=True, otherext=extensions)
     else:
         input_files = nzb2media.list_media_files(input_directory, other=True, otherext=extensions)
-    if len(input_files) == 0 and os.path.isfile(input_directory):
+    if not input_files and os.path.isfile(input_directory):
         input_files = [input_directory]
         log.debug(f'Found 1 file to process: {input_directory}')
     else:
@@ -173,7 +173,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             else:
                 continue  # This file has not been recently moved or created, skip it
 
-        if torrent_no_link == 0:
+        if not torrent_no_link:
             try:
                 nzb2media.copy_link(input_file, target_file, nzb2media.USE_LINK)
                 nzb2media.remove_read_only(target_file)
@@ -246,7 +246,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     plex_update(input_category)
 
-    if result.status_code != 0:
+    if result.status_code:
         if not nzb2media.TORRENT_RESUME_ON_FAILURE:
             log.error(
                 'A problem was reported in the autoProcess* script. '
@@ -344,11 +344,11 @@ def main(args):
                         dir_name, input_name, subsection, input_hash or None, input_id or None,
                         client_agent,
                     )
-                    if results.status_code != 0:
+                    if results.status_code:
                         log.error(f'A problem was reported when trying to perform a manual run for {section}:{subsection}.')
                         result = results
 
-    if result.status_code == 0:
+    if not result.status_code:
         log.info(f'The {args[0]} script completed successfully.')
     else:
         log.error(f'A problem was reported in the {args[0]} script.')

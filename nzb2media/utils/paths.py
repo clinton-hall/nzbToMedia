@@ -14,8 +14,8 @@ log.addHandler(logging.NullHandler())
 
 
 def onerror(func, path, exc_info):
-    """
-    Error handler for ``shutil.rmtree``.
+    """Error handler for ``shutil.rmtree``.
+
     If the error is due to an access error (read only file)
     it attempts to add write permission and then retries.
     If the error is for another reason it re-raises the error.
@@ -83,7 +83,7 @@ def remove_empty_folders(path, remove_root=True):
                 remove_empty_folders(fullpath)
     # if folder empty, delete it
     files = os.listdir(path)
-    if len(files) == 0 and remove_root:
+    if not files and remove_root:
         log.debug(f'Removing empty folder:{path}')
         os.rmdir(path)
 

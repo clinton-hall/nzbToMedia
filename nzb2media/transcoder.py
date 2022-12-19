@@ -11,7 +11,8 @@ import shutil
 import subprocess
 import sys
 import time
-from subprocess import PIPE, DEVNULL
+from subprocess import DEVNULL
+from subprocess import PIPE
 
 from babelfish import Language
 
@@ -30,7 +31,7 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         disable = True
     else:
         test_details, res = get_video_details(nzb2media.TEST_FILE)
-        if res != 0 or test_details.get('error'):
+        if res or test_details.get('error'):
             disable = True
             log.info('DISABLED: ffprobe failed to analyse test file. Stopping corruption check.')
         if test_details.get('streams'):
@@ -47,7 +48,7 @@ def is_video_good(video: pathlib.Path, status, require_lan=None):
         return True
     log.info(f'Checking [{video.name}] for corruption, please stand by ...')
     video_details, result = get_video_details(video)
-    if result != 0:
+    if result:
         log.error(f'FAILED: [{video.name}] is corrupted!')
         return False
     if video_details.get('error'):
@@ -125,7 +126,7 @@ def get_video_details(videofile, img=None):
 
 
 def check_vid_file(video_details, result):
-    if result != 0:
+    if result:
         return False
     if video_details.get('error'):
         return False
@@ -381,7 +382,7 @@ def build_commands(file, new_dir, movie_name):
                 audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
             elif audio3:
                 # wrong language, wrong codec just pick the default audio track
-                _inded = audio3[0]['index']
+                _index = audio3[0]['index']
                 map_cmd.extend(['-map', f'0:{_index}'])
                 a_mapped.extend([audio3[0]['index']])
                 bitrate = int(float(audio3[0].get('bit_rate', 0))) / 1000
@@ -423,11 +424,10 @@ def build_commands(file, new_dir, movie_name):
                 channels = int(float(audio.get('channels', 0)))
                 if audio['codec_name'] in nzb2media.ACODEC3_ALLOW:
                     audio_cmd3.extend([f'-c:a:{used_audio}', 'copy'])
+                elif nzb2media.ACODEC3:
+                    audio_cmd3.extend([f'-c:a:{used_audio}', nzb2media.ACODEC3])
                 else:
-                    if nzb2media.ACODEC3:
-                        audio_cmd3.extend([f'-c:a:{used_audio}', nzb2media.ACODEC3])
-                    else:
-                        audio_cmd3.extend([f'-c:a:{used_audio}', 'copy'])
+                    audio_cmd3.extend([f'-c:a:{used_audio}', 'copy'])
                 if nzb2media.ACHANNELS3 and channels and channels > nzb2media.ACHANNELS3:
                     audio_cmd3.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS3)])
                     if audio_cmd3[1] == 'copy':
@@ -519,11 +519,10 @@ def build_commands(file, new_dir, movie_name):
             map_cmd.extend(['-map', f'{num}:0'])
     if not nzb2media.ALLOWSUBS or (not s_mapped and not num):
         sub_cmd.extend(['-sn'])
+    elif nzb2media.SCODEC:
+        sub_cmd.extend(['-c:s', nzb2media.SCODEC])
     else:
-        if nzb2media.SCODEC:
-            sub_cmd.extend(['-c:s', nzb2media.SCODEC])
-        else:
-            sub_cmd.extend(['-c:s', 'copy'])
+        sub_cmd.extend(['-c:s', 'copy'])
     command.extend(map_cmd)
     command.extend(video_cmd)
     command.extend(audio_cmd)
@@ -586,7 +585,7 @@ def extract_subs(file, newfile_path):
                 result = proc.returncode
         except Exception:
             log.error('Extracting subtitle has failed')
-        if result == 0:
+        if not result:
             try:
                 shutil.copymode(file, output_file)
             except Exception:
@@ -888,7 +887,7 @@ def transcode_directory(dir_name):
             result = proc.returncode
         except Exception:
             log.error(f'Transcoding of video {newfile_path} has failed')
-        if nzb2media.SUBSDIR and result == 0 and isinstance(file, str):
+        if nzb2media.SUBSDIR and not result and isinstance(file, str):
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]
@@ -896,7 +895,7 @@ def transcode_directory(dir_name):
                 newpath = os.path.join(nzb2media.SUBSDIR, subname.replace(name, newname))
                 if not os.path.isfile(newpath):
                     os.rename(sub, newpath)
-        if result == 0:
+        if not result:
             try:
                 shutil.copymode(file, newfile_path)
             except Exception:
@@ -920,7 +919,7 @@ def transcode_directory(dir_name):
         time.sleep(5)
         os.rmdir(nzb2media.MOUNTED)
         nzb2media.MOUNTED = None
-    if final_result == 0 and not nzb2media.DUPLICATE:
+    if not final_result and not nzb2media.DUPLICATE:
         for file in rem_list:
             try:
                 os.unlink(file)

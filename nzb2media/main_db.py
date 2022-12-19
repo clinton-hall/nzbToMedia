@@ -11,9 +11,9 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-def db_filename(filename='nzbtomedia.db', suffix=None):
-    """
-    Return the correct location of the database file.
+def db_filename(filename: str = 'nzbtomedia.db', suffix: str | None = None):
+    """Return the correct location of the database file.
+
     @param filename: The sqlite database filename to use. If not specified, will be made to be nzbtomedia.db
     @param suffix: The suffix to append to the filename. A '.' will be added
                    automatically, i.e. suffix='v0' will make dbfile.db.v0

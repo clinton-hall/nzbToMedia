@@ -41,7 +41,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
     input_name, dir_name = convert_to_ascii(input_name, dir_name)
     fields = input_name.split('-')
     gamez_id = fields[0].replace('[', '').replace(']', '').replace(' ', '')
-    download_status = 'Downloaded' if status == 0 else 'Wanted'
+    download_status = 'Downloaded' if not status else 'Wanted'
     params = {'api_key': apikey, 'mode': 'UPDATEREQUESTEDSTATUS', 'db_id': gamez_id, 'status': download_status}
     log.debug(f'Opening URL: {url}')
     try:

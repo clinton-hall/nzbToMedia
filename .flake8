@@ -1,0 +1,62 @@
+[flake8]
+max-line-length = 79
+max-doc-length = 79
+verbose = 2
+statistics = True
+min-version = 2.7
+require-code = True
+exclude =
+    .github/
+    .pytest_cache/
+    .tox/
+    .venv*/
+    build/
+    htmlcov/
+    logs/
+ignore =
+;   -- flake8 --
+;    E501 line too long
+;    E722 do not use bare 'except' (duplicates B001)
+;    W503 line break before binary operator
+;    W505 doc line too long
+    E501, E722, W503, W505
+
+;   -- flake8-docstrings --
+;    D100 Missing docstring in public module
+;    D101 Missing docstring in public class
+;    D102 Missing docstring in public method
+;    D103 Missing docstring in public function
+;    D104 Missing docstring in public package
+;    D105 Missing docstring in magic method
+;    D107 Missing docstring in __init__
+;    D200 One-line docstring should fit on one line with quotes
+;    D202 No blank lines allowed after function docstring
+;    D205 1 blank line required between summary line and description
+;    D400 First line should end with a period
+;    D401 First line should be in imperative mood
+;    D402 First line should not be the function's "signature"
+    D100, D101, D102, D103, D104, D105, D107
+
+;   -- flake8-future-import --
+;    x = 1 for missing, 5 for present
+;    FIx6 nested_scopes     2.2
+;    FIx7 generators        2.3
+;    FIx2 with_statement    2.6
+;    FIx1 absolute_import   3.0
+;    FIx0 division          3.0
+;    FIx3 print_function    3.0
+;    FIx4 unicode_literals  3.0
+;    FIx5 generator_stop    3.7
+;    FIx8 annotations       4.0
+;    FI90 __future__ import does not exist
+    FI10, FI11, FI13, FI14, FI58
+
+per-file-ignores =
+;    F401 imported but unused
+;    E402 module level import not at top of file
+;    nzbTo*.py: E265, E266, E402
+;    TorrentToMedia.py: E402
+;    nzb2media/__init__.py: E402, F401
+;    nzb2media/utils/__init__.py: F401
+;    nzb2media/plugins/downloaders/configuration.py: F401
+;    nzb2media/plugins/downloaders/utils.py: F401

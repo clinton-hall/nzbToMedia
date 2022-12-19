@@ -10,14 +10,12 @@ import typing
 import nzb2media
 
 if os.name == 'nt':
-    # pylint: disable-next=no-name-in-module
-    from win32event import CreateMutex
-
-    # pylint: disable-next=no-name-in-module
+    # Silence errors on linux
+    # pylint: disable=import-error
+    # pylint: disable=no-name-in-module
     from win32api import CloseHandle
-
-    # pylint: disable-next=no-name-in-module
     from win32api import GetLastError
+    from win32event import CreateMutex
     from winerror import ERROR_ALREADY_EXISTS
 
 log = logging.getLogger(__name__)
@@ -96,6 +94,8 @@ class PosixProcess:
                 self.pidpath.unlink()
 
 
+# Alternative union syntax using | fails on Python < 3.10
+# pylint: disable-next=consider-alternative-union-syntax
 ProcessType = typing.Type[typing.Union[PosixProcess, WindowsProcess]]
 if os.name == 'nt':
     RunningProcess: ProcessType = WindowsProcess

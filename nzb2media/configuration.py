@@ -73,9 +73,8 @@ class Section(configobj.Section):
                     if key in options:
                         return options[key]
                     del subsections[subsection]
-            else:
-                if section not in key:
-                    del to_return[section]
+            elif section not in key:
+                del to_return[section]
         # cleanout empty sections and subsections
         for key in [k for (k, v) in to_return.items() if not v]:
             del to_return[key]

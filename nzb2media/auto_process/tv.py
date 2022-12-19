@@ -130,10 +130,10 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
                 import_subs(video)
                 rename_subs(dir_name)
     if num_files > 0:
-        if valid_files == num_files and not status == 0:
+        if valid_files == num_files and status:
             log.info('Found Valid Videos. Setting status Success')
             status = 0
-        if valid_files < num_files and status == 0:
+        if valid_files < num_files and not status:
             log.info('Found corrupt videos. Setting status Failed')
             status = 1
             if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
@@ -150,7 +150,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         return ProcessResult.success()
     elif nzb_extraction_by == 'Destination':
         log.info('Check for media files ignored because nzbExtractionBy is set to Destination.')
-        if status == 0:
+        if not status:
             log.info('Setting Status Success.')
         else:
             log.info('Downloader reported an error during download or verification. Processing this as a failed download.')
@@ -160,9 +160,10 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         status = 1
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
-    if status == 0 and nzb2media.TRANSCODE == 1:  # only transcode successful downloads
+    if not status and nzb2media.TRANSCODE == 1:
+        # only transcode successful downloads
         result, new_dir_name = transcoder.transcode_directory(dir_name)
-        if result == 0:
+        if not result:
             log.debug(f'SUCCESS: Transcoding succeeded for files in {dir_name}')
             dir_name = new_dir_name
             log.debug(f'Config setting \'chmodDirectory\' currently set to {oct(chmod_directory)}')
@@ -230,7 +231,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         for key, val in list(fork_params.items()):
             if val is None:
                 del fork_params[key]
-    if status == 0:
+    if not status:
         if section == 'NzbDrone' and not apikey:
             log.info('No Sonarr apikey entered. Processing completed.')
             return ProcessResult.success(f'{section}: Successfully post-processed {input_name}')
@@ -338,9 +339,8 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
     elif section == 'SiCKRAGE':
         if api_version >= 2:
             success = True
-        else:
-            if response.json()['result'] == 'success':
-                success = True
+        elif response.json()['result'] == 'success':
+            success = True
     elif section == 'NzbDrone':
         try:
             res = response.json()
@@ -351,7 +351,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             log.warning(f'No scan id was returned due to: {error}')
             scan_id = None
             started = False
-    if status != 0 and delete_failed and not os.path.dirname(dir_name) == dir_name:
+    if status and delete_failed and not os.path.dirname(dir_name) == dir_name:
         log.debug(f'Deleting failed files and folder {dir_name}')
         remove_dir(dir_name)
     if success:

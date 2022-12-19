@@ -69,7 +69,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
     # if listMediaFiles(dir_name, media=False, audio=True, meta=False, archives=False) and status:
     #     logger.info('Status shown as failed from Downloader, but valid video files found. Setting as successful.', SECTION)
     #     status = 0
-    if status == 0 and section == 'HeadPhones':
+    if not status and section == 'HeadPhones':
         params = {'apikey': apikey, 'cmd': 'forceProcess', 'dir': remote_dir(dir_name) if remote_path else dir_name}
         res = force_process(params, url, apikey, input_name, dir_name, section, wait_for)
         if res.status_code in {0, 1}:
@@ -81,7 +81,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         # The status hasn't changed. uTorrent can resume seeding now.
         log.warning(f'The music album does not appear to have changed status after {wait_for} minutes. Please check your Logs')
         return ProcessResult.failure(f'{section}: Failed to post-process - No change in wanted status')
-    if status == 0 and section == 'Lidarr':
+    if not status and section == 'Lidarr':
         route = f'{web_root}/api/v1/command'
         url = nzb2media.utils.common.create_url(scheme, host, port, route)
         headers = {'X-Api-Key': apikey}

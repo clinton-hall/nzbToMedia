@@ -164,7 +164,7 @@ def par2(dirname):
                 result = proc.returncode
         except Exception:
             log.error(f'par2 file processing for {parfile} has failed')
-        if result == 0:
+        if not result:
             log.info('par2 file processing succeeded')
         os.chdir(pwd)
 
