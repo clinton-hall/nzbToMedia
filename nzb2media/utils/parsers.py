@@ -14,8 +14,7 @@ def parse_other(args):
 
 
 def parse_rtorrent(args):
-    # rtorrent usage: system.method.set_key = event.download.finished,TorrentToMedia,
-    # 'execute={/path/to/nzbToMedia/TorrentToMedia.py,\'$d.get_base_path=\',\'$d.get_name=\',\'$d.get_custom1=\',\'$d.get_hash=\'}'
+    # rtorrent usage: system.method.set_key = event.download.finished,TorrentToMedia, # 'execute={/path/to/nzbToMedia/TorrentToMedia.py,\'$d.get_base_path=\',\'$d.get_name=\',\'$d.get_custom1=\',\'$d.get_hash=\'}'
     input_directory = os.path.normpath(args[1])
     try:
         input_name = args[2]
@@ -33,7 +32,6 @@ def parse_rtorrent(args):
         input_id = args[4]
     except Exception:
         input_id = ''
-
     return input_directory, input_name, input_category, input_hash, input_id
 
 
@@ -53,7 +51,6 @@ def parse_utorrent(args):
         input_id = args[4]
     except Exception:
         input_id = ''
-
     return input_directory, input_name, input_category, input_hash, input_id
 
 
@@ -64,17 +61,13 @@ def parse_deluge(args):
     input_hash = args[1]
     input_id = args[1]
     try:
-        input_category = (
-            nzb2media.TORRENT_CLASS.core.get_torrent_status(input_id, ['label'])
-            .get(b'label')
-            .decode()
-        )
+        input_category = nzb2media.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get(b'label').decode()
     except Exception:
         input_category = ''
     return input_directory, input_name, input_category, input_hash, input_id
 
 
-def parse_transmission(args):
+def parse_transmission():
     # Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
     input_directory = os.path.normpath(os.getenv('TR_TORRENT_DIR'))
     input_name = os.getenv('TR_TORRENT_NAME')
@@ -84,7 +77,7 @@ def parse_transmission(args):
     return input_directory, input_name, input_category, input_hash, input_id
 
 
-def parse_synods(args):
+def parse_synods():
     # Synology/Transmission usage: call TorrenToMedia.py (%TR_TORRENT_DIR% %TR_TORRENT_NAME% is passed on as environmental variables)
     input_directory = ''
     input_id = ''
@@ -92,13 +85,7 @@ def parse_synods(args):
     input_name = os.getenv('TR_TORRENT_NAME')
     input_hash = os.getenv('TR_TORRENT_HASH')
     if not input_name:  # No info passed. Assume manual download.
-        return (
-            input_directory,
-            input_name,
-            input_category,
-            input_hash,
-            input_id,
-        )
+        return input_directory, input_name, input_category, input_hash, input_id
     torrent_id = os.getenv('TR_TORRENT_ID')
     input_id = f'dbid_{torrent_id}'
     # res = nzb2media.TORRENT_CLASS.tasks_list(additional_param='detail')
@@ -110,7 +97,7 @@ def parse_synods(args):
             task = [task for task in tasks if task['id'] == input_id][0]
             input_id = task['id']
             input_directory = task['additional']['detail']['destination']
-        except:
+        except Exception:
             log.error('unable to find download details in Synology DS')
         # Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
         if not os.path.isdir(input_directory):
@@ -152,7 +139,6 @@ def parse_vuze(args):
             input_name = cur_input[5]
     except Exception:
         pass
-
     return input_directory, input_name, input_category, input_hash, input_id
 
 
@@ -186,22 +172,11 @@ def parse_qbittorrent(args):
         input_id = cur_input[3].replace('\'', '')
     except Exception:
         input_id = ''
-
     return input_directory, input_name, input_category, input_hash, input_id
 
 
 def parse_args(client_agent, args):
-    clients = {
-        'other': parse_other,
-        'rtorrent': parse_rtorrent,
-        'utorrent': parse_utorrent,
-        'deluge': parse_deluge,
-        'transmission': parse_transmission,
-        'qbittorrent': parse_qbittorrent,
-        'vuze': parse_vuze,
-        'synods': parse_synods,
-    }
-
+    clients = {'other': parse_other, 'rtorrent': parse_rtorrent, 'utorrent': parse_utorrent, 'deluge': parse_deluge, 'transmission': parse_transmission, 'qbittorrent': parse_qbittorrent, 'vuze': parse_vuze, 'synods': parse_synods}
     try:
         return clients[client_agent](args)
     except Exception:

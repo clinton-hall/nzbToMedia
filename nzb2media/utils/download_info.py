@@ -7,7 +7,6 @@ from nzb2media import main_db
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
 database = main_db.DBConnection()
 
 

@@ -8,13 +8,16 @@ import sys
 import typing
 
 import nzb2media
-from nzb2media import APP_FILENAME
-from nzb2media import SYS_ARGV
-from nzb2media import version_check
 
 if os.name == 'nt':
+    # pylint: disable-next=no-name-in-module
     from win32event import CreateMutex
-    from win32api import CloseHandle, GetLastError
+
+    # pylint: disable-next=no-name-in-module
+    from win32api import CloseHandle
+
+    # pylint: disable-next=no-name-in-module
+    from win32api import GetLastError
     from winerror import ERROR_ALREADY_EXISTS
 
 log = logging.getLogger(__name__)
@@ -27,23 +30,22 @@ class WindowsProcess:
         # {D0E858DF-985E-4907-B7FB-8D732C3FC3B9}
         _path_str = os.fspath(nzb2media.PID_FILE).replace('\\', '/')
         self.mutexname = f'nzbtomedia_{_path_str}'
-        self.CreateMutex = CreateMutex
-        self.CloseHandle = CloseHandle
-        self.GetLastError = GetLastError
-        self.ERROR_ALREADY_EXISTS = ERROR_ALREADY_EXISTS
+        self.create_mutex = CreateMutex
+        self.close_handle = CloseHandle
+        self.get_last_error = GetLastError
+        self.error_already_exists = ERROR_ALREADY_EXISTS
 
     def alreadyrunning(self):
-        self.mutex = self.CreateMutex(None, 0, self.mutexname)
-        self.lasterror = self.GetLastError()
-        if self.lasterror == self.ERROR_ALREADY_EXISTS:
-            self.CloseHandle(self.mutex)
+        self.mutex = self.create_mutex(None, 0, self.mutexname)
+        self.lasterror = self.get_last_error()
+        if self.lasterror == self.error_already_exists:
+            self.close_handle(self.mutex)
             return True
-        else:
-            return False
+        return False
 
     def __del__(self):
         if self.mutex:
-            self.CloseHandle(self.mutex)
+            self.close_handle(self.mutex)
 
 
 class PosixProcess:
@@ -57,16 +59,16 @@ class PosixProcess:
             self.lock_socket.bind(f'\0{self.pidpath}')
             self.lasterror = False
             return self.lasterror
-        except OSError as e:
-            if 'Address already in use' in str(e):
+        except OSError as error:
+            if 'Address already in use' in str(error):
                 self.lasterror = True
                 return self.lasterror
         except AttributeError:
             pass
-        if os.path.exists(self.pidpath):
+        if self.pidpath.exists():
             # Make sure it is not a 'stale' pidFile
             try:
-                pid = int(open(self.pidpath).read().strip())
+                pid = int(self.pidpath.read_text().strip())
             except Exception:
                 pid = None
             # Check list of running pids, if not running it is stale so overwrite
@@ -80,11 +82,10 @@ class PosixProcess:
                 self.lasterror = False
         else:
             self.lasterror = False
-
         if not self.lasterror:
-            # Write my pid into pidFile to keep multiple copies of program from running
-            with self.pidpath.open(mode='w') as fp:
-                fp.write(os.getpid())
+            # Write my pid into pidFile to keep multiple copies of program
+            # from running
+            self.pidpath.write_text(os.getpid())
         return self.lasterror
 
     def __del__(self):
@@ -103,19 +104,15 @@ else:
 
 
 def restart():
-    install_type = version_check.CheckVersion().install_type
-
+    install_type = nzb2media.version_check.CheckVersion().install_type
     status = 0
     popen_list = []
-
-    if install_type in ('git', 'source'):
-        popen_list = [sys.executable, APP_FILENAME]
-
+    if install_type in {'git', 'source'}:
+        popen_list = [sys.executable, nzb2media.APP_FILENAME]
     if popen_list:
-        popen_list += SYS_ARGV
+        popen_list += nzb2media.SYS_ARGV
         log.info(f'Restarting nzbToMedia with {popen_list}')
-        p = subprocess.Popen(popen_list, cwd=os.getcwd())
-        p.wait()
-        status = p.returncode
-
+        with subprocess.Popen(popen_list, cwd=os.getcwd()) as proc:
+            proc.wait()
+            status = proc.returncode
     os._exit(status)

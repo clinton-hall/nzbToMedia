@@ -2,76 +2,24 @@ from __future__ import annotations
 
 import logging
 import os
-import platform
 import re
 import shlex
 import subprocess
+from subprocess import DEVNULL
 
 import nzb2media
 from nzb2media.utils.files import list_media_files
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-
-reverse_list = [
-    r'\.\d{2}e\d{2}s\.',
-    r'\.[pi]0801\.',
-    r'\.p027\.',
-    r'\.[pi]675\.',
-    r'\.[pi]084\.',
-    r'\.p063\.',
-    r'\b[45]62[xh]\.',
-    r'\.yarulb\.',
-    r'\.vtd[hp]\.',
-    r'\.ld[.-]?bew\.',
-    r'\.pir.?(dov|dvd|bew|db|rb)\.',
-    r'\brdvd\.',
-    r'\.vts\.',
-    r'\.reneercs\.',
-    r'\.dcv\.',
-    r'\b(pir|mac)dh\b',
-    r'\.reporp\.',
-    r'\.kcaper\.',
-    r'\.lanretni\.',
-    r'\b3ca\b',
-    r'\.cstn\.',
-]
+reverse_list = [r'\.\d{2}e\d{2}s\.', r'\.[pi]0801\.', r'\.p027\.', r'\.[pi]675\.', r'\.[pi]084\.', r'\.p063\.', r'\b[45]62[xh]\.', r'\.yarulb\.', r'\.vtd[hp]\.', r'\.ld[.-]?bew\.', r'\.pir.?(dov|dvd|bew|db|rb)\.', r'\brdvd\.', r'\.vts\.', r'\.reneercs\.', r'\.dcv\.', r'\b(pir|mac)dh\b', r'\.reporp\.', r'\.kcaper\.', r'\.lanretni\.', r'\b3ca\b', r'\.cstn\.']
 reverse_pattern = re.compile('|'.join(reverse_list), flags=re.IGNORECASE)
 season_pattern = re.compile(r'(.*\.\d{2}e\d{2}s\.)(.*)', flags=re.IGNORECASE)
 word_pattern = re.compile(r'([^A-Z0-9]*[A-Z0-9]+)')
-media_list = [
-    r'\.s\d{2}e\d{2}\.',
-    r'\.1080[pi]\.',
-    r'\.720p\.',
-    r'\.576[pi]',
-    r'\.480[pi]\.',
-    r'\.360p\.',
-    r'\.[xh]26[45]\b',
-    r'\.bluray\.',
-    r'\.[hp]dtv\.',
-    r'\.web[.-]?dl\.',
-    r'\.(vod|dvd|web|bd|br).?rip\.',
-    r'\.dvdr\b',
-    r'\.stv\.',
-    r'\.screener\.',
-    r'\.vcd\.',
-    r'\bhd(cam|rip)\b',
-    r'\.proper\.',
-    r'\.repack\.',
-    r'\.internal\.',
-    r'\bac3\b',
-    r'\.ntsc\.',
-    r'\.pal\.',
-    r'\.secam\.',
-    r'\bdivx\b',
-    r'\bxvid\b',
-]
+media_list = [r'\.s\d{2}e\d{2}\.', r'\.1080[pi]\.', r'\.720p\.', r'\.576[pi]', r'\.480[pi]\.', r'\.360p\.', r'\.[xh]26[45]\b', r'\.bluray\.', r'\.[hp]dtv\.', r'\.web[.-]?dl\.', r'\.(vod|dvd|web|bd|br).?rip\.', r'\.dvdr\b', r'\.stv\.', r'\.screener\.', r'\.vcd\.', r'\bhd(cam|rip)\b', r'\.proper\.', r'\.repack\.', r'\.internal\.', r'\bac3\b', r'\.ntsc\.', r'\.pal\.', r'\.secam\.', r'\bdivx\b', r'\bxvid\b']
 media_pattern = re.compile('|'.join(media_list), flags=re.IGNORECASE)
 garbage_name = re.compile(r'^[a-zA-Z0-9]*$')
-char_replace = [
-    [r'(\w)1\.(\w)', r'\1i\2'],
-]
+char_replace = [[r'(\w)1\.(\w)', r'\1i\2']]
 
 
 def process_all_exceptions(name, dirname):
@@ -112,11 +60,7 @@ def strip_groups(filename):
 
 def rename_file(filename, newfile_path):
     if os.path.isfile(newfile_path):
-        newfile_path = (
-            os.path.splitext(newfile_path)[0]
-            + '.NTM'
-            + os.path.splitext(newfile_path)[1]
-        )
+        newfile_path = os.path.splitext(newfile_path)[0] + '.NTM' + os.path.splitext(newfile_path)[1]
     log.error(f'Replacing file name {filename} with download name {newfile_path}')
     try:
         os.rename(filename, newfile_path)
@@ -126,10 +70,7 @@ def rename_file(filename, newfile_path):
 
 def replace_filename(filename, dirname, name):
     head, file_extension = os.path.splitext(os.path.basename(filename))
-    if (
-        media_pattern.search(os.path.basename(dirname).replace(' ', '.'))
-        is not None
-    ):
+    if media_pattern.search(os.path.basename(dirname).replace(' ', '.')) is not None:
         newname = os.path.basename(dirname).replace(' ', '.')
         log.debug(f'Replacing file name {head} with directory name {newname}')
     elif media_pattern.search(name.replace(' ', '.').lower()) is not None:
@@ -143,21 +84,21 @@ def replace_filename(filename, dirname, name):
     return newfile_path
 
 
-def reverse_filename(filename, dirname, name):
+def reverse_filename(filename, dirname):
     head, file_extension = os.path.splitext(os.path.basename(filename))
     na_parts = season_pattern.search(head)
     if na_parts is not None:
-        word_p = word_pattern.findall(na_parts.group(2))
-        if word_p:
+        match = word_pattern.findall(na_parts.group(2))
+        if match:
             new_words = ''
-            for wp in word_p:
-                if wp[0] == '.':
+            for group in match:
+                if group[0] == '.':
                     new_words += '.'
-                new_words += re.sub(r'\W', '', wp)
+                new_words += re.sub(r'\W', '', group)
         else:
             new_words = na_parts.group(2)
-        for cr in char_replace:
-            new_words = re.sub(cr[0], cr[1], new_words)
+        for each_char in char_replace:
+            new_words = re.sub(each_char[0], each_char[1], new_words)
         newname = new_words[::-1] + na_parts.group(1)[::-1]
     else:
         newname = head[::-1].title()
@@ -177,7 +118,8 @@ def rename_script(dirname):
                 dirname = directory
                 break
     if rename_file:
-        rename_lines = [line.strip() for line in open(rename_file)]
+        with open(rename_file, encoding='utf-8') as fin:
+            rename_lines = [line.strip() for line in fin]
         for line in rename_lines:
             if re.search('^(mv|Move)', line, re.IGNORECASE):
                 cmd = shlex.split(line)[1:]
@@ -185,9 +127,7 @@ def rename_script(dirname):
                 continue
             if len(cmd) == 2 and os.path.isfile(os.path.join(dirname, cmd[0])):
                 orig = os.path.join(dirname, cmd[0])
-                dest = os.path.join(
-                    dirname, cmd[1].split('\\')[-1].split('/')[-1],
-                )
+                dest = os.path.join(dirname, cmd[1].split('\\')[-1].split('/')[-1])
                 if os.path.isfile(dest):
                     continue
                 log.debug(f'Renaming file {orig} to {dest}')
@@ -212,10 +152,6 @@ def par2(dirname):
     if nzb2media.PAR2CMD and parfile:
         pwd = os.getcwd()  # Get our Present Working Directory
         os.chdir(dirname)  # set directory to run par on.
-        if platform.system() == 'Windows':
-            bitbucket = open('NUL')
-        else:
-            bitbucket = open('/dev/null')
         log.info(f'Running par2 on file {parfile}.')
         command = [nzb2media.PAR2CMD, 'r', parfile, '*']
         cmd = ''
@@ -223,17 +159,14 @@ def par2(dirname):
             cmd = f'{cmd} {item}'
         log.debug(f'calling command:{cmd}')
         try:
-            proc = subprocess.Popen(
-                command, stdout=bitbucket, stderr=bitbucket,
-            )
-            proc.communicate()
-            result = proc.returncode
+            with subprocess.Popen(command, stdout=DEVNULL, stderr=DEVNULL) as proc:
+                proc.communicate()
+                result = proc.returncode
         except Exception:
             log.error(f'par2 file processing for {parfile} has failed')
         if result == 0:
             log.info('par2 file processing succeeded')
         os.chdir(pwd)
-        bitbucket.close()
 
 
 # dict for custom groups

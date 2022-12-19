@@ -2,6 +2,6 @@ import sys
 
 import nzbToMedia
 
-section = 'Mylar'
-result = nzbToMedia.main(sys.argv, section)
+SECTION = 'Mylar'
+result = nzbToMedia.main(sys.argv, SECTION)
 sys.exit(result)

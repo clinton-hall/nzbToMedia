@@ -2,6 +2,6 @@ import sys
 
 import nzbToMedia
 
-section = 'Watcher3'
-result = nzbToMedia.main(sys.argv, section)
+SECTION = 'Watcher3'
+result = nzbToMedia.main(sys.argv, SECTION)
 sys.exit(result)

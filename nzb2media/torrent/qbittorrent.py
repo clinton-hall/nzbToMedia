@@ -16,7 +16,6 @@ def configure_client():
     port = nzb2media.QBITTORRENT_PORT
     user = nzb2media.QBITTORRENT_USER
     password = nzb2media.QBITTORRENT_PASSWORD
-
     log.debug(f'Connecting to {agent}: http://{host}:{port}')
     client = qBittorrentClient(f'http://{host}:{port}/')
     try:

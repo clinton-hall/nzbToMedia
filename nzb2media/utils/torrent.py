@@ -12,25 +12,18 @@ from nzb2media.torrent import utorrent
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-
-torrent_clients = {
-    'deluge': deluge,
-    'qbittorrent': qbittorrent,
-    'transmission': transmission,
-    'utorrent': utorrent,
-    'synods': synology,
-}
+torrent_clients = {'deluge': deluge, 'qbittorrent': qbittorrent, 'transmission': transmission, 'utorrent': utorrent, 'synods': synology}
 
 
-def create_torrent_class(client_agent):
-    if not nzb2media.APP_NAME == 'TorrentToMedia.py':
-        return  # Skip loading Torrent for NZBs.
-
+def create_torrent_class(client_agent) -> object | None:
+    if nzb2media.APP_NAME != 'TorrentToMedia.py':
+        return None  # Skip loading Torrent for NZBs.
     try:
         agent = torrent_clients[client_agent]
     except KeyError:
-        return
+        return None
     else:
+        deluge.configure_client()
         return agent.configure_client()
 
 
@@ -53,7 +46,7 @@ def pause_torrent(client_agent, input_hash, input_id, input_name):
 
 
 def resume_torrent(client_agent, input_hash, input_id, input_name):
-    if not nzb2media.TORRENT_RESUME == 1:
+    if nzb2media.TORRENT_RESUME != 1:
         return
     log.debug(f'Starting torrent {input_name} in {client_agent}')
     try:

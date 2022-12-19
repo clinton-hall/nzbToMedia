@@ -16,7 +16,6 @@ def configure_client():
     port = nzb2media.TRANSMISSION_PORT
     user = nzb2media.TRANSMISSION_USER
     password = nzb2media.TRANSMISSION_PASSWORD
-
     log.debug(f'Connecting to {agent}: http://{host}:{port}')
     try:
         client = TransmissionClient(host, port, user, password)

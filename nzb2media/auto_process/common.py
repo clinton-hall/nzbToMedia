@@ -34,57 +34,33 @@ class ProcessResult(typing.NamedTuple):
 
 def command_complete(url, params, headers, section):
     try:
-        r = requests.get(
-            url,
-            params=params,
-            headers=headers,
-            stream=True,
-            verify=False,
-            timeout=(30, 60),
-        )
+        respone = requests.get(url, params=params, headers=headers, stream=True, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
         log.error(f'Unable to open URL: {url}')
         return None
-    if r.status_code not in [
-        requests.codes.ok,
-        requests.codes.created,
-        requests.codes.accepted,
-    ]:
-        log.error(f'Server returned status {r.status_code}')
+    if respone.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+        log.error(f'Server returned status {respone.status_code}')
         return None
-    else:
-        try:
-            return r.json()['status']
-        except (ValueError, KeyError):
-            # ValueError catches simplejson's JSONDecodeError and
-            # json's ValueError
-            log.error(f'{section} did not return expected json data.')
-            return None
-
-
-def completed_download_handling(url2, headers, section='MAIN'):
     try:
-        r = requests.get(
-            url2,
-            params={},
-            headers=headers,
-            stream=True,
-            verify=False,
-            timeout=(30, 60),
-        )
+        return respone.json()['status']
+    except (ValueError, KeyError):
+        # ValueError catches simplejson's JSONDecodeError and
+        # json's ValueError
+        log.error(f'{section} did not return expected json data.')
+        return None
+
+
+def completed_download_handling(url2, headers):
+    try:
+        response = requests.get(url2, params={}, headers=headers, stream=True, verify=False, timeout=(30, 60))
     except requests.ConnectionError:
         log.error(f'Unable to open URL: {url2}')
         return False
-    if r.status_code not in [
-        requests.codes.ok,
-        requests.codes.created,
-        requests.codes.accepted,
-    ]:
-        log.error(f'Server returned status {r.status_code}')
+    if response.status_code not in [requests.codes.ok, requests.codes.created, requests.codes.accepted]:
+        log.error(f'Server returned status {response.status_code}')
         return False
-    else:
-        try:
-            return r.json().get('enableCompletedDownloadHandling', False)
-        except ValueError:
-            # ValueError catches simplejson's JSONDecodeError and json's ValueError
-            return False
+    try:
+        return response.json().get('enableCompletedDownloadHandling', False)
+    except ValueError:
+        # ValueError catches simplejson's JSONDecodeError and json's ValueError
+        return False
