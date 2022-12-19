@@ -35,14 +35,15 @@ except ImportError:
         sys.exit('Please install pywin32')
 
 
-def which(name):
+def which(name) -> pathlib.Path | None:
     with subprocess.Popen(['which', name], stdout=PIPE) as proc:
         try:
             proc_out, proc_err = proc.communicate()
         except Exception:
-            return ''
+            return None
         else:
-            return proc_out.strip().decode()
+            location = proc_out.strip().decode()
+            return pathlib.Path(location)
 
 
 def module_path(module=__file__):
@@ -166,7 +167,7 @@ MOUNTED = None
 GETSUBS = False
 TRANSCODE = None
 CONCAT = None
-FFMPEG_PATH = ''
+FFMPEG_PATH: pathlib.Path | None = None
 SYS_PATH = None
 DUPLICATE = None
 IGNOREEXTENSIONS = []
@@ -313,7 +314,7 @@ def configure_general():
     GIT_USER = CFG['General']['git_user'] or 'clinton-hall'
     GIT_BRANCH = CFG['General']['git_branch'] or 'master'
     FORCE_CLEAN = int(CFG['General']['force_clean'])
-    FFMPEG_PATH = CFG['General']['ffmpeg_path']
+    FFMPEG_PATH = pathlib.Path(CFG['General']['ffmpeg_path'])
     SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
     REQUIRE_LAN = None if not CFG['General']['require_lan'] else CFG['General']['require_lan'].split(',')
@@ -672,19 +673,20 @@ def configure_utility_locations():
     global PAR2CMD
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
     if platform.system() == 'Windows':
-        FFMPEG = os.path.join(FFMPEG_PATH, 'ffmpeg.exe')
-        FFPROBE = os.path.join(FFMPEG_PATH, 'ffprobe.exe')
-        SEVENZIP = os.path.join(APP_ROOT, 'nzb2media', 'extractor', 'bin', platform.machine(), '7z.exe')
-        SHOWEXTRACT = int(str(CFG['Windows']['show_extraction']), 0)
-        if not os.path.isfile(FFMPEG):  # problem
-            FFMPEG = None
-            log.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
-            log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-        if not os.path.isfile(FFPROBE):
-            FFPROBE = None
-            if CHECK_MEDIA:
-                log.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')
+        if FFMPEG_PATH:
+            FFMPEG = FFMPEG_PATH / 'ffmpeg.exe'
+            FFPROBE = FFMPEG_PATH / 'ffprobe.exe'
+            SEVENZIP = APP_ROOT / f'nzb2media/extractor/bin{platform.machine()}/7z.exe'
+            SHOWEXTRACT = int(str(CFG['Windows']['show_extraction']), 0)
+            if FFMPEG and FFMPEG.exists():  # problem
+                FFMPEG = None
+                log.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
                 log.warning('Install ffmpeg with x264 support to enable this feature  ...')
+            if not os.path.isfile(FFPROBE):
+                FFPROBE = None
+                if CHECK_MEDIA:
+                    log.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')
+                    log.warning('Install ffmpeg with x264 support to enable this feature  ...')
     else:
         if SYS_PATH:
             os.environ['PATH'] += ':' + SYS_PATH
@@ -695,26 +697,31 @@ def configure_utility_locations():
         if not PAR2CMD:
             PAR2CMD = None
             log.warning('Failed to locate par2. Repair and rename using par files will not be possible!')
-        ffmpeg_bin = os.path.join(FFMPEG_PATH, 'ffmpeg')
-        avconv_bin = os.path.join(FFMPEG_PATH, 'avconv')
-        if os.path.isfile(ffmpeg_bin) or os.access(ffmpeg_bin, os.X_OK):
-            FFMPEG = ffmpeg_bin
-        elif os.path.isfile(avconv_bin) or os.access(avconv_bin, os.X_OK):
-            FFMPEG = avconv_bin
-        else:
+        if FFMPEG_PATH:
+            ffmpeg_bin = FFMPEG_PATH / 'ffmpeg'
+            avconv_bin = FFMPEG_PATH / 'avconv'
+            if ffmpeg_bin.is_file() or os.access(ffmpeg_bin, os.X_OK):
+                FFMPEG = ffmpeg_bin
+            elif avconv_bin.is_file() or os.access(avconv_bin, os.X_OK):
+                FFMPEG = avconv_bin
+        if not FFMPEG:
             FFMPEG = which('ffmpeg') or which('avconv')
         if not FFMPEG:
             FFMPEG = None
             log.warning('Failed to locate ffmpeg. Transcoding disabled!')
             log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-        ffprobe_bin = os.path.join(FFMPEG_PATH, 'ffprobe')
-        avprobe_bin = os.path.join(FFMPEG_PATH, 'avprobe')
-        if os.path.isfile(ffprobe_bin) or os.access(ffprobe_bin, os.X_OK):
-            FFPROBE = ffprobe_bin
-        elif os.path.isfile(avprobe_bin) or os.access(avprobe_bin, os.X_OK):
-            FFPROBE = avprobe_bin
-        else:
+
+        if not FFMPEG_PATH:
+            ffprobe_bin = FFMPEG_PATH / 'ffprobe'
+            avprobe_bin = FFMPEG_PATH / 'avprobe'
+            if ffprobe_bin.is_file() or os.access(ffprobe_bin, os.X_OK):
+                FFPROBE = ffprobe_bin
+            elif avprobe_bin.is_file() or os.access(avprobe_bin, os.X_OK):
+                FFPROBE = avprobe_bin
+
+        if not FFPROBE:
             FFPROBE = which('ffprobe') or which('avprobe')
+
         if not FFPROBE:
             FFPROBE = None
             if CHECK_MEDIA:
