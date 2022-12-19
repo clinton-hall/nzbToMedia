@@ -7,14 +7,26 @@ trigger:
 - master
 
 jobs:
+- job: 'Lint'
+  pool:
+    vmImage: 'Ubuntu-latest'
+
+  steps:
+  - task: UsePythonVersion@0
+    inputs:
+      versionSpec: '3.x'
+      architecture: 'x64'
+
+  - script: |
+      pip install pre-commit pylint -r requirements.txt -r dev-requirements.txt
+      pre-commit run --all-files
+    displayName: 'Run pre-commit tests'
 
 - job: 'Test'
   pool:
     vmImage: 'Ubuntu-latest'
   strategy:
     matrix:
-      Python27:
-        python.version: '2.7'
       Python37:
         python.version: '3.7'
       Python38:
@@ -32,26 +44,21 @@ jobs:
       sudo apt-get update
       sudo apt-get install ffmpeg
     displayName: 'Install ffmpeg'
-  
+
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '$(python.version)'
       architecture: 'x64'
 
-  - script: python -m pip install --upgrade pip
+  - script: |
+        python -m pip install --upgrade pip
+        python -m pip install -r requirements.txt
     displayName: 'Install dependencies'
 
   - script: |
       pip install pytest
       pytest tests --doctest-modules --junitxml=junit/test-results.xml
     displayName: 'pytest'
-
-  - script: |
-      rm -rf .git
-      python cleanup.py
-      python TorrentToMedia.py
-      python nzbToMedia.py
-    displayName: 'Test source install cleanup'
 
   - task: PublishTestResults@2
     inputs:
@@ -70,5 +77,5 @@ jobs:
       versionSpec: '3.x'
       architecture: 'x64'
 
-  - script: python setup.py sdist
-    displayName: 'Build sdist'
+  - script: pip install .
+    displayName: 'Pip install'
