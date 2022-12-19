@@ -10,11 +10,11 @@ import typing
 import nzb2media
 
 if os.name == 'nt':
-    # pylint: disable-next=no-name-in-module
+    # Silence errors on linux
+    # pylint: disable=import-error
+    # pylint: disable=no-name-in-module
     from win32api import CloseHandle
-    # pylint: disable-next=no-name-in-module
     from win32api import GetLastError
-    # pylint: disable-next=no-name-in-module
     from win32event import CreateMutex
     from winerror import ERROR_ALREADY_EXISTS
 

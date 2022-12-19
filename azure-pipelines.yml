@@ -18,7 +18,7 @@ jobs:
       architecture: 'x64'
 
   - script: |
-      pip install pre-commit pylint -r requirements.txt
+      pip install pre-commit pylint -r requirements.txt -r dev-requirements.txt
       pre-commit run --all-files
     displayName: 'Run pre-commit tests'
 
