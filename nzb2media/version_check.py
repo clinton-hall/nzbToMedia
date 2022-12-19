@@ -261,8 +261,8 @@ class GitUpdateManager(UpdateManager):
         return False
 
     def update(self):
-        """
-        Check git for a new version.
+        """Check git for a new version.
+
         Calls git pull origin <branch> in order to update Sick Beard.
         Returns a bool depending on the call's success.
         """
@@ -308,8 +308,8 @@ class SourceUpdateManager(UpdateManager):
         return False
 
     def _check_github_for_update(self):
-        """
-        Check Github for a new version.
+        """ Check Github for a new version.
+
         Uses pygithub to ask github if there is a newer version than
         the provided commit hash. If there is a newer version it sets
         Sick Beard's version text.
@@ -388,7 +388,7 @@ class SourceUpdateManager(UpdateManager):
             # walk temp folder and move files to main folder
             log.info(f'Moving files from {content_dir} to {nzb2media.APP_ROOT}')
             for dirname, _, filenames in os.walk(content_dir):
-                dirname = dirname[len(content_dir) + 1 :]
+                dirname = dirname[len(content_dir) + 1:]
                 for curfile in filenames:
                     old_path = os.path.join(content_dir, dirname, curfile)
                     new_path = os.path.join(nzb2media.APP_ROOT, dirname, curfile)

@@ -144,10 +144,8 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             failure_link += '&corrupt=true'
     elif client_agent == 'manual':
         log.warning(f'No media files found in directory {dir_name} to manually process.')
-        return ProcessResult(
-            message='',
-            status_code=0,  # Success (as far as this script is concerned)
-        )
+        # Success (as far as this script is concerned)
+        return ProcessResult.success()
     else:
         log.warning(f'No media files found in directory {dir_name}. Processing this as a failed download')
         status = 1

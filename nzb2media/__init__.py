@@ -13,6 +13,7 @@ import time
 import typing
 from subprocess import PIPE, DEVNULL
 
+from nzb2media import tool
 from nzb2media import databases
 from nzb2media import main_db
 from nzb2media import version_check
@@ -212,8 +213,8 @@ OUTPUTQUALITYPERCENT = None
 FFMPEG: pathlib.Path | None = None
 SEVENZIP: pathlib.Path | None = None
 SHOWEXTRACT = 0
-PAR2CMD = None
-FFPROBE = None
+PAR2CMD: pathlib.Path | None = None
+FFPROBE: pathlib.Path | None = None
 CHECK_MEDIA = None
 REQUIRE_LAN = None
 NICENESS = []
@@ -671,62 +672,16 @@ def configure_utility_locations():
     global FFMPEG
     global FFPROBE
     global PAR2CMD
+
     # Setup FFMPEG, FFPROBE and SEVENZIP locations
+    FFMPEG = tool.find_transcoder(FFMPEG_PATH)
+    FFPROBE = tool.find_video_corruption_detector(FFMPEG_PATH)
+    PAR2CMD = tool.find_archive_repairer()
     if platform.system() == 'Windows':
-        if FFMPEG_PATH:
-            FFMPEG = FFMPEG_PATH / 'ffmpeg.exe'
-            FFPROBE = FFMPEG_PATH / 'ffprobe.exe'
-            SEVENZIP = APP_ROOT / f'nzb2media/extractor/bin{platform.machine()}/7z.exe'
-            SHOWEXTRACT = int(str(CFG['Windows']['show_extraction']), 0)
-            if FFMPEG and FFMPEG.exists():  # problem
-                FFMPEG = None
-                log.warning('Failed to locate ffmpeg.exe. Transcoding disabled!')
-                log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-            if not os.path.isfile(FFPROBE):
-                FFPROBE = None
-                if CHECK_MEDIA:
-                    log.warning('Failed to locate ffprobe.exe. Video corruption detection disabled!')
-                    log.warning('Install ffmpeg with x264 support to enable this feature  ...')
+        path = APP_ROOT / f'nzb2media/extractor/bin/{platform.machine()}'
     else:
-        if SYS_PATH:
-            os.environ['PATH'] += ':' + SYS_PATH
-        SEVENZIP = which('7z') or which('7zr') or which('7za')
-        if not SEVENZIP:
-            log.warning('Failed to locate 7zip. Transcoding of disk images and extraction of .7z files will not be possible!')
-        PAR2CMD = which('par2')
-        if not PAR2CMD:
-            PAR2CMD = None
-            log.warning('Failed to locate par2. Repair and rename using par files will not be possible!')
-        if FFMPEG_PATH:
-            ffmpeg_bin = FFMPEG_PATH / 'ffmpeg'
-            avconv_bin = FFMPEG_PATH / 'avconv'
-            if ffmpeg_bin.is_file() or os.access(ffmpeg_bin, os.X_OK):
-                FFMPEG = ffmpeg_bin
-            elif avconv_bin.is_file() or os.access(avconv_bin, os.X_OK):
-                FFMPEG = avconv_bin
-        if not FFMPEG:
-            FFMPEG = which('ffmpeg') or which('avconv')
-        if not FFMPEG:
-            FFMPEG = None
-            log.warning('Failed to locate ffmpeg. Transcoding disabled!')
-            log.warning('Install ffmpeg with x264 support to enable this feature  ...')
-
-        if not FFMPEG_PATH:
-            ffprobe_bin = FFMPEG_PATH / 'ffprobe'
-            avprobe_bin = FFMPEG_PATH / 'avprobe'
-            if ffprobe_bin.is_file() or os.access(ffprobe_bin, os.X_OK):
-                FFPROBE = ffprobe_bin
-            elif avprobe_bin.is_file() or os.access(avprobe_bin, os.X_OK):
-                FFPROBE = avprobe_bin
-
-        if not FFPROBE:
-            FFPROBE = which('ffprobe') or which('avprobe')
-
-        if not FFPROBE:
-            FFPROBE = None
-            if CHECK_MEDIA:
-                log.warning('Failed to locate ffprobe. Video corruption detection disabled!')
-                log.warning('Install ffmpeg with x264 support to enable this feature  ...')
+        path = None
+    SEVENZIP = tool.find_unzip(path)
 
 
 def initialize(section=None):

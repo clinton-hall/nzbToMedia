@@ -72,7 +72,7 @@ def zip_out(file, img):
     if os.path.isfile(file):
         cmd = ['cat', file]
     else:
-        cmd = [nzb2media.SEVENZIP, '-so', 'e', img, file]
+        cmd = [os.fspath(nzb2media.SEVENZIP), '-so', 'e', img, file]
     try:
         with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
             return proc
@@ -87,11 +87,11 @@ def get_video_details(videofile, img=None):
     file = videofile
     if not nzb2media.FFPROBE:
         return video_details, result
-    print_format = '-of' if 'avprobe' in nzb2media.FFPROBE else '-print_format'
+    print_format = '-of' if 'avprobe' in nzb2media.FFPROBE.name else '-print_format'
     try:
         if img:
             videofile = '-'
-        command = [nzb2media.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
+        command = [os.fspath(nzb2media.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
         print_cmd(command)
         if img:
             procin = zip_out(file, img)
@@ -106,7 +106,7 @@ def get_video_details(videofile, img=None):
         video_details = json.loads(proc_out.decode())
     except Exception:
         try:  # try this again without -show error in case of ffmpeg limitation
-            command = [nzb2media.FFPROBE, '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
+            command = [os.fspath(nzb2media.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
             print_cmd(command)
             if img:
                 procin = zip_out(file, img)
@@ -469,7 +469,7 @@ def build_commands(file, new_dir, movie_name):
                 break
             if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and nzb2media.SCODEC == 'mov_text':
                 continue  # We can't convert these.
-            _inded = sub['index']
+            _index = sub['index']
             map_cmd.extend(['-map', f'0:{_index}'])
             s_mapped.extend([sub['index']])
     if nzb2media.SINCLUDE:

@@ -34,8 +34,11 @@ def extract(file_path, output_destination):
         required_cmds = ['unrar', 'unzip', 'tar', 'unxz', 'unlzma', '7zr', 'bunzip2', 'gunzip']
         # ## Possible future suport:
         # gunzip: gz (cmd will delete original archive)
-        # ## the following do not extract to dest dir
-        # '.xz': ['xz', '-d --keep'], # '.lzma': ['xz', '-d --format=lzma --keep'], # '.bz2': ['bzip2', '-d --keep'], extract_commands = {            '.rar': ['unrar', 'x', '-o+', '-y'], '.tar': ['tar', '-xf'], '.zip': ['unzip'], '.tar.gz': ['tar', '-xzf'], '.tgz': ['tar', '-xzf'], '.tar.bz2': ['tar', '-xjf'], '.tbz': ['tar', '-xjf'], '.tar.lzma': ['tar', '--lzma', '-xf'], '.tlz': ['tar', '--lzma', '-xf'], '.tar.xz': ['tar', '--xz', '-xf'], '.txz': ['tar', '--xz', '-xf'], '.7z': ['7zr', 'x'], '.gz': ['gunzip'], }
+        # ## the following do not extract to destination dir
+        # '.xz': ['xz', '-d --keep'],
+        # '.lzma': ['xz', '-d --format=lzma --keep'],
+        # '.bz2': ['bzip2', '-d --keep']
+        extract_commands = {'.rar': ['unrar', 'x', '-o+', '-y'], '.tar': ['tar', '-xf'], '.zip': ['unzip'], '.tar.gz': ['tar', '-xzf'], '.tgz': ['tar', '-xzf'], '.tar.bz2': ['tar', '-xjf'], '.tbz': ['tar', '-xjf'], '.tar.lzma': ['tar', '--lzma', '-xf'], '.tlz': ['tar', '--lzma', '-xf'], '.tar.xz': ['tar', '--xz', '-xf'], '.txz': ['tar', '--xz', '-xf'], '.7z': ['7zr', 'x'], '.gz': ['gunzip']}
         # Test command exists and if not, remove
         if not os.getenv('TR_TORRENT_DIR'):
             for cmd in required_cmds:
