@@ -46,7 +46,7 @@ def main(args, section=None):
     else:
         manual.process()
 
-    if result.status_code == 0:
+    if not result.status_code:
         log.info(f'The {args[0]} script completed successfully.')
         if result.message:
             print(result.message + '!')

@@ -59,7 +59,8 @@ def char_replace(name_in):
 
 def convert_to_ascii(input_name, dir_name):
     ascii_convert = int(nzb2media.CFG['ASCII']['convert'])
-    if ascii_convert == 0 or os.name == 'nt':  # just return if we don't want to convert or on windows os and '\' is replaced!.
+    if not ascii_convert or os.name == 'nt':
+        # just return if we don't want to convert or on windows os and '\' is replaced!.
         return input_name, dir_name
     encoded, input_name = char_replace(input_name)
     directory, base = os.path.split(dir_name)

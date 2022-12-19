@@ -32,7 +32,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key) -> str:
                 return imdbid
     if 'NZBPR__DNZB_MOREINFO' in os.environ:
         dnzb_more_info = os.environ.get('NZBPR__DNZB_MOREINFO', '')
-        if dnzb_more_info != '':
+        if dnzb_more_info:
             regex = re.compile(r'^http://www.imdb.com/title/(tt[0-9]+)/$', re.IGNORECASE)
             match = regex.match(dnzb_more_info)
             if match:

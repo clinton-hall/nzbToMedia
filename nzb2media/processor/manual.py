@@ -38,7 +38,7 @@ def process():
                     continue
                 input_name = os.path.basename(dir_name)
                 results = nzb.process(dir_name, input_name, 0, client_agent=client_agent, download_id=download_id or None, input_category=subsection)
-                if results.status_code != 0:
+                if results.status_code:
                     log.error(f'A problem was reported when trying to perform a manual run for {section}:{subsection}.')
                     result = results
     return result

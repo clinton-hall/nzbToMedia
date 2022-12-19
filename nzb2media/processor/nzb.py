@@ -85,7 +85,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         processor = process_map[section_name]
         result = processor(section=section_name, dir_name=input_directory, input_name=input_name, status=status, client_agent=client_agent, download_id=download_id, input_category=input_category, failure_link=failure_link)
     plex_update(input_category)
-    if result.status_code == 0:
+    if not result.status_code:
         if client_agent != 'manual':
             # update download status in our DB
             update_download_info_status(input_name, 1)

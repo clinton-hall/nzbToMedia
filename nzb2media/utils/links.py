@@ -12,11 +12,12 @@ log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 try:
-    from jaraco.windows.filesystem import islink, readlink
+    from jaraco.windows.filesystem import islink
+    from jaraco.windows.filesystem import readlink
 except ImportError:
     if os.name != 'nt':
-        from os.path import islink
         from os import readlink
+        from os.path import islink
     else:
         raise
 

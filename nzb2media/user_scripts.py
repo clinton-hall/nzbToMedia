@@ -108,9 +108,9 @@ def external_script(output_destination, torrent_name, torrent_label, settings):
             file_name, file_extension = os.path.splitext(file)
             if file_extension in nzb2media.USER_SCRIPT_MEDIAEXTENSIONS or nzb2media.USER_SCRIPT_MEDIAEXTENSIONS == 'ALL':
                 num_files_new += 1
-    if nzb2media.USER_SCRIPT_CLEAN == int(1) and num_files_new == 0 and final_result == 0:
+    if nzb2media.USER_SCRIPT_CLEAN == 1 and not num_files_new and not final_result:
         log.info(f'All files have been processed. Cleaning outputDirectory {output_destination}')
         remove_dir(output_destination)
-    elif nzb2media.USER_SCRIPT_CLEAN == int(1) and num_files_new != 0:
+    elif nzb2media.USER_SCRIPT_CLEAN == 1 and num_files_new:
         log.info(f'{num_files} files were processed, but {num_files_new} still remain. outputDirectory will not be cleaned.')
     return ProcessResult(status_code=final_result, message='User Script Completed')

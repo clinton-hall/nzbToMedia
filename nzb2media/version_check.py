@@ -11,7 +11,8 @@ import stat
 import subprocess
 import tarfile
 import traceback
-from subprocess import PIPE, STDOUT
+from subprocess import PIPE
+from subprocess import STDOUT
 from urllib.request import urlretrieve
 
 import nzb2media
@@ -40,8 +41,8 @@ class CheckVersion:
 
     @staticmethod
     def find_install_type():
-        """
-        Determine how this copy of SB was installed.
+        """Determine how this copy of SB was installed.
+
         returns: type of installation. Possible values are:
             'win': any compiled windows build
             'git': running from source using git
@@ -55,8 +56,8 @@ class CheckVersion:
         return install_type
 
     def check_for_new_version(self, force=False):
-        """
-        Check the internet for a newer version.
+        """Check the internet for a newer version.
+
         returns: bool, True for new version or False for no new version.
         force: if true the VERSION_NOTIFY setting will be ignored and a check will be forced
         """
@@ -114,7 +115,7 @@ class GitUpdateManager(UpdateManager):
             main_git = 'git'
         log.debug(f'Checking if we can use git commands: {main_git} {test_cmd}')
         output, err, exit_status = self._run_git(main_git, test_cmd)
-        if exit_status == 0:
+        if not exit_status:
             log.debug(f'Using: {main_git}')
             return main_git
         log.debug(f'Not using: {main_git}')
@@ -131,7 +132,7 @@ class GitUpdateManager(UpdateManager):
             for cur_git in alternative_git:
                 log.debug(f'Checking if we can use git commands: {cur_git} {test_cmd}')
                 output, err, exit_status = self._run_git(cur_git, test_cmd)
-                if exit_status == 0:
+                if not exit_status:
                     log.debug(f'Using: {cur_git}')
                     return cur_git
                 log.debug(f'Not using: {cur_git}')
@@ -160,7 +161,7 @@ class GitUpdateManager(UpdateManager):
             log.error(f'Command {cmd} didn\'t work')
             proc_status = 1
         proc_status = 128 if ('fatal:' in result) or proc_err else proc_status
-        if proc_status == 0:
+        if not proc_status:
             log.debug(f'{cmd} : returned successful')
             proc_status = 0
         elif nzb2media.LOG_GIT and proc_status in {1, 128}:
@@ -172,13 +173,13 @@ class GitUpdateManager(UpdateManager):
         return result, proc_err, proc_status
 
     def _find_installed_version(self):
-        """
-        Attempt to find the currently installed version of Sick Beard.
+        """Attempt to find the currently installed version of Sick Beard.
+
         Uses git show to get commit version.
         Returns: True for success or False for failure
         """
         output, err, exit_status = self._run_git(self._git_path, 'rev-parse HEAD')
-        if exit_status == 0 and output:
+        if not exit_status and output:
             cur_commit_hash = output.strip()
             if not re.match('^[a-z0-9]+$', cur_commit_hash):
                 log.error('Output doesn\'t look like a hash, not using it')
@@ -192,7 +193,7 @@ class GitUpdateManager(UpdateManager):
     def _find_git_branch(self):
         nzb2media.NZBTOMEDIA_BRANCH = self.get_github_branch()
         branch_info, err, exit_status = self._run_git(self._git_path, 'symbolic-ref -q HEAD')
-        if exit_status == 0 and branch_info:
+        if not exit_status and branch_info:
             branch = branch_info.strip().replace('refs/heads/', '', 1)
             if branch:
                 nzb2media.NZBTOMEDIA_BRANCH = branch
@@ -200,8 +201,8 @@ class GitUpdateManager(UpdateManager):
         return nzb2media.GIT_BRANCH
 
     def _check_github_for_update(self):
-        """
-        Check Github for a new version.
+        """Check Github for a new version.
+
         Uses git commands to check if there is a newer version than
         the provided commit hash. If there is a newer version it
         sets _num_commits_behind.
@@ -211,12 +212,12 @@ class GitUpdateManager(UpdateManager):
         self._num_commits_ahead = 0
         # get all new info from github
         output, err, exit_status = self._run_git(self._git_path, 'fetch origin')
-        if not exit_status == 0:
+        if exit_status:
             log.error('Unable to contact github, can\'t check for update')
             return
         # get latest commit_hash from remote
         output, err, exit_status = self._run_git(self._git_path, 'rev-parse --verify --quiet \'@{upstream}\'')
-        if exit_status == 0 and output:
+        if not exit_status and output:
             cur_commit_hash = output.strip()
             if not re.match('^[a-z0-9]+$', cur_commit_hash):
                 log.debug('Output doesn\'t look like a hash, not using it')
@@ -227,7 +228,7 @@ class GitUpdateManager(UpdateManager):
             return
         # get number of commits behind and ahead (option --count not supported git < 1.7.2)
         output, err, exit_status = self._run_git(self._git_path, 'rev-list --left-right \'@{upstream}\'...HEAD')
-        if exit_status == 0 and output:
+        if not exit_status and output:
             try:
                 self._num_commits_behind = int(output.count('<'))
                 self._num_commits_ahead = int(output.count('>'))
@@ -267,7 +268,7 @@ class GitUpdateManager(UpdateManager):
         Returns a bool depending on the call's success.
         """
         output, err, exit_status = self._run_git(self._git_path, f'pull origin {self.branch}')
-        if exit_status == 0:
+        if not exit_status:
             return True
         return False
 
@@ -308,7 +309,7 @@ class SourceUpdateManager(UpdateManager):
         return False
 
     def _check_github_for_update(self):
-        """ Check Github for a new version.
+        """Check Github for a new version.
 
         Uses pygithub to ask github if there is a newer version than
         the provided commit hash. If there is a newer version it sets

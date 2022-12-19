@@ -38,6 +38,70 @@ load-plugins=
 # no Warning level messages displayed, use"--disable=all --enable=classes
 # --disable=W"
 
+# See below for a list of codes
+
+disable=
+    E1101,  # no-member
+
+    W0141,  # bad-builtin
+    W0149,  # while-used
+    W0160,  # consider-ternary-expression
+    W0201,  # attribute-defined-outside-init
+    W0212,  # protected-access
+    W0511,  # fixme
+    W0601,  # global-variable-undefined
+    W0602,  # global-variable-not-assigned
+    W0603,  # global-statement
+    W0612,  # unused-variable
+    W0621,  # redefined-outer-name
+    W0631,  # undefined-loop-variable
+    W0703,  # broad-except
+    W0717,  # too-many-try-statements
+    W1202,  # logging-format-interpolation
+    W1203,  # logging-fstring-interpolation
+    W1404,  # implicit-str-concat
+    W2901,  # redefined-loop-name
+    W3101,  # missing-timeout
+    W6001,  # deprecated-typing-alias
+
+    C0103,  # invalid-name
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    C0201,  # consider-iterating-dictionary
+    C0206,  # consider-using-dict-items
+    C0301,  # line-too-long
+    C0415,  # import-outside-toplevel
+
+    R0204,  # redifined-variable-type
+    R0401,  # cyclic-import
+    R0801,  # duplicate-code
+    R0903,  # too-few-public-methods
+    R0902,  # too-many-instance-attributes
+    R0911,  # too-many-return-statements
+    R0912,  # too-many-branches
+    R0913,  # too-many-arguments
+    R0914,  # too-many-locals
+    R0915,  # too-many-statements
+    R0916,  # too-many-boolean-expressions
+    R1260,  # too-complex
+    R1702,  # too-many-nested-blocks
+    R1704,  # redefined-argument-from-local
+    R1710,  # inconsistent-return-statements
+    R5601,  # confusing-consecutive-elif
+    R6103,  # consider-using-assignment-expr
+
+    I0011,  # locally-disabled
+    I0020,  # suppressed-message
+
+# Enable the message, report, category or checker with the given id(s). You can
+# either give multiple identifier separated by comma (,) or put this option
+# multiple time (only on the command line, not in the configuration file where
+# it should appear only once). See also the "--disable" option for examples.
+enable=
+
+
+# ------------------------ CODES ------------------------
 ;    # --- FATAL ---------
 ;    F0001, # fatal
 ;    F0002, # astroid-error
@@ -459,70 +523,3 @@ load-plugins=
 ;    I0022,  # deprecated-pragma
 ;    I0023,  # use-symbolic-message-instead
 ;    I1101,  # c-extension-no-member
-
-disable=
-    E1101,  # no-member
-
-    W0141,  # bad-builtin
-    W0149,  # while-used
-    W0160,  # consider-ternary-expression
-    W0201,  # attribute-defined-outside-init
-    W0212,  # protected-access
-    W0511,  # fixme
-    W0601,  # global-variable-undefined
-    W0602,  # global-variable-not-assigned
-    W0603,  # global-statement
-    W0612,  # unused-variable
-    W0621,  # redefined-outer-name
-    W0631,  # undefined-loop-variable
-    W0703,  # broad-except
-    W0717,  # too-many-try-statements
-    W1202,  # logging-format-interpolation
-    W1203,  # logging-fstring-interpolation
-    W1404,  # implicit-str-concat
-    W2901,  # redefined-loop-name
-    W3101,  # missing-timeout
-    W6001,  # deprecated-typing-alias
-    W9016,  # missing-type-do
-
-    C0103,  # invalid-name
-    C0114,  # missing-module-docstring
-    C0115,  # missing-class-docstring
-    C0116,  # missing-function-docstring
-    C0199,  # docstring-first-line-empty
-    C0201,  # consider-iterating-dictionary
-    C0206,  # consider-using-dict-items
-    C0301,  # line-too-long
-    C0415,  # import-outside-toplevel
-    C1901,  # compare-to-empty-string
-    C2001,  # compare-to-zero
-
-    R0204,  # redifined-variable-type
-    R0401,  # cyclic-import
-    R0801,  # duplicate-code
-    R0903,  # too-few-public-methods
-    R0902,  # too-many-instance-attributes
-    R0911,  # too-many-return-statements
-    R0912,  # too-many-branches
-    R0913,  # too-many-arguments
-    R0914,  # too-many-locals
-    R0915,  # too-many-statements
-    R0916,  # too-many-boolean-expressions
-    R1260,  # too-complex
-    R1702,  # too-many-nested-blocks
-    R1704,  # redefined-argument-from-local
-    R1710,  # inconsistent-return-statements
-    R5501,  # else-if-used
-    R5601,  # confusing-consecutive-elif
-    R6003,  # consider-alternative-union-syntax
-    R6102,  # consider-using-tuple
-    R6103,  # consider-using-assignment-expr
-
-    I0011,  # locally-disabled
-    I0020,  # suppressed-message
-
-# Enable the message, report, category or checker with the given id(s). You can
-# either give multiple identifier separated by comma (,) or put this option
-# multiple time (only on the command line, not in the configuration file where
-# it should appear only once). See also the "--disable" option for examples.
-enable=

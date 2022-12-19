@@ -101,7 +101,7 @@ def parse_synods():
             log.error('unable to find download details in Synology DS')
         # Syno paths appear to be relative. Let's test to see if the returned path exists, and if not append to /volume1/
         if not os.path.isdir(input_directory):
-            for root in ['/volume1/', '/volume2/', '/volume3/', '/volume4/']:
+            for root in ('/volume1/', '/volume2/', '/volume3/', '/volume4/'):
                 if os.path.isdir(os.path.join(root, input_directory)):
                     input_directory = os.path.join(root, input_directory)
                     break

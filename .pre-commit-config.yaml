@@ -5,10 +5,45 @@ repos:
     -   id: trailing-whitespace
     -   id: end-of-file-fixer
     -   id: check-yaml
+    -   id: check-json
+    -   id: check-toml
+    -   id: check-xml
+    -   id: check-case-conflict
     -   id: debug-statements
+    -   id: detect-private-key
     -   id: double-quote-string-fixer
+    -   id: fix-byte-order-marker
     -   id: name-tests-test
     -   id: requirements-txt-fixer
+-   repo: https://github.com/pycqa/flake8
+    rev: '6.0.0'
+    hooks:
+    -   id: flake8
+        name: Flake8 primary tests
+        additional_dependencies:
+          - flake8-bugbear
+          - flake8-commas
+          - flake8-comprehensions
+          - flake8-docstrings
+          - flake8-future-import
+    -   id: flake8
+        name: Flake8 selective tests
+        args: [
+          #   ** SELECTIVE TESTS **
+          #   Run flake8 tests (with plugins) for specific optional codes defined below
+          #   -- flake8 --
+          #    E123 closing bracket does not match indentation of opening bracket’s line
+          #    E226 missing whitespace around arithmetic operator
+          #    E241 multiple spaces after ‘,’
+          #    E242 tab after ‘,’
+          #    E704 multiple statements on one line
+          #    W504 line break after binary operator
+          #    W505 doc line too long
+          #   -- flake8-bugbear --
+          #    B902 Invalid first argument used for instance method.
+          #    B903 Data class should be immutable or use __slots__ to save memory.
+          '--select=B902,B903,E123,E226,E241,E242,E704,W504,W505'
+        ]
 -   repo: https://github.com/asottile/add-trailing-comma
     rev: v2.4.0
     hooks:
@@ -34,5 +69,5 @@ repos:
         [
           "-rn", # Only display messages
           "-sn", # Disable score
-          "--rcfile=.pylintrc.ini", # Link to your config file
+          "--rcfile=.pylintrc", # Link to your config file
         ]

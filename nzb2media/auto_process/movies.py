@@ -151,10 +151,10 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         status = 1
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
-    if status == 0:
+    if not status:
         if nzb2media.TRANSCODE == 1:
             result, new_dir_name = transcoder.transcode_directory(dir_name)
-            if result == 0:
+            if not result:
                 log.debug(f'Transcoding succeeded for files in {dir_name}')
                 dir_name = new_dir_name
                 log.debug(f'Config setting \'chmodDirectory\' currently set to {oct(chmod_directory)}')

@@ -20,8 +20,8 @@ class GitHub:
         return data.json() if data.ok else []
 
     def commits(self):
-        """
-        Get the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
+        """Get the 100 most recent commits from the specified user/repo/branch, starting from HEAD.
+
         user: The github username of the person whose repo you're querying
         repo: The repo name to query
         branch: Optional, the branch name to show commits from
@@ -30,8 +30,8 @@ class GitHub:
         return self._access_api(['repos', self.github_repo_user, self.github_repo, 'commits'], params={'per_page': 100, 'sha': self.branch})
 
     def compare(self, base, head, per_page=1):
-        """
-        Get compares between base and head.
+        """Get compares between base and head.
+
         user: The github username of the person whose repo you're querying
         repo: The repo name to query
         base: Start compare from branch

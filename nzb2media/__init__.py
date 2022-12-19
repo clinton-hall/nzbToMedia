@@ -11,11 +11,11 @@ import subprocess
 import sys
 import time
 import typing
-from subprocess import PIPE, DEVNULL
+from subprocess import DEVNULL
 
-from nzb2media import tool
 from nzb2media import databases
 from nzb2media import main_db
+from nzb2media import tool
 from nzb2media import version_check
 from nzb2media.configuration import Config
 from nzb2media.nzb.configuration import configure_nzbs
@@ -29,22 +29,6 @@ from nzb2media.utils.processes import restart
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-try:
-    import win32event
-except ImportError:
-    if sys.platform == 'win32':
-        sys.exit('Please install pywin32')
-
-
-def which(name) -> pathlib.Path | None:
-    with subprocess.Popen(['which', name], stdout=PIPE) as proc:
-        try:
-            proc_out, proc_err = proc.communicate()
-        except Exception:
-            return None
-        else:
-            location = proc_out.strip().decode()
-            return pathlib.Path(location)
 
 
 def module_path(module=__file__):

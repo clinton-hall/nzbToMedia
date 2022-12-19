@@ -17,6 +17,7 @@ log.addHandler(logging.NullHandler())
 
 class InitSickBeard:
     """SickBeard init class.
+
     Used to determine which SickBeard fork object to initialize.
     """
 
@@ -204,7 +205,9 @@ class InitSickBeard:
 
     def _init_fork(self):
         # These need to be imported here, to prevent a circular import.
-        from .pymedusa import PyMedusa, PyMedusaApiV1, PyMedusaApiV2
+        from .pymedusa import PyMedusa
+        from .pymedusa import PyMedusaApiV1
+        from .pymedusa import PyMedusaApiV2
 
         mapped_forks = {'Medusa': PyMedusa, 'Medusa-api': PyMedusaApiV1, 'Medusa-apiv2': PyMedusaApiV2}
         log.debug(f'Create object for fork {self.fork}')
@@ -243,7 +246,8 @@ class SickBeard:
         self.success = False
 
     def initialize(self, dir_name, input_name=None, failed=False, client_agent='manual'):
-        """We need to call this explicitely because we need some variables.
+        """We need to call this explicitly because we need some variables.
+
         We can't pass these directly through the constructor.
         """
         self.dir_name = dir_name
@@ -358,6 +362,7 @@ class SickBeard:
 
     def process_response(self, response: requests.Response) -> ProcessResult:
         """Iterate over the lines returned, and log.
+
         :param response: Streamed Requests response object.
         This method will need to be overwritten in the forks, for alternative response handling.
         """
