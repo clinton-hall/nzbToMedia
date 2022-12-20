@@ -1,7 +1,7 @@
 import sys
 
-import nzbToMedia
+from nzb2media.app import main
 
-SECTION = 'SickBeard'
-result = nzbToMedia.main(sys.argv, SECTION)
-sys.exit(result)
+if __name__ == '__main__':
+    section = 'SickBeard'
+    sys.exit(main(section=section))

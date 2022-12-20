@@ -8,6 +8,7 @@ import subprocess
 from subprocess import DEVNULL
 
 import nzb2media
+import nzb2media.tool
 from nzb2media.utils.files import list_media_files
 
 log = logging.getLogger(__name__)
@@ -149,11 +150,11 @@ def par2(dirname):
             if size > sofar:
                 sofar = size
                 parfile = item
-    if nzb2media.PAR2CMD and parfile:
+    if nzb2media.tool.PAR2CMD and parfile:
         pwd = os.getcwd()  # Get our Present Working Directory
         os.chdir(dirname)  # set directory to run par on.
         log.info(f'Running par2 on file {parfile}.')
-        command = [nzb2media.PAR2CMD, 'r', parfile, '*']
+        command = [nzb2media.tool.PAR2CMD, 'r', parfile, '*']
         cmd = ''
         for item in command:
             cmd = f'{cmd} {item}'
@@ -167,7 +168,6 @@ def par2(dirname):
         if not result:
             log.info('par2 file processing succeeded')
         os.chdir(pwd)
-
 
 # dict for custom groups
 # we can add more to this list

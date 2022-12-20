@@ -44,19 +44,13 @@ def test_import_nzb():
     import nzb2media.nzb
     assert nzb2media.nzb
 
-    import nzb2media.nzb.configuration
-    assert nzb2media.nzb.configuration
-
 
 def test_import_plugins():
-    import nzb2media.plugins
-    assert nzb2media.plugins
+    import nzb2media.plex
+    assert nzb2media.plex
 
-    import nzb2media.plugins.plex
-    assert nzb2media.plugins.plex
-
-    import nzb2media.plugins.subtitles
-    assert nzb2media.plugins.subtitles
+    import nzb2media.subtitles
+    assert nzb2media.subtitles
 
 
 def test_import_processor():
@@ -80,23 +74,20 @@ def test_import_torrent():
     import nzb2media.torrent
     assert nzb2media.torrent
 
-    import nzb2media.torrent.configuration
-    assert nzb2media.torrent.configuration
+    import nzb2media.deluge
+    assert nzb2media.deluge
 
-    import nzb2media.torrent.deluge
-    assert nzb2media.torrent.deluge
+    import nzb2media.qbittorrent
+    assert nzb2media.qbittorrent
 
-    import nzb2media.torrent.qbittorrent
-    assert nzb2media.torrent.qbittorrent
+    import nzb2media.synology
+    assert nzb2media.synology
 
-    import nzb2media.torrent.synology
-    assert nzb2media.torrent.synology
+    import nzb2media.transmission
+    assert nzb2media.transmission
 
-    import nzb2media.torrent.transmission
-    assert nzb2media.torrent.transmission
-
-    import nzb2media.torrent.utorrent
-    assert nzb2media.torrent.utorrent
+    import nzb2media.utorrent
+    assert nzb2media.utorrent
 
 
 def test_import_utils():
@@ -127,20 +118,11 @@ def test_import_utils():
     import nzb2media.utils.network
     assert nzb2media.utils.network
 
-    import nzb2media.utils.nzb
-    assert nzb2media.utils.nzb
-
     import nzb2media.utils.parsers
     assert nzb2media.utils.parsers
 
     import nzb2media.utils.paths
     assert nzb2media.utils.paths
-
-    import nzb2media.utils.processes
-    assert nzb2media.utils.processes
-
-    import nzb2media.utils.torrent
-    assert nzb2media.utils.torrent
 
 
 def test_import_nzb2media():
@@ -153,9 +135,6 @@ def test_import_nzb2media():
     import nzb2media.databases
     assert nzb2media.databases
 
-    import nzb2media.github_api
-    assert nzb2media.github_api
-
     import nzb2media.main_db
     assert nzb2media.main_db
 
@@ -167,6 +146,3 @@ def test_import_nzb2media():
 
     import nzb2media.user_scripts
     assert nzb2media.user_scripts
-
-    import nzb2media.version_check
-    assert nzb2media.version_check

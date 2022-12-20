@@ -8,21 +8,22 @@ import time
 import requests
 
 import nzb2media
+import nzb2media.torrent
 import nzb2media.utils.common
 from nzb2media import transcoder
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.auto_process.common import completed_download_handling
-from nzb2media.plugins.subtitles import import_subs
-from nzb2media.plugins.subtitles import rename_subs
+from nzb2media.nzb import report_nzb
 from nzb2media.scene_exceptions import process_all_exceptions
+from nzb2media.subtitles import import_subs
+from nzb2media.subtitles import rename_subs
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import extract_files
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.identification import find_imdbid
 from nzb2media.utils.network import find_download
 from nzb2media.utils.network import server_responding
-from nzb2media.utils.nzb import report_nzb
 from nzb2media.utils.paths import rchmod
 from nzb2media.utils.paths import remote_dir
 from nzb2media.utils.paths import remove_dir
@@ -152,7 +153,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
     if not status:
-        if nzb2media.TRANSCODE == 1:
+        if transcoder.TRANSCODE == 1:
             result, new_dir_name = transcoder.transcode_directory(dir_name)
             if not result:
                 log.debug(f'Transcoding succeeded for files in {dir_name}')
@@ -168,7 +169,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
             if not release and '.cp(tt' not in video and imdbid:
                 video_name, video_ext = os.path.splitext(video)
                 video2 = f'{video_name}.cp({imdbid}){video_ext}'
-                if not (client_agent in [nzb2media.TORRENT_CLIENT_AGENT, 'manual'] and nzb2media.USE_LINK == 'move-sym'):
+                if not (client_agent in [nzb2media.torrent.CLIENT_AGENT, 'manual'] and nzb2media.USE_LINK == 'move-sym'):
                     log.debug(f'Renaming: {video} to: {video2}')
                     os.rename(video, video2)
         if not apikey:  # If only using Transcoder functions, exit here.

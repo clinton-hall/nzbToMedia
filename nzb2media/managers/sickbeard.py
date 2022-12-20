@@ -8,6 +8,8 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import nzb2media
+import nzb2media.fork.sickrage
+import nzb2media.torrent
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.utils.paths import remote_dir
 
@@ -87,8 +89,8 @@ class InitSickBeard:
                 api_params = {'cmd': 'postprocess', 'help': '1'}
             try:
                 if self.api_version >= 2 and self.sso_username and self.sso_password:
-                    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=nzb2media.SICKRAGE_OAUTH_CLIENT_ID))
-                    oauth_token = oauth.fetch_token(client_id=nzb2media.SICKRAGE_OAUTH_CLIENT_ID, token_url=nzb2media.SICKRAGE_OAUTH_TOKEN_URL, username=self.sso_username, password=self.sso_password)
+                    oauth = OAuth2Session(client=LegacyApplicationClient(client_id=nzb2media.fork.sickrage.SICKRAGE_OAUTH_CLIENT_ID))
+                    oauth_token = oauth.fetch_token(client_id=nzb2media.fork.sickrage.SICKRAGE_OAUTH_CLIENT_ID, token_url=nzb2media.fork.sickrage.SICKRAGE_OAUTH_TOKEN_URL, username=self.sso_username, password=self.sso_password)
                     token = oauth_token['access_token']
                     response = requests.get(url, headers={'Authorization': f'Bearer {token}'}, stream=True, verify=False)
                 else:
@@ -258,7 +260,7 @@ class SickBeard:
             self.extract = 0
         else:
             self.extract = int(self.sb_init.config.get('extract', 0))
-        if client_agent == nzb2media.TORRENT_CLIENT_AGENT and nzb2media.USE_LINK == 'move-sym':
+        if client_agent == nzb2media.torrent.CLIENT_AGENT and nzb2media.USE_LINK == 'move-sym':
             self.process_method = 'symlink'
 
     @property

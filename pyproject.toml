@@ -14,9 +14,28 @@ authors = [
     {name = "Clinton Hall", email="fock_wulf@hotmail.com"}
 ]
 dependencies =[
-    'pywin32;platform_system=="Windows"'
+    'babelfish',
+    'beets',
+    'configobj',
+    'deluge-client@git+https://github.com/labrys/deluge.git@master',
+    'guessit',
+    'jaraco-windows ; sys.platform == "win32"',
+    'linktastic',
+    'mediafile',
+    'python-qbittorrent',
+    'pywin32 ; sys.platform == "win32"',
+    'pyxdg',
+    'rencode',
+    'requests',
+    'requests_oauthlib',
+    'setuptools',
+    'setuptools-scm',
+    'subliminal != 2.1.0',
+    'syno@git+https://github.com/labrys/syno.git@master',
+    'transmission-rpc@git+https://github.com/labrys/transmission-rpc@master',
+    'utorrent@git+https://github.com/labrys/utorrent.git@master',
 ]
-requires-python = ">=3.7"
+requires-python = ">=3.8"
 classifiers =[
     # complete classifier list: http://pypi.python.org/pypi?%3Aaction=list_classifiers
     "Development Status :: 5 - Production/Stable",
@@ -30,7 +49,6 @@ classifiers =[
     "Operating System :: Unix",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",

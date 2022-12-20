@@ -1,7 +1,7 @@
 import sys
 
-import nzbToMedia
+from nzb2media.app import main
 
-SECTION = 'Watcher3'
-result = nzbToMedia.main(sys.argv, SECTION)
-sys.exit(result)
+if __name__ == '__main__':
+    section = 'Watcher3'
+    sys.exit(main(section=section))

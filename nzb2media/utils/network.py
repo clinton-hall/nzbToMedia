@@ -8,6 +8,8 @@ import time
 import requests
 
 import nzb2media
+import nzb2media.nzb
+import nzb2media.torrent
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -80,12 +82,12 @@ def server_responding(base_url):
 def find_download(client_agent, download_id):
     log.debug(f'Searching for Download on {client_agent} ...')
     if client_agent == 'utorrent':
-        torrents = nzb2media.TORRENT_CLASS.list()[1]['torrents']
+        torrents = nzb2media.torrent.CLASS.list()[1]['torrents']
         for torrent in torrents:
             if download_id in torrent:
                 return True
     if client_agent == 'transmission':
-        torrents = nzb2media.TORRENT_CLASS.get_torrents()
+        torrents = nzb2media.torrent.CLASS.get_torrents()
         for torrent in torrents:
             torrent_hash = torrent.hashString
             if torrent_hash == download_id:
@@ -93,17 +95,17 @@ def find_download(client_agent, download_id):
     if client_agent == 'deluge':
         return False
     if client_agent == 'qbittorrent':
-        torrents = nzb2media.TORRENT_CLASS.torrents()
+        torrents = nzb2media.torrent.CLASS.torrents()
         for torrent in torrents:
             if torrent['hash'] == download_id:
                 return True
     if client_agent == 'sabnzbd':
-        if 'http' in nzb2media.SABNZBD_HOST:
-            base_url = f'{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
+        if 'http' in nzb2media.nzb.SABNZBD_HOST:
+            base_url = f'{nzb2media.nzb.SABNZBD_HOST}:{nzb2media.nzb.SABNZBD_PORT}/api'
         else:
-            base_url = f'http://{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
+            base_url = f'http://{nzb2media.nzb.SABNZBD_HOST}:{nzb2media.nzb.SABNZBD_PORT}/api'
         url = base_url
-        params = {'apikey': nzb2media.SABNZBD_APIKEY, 'mode': 'get_files', 'output': 'json', 'value': download_id}
+        params = {'apikey': nzb2media.nzb.SABNZBD_APIKEY, 'mode': 'get_files', 'output': 'json', 'value': download_id}
         try:
             response = requests.get(url, params=params, verify=False, timeout=(30, 120))
         except requests.ConnectionError:

@@ -13,8 +13,7 @@ rencode
 requests
 requests_oauthlib
 setuptools
-six
 subliminal != 2.1.0
 syno@git+https://github.com/labrys/syno.git@master
-transmissionrpc
+transmission-rpc
 utorrent@git+https://github.com/labrys/utorrent.git@master

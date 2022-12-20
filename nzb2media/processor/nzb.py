@@ -4,6 +4,7 @@ import datetime
 import logging
 
 import nzb2media
+import nzb2media.nzb
 from nzb2media import main_db
 from nzb2media.auto_process import books
 from nzb2media.auto_process import comics
@@ -12,21 +13,21 @@ from nzb2media.auto_process import movies
 from nzb2media.auto_process import music
 from nzb2media.auto_process import tv
 from nzb2media.auto_process.common import ProcessResult
-from nzb2media.plugins.plex import plex_update
+from nzb2media.nzb import get_nzoid
+from nzb2media.plex import plex_update
 from nzb2media.user_scripts import external_script
 from nzb2media.utils.common import clean_dir
 from nzb2media.utils.download_info import update_download_info_status
 from nzb2media.utils.encoding import char_replace
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import extract_files
-from nzb2media.utils.nzb import get_nzoid
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
 
 
-def process(input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
-    if nzb2media.SAFE_MODE and input_directory == nzb2media.NZB_DEFAULT_DIRECTORY:
+def process(*, input_directory, input_name=None, status=0, client_agent='manual', download_id=None, input_category=None, failure_link=None):
+    if nzb2media.SAFE_MODE and input_directory == nzb2media.nzb.DEFAULT_DIRECTORY:
         log.error(f'The input directory:[{input_directory}] is the Default Download Directory. Please configure category directories to prevent processing of other media.')
         return ProcessResult(message='', status_code=-1)
     if not download_id and client_agent == 'sabnzbd':

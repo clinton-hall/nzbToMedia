@@ -4,17 +4,29 @@ import logging
 
 from utorrent.client import UTorrentClient
 
-import nzb2media
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
+HOST = None
+USERNAME = None
+PASSWORD = None
+
+
+def configure_utorrent(config):
+    global HOST
+    global USERNAME
+    global PASSWORD
+
+    HOST = config['uTorrentWEBui']  # http://localhost:8090/gui/
+    USERNAME = config['uTorrentUSR']  # mysecretusr
+    PASSWORD = config['uTorrentPWD']  # mysecretpwr
 
 
 def configure_client():
     agent = 'utorrent'
-    web_ui = nzb2media.UTORRENT_WEB_UI
-    user = nzb2media.UTORRENT_USER
-    password = nzb2media.UTORRENT_PASSWORD
+    web_ui = HOST
+    user = USERNAME
+    password = PASSWORD
     log.debug(f'Connecting to {agent}: {web_ui}')
     try:
         client = UTorrentClient(web_ui, user, password)

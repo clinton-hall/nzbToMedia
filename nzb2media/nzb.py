@@ -5,22 +5,52 @@ import os
 
 import requests
 
-import nzb2media
-
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
+
+CLIENTS = ['sabnzbd', 'nzbget', 'manual']
+CLIENT_AGENT = None
+DEFAULT_DIRECTORY = None
+NO_MANUAL = None
+
+SABNZBD_HOST = ''
+SABNZBD_PORT = None
+SABNZBD_APIKEY = None
+
+
+def configure_nzbs(config):
+    global CLIENT_AGENT
+    global DEFAULT_DIRECTORY
+    global NO_MANUAL
+
+    nzb_config = config['Nzb']
+    CLIENT_AGENT = nzb_config['clientAgent']  # sabnzbd
+    DEFAULT_DIRECTORY = nzb_config['default_downloadDirectory']
+    NO_MANUAL = int(nzb_config['no_manual'], 0)
+    configure_sabnzbd(nzb_config)
+
+
+def configure_sabnzbd(config):
+    global SABNZBD_HOST
+    global SABNZBD_PORT
+    global SABNZBD_APIKEY
+
+    SABNZBD_HOST = config['sabnzbd_host']
+    # defaults to accommodate NzbGet
+    SABNZBD_PORT = int(config['sabnzbd_port'] or 8080)
+    SABNZBD_APIKEY = config['sabnzbd_apikey']
 
 
 def get_nzoid(input_name):
     nzoid = None
     slots = []
     log.debug('Searching for nzoid from SAbnzbd ...')
-    if 'http' in nzb2media.SABNZBD_HOST:
-        base_url = f'{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
+    if 'http' in SABNZBD_HOST:
+        base_url = f'{SABNZBD_HOST}:{SABNZBD_PORT}/api'
     else:
-        base_url = f'http://{nzb2media.SABNZBD_HOST}:{nzb2media.SABNZBD_PORT}/api'
+        base_url = f'http://{SABNZBD_HOST}:{SABNZBD_PORT}/api'
     url = base_url
-    params = {'apikey': nzb2media.SABNZBD_APIKEY, 'mode': 'queue', 'output': 'json'}
+    params = {'apikey': SABNZBD_APIKEY, 'mode': 'queue', 'output': 'json'}
     try:
         response = requests.get(url, params=params, verify=False, timeout=(30, 120))
     except requests.ConnectionError:

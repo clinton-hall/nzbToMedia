@@ -11,7 +11,7 @@ import guessit
 import mediafile
 
 import nzb2media
-from nzb2media import extractor
+import nzb2media.tool
 from nzb2media.utils.links import copy_link
 from nzb2media.utils.naming import is_sample
 from nzb2media.utils.naming import sanitize_name
@@ -153,7 +153,7 @@ def extract_files(src, dst=None, keep_archive=None):
         if dir_path in extracted_folder and archive_name in extracted_archive:
             continue  # no need to extract this, but keep going to look for other archives and sub directories.
         try:
-            if extractor.extract(input_file, dst or dir_path):
+            if nzb2media.tool.extract(input_file, dst or dir_path):
                 extracted_folder.append(dir_path)
                 extracted_archive.append(archive_name)
         except Exception:
