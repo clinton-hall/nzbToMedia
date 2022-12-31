@@ -7,14 +7,17 @@ from __future__ import (
     unicode_literals,
 )
 
+import os.path
 import re
 import sqlite3
+import sys
 import time
 
 from six import text_type, PY2
 
 import core
 from core import logger
+from core import permissions
 
 if PY2:
     class Row(sqlite3.Row, object):
@@ -60,10 +63,29 @@ def db_filename(filename='nzbtomedia.db', suffix=None):
 
 class DBConnection(object):
     def __init__(self, filename='nzbtomedia.db', suffix=None, row_type=None):
-
         self.filename = filename
-        self.connection = sqlite3.connect(db_filename(filename), 20)
-        self.connection.row_factory = Row
+        path = db_filename(filename)
+        try:
+            self.connection = sqlite3.connect(path, 20)
+        except sqlite3.OperationalError as error:
+            if os.path.exists(path):
+                logger.error('Please check permissions on database: {0}'.format(path))
+            else:
+                logger.error('Database file does not exist')
+                logger.error('Please check permissions on directory: {0}'.format(path))
+                path = os.path.dirname(path)
+            mode = permissions.mode(path)
+            owner, group = permissions.ownership(path)
+            logger.error(
+                "=== PERMISSIONS ===========================\n"
+                "  Path : {0}\n"
+                "  Mode : {1}\n"
+                "  Owner: {2}\n"
+                "  Group: {3}\n"
+                "===========================================".format(path, mode[-3:], owner, group),
+            )
+        else:
+            self.connection.row_factory = Row
 
     def check_db_version(self):
         result = None
@@ -256,7 +278,11 @@ class DBSanityCheck(object):
 
 def upgrade_database(connection, schema):
     logger.log(u'Checking database structure...', logger.MESSAGE)
-    _process_upgrade(connection, schema)
+    try:
+        _process_upgrade(connection, schema)
+    except Exception as error:
+        logger.error(error)
+        sys.exit(1)
 
 
 def pretty_name(class_name):
