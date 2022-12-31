@@ -82,7 +82,7 @@ class DBConnection(object):
                 "  Mode : {1}\n"
                 "  Owner: {2}\n"
                 "  Group: {3}\n"
-                "===========================================".format(path, mode[-3:], owner, group),
+                "===========================================".format(path, mode, owner, group),
             )
         else:
             self.connection.row_factory = Row
