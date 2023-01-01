@@ -75,8 +75,8 @@ def posix_ownership(path):
     stat_result = os.stat(path)
 
     # Get account name from path stat result
-    owner = pwd.getpwuid(stat_result.st_uid)
-    group = grp.getgrgid(stat_result.st_gid)
+    owner = pwd.getpwuid(stat_result.st_uid).pw_name
+    group = grp.getgrgid(stat_result.st_gid).gr_name
 
     return owner, group
 
