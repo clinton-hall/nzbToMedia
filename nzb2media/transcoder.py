@@ -1,3 +1,4 @@
+# pylint: disable=too-many-lines
 from __future__ import annotations
 
 import errno
@@ -17,17 +18,63 @@ from subprocess import PIPE
 from babelfish import Language
 
 import nzb2media
+from nzb2media.utils.files import list_media_files
 from nzb2media.utils.paths import make_dir
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-__author__ = 'Justin'
+
+MOUNTED = None
+GETSUBS = False
+TRANSCODE = None
+CONCAT = None
+DUPLICATE = None
+IGNOREEXTENSIONS = []
+VEXTENSION = None
+OUTPUTVIDEOPATH = None
+PROCESSOUTPUT = False
+GENERALOPTS: list[str] = []
+OTHEROPTS: list[str] = []
+ALANGUAGE = None
+AINCLUDE = False
+SLANGUAGES: list[str] = []
+SINCLUDE = False
+SUBSDIR = None
+ALLOWSUBS = False
+SEXTRACT = False
+SEMBED = False
+BURN = False
+DEFAULTS = None
+VCODEC = None
+VCODEC_ALLOW = []
+VPRESET = None
+VFRAMERATE = None
+VBITRATE = None
+VLEVEL = None
+VCRF = None
+VRESOLUTION = None
+ACODEC = None
+ACODEC_ALLOW = []
+ACHANNELS = None
+ABITRATE = None
+ACODEC2 = None
+ACODEC2_ALLOW: list[str] = []
+ACHANNELS2 = None
+ABITRATE2 = None
+ACODEC3 = None
+ACODEC3_ALLOW = []
+ACHANNELS3 = None
+ABITRATE3 = None
+SCODEC = None
+OUTPUTFASTSTART = None
+OUTPUTQUALITYPERCENT = None
+HWACCEL = False
 
 
 def is_video_good(video: pathlib.Path, status, require_lan=None):
     file_ext = video.suffix
     disable = False
-    if file_ext not in nzb2media.MEDIA_CONTAINER or not nzb2media.FFPROBE or not nzb2media.CHECK_MEDIA or file_ext in {'.iso'} or (status > 0 and nzb2media.NOEXTRACTFAILED):
+    if file_ext not in nzb2media.MEDIA_CONTAINER or not nzb2media.tool.FFPROBE or not nzb2media.CHECK_MEDIA or file_ext in {'.iso'} or (status > 0 and nzb2media.NOEXTRACTFAILED):
         disable = True
     else:
         test_details, res = get_video_details(nzb2media.TEST_FILE)
@@ -73,7 +120,7 @@ def zip_out(file, img):
     if os.path.isfile(file):
         cmd = ['cat', file]
     else:
-        cmd = [os.fspath(nzb2media.SEVENZIP), '-so', 'e', img, file]
+        cmd = [os.fspath(nzb2media.tool.SEVENZIP), '-so', 'e', img, file]
     try:
         with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
             return proc
@@ -86,13 +133,13 @@ def get_video_details(videofile, img=None):
     video_details = {}
     result = 1
     file = videofile
-    if not nzb2media.FFPROBE:
+    if not nzb2media.tool.FFPROBE:
         return video_details, result
-    print_format = '-of' if 'avprobe' in nzb2media.FFPROBE.name else '-print_format'
+    print_format = '-of' if 'avprobe' in nzb2media.tool.FFPROBE.name else '-print_format'
     try:
         if img:
             videofile = '-'
-        command = [os.fspath(nzb2media.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
+        command = [os.fspath(nzb2media.tool.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', '-show_error', videofile]
         print_cmd(command)
         if img:
             procin = zip_out(file, img)
@@ -107,7 +154,7 @@ def get_video_details(videofile, img=None):
         video_details = json.loads(proc_out.decode())
     except Exception:
         try:  # try this again without -show error in case of ffmpeg limitation
-            command = [os.fspath(nzb2media.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
+            command = [os.fspath(nzb2media.tool.FFPROBE), '-v', 'quiet', print_format, 'json', '-show_format', '-show_streams', videofile]
             print_cmd(command)
             if img:
                 procin = zip_out(file, img)
@@ -140,6 +187,7 @@ def check_vid_file(video_details, result):
 
 
 def build_commands(file, new_dir, movie_name):
+    global VEXTENSION
     if isinstance(file, str):
         input_file = file
         if 'concat:' in file:
@@ -148,14 +196,14 @@ def build_commands(file, new_dir, movie_name):
         directory, name = os.path.split(file)
         name, ext = os.path.splitext(name)
         check = re.match('VTS_([0-9][0-9])_[0-9]+', name)
-        if check and nzb2media.CONCAT:
+        if check and CONCAT:
             name = movie_name
         elif check:
             name = f'{movie_name}.cd{check.groups()[0]}'
-        elif nzb2media.CONCAT and re.match('(.+)[cC][dD][0-9]', name):
+        elif CONCAT and re.match('(.+)[cC][dD][0-9]', name):
             name = re.sub('([ ._=:-]+[cC][dD][0-9])', '', name)
-        if ext == nzb2media.VEXTENSION and new_dir == directory:  # we need to change the name to prevent overwriting itself.
-            nzb2media.VEXTENSION = f'-transcoded{nzb2media.VEXTENSION}'  # adds '-transcoded.ext'
+        if ext == VEXTENSION and new_dir == directory:  # we need to change the name to prevent overwriting itself.
+            VEXTENSION = f'-transcoded{VEXTENSION}'  # adds '-transcoded.ext'
         new_file = file
     else:
         img, data = next(file.items())
@@ -172,7 +220,7 @@ def build_commands(file, new_dir, movie_name):
         video_details, result = get_video_details(data['files'][0], img)
         input_file = '-'
         file = '-'
-    newfile_path = os.path.normpath(os.path.join(new_dir, name) + nzb2media.VEXTENSION)
+    newfile_path = os.path.normpath(os.path.join(new_dir, name) + VEXTENSION)
     map_cmd = []
     video_cmd = []
     audio_cmd = []
@@ -186,63 +234,63 @@ def build_commands(file, new_dir, movie_name):
         audio_streams = []
         sub_streams = []
         map_cmd.extend(['-map', '0'])
-        if nzb2media.VCODEC:
-            video_cmd.extend(['-c:v', nzb2media.VCODEC])
-            if nzb2media.VCODEC == 'libx264' and nzb2media.VPRESET:
-                video_cmd.extend(['-pre', nzb2media.VPRESET])
+        if VCODEC:
+            video_cmd.extend(['-c:v', VCODEC])
+            if VCODEC == 'libx264' and VPRESET:
+                video_cmd.extend(['-pre', VPRESET])
         else:
             video_cmd.extend(['-c:v', 'copy'])
-        if nzb2media.VFRAMERATE:
-            video_cmd.extend(['-r', str(nzb2media.VFRAMERATE)])
-        if nzb2media.VBITRATE:
-            video_cmd.extend(['-b:v', str(nzb2media.VBITRATE)])
-        if nzb2media.VRESOLUTION:
-            video_cmd.extend(['-vf', f'scale={nzb2media.VRESOLUTION}'])
-        if nzb2media.VPRESET:
-            video_cmd.extend(['-preset', nzb2media.VPRESET])
-        if nzb2media.VCRF:
-            video_cmd.extend(['-crf', str(nzb2media.VCRF)])
-        if nzb2media.VLEVEL:
-            video_cmd.extend(['-level', str(nzb2media.VLEVEL)])
-        if nzb2media.ACODEC:
-            audio_cmd.extend(['-c:a', nzb2media.ACODEC])
-            if nzb2media.ACODEC in {'aac', 'dts'}:
+        if VFRAMERATE:
+            video_cmd.extend(['-r', str(VFRAMERATE)])
+        if VBITRATE:
+            video_cmd.extend(['-b:v', str(VBITRATE)])
+        if VRESOLUTION:
+            video_cmd.extend(['-vf', f'scale={VRESOLUTION}'])
+        if VPRESET:
+            video_cmd.extend(['-preset', VPRESET])
+        if VCRF:
+            video_cmd.extend(['-crf', str(VCRF)])
+        if VLEVEL:
+            video_cmd.extend(['-level', str(VLEVEL)])
+        if ACODEC:
+            audio_cmd.extend(['-c:a', ACODEC])
+            if ACODEC in {'aac', 'dts'}:
                 # Allow users to use the experimental AAC codec that's built into recent versions of ffmpeg
                 audio_cmd.extend(['-strict', '-2'])
         else:
             audio_cmd.extend(['-c:a', 'copy'])
-        if nzb2media.ACHANNELS:
-            audio_cmd.extend(['-ac', str(nzb2media.ACHANNELS)])
-        if nzb2media.ABITRATE:
-            audio_cmd.extend(['-b:a', str(nzb2media.ABITRATE)])
-        if nzb2media.OUTPUTQUALITYPERCENT:
-            audio_cmd.extend(['-q:a', str(nzb2media.OUTPUTQUALITYPERCENT)])
-        if nzb2media.SCODEC and nzb2media.ALLOWSUBS:
-            sub_cmd.extend(['-c:s', nzb2media.SCODEC])
-        elif nzb2media.ALLOWSUBS:  # Not every subtitle codec can be used for every video container format!
+        if ACHANNELS:
+            audio_cmd.extend(['-ac', str(ACHANNELS)])
+        if ABITRATE:
+            audio_cmd.extend(['-b:a', str(ABITRATE)])
+        if OUTPUTQUALITYPERCENT:
+            audio_cmd.extend(['-q:a', str(OUTPUTQUALITYPERCENT)])
+        if SCODEC and ALLOWSUBS:
+            sub_cmd.extend(['-c:s', SCODEC])
+        elif ALLOWSUBS:  # Not every subtitle codec can be used for every video container format!
             sub_cmd.extend(['-c:s', 'copy'])
         else:  # http://en.wikibooks.org/wiki/FFMPEG_An_Intermediate_Guide/subtitle_options
             sub_cmd.extend(['-sn'])  # Don't copy the subtitles over
-        if nzb2media.OUTPUTFASTSTART:
+        if OUTPUTFASTSTART:
             other_cmd.extend(['-movflags', '+faststart'])
     else:
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
         audio_streams = [item for item in video_details['streams'] if item['codec_type'] == 'audio']
         sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle']
-        if nzb2media.VEXTENSION not in ['.mkv', '.mpegts']:
+        if VEXTENSION not in ['.mkv', '.mpegts']:
             sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub']
     for video in video_streams:
         codec = video['codec_name']
         frame_rate = video.get('avg_frame_rate', 0)
         width = video.get('width', 0)
         height = video.get('height', 0)
-        scale = nzb2media.VRESOLUTION
-        if codec in nzb2media.VCODEC_ALLOW or not nzb2media.VCODEC:
+        scale = VRESOLUTION
+        if codec in VCODEC_ALLOW or not VCODEC:
             video_cmd.extend(['-c:v', 'copy'])
         else:
-            video_cmd.extend(['-c:v', nzb2media.VCODEC])
-        if nzb2media.VFRAMERATE and not nzb2media.VFRAMERATE * 0.999 <= frame_rate <= nzb2media.VFRAMERATE * 1.001:
-            video_cmd.extend(['-r', str(nzb2media.VFRAMERATE)])
+            video_cmd.extend(['-c:v', VCODEC])
+        if VFRAMERATE and not VFRAMERATE * 0.999 <= frame_rate <= VFRAMERATE * 1.001:
+            video_cmd.extend(['-r', str(VFRAMERATE)])
         if scale:
             w_scale = width / float(scale.split(':')[0])
             h_scale = height / float(scale.split(':')[1])
@@ -258,18 +306,18 @@ def build_commands(file, new_dir, movie_name):
                 scale = f'{_width}:{_height}'
                 if h_scale > 1:
                     video_cmd.extend(['-vf', f'scale={scale}'])
-        if nzb2media.VBITRATE:
-            video_cmd.extend(['-b:v', str(nzb2media.VBITRATE)])
-        if nzb2media.VPRESET:
-            video_cmd.extend(['-preset', nzb2media.VPRESET])
-        if nzb2media.VCRF:
-            video_cmd.extend(['-crf', str(nzb2media.VCRF)])
-        if nzb2media.VLEVEL:
-            video_cmd.extend(['-level', str(nzb2media.VLEVEL)])
+        if VBITRATE:
+            video_cmd.extend(['-b:v', str(VBITRATE)])
+        if VPRESET:
+            video_cmd.extend(['-preset', VPRESET])
+        if VCRF:
+            video_cmd.extend(['-crf', str(VCRF)])
+        if VLEVEL:
+            video_cmd.extend(['-level', str(VLEVEL)])
         no_copy = ['-vf', '-r', '-crf', '-level', '-preset', '-b:v']
         if video_cmd[1] == 'copy' and any(i in video_cmd for i in no_copy):
-            video_cmd[1] = nzb2media.VCODEC
-        if nzb2media.VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
+            video_cmd[1] = VCODEC
+        if VCODEC == 'copy':  # force copy. therefore ignore all other video transcoding.
             video_cmd = ['-c:v', 'copy']
         _index = video['index']
         map_cmd.extend(['-map', f'0:{_index}'])
@@ -287,19 +335,19 @@ def build_commands(file, new_dir, movie_name):
             except Exception:
                 continue
         try:
-            audio1 = [item for item in audio_streams if item['tags']['language'] == nzb2media.ALANGUAGE]
+            audio1 = [item for item in audio_streams if item['tags']['language'] == ALANGUAGE]
         except Exception:  # no language tags. Assume only 1 language.
             audio1 = audio_streams
         try:
-            audio2 = [item for item in audio1 if item['codec_name'] in nzb2media.ACODEC_ALLOW]
+            audio2 = [item for item in audio1 if item['codec_name'] in ACODEC_ALLOW]
         except Exception:
             audio2 = []
         try:
-            audio3 = [item for item in audio_streams if item['tags']['language'] != nzb2media.ALANGUAGE]
+            audio3 = [item for item in audio_streams if item['tags']['language'] != ALANGUAGE]
         except Exception:
             audio3 = []
         try:
-            audio4 = [item for item in audio3 if item['codec_name'] in nzb2media.ACODEC_ALLOW]
+            audio4 = [item for item in audio3 if item['codec_name'] in ACODEC_ALLOW]
         except Exception:
             audio4 = []
         if audio2:  # right (or only) language and codec...
@@ -315,7 +363,7 @@ def build_commands(file, new_dir, movie_name):
             a_mapped.extend([audio1[0]['index']])
             bitrate = int(float(audio1[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio1[0].get('channels', 0)))
-            audio_cmd.extend([f'-c:a:{used_audio}', nzb2media.ACODEC if nzb2media.ACODEC else 'copy'])
+            audio_cmd.extend([f'-c:a:{used_audio}', ACODEC if ACODEC else 'copy'])
         elif audio4:
             # wrong language, right codec.
             _index = audio4[0]['index']
@@ -331,29 +379,29 @@ def build_commands(file, new_dir, movie_name):
             a_mapped.extend([audio3[0]['index']])
             bitrate = int(float(audio3[0].get('bit_rate', 0))) / 1000
             channels = int(float(audio3[0].get('channels', 0)))
-            audio_cmd.extend([f'-c:a:{used_audio}', nzb2media.ACODEC if nzb2media.ACODEC else 'copy'])
-        if nzb2media.ACHANNELS and channels and channels > nzb2media.ACHANNELS:
-            audio_cmd.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS)])
+            audio_cmd.extend([f'-c:a:{used_audio}', ACODEC if ACODEC else 'copy'])
+        if ACHANNELS and channels and channels > ACHANNELS:
+            audio_cmd.extend([f'-ac:a:{used_audio}', str(ACHANNELS)])
             if audio_cmd[1] == 'copy':
-                audio_cmd[1] = nzb2media.ACODEC
-        if nzb2media.ABITRATE and not nzb2media.ABITRATE * 0.9 < bitrate < nzb2media.ABITRATE * 1.1:
-            audio_cmd.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE)])
+                audio_cmd[1] = ACODEC
+        if ABITRATE and not ABITRATE * 0.9 < bitrate < ABITRATE * 1.1:
+            audio_cmd.extend([f'-b:a:{used_audio}', str(ABITRATE)])
             if audio_cmd[1] == 'copy':
-                audio_cmd[1] = nzb2media.ACODEC
-        if nzb2media.OUTPUTQUALITYPERCENT:
-            audio_cmd.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
+                audio_cmd[1] = ACODEC
+        if OUTPUTQUALITYPERCENT:
+            audio_cmd.extend([f'-q:a:{used_audio}', str(OUTPUTQUALITYPERCENT)])
             if audio_cmd[1] == 'copy':
-                audio_cmd[1] = nzb2media.ACODEC
+                audio_cmd[1] = ACODEC
         if audio_cmd[1] in {'aac', 'dts'}:
             audio_cmd[2:2] = ['-strict', '-2']
-        if nzb2media.ACODEC2_ALLOW:
+        if ACODEC2_ALLOW:
             used_audio += 1
             try:
-                audio5 = [item for item in audio1 if item['codec_name'] in nzb2media.ACODEC2_ALLOW]
+                audio5 = [item for item in audio1 if item['codec_name'] in ACODEC2_ALLOW]
             except Exception:
                 audio5 = []
             try:
-                audio6 = [item for item in audio3 if item['codec_name'] in nzb2media.ACODEC2_ALLOW]
+                audio6 = [item for item in audio3 if item['codec_name'] in ACODEC2_ALLOW]
             except Exception:
                 audio6 = []
             if audio5:  # right language and codec.
@@ -369,8 +417,8 @@ def build_commands(file, new_dir, movie_name):
                 a_mapped.extend([audio1[0]['index']])
                 bitrate = int(float(audio1[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio1[0].get('channels', 0)))
-                if nzb2media.ACODEC2:
-                    audio_cmd2.extend([f'-c:a:{used_audio}', nzb2media.ACODEC2])
+                if ACODEC2:
+                    audio_cmd2.extend([f'-c:a:{used_audio}', ACODEC2])
                 else:
                     audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
             elif audio6:  # wrong language, right codec
@@ -387,22 +435,22 @@ def build_commands(file, new_dir, movie_name):
                 a_mapped.extend([audio3[0]['index']])
                 bitrate = int(float(audio3[0].get('bit_rate', 0))) / 1000
                 channels = int(float(audio3[0].get('channels', 0)))
-                if nzb2media.ACODEC2:
-                    audio_cmd2.extend([f'-c:a:{used_audio}', nzb2media.ACODEC2])
+                if ACODEC2:
+                    audio_cmd2.extend([f'-c:a:{used_audio}', ACODEC2])
                 else:
                     audio_cmd2.extend([f'-c:a:{used_audio}', 'copy'])
-            if nzb2media.ACHANNELS2 and channels and channels > nzb2media.ACHANNELS2:
-                audio_cmd2.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS2)])
+            if ACHANNELS2 and channels and channels > ACHANNELS2:
+                audio_cmd2.extend([f'-ac:a:{used_audio}', str(ACHANNELS2)])
                 if audio_cmd2[1] == 'copy':
-                    audio_cmd2[1] = nzb2media.ACODEC2
-            if nzb2media.ABITRATE2 and not nzb2media.ABITRATE2 * 0.9 < bitrate < nzb2media.ABITRATE2 * 1.1:
-                audio_cmd2.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE2)])
+                    audio_cmd2[1] = ACODEC2
+            if ABITRATE2 and not ABITRATE2 * 0.9 < bitrate < ABITRATE2 * 1.1:
+                audio_cmd2.extend([f'-b:a:{used_audio}', str(ABITRATE2)])
                 if audio_cmd2[1] == 'copy':
-                    audio_cmd2[1] = nzb2media.ACODEC2
-            if nzb2media.OUTPUTQUALITYPERCENT:
-                audio_cmd2.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
+                    audio_cmd2[1] = ACODEC2
+            if OUTPUTQUALITYPERCENT:
+                audio_cmd2.extend([f'-q:a:{used_audio}', str(OUTPUTQUALITYPERCENT)])
                 if audio_cmd2[1] == 'copy':
-                    audio_cmd2[1] = nzb2media.ACODEC2
+                    audio_cmd2[1] = ACODEC2
             if audio_cmd2[1] in {'aac', 'dts'}:
                 audio_cmd2[2:2] = ['-strict', '-2']
             if a_mapped[1] == a_mapped[0] and audio_cmd2[1:] == audio_cmd[1:]:
@@ -410,7 +458,7 @@ def build_commands(file, new_dir, movie_name):
                 del map_cmd[-2:]
             else:
                 audio_cmd.extend(audio_cmd2)
-        if nzb2media.AINCLUDE and nzb2media.ACODEC3:
+        if AINCLUDE and ACODEC3:
             # add commentary tracks back here.
             audio_streams.extend(commentary)
             for audio in audio_streams:
@@ -422,42 +470,42 @@ def build_commands(file, new_dir, movie_name):
                 audio_cmd3 = []
                 bitrate = int(float(audio.get('bit_rate', 0))) / 1000
                 channels = int(float(audio.get('channels', 0)))
-                if audio['codec_name'] in nzb2media.ACODEC3_ALLOW:
+                if audio['codec_name'] in ACODEC3_ALLOW:
                     audio_cmd3.extend([f'-c:a:{used_audio}', 'copy'])
-                elif nzb2media.ACODEC3:
-                    audio_cmd3.extend([f'-c:a:{used_audio}', nzb2media.ACODEC3])
+                elif ACODEC3:
+                    audio_cmd3.extend([f'-c:a:{used_audio}', ACODEC3])
                 else:
                     audio_cmd3.extend([f'-c:a:{used_audio}', 'copy'])
-                if nzb2media.ACHANNELS3 and channels and channels > nzb2media.ACHANNELS3:
-                    audio_cmd3.extend([f'-ac:a:{used_audio}', str(nzb2media.ACHANNELS3)])
+                if ACHANNELS3 and channels and channels > ACHANNELS3:
+                    audio_cmd3.extend([f'-ac:a:{used_audio}', str(ACHANNELS3)])
                     if audio_cmd3[1] == 'copy':
-                        audio_cmd3[1] = nzb2media.ACODEC3
-                if nzb2media.ABITRATE3 and not nzb2media.ABITRATE3 * 0.9 < bitrate < nzb2media.ABITRATE3 * 1.1:
-                    audio_cmd3.extend([f'-b:a:{used_audio}', str(nzb2media.ABITRATE3)])
+                        audio_cmd3[1] = ACODEC3
+                if ABITRATE3 and not ABITRATE3 * 0.9 < bitrate < ABITRATE3 * 1.1:
+                    audio_cmd3.extend([f'-b:a:{used_audio}', str(ABITRATE3)])
                     if audio_cmd3[1] == 'copy':
-                        audio_cmd3[1] = nzb2media.ACODEC3
-                if nzb2media.OUTPUTQUALITYPERCENT > 0:
-                    audio_cmd3.extend([f'-q:a:{used_audio}', str(nzb2media.OUTPUTQUALITYPERCENT)])
+                        audio_cmd3[1] = ACODEC3
+                if OUTPUTQUALITYPERCENT > 0:
+                    audio_cmd3.extend([f'-q:a:{used_audio}', str(OUTPUTQUALITYPERCENT)])
                     if audio_cmd3[1] == 'copy':
-                        audio_cmd3[1] = nzb2media.ACODEC3
+                        audio_cmd3[1] = ACODEC3
                 if audio_cmd3[1] in {'aac', 'dts'}:
                     audio_cmd3[2:2] = ['-strict', '-2']
                 audio_cmd.extend(audio_cmd3)
     s_mapped = []
     burnt = 0
     num = 0
-    for lan in nzb2media.SLANGUAGES:
+    for lan in SLANGUAGES:
         try:
             subs1 = [item for item in sub_streams if item['tags']['language'] == lan]
         except Exception:
             subs1 = []
-        if nzb2media.BURN and not subs1 and not burnt and os.path.isfile(file):
+        if BURN and not subs1 and not burnt and os.path.isfile(file):
             for subfile in get_subs(file):
                 if lan in os.path.split(subfile)[1]:
                     video_cmd.extend(['-vf', f'subtitles={subfile}'])
                     burnt = 1
         for sub in subs1:
-            if nzb2media.BURN and not burnt and os.path.isfile(input_file):
+            if BURN and not burnt and os.path.isfile(input_file):
                 subloc = 0
                 for index, sub_stream in enumerate(sub_streams):
                     if sub_stream['index'] == sub['index']:
@@ -465,40 +513,40 @@ def build_commands(file, new_dir, movie_name):
                         break
                 video_cmd.extend(['-vf', f'subtitles={input_file}:si={subloc}'])
                 burnt = 1
-            if not nzb2media.ALLOWSUBS:
+            if not ALLOWSUBS:
                 break
-            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and nzb2media.SCODEC == 'mov_text':
+            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and SCODEC == 'mov_text':
                 continue  # We can't convert these.
             _index = sub['index']
             map_cmd.extend(['-map', f'0:{_index}'])
             s_mapped.extend([sub['index']])
-    if nzb2media.SINCLUDE:
+    if SINCLUDE:
         for sub in sub_streams:
-            if not nzb2media.ALLOWSUBS:
+            if not ALLOWSUBS:
                 break
             if sub['index'] in s_mapped:
                 continue
-            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and nzb2media.SCODEC == 'mov_text':  # We can't convert these.
+            if sub['codec_name'] in {'dvd_subtitle', 'VobSub'} and SCODEC == 'mov_text':  # We can't convert these.
                 continue
             _index = sub['index']
             map_cmd.extend(['-map', f'0:{_index}'])
             s_mapped.extend([sub['index']])
-    if nzb2media.OUTPUTFASTSTART:
+    if OUTPUTFASTSTART:
         other_cmd.extend(['-movflags', '+faststart'])
-    if nzb2media.OTHEROPTS:
-        other_cmd.extend(nzb2media.OTHEROPTS)
-    command = [nzb2media.FFMPEG, '-loglevel', 'warning']
-    if nzb2media.HWACCEL:
+    if OTHEROPTS:
+        other_cmd.extend(OTHEROPTS)
+    command = [nzb2media.tool.FFMPEG, '-loglevel', 'warning']
+    if HWACCEL:
         command.extend(['-hwaccel', 'auto'])
-    if nzb2media.GENERALOPTS:
-        command.extend(nzb2media.GENERALOPTS)
+    if GENERALOPTS:
+        command.extend(GENERALOPTS)
     command.extend(['-i', input_file])
-    if nzb2media.SEMBED and os.path.isfile(file):
+    if SEMBED and os.path.isfile(file):
         for subfile in get_subs(file):
             sub_details, result = get_video_details(subfile)
             if not sub_details or not sub_details.get('streams'):
                 continue
-            if nzb2media.SCODEC == 'mov_text':
+            if SCODEC == 'mov_text':
                 subcode = [stream['codec_name'] for stream in sub_details['streams']]
                 if set(subcode).intersection(['dvd_subtitle', 'VobSub']):
                     # We can't convert these.
@@ -517,10 +565,10 @@ def build_commands(file, new_dir, movie_name):
                 meta_cmd.extend([f'-metadata:s:s:{len(s_mapped) + num}', f'language={metlan.alpha3}'])
             num += 1
             map_cmd.extend(['-map', f'{num}:0'])
-    if not nzb2media.ALLOWSUBS or (not s_mapped and not num):
+    if not ALLOWSUBS or (not s_mapped and not num):
         sub_cmd.extend(['-sn'])
-    elif nzb2media.SCODEC:
-        sub_cmd.extend(['-c:s', nzb2media.SCODEC])
+    elif SCODEC:
+        sub_cmd.extend(['-c:s', SCODEC])
     else:
         sub_cmd.extend(['-c:s', 'copy'])
     command.extend(map_cmd)
@@ -531,7 +579,7 @@ def build_commands(file, new_dir, movie_name):
     command.extend(other_cmd)
     command.append(newfile_path)
     if platform.system() != 'Windows':
-        command = nzb2media.NICENESS + command
+        command = nzb2media.tool.NICENESS + command
     return command, new_file
 
 
@@ -551,13 +599,13 @@ def extract_subs(file, newfile_path):
     video_details, result = get_video_details(file)
     if not video_details:
         return
-    if nzb2media.SUBSDIR:
-        subdir = nzb2media.SUBSDIR
+    if SUBSDIR:
+        subdir = SUBSDIR
     else:
         subdir = os.path.split(newfile_path)[0]
     name = os.path.splitext(os.path.split(newfile_path)[1])[0]
     try:
-        sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle' and item['tags']['language'] in nzb2media.SLANGUAGES and item['codec_name'] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub']
+        sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle' and item['tags']['language'] in SLANGUAGES and item['codec_name'] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub']
     except Exception:
         sub_streams = [item for item in video_details['streams'] if item['codec_type'] == 'subtitle' and item['codec_name'] != 'hdmv_pgs_subtitle' and item['codec_name'] != 'pgssub']
     num = len(sub_streams)
@@ -573,9 +621,9 @@ def extract_subs(file, newfile_path):
             output_file = os.path.join(subdir, f'{name}.{lan}.srt')
             if os.path.isfile(output_file):
                 output_file = os.path.join(subdir, f'{name}.{lan}.{ea_num}.srt')
-        command = [nzb2media.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', f'-codec:{idx}', 'srt', output_file]
+        command = [nzb2media.tool.FFMPEG, '-loglevel', 'warning', '-i', file, '-vn', '-an', f'-codec:{idx}', 'srt', output_file]
         if platform.system() != 'Windows':
-            command = nzb2media.NICENESS + command
+            command = nzb2media.tool.NICENESS + command
         log.info(f'Extracting {lan} subtitle from: {file}')
         print_cmd(command)
         result = 1  # set result to failed in case call fails.
@@ -604,11 +652,11 @@ def process_list(iterable):
     success = True
     for item in iterable:
         ext = os.path.splitext(item)[1].lower()
-        if ext in {'.iso', '.bin', '.img'} and ext not in nzb2media.IGNOREEXTENSIONS:
+        if ext in {'.iso', '.bin', '.img'} and ext not in IGNOREEXTENSIONS:
             log.debug(f'Attempting to rip disk image: {item}')
             new_list.extend(rip_iso(item))
             rem_list.append(item)
-        elif re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', item) and '.vob' not in nzb2media.IGNOREEXTENSIONS:
+        elif re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', item) and '.vob' not in IGNOREEXTENSIONS:
             log.debug(f'Found VIDEO_TS image file: {item}')
             if not vts_path:
                 try:
@@ -616,7 +664,7 @@ def process_list(iterable):
                 except Exception:
                     vts_path = os.path.split(item)[0]
             rem_list.append(item)
-        elif re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', item) and '.mts' not in nzb2media.IGNOREEXTENSIONS:
+        elif re.match('.+BDMV[/\\]SOURCE[/\\][0-9]+[0-9].[Mm][Tt][Ss]', item) and '.mts' not in IGNOREEXTENSIONS:
             log.debug(f'Found MTS image file: {item}')
             if not mts_path:
                 try:
@@ -626,7 +674,7 @@ def process_list(iterable):
             rem_list.append(item)
         elif re.match('.+VIDEO_TS.', item) or re.match('.+VTS_[0-9][0-9]_[0-9].', item):
             rem_list.append(item)
-        elif nzb2media.CONCAT and re.match('.+[cC][dD][0-9].', item):
+        elif CONCAT and re.match('.+[cC][dD][0-9].', item):
             rem_list.append(item)
             combine.append(item)
         else:
@@ -654,6 +702,7 @@ def process_list(iterable):
 
 
 def mount_iso(item):  # Currently only supports Linux Mount when permissions allow.
+    global MOUNTED
     if platform.system() == 'Windows':
         log.error(f'No mounting options available under Windows for image file {item}')
         return []
@@ -663,18 +712,18 @@ def mount_iso(item):  # Currently only supports Linux Mount when permissions all
     print_cmd(cmd)
     with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
         proc_out, proc_err = proc.communicate()
-    nzb2media.MOUNTED = mount_point  # Allows us to verify this has been done and then cleanup.
+    MOUNTED = mount_point  # Allows us to verify this has been done and then cleanup.
     for root, _dirs, files in os.walk(mount_point):
         for file in files:
             full_path = os.path.join(root, file)
-            if re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', full_path) and '.vob' not in nzb2media.IGNOREEXTENSIONS:
+            if re.match('.+VTS_[0-9][0-9]_[0-9].[Vv][Oo][Bb]', full_path) and '.vob' not in IGNOREEXTENSIONS:
                 log.debug(f'Found VIDEO_TS image file: {full_path}')
                 try:
                     vts_path = re.match('(.+VIDEO_TS)', full_path).groups()[0]
                 except Exception:
                     vts_path = os.path.split(full_path)[0]
                 return combine_vts(vts_path)
-            if re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path) and '.mts' not in nzb2media.IGNOREEXTENSIONS:
+            if re.match('.+BDMV[/\\]STREAM[/\\][0-9]+[0-9].[Mm]', full_path) and '.mts' not in IGNOREEXTENSIONS:
                 log.debug(f'Found MTS image file: {full_path}')
                 try:
                     mts_path = re.match('(.+BDMV[/\\]STREAM)', full_path).groups()[0]
@@ -689,7 +738,7 @@ def rip_iso(item):
     new_files = []
     failure_dir = 'failure'
     # Mount the ISO in your OS and call combineVTS.
-    if not nzb2media.SEVENZIP:
+    if not nzb2media.tool.SEVENZIP:
         log.debug(f'No 7zip installed. Attempting to mount image file {item}')
         try:
             # Currently only works for Linux.
@@ -698,7 +747,7 @@ def rip_iso(item):
             log.error(f'Failed to mount and extract from image file {item}')
             new_files = [failure_dir]
         return new_files
-    cmd = [nzb2media.SEVENZIP, 'l', item]
+    cmd = [nzb2media.tool.SEVENZIP, 'l', item]
     try:
         log.debug(f'Attempting to extract .vob or .mts from image file {item}')
         print_cmd(cmd)
@@ -720,7 +769,7 @@ def rip_iso(item):
                         break
                 if not concat:
                     break
-                if nzb2media.CONCAT:
+                if CONCAT:
                     combined.extend(concat)
                     continue
                 name = f'{os.path.splitext(os.path.split(item)[1])[0]}.cd{title_set + 1}'
@@ -735,12 +784,12 @@ def rip_iso(item):
                 concat = []
                 title_set += 1
                 concat.append(mts_name)
-                if nzb2media.CONCAT:
+                if CONCAT:
                     combined.extend(concat)
                     continue
                 name = f'{os.path.splitext(os.path.split(item)[1])[0]}.cd{title_set}'
                 new_files.append({item: {'name': name, 'files': concat}})
-        if nzb2media.CONCAT and combined:
+        if CONCAT and combined:
             name = os.path.splitext(os.path.split(item)[1])[0]
             new_files.append({item: {'name': name, 'files': combined}})
         if not new_files:
@@ -772,12 +821,12 @@ def combine_vts(vts_path):
                 break
         if not concat:
             break
-        if nzb2media.CONCAT:
+        if CONCAT:
             combined.extend(concat)
             continue
         name = f'{name}.cd{title_set + 1}'
         new_files.append({vts_path: {'name': name, 'files': concat}})
-    if nzb2media.CONCAT:
+    if CONCAT:
         new_files.append({vts_path: {'name': name, 'files': combined}})
     return new_files
 
@@ -799,13 +848,13 @@ def combine_mts(mts_path):
     for mts_name in mts_list:  # need to sort all files [1 - 998].mts in order
         concat = []
         concat.append(os.path.join(mts_path, mts_name))
-        if nzb2media.CONCAT:
+        if CONCAT:
             combined.extend(concat)
             continue
         name = f'{name}.cd{num + 1}'
         new_files.append({mts_path: {'name': name, 'files': concat}})
         num += 1
-    if nzb2media.CONCAT:
+    if CONCAT:
         new_files.append({mts_path: {'name': name, 'files': combined}})
     return new_files
 
@@ -833,12 +882,13 @@ def print_cmd(command):
 
 
 def transcode_directory(dir_name):
-    if not nzb2media.FFMPEG:
+    global MOUNTED
+    if not nzb2media.tool.FFMPEG:
         return 1, dir_name
     log.info('Checking for files to be transcoded')
     final_result = 0  # initialize as successful
-    if nzb2media.OUTPUTVIDEOPATH:
-        new_dir = nzb2media.OUTPUTVIDEOPATH
+    if OUTPUTVIDEOPATH:
+        new_dir = OUTPUTVIDEOPATH
         make_dir(new_dir)
         name = os.path.splitext(os.path.split(dir_name)[1])[0]
         new_dir = os.path.join(new_dir, name)
@@ -846,17 +896,17 @@ def transcode_directory(dir_name):
     else:
         new_dir = dir_name
     movie_name = os.path.splitext(os.path.split(dir_name)[1])[0]
-    file_list = nzb2media.list_media_files(dir_name, media=True, audio=False, meta=False, archives=False)
+    file_list = list_media_files(dir_name, media=True, audio=False, meta=False, archives=False)
     file_list, rem_list, new_list, success = process_list(file_list)
     if not success:
         return 1, dir_name
     for file in file_list:
-        if isinstance(file, str) and os.path.splitext(file)[1] in nzb2media.IGNOREEXTENSIONS:
+        if isinstance(file, str) and os.path.splitext(file)[1] in IGNOREEXTENSIONS:
             continue
         command, file = build_commands(file, new_dir, movie_name)
         newfile_path = command[-1]
         # transcoding files may remove the original file, so make sure to extract subtitles first
-        if nzb2media.SEXTRACT and isinstance(file, str):
+        if SEXTRACT and isinstance(file, str):
             extract_subs(file, newfile_path)
         try:  # Try to remove the file that we're transcoding to just in case. (ffmpeg will return an error if it already exists for some reason)
             os.remove(newfile_path)
@@ -887,12 +937,12 @@ def transcode_directory(dir_name):
             result = proc.returncode
         except Exception:
             log.error(f'Transcoding of video {newfile_path} has failed')
-        if nzb2media.SUBSDIR and not result and isinstance(file, str):
+        if SUBSDIR and not result and isinstance(file, str):
             for sub in get_subs(file):
                 name = os.path.splitext(os.path.split(file)[1])[0]
                 subname = os.path.split(sub)[1]
                 newname = os.path.splitext(os.path.split(newfile_path)[1])[0]
-                newpath = os.path.join(nzb2media.SUBSDIR, subname.replace(name, newname))
+                newpath = os.path.join(SUBSDIR, subname.replace(name, newname))
                 if not os.path.isfile(newpath):
                     os.rename(sub, newpath)
         if not result:
@@ -901,7 +951,7 @@ def transcode_directory(dir_name):
             except Exception:
                 pass
             log.info(f'Transcoding of video to {newfile_path} succeeded')
-            if os.path.isfile(newfile_path) and (file in new_list or not nzb2media.DUPLICATE):
+            if os.path.isfile(newfile_path) and (file in new_list or not DUPLICATE):
                 try:
                     os.unlink(file)
                 except Exception:
@@ -910,16 +960,16 @@ def transcode_directory(dir_name):
             log.error(f'Transcoding of video to {newfile_path} failed with result {result}')
         # this will be 0 (successful) it all are successful, else will return a positive integer for failure.
         final_result = final_result + result
-    if nzb2media.MOUNTED:  # In case we mounted an .iso file, unmount here.
+    if MOUNTED:  # In case we mounted an .iso file, unmount here.
         time.sleep(5)  # play it safe and avoid failing to unmount.
-        cmd = ['umount', '-l', nzb2media.MOUNTED]
+        cmd = ['umount', '-l', MOUNTED]
         print_cmd(cmd)
         with subprocess.Popen(cmd, stdout=PIPE, stderr=DEVNULL) as proc:
             proc_out, proc_err = proc.communicate()
         time.sleep(5)
-        os.rmdir(nzb2media.MOUNTED)
-        nzb2media.MOUNTED = None
-    if not final_result and not nzb2media.DUPLICATE:
+        os.rmdir(MOUNTED)
+        MOUNTED = None
+    if not final_result and not DUPLICATE:
         for file in rem_list:
             try:
                 os.unlink(file)
@@ -929,7 +979,235 @@ def transcode_directory(dir_name):
         # this is an empty directory and we didn't transcode into it.
         os.rmdir(new_dir)
         new_dir = dir_name
-    if not nzb2media.PROCESSOUTPUT and nzb2media.DUPLICATE:
+    if not PROCESSOUTPUT and DUPLICATE:
         # We postprocess the original files to CP/SB
         new_dir = dir_name
     return final_result, new_dir
+
+
+def configure_transcoder():
+    global MOUNTED
+    global GETSUBS
+    global TRANSCODE
+    global DUPLICATE
+    global CONCAT
+    global IGNOREEXTENSIONS
+    global OUTPUTFASTSTART
+    global GENERALOPTS
+    global OTHEROPTS
+    global OUTPUTQUALITYPERCENT
+    global OUTPUTVIDEOPATH
+    global PROCESSOUTPUT
+    global ALANGUAGE
+    global AINCLUDE
+    global SLANGUAGES
+    global SINCLUDE
+    global SEXTRACT
+    global SEMBED
+    global SUBSDIR
+    global VEXTENSION
+    global VCODEC
+    global VPRESET
+    global VFRAMERATE
+    global VBITRATE
+    global VRESOLUTION
+    global VCRF
+    global VLEVEL
+    global VCODEC_ALLOW
+    global ACODEC
+    global ACODEC_ALLOW
+    global ACHANNELS
+    global ABITRATE
+    global ACODEC2
+    global ACODEC2_ALLOW
+    global ACHANNELS2
+    global ABITRATE2
+    global ACODEC3
+    global ACODEC3_ALLOW
+    global ACHANNELS3
+    global ABITRATE3
+    global SCODEC
+    global BURN
+    global HWACCEL
+    global ALLOWSUBS
+    global DEFAULTS
+    MOUNTED = None
+    GETSUBS = int(nzb2media.CFG['Transcoder']['getSubs'])
+    TRANSCODE = int(nzb2media.CFG['Transcoder']['transcode'])
+    DUPLICATE = int(nzb2media.CFG['Transcoder']['duplicate'])
+    CONCAT = int(nzb2media.CFG['Transcoder']['concat'])
+    IGNOREEXTENSIONS = nzb2media.CFG['Transcoder']['ignoreExtensions']
+    if isinstance(IGNOREEXTENSIONS, str):
+        IGNOREEXTENSIONS = IGNOREEXTENSIONS.split(',')
+    OUTPUTFASTSTART = int(nzb2media.CFG['Transcoder']['outputFastStart'])
+    GENERALOPTS = nzb2media.CFG['Transcoder']['generalOptions']
+    if isinstance(GENERALOPTS, str):
+        GENERALOPTS = GENERALOPTS.split(',')
+    if GENERALOPTS == ['']:
+        GENERALOPTS = []
+    if '-fflags' not in GENERALOPTS:
+        GENERALOPTS.append('-fflags')
+    if '+genpts' not in GENERALOPTS:
+        GENERALOPTS.append('+genpts')
+    OTHEROPTS = nzb2media.CFG['Transcoder']['otherOptions']
+    if isinstance(OTHEROPTS, str):
+        OTHEROPTS = OTHEROPTS.split(',')
+    if OTHEROPTS == ['']:
+        OTHEROPTS = []
+    try:
+        OUTPUTQUALITYPERCENT = int(nzb2media.CFG['Transcoder']['outputQualityPercent'])
+    except Exception:
+        pass
+    OUTPUTVIDEOPATH = nzb2media.CFG['Transcoder']['outputVideoPath']
+    PROCESSOUTPUT = int(nzb2media.CFG['Transcoder']['processOutput'])
+    ALANGUAGE = nzb2media.CFG['Transcoder']['audioLanguage']
+    AINCLUDE = int(nzb2media.CFG['Transcoder']['allAudioLanguages'])
+    SLANGUAGES = nzb2media.CFG['Transcoder']['subLanguages']
+    if isinstance(SLANGUAGES, str):
+        SLANGUAGES = SLANGUAGES.split(',')
+    if SLANGUAGES == ['']:
+        SLANGUAGES = []
+    SINCLUDE = int(nzb2media.CFG['Transcoder']['allSubLanguages'])
+    SEXTRACT = int(nzb2media.CFG['Transcoder']['extractSubs'])
+    SEMBED = int(nzb2media.CFG['Transcoder']['embedSubs'])
+    SUBSDIR = nzb2media.CFG['Transcoder']['externalSubDir']
+    VEXTENSION = nzb2media.CFG['Transcoder']['outputVideoExtension'].strip()
+    VCODEC = nzb2media.CFG['Transcoder']['outputVideoCodec'].strip()
+    VCODEC_ALLOW = nzb2media.CFG['Transcoder']['VideoCodecAllow'].strip()
+    if isinstance(VCODEC_ALLOW, str):
+        VCODEC_ALLOW = VCODEC_ALLOW.split(',')
+    if VCODEC_ALLOW == ['']:
+        VCODEC_ALLOW = []
+    VPRESET = nzb2media.CFG['Transcoder']['outputVideoPreset'].strip()
+    try:
+        VFRAMERATE = float(nzb2media.CFG['Transcoder']['outputVideoFramerate'].strip())
+    except Exception:
+        pass
+    try:
+        VCRF = int(nzb2media.CFG['Transcoder']['outputVideoCRF'].strip())
+    except Exception:
+        pass
+    try:
+        VLEVEL = nzb2media.CFG['Transcoder']['outputVideoLevel'].strip()
+    except Exception:
+        pass
+    try:
+        VBITRATE = int((nzb2media.CFG['Transcoder']['outputVideoBitrate'].strip()).replace('k', '000'))
+    except Exception:
+        pass
+    VRESOLUTION = nzb2media.CFG['Transcoder']['outputVideoResolution']
+    ACODEC = nzb2media.CFG['Transcoder']['outputAudioCodec'].strip()
+    ACODEC_ALLOW = nzb2media.CFG['Transcoder']['AudioCodecAllow'].strip()
+    if isinstance(ACODEC_ALLOW, str):
+        ACODEC_ALLOW = ACODEC_ALLOW.split(',')
+    if ACODEC_ALLOW == ['']:
+        ACODEC_ALLOW = []
+    try:
+        ACHANNELS = int(nzb2media.CFG['Transcoder']['outputAudioChannels'].strip())
+    except Exception:
+        pass
+    try:
+        ABITRATE = int((nzb2media.CFG['Transcoder']['outputAudioBitrate'].strip()).replace('k', '000'))
+    except Exception:
+        pass
+    ACODEC2 = nzb2media.CFG['Transcoder']['outputAudioTrack2Codec'].strip()
+    ACODEC2_ALLOW = nzb2media.CFG['Transcoder']['AudioCodec2Allow'].strip()
+    if isinstance(ACODEC2_ALLOW, str):
+        ACODEC2_ALLOW = ACODEC2_ALLOW.split(',')
+    if ACODEC2_ALLOW == ['']:
+        ACODEC2_ALLOW = []
+    try:
+        ACHANNELS2 = int(nzb2media.CFG['Transcoder']['outputAudioTrack2Channels'].strip())
+    except Exception:
+        pass
+    try:
+        ABITRATE2 = int((nzb2media.CFG['Transcoder']['outputAudioTrack2Bitrate'].strip()).replace('k', '000'))
+    except Exception:
+        pass
+    ACODEC3 = nzb2media.CFG['Transcoder']['outputAudioOtherCodec'].strip()
+    ACODEC3_ALLOW = nzb2media.CFG['Transcoder']['AudioOtherCodecAllow'].strip()
+    if isinstance(ACODEC3_ALLOW, str):
+        ACODEC3_ALLOW = ACODEC3_ALLOW.split(',')
+    if ACODEC3_ALLOW == ['']:
+        ACODEC3_ALLOW = []
+    try:
+        ACHANNELS3 = int(nzb2media.CFG['Transcoder']['outputAudioOtherChannels'].strip())
+    except Exception:
+        pass
+    try:
+        ABITRATE3 = int((nzb2media.CFG['Transcoder']['outputAudioOtherBitrate'].strip()).replace('k', '000'))
+    except Exception:
+        pass
+    SCODEC = nzb2media.CFG['Transcoder']['outputSubtitleCodec'].strip()
+    BURN = int(nzb2media.CFG['Transcoder']['burnInSubtitle'].strip())
+    DEFAULTS = nzb2media.CFG['Transcoder']['outputDefault'].strip()
+    HWACCEL = int(nzb2media.CFG['Transcoder']['hwAccel'])
+    allow_subs = ['.mkv', '.mp4', '.m4v', 'asf', 'wma', 'wmv']
+    codec_alias = {'libx264': ['libx264', 'h264', 'h.264', 'AVC', 'MPEG-4'], 'libmp3lame': ['libmp3lame', 'mp3'], 'libfaac': ['libfaac', 'aac', 'faac']}
+    transcode_defaults = {
+        'iPad': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'iPad-1080p': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '1920:1080', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'iPad-720p': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '1280:720', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': None, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'Apple-TV': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '1280:720', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6, 'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'iPod': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '1280:720', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'iPhone': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '460:320', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'PS3': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6, 'ACODEC2': 'aac', 'ACODEC2_ALLOW': ['libfaac'], 'ABITRATE2': None, 'ACHANNELS2': 2, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'xbox': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'ac3', 'ACODEC_ALLOW': ['ac3'], 'ABITRATE': None, 'ACHANNELS': 6, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'Roku-480p': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'Roku-720p': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'Roku-1080p': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 160000, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+        'mkv': {'VEXTENSION': '.mkv', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'], 'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8, 'SCODEC': 'mov_text'},
+        'mkv-bluray': {'VEXTENSION': '.mkv', 'VCODEC': 'libx265', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'hevc', 'h265', 'libx265', 'h.265', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'], 'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8, 'SCODEC': 'mov_text'},
+        'mp4-scene-release': {'VEXTENSION': '.mp4', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': None, 'VCRF': 19, 'VLEVEL': '3.1', 'VRESOLUTION': None, 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4', 'mpeg2video'], 'ACODEC': 'dts', 'ACODEC_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE': None, 'ACHANNELS': 8, 'ACODEC2': None, 'ACODEC2_ALLOW': [], 'ABITRATE2': None, 'ACHANNELS2': None, 'ACODEC3': 'ac3', 'ACODEC3_ALLOW': ['libfaac', 'dts', 'ac3', 'mp2', 'mp3'], 'ABITRATE3': None, 'ACHANNELS3': 8, 'SCODEC': 'mov_text'},
+        'MKV-SD': {'VEXTENSION': '.mkv', 'VCODEC': 'libx264', 'VPRESET': None, 'VFRAMERATE': None, 'VBITRATE': '1200k', 'VCRF': None, 'VLEVEL': None, 'VRESOLUTION': '720: -1', 'VCODEC_ALLOW': ['libx264', 'h264', 'h.264', 'AVC', 'avc', 'mpeg4', 'msmpeg4', 'MPEG-4'], 'ACODEC': 'aac', 'ACODEC_ALLOW': ['libfaac'], 'ABITRATE': 128000, 'ACHANNELS': 2, 'ACODEC2': 'ac3', 'ACODEC2_ALLOW': ['ac3'], 'ABITRATE2': None, 'ACHANNELS2': 6, 'ACODEC3': None, 'ACODEC3_ALLOW': [], 'ABITRATE3': None, 'ACHANNELS3': None, 'SCODEC': 'mov_text'},
+    }
+    if DEFAULTS and DEFAULTS in transcode_defaults:
+        VEXTENSION = transcode_defaults[DEFAULTS]['VEXTENSION']
+        VCODEC = transcode_defaults[DEFAULTS]['VCODEC']
+        VPRESET = transcode_defaults[DEFAULTS]['VPRESET']
+        VFRAMERATE = transcode_defaults[DEFAULTS]['VFRAMERATE']
+        VBITRATE = transcode_defaults[DEFAULTS]['VBITRATE']
+        VRESOLUTION = transcode_defaults[DEFAULTS]['VRESOLUTION']
+        VCRF = transcode_defaults[DEFAULTS]['VCRF']
+        VLEVEL = transcode_defaults[DEFAULTS]['VLEVEL']
+        VCODEC_ALLOW = transcode_defaults[DEFAULTS]['VCODEC_ALLOW']
+        ACODEC = transcode_defaults[DEFAULTS]['ACODEC']
+        ACODEC_ALLOW = transcode_defaults[DEFAULTS]['ACODEC_ALLOW']
+        ACHANNELS = transcode_defaults[DEFAULTS]['ACHANNELS']
+        ABITRATE = transcode_defaults[DEFAULTS]['ABITRATE']
+        ACODEC2 = transcode_defaults[DEFAULTS]['ACODEC2']
+        ACODEC2_ALLOW = transcode_defaults[DEFAULTS]['ACODEC2_ALLOW']
+        ACHANNELS2 = transcode_defaults[DEFAULTS]['ACHANNELS2']
+        ABITRATE2 = transcode_defaults[DEFAULTS]['ABITRATE2']
+        ACODEC3 = transcode_defaults[DEFAULTS]['ACODEC3']
+        ACODEC3_ALLOW = transcode_defaults[DEFAULTS]['ACODEC3_ALLOW']
+        ACHANNELS3 = transcode_defaults[DEFAULTS]['ACHANNELS3']
+        ABITRATE3 = transcode_defaults[DEFAULTS]['ABITRATE3']
+        SCODEC = transcode_defaults[DEFAULTS]['SCODEC']
+    del transcode_defaults
+    if VEXTENSION in allow_subs:
+        ALLOWSUBS = 1
+    if not VCODEC_ALLOW and VCODEC:
+        VCODEC_ALLOW.extend([VCODEC])
+    for codec in VCODEC_ALLOW:
+        if codec in codec_alias:
+            extra = [item for item in codec_alias[codec] if item not in VCODEC_ALLOW]
+            VCODEC_ALLOW.extend(extra)
+    if not ACODEC_ALLOW and ACODEC:
+        ACODEC_ALLOW.extend([ACODEC])
+    for codec in ACODEC_ALLOW:
+        if codec in codec_alias:
+            extra = [item for item in codec_alias[codec] if item not in ACODEC_ALLOW]
+            ACODEC_ALLOW.extend(extra)
+    if not ACODEC2_ALLOW and ACODEC2:
+        ACODEC2_ALLOW.extend([ACODEC2])
+    for codec in ACODEC2_ALLOW:
+        if codec in codec_alias:
+            extra = [item for item in codec_alias[codec] if item not in ACODEC2_ALLOW]
+            ACODEC2_ALLOW.extend(extra)
+    if not ACODEC3_ALLOW and ACODEC3:
+        ACODEC3_ALLOW.extend([ACODEC3])
+    for codec in ACODEC3_ALLOW:
+        if codec in codec_alias:
+            extra = [item for item in codec_alias[codec] if item not in ACODEC3_ALLOW]
+            ACODEC3_ALLOW.extend(extra)

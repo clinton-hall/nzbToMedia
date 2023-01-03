@@ -74,7 +74,6 @@ disable=
     C0415,  # import-outside-toplevel
 
     R0204,  # redifined-variable-type
-    R0401,  # cyclic-import
     R0801,  # duplicate-code
     R0903,  # too-few-public-methods
     R0902,  # too-many-instance-attributes

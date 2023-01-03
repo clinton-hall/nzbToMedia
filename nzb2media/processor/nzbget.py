@@ -1,11 +1,21 @@
 from __future__ import annotations
 
+import enum
 import logging
 import os
 import sys
 
-import nzb2media
 from nzb2media.processor import nzb
+
+
+class ExitCode(enum.IntEnum):
+    """Exit codes for post-processing with NZBget."""
+
+    REPAIR = 92
+    SUCCESS = 93
+    FAILURE = 94
+    SKIPPED = 95
+
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -86,7 +96,7 @@ def check_version():
     # Check if the script is called from nzbget 11.0 or later
     if version[0:5] < '11.0':
         log.error(f'NZBGet Version {version} is not supported. Please update NZBGet.')
-        sys.exit(nzb2media.NZBGET_POSTPROCESS_ERROR)
+        sys.exit(ExitCode.FAILURE)
     log.info(f'Script triggered from NZBGet Version {version}.')
 
 
@@ -95,4 +105,12 @@ def process():
     status = parse_status()
     download_id = parse_download_id()
     failure_link = parse_failure_link()
-    return nzb.process(input_directory=os.environ['NZBPP_DIRECTORY'], input_name=os.environ['NZBPP_NZBNAME'], status=status, client_agent='nzbget', download_id=download_id, input_category=os.environ['NZBPP_CATEGORY'], failure_link=failure_link)
+    return nzb.process(
+        input_directory=os.environ['NZBPP_DIRECTORY'],
+        input_name=os.environ['NZBPP_NZBNAME'],
+        status=status,
+        client_agent='nzbget',
+        download_id=download_id,
+        input_category=os.environ['NZBPP_CATEGORY'],
+        failure_link=failure_link,
+    )

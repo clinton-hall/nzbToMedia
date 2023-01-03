@@ -16,3 +16,5 @@
 *.egg-info
 /.vscode
 /htmlcov/
+/.tox/
+/.mypy_cache/

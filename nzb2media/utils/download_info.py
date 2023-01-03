@@ -3,11 +3,11 @@ from __future__ import annotations
 import datetime
 import logging
 
-from nzb2media import main_db
+import nzb2media.databases
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
-database = main_db.DBConnection()
+database = nzb2media.databases.DBConnection()
 
 
 def update_download_info_status(input_name, status):

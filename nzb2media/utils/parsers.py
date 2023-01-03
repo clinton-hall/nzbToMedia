@@ -4,6 +4,7 @@ import logging
 import os
 
 import nzb2media
+import nzb2media.torrent
 
 log = logging.getLogger(__name__)
 log.addHandler(logging.NullHandler())
@@ -61,7 +62,7 @@ def parse_deluge(args):
     input_hash = args[1]
     input_id = args[1]
     try:
-        input_category = nzb2media.TORRENT_CLASS.core.get_torrent_status(input_id, ['label']).get(b'label').decode()
+        input_category = nzb2media.torrent.CLASS.core.get_torrent_status(input_id, ['label']).get(b'label').decode()
     except Exception:
         input_category = ''
     return input_directory, input_name, input_category, input_hash, input_id
@@ -89,7 +90,7 @@ def parse_synods():
     torrent_id = os.getenv('TR_TORRENT_ID')
     input_id = f'dbid_{torrent_id}'
     # res = nzb2media.TORRENT_CLASS.tasks_list(additional_param='detail')
-    res = nzb2media.TORRENT_CLASS.tasks_info(input_id, additional_param='detail')
+    res = nzb2media.torrent.CLASS.tasks_info(input_id, additional_param='detail')
     log.debug(f'result from syno {res}')
     if res['success']:
         try:
@@ -176,7 +177,16 @@ def parse_qbittorrent(args):
 
 
 def parse_args(client_agent, args):
-    clients = {'other': parse_other, 'rtorrent': parse_rtorrent, 'utorrent': parse_utorrent, 'deluge': parse_deluge, 'transmission': parse_transmission, 'qbittorrent': parse_qbittorrent, 'vuze': parse_vuze, 'synods': parse_synods}
+    clients = {
+        'other': parse_other,
+        'rtorrent': parse_rtorrent,
+        'utorrent': parse_utorrent,
+        'deluge': parse_deluge,
+        'transmission': parse_transmission,
+        'qbittorrent': parse_qbittorrent,
+        'vuze': parse_vuze,
+        'synods': parse_synods,
+    }
     try:
         return clients[client_agent](args)
     except Exception:

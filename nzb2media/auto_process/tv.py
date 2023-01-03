@@ -12,21 +12,23 @@ from oauthlib.oauth2 import LegacyApplicationClient
 from requests_oauthlib import OAuth2Session
 
 import nzb2media
+import nzb2media.fork.sickrage
+import nzb2media.torrent
 import nzb2media.utils.common
 from nzb2media import transcoder
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.auto_process.common import command_complete
 from nzb2media.auto_process.common import completed_download_handling
 from nzb2media.managers.sickbeard import InitSickBeard
-from nzb2media.plugins.subtitles import import_subs
-from nzb2media.plugins.subtitles import rename_subs
+from nzb2media.nzb import report_nzb
 from nzb2media.scene_exceptions import process_all_exceptions
+from nzb2media.subtitles import import_subs
+from nzb2media.subtitles import rename_subs
 from nzb2media.utils.common import flatten
 from nzb2media.utils.encoding import convert_to_ascii
 from nzb2media.utils.files import extract_files
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.network import server_responding
-from nzb2media.utils.nzb import report_nzb
 from nzb2media.utils.paths import rchmod
 from nzb2media.utils.paths import remote_dir
 from nzb2media.utils.paths import remove_dir
@@ -85,7 +87,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
     else:
         log.error('Server did not respond. Exiting')
         return ProcessResult.failure(f'{section}: Failed to post-process - {section} did not respond.')
-    if client_agent == nzb2media.TORRENT_CLIENT_AGENT and nzb2media.USE_LINK == 'move-sym':
+    if client_agent == nzb2media.torrent.CLIENT_AGENT and nzb2media.USE_LINK == 'move-sym':
         process_method = 'symlink'
     if not os.path.isdir(dir_name) and os.path.isfile(dir_name):  # If the input directory is a file, assume single file download and split dir/name.
         dir_name = os.path.split(os.path.normpath(dir_name))[0]
@@ -160,7 +162,7 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         status = 1
         if 'NZBOP_VERSION' in os.environ and os.environ['NZBOP_VERSION'][0:5] >= '14.0':
             print('[NZB] MARK=BAD')
-    if not status and nzb2media.TRANSCODE == 1:
+    if not status and transcoder.TRANSCODE == 1:
         # only transcode successful downloads
         result, new_dir_name = transcoder.transcode_directory(dir_name)
         if not result:
@@ -300,8 +302,8 @@ def process(*, section: str, dir_name: str, input_name: str = '', status: int = 
         elif section == 'SiCKRAGE':
             session = requests.Session()
             if api_version >= 2 and sso_username and sso_password:
-                oauth = OAuth2Session(client=LegacyApplicationClient(client_id=nzb2media.SICKRAGE_OAUTH_CLIENT_ID))
-                oauth_token = oauth.fetch_token(client_id=nzb2media.SICKRAGE_OAUTH_CLIENT_ID, token_url=nzb2media.SICKRAGE_OAUTH_TOKEN_URL, username=sso_username, password=sso_password)
+                oauth = OAuth2Session(client=LegacyApplicationClient(client_id=nzb2media.fork.sickrage.SICKRAGE_OAUTH_CLIENT_ID))
+                oauth_token = oauth.fetch_token(client_id=nzb2media.fork.sickrage.SICKRAGE_OAUTH_CLIENT_ID, token_url=nzb2media.fork.sickrage.SICKRAGE_OAUTH_TOKEN_URL, username=sso_username, password=sso_password)
                 session.headers.update({'Authorization': 'Bearer ' + oauth_token['access_token']})
                 params = {'path': fork_params['path'], 'failed': str(bool(fork_params['failed'])).lower(), 'processMethod': 'move', 'forceReplace': str(bool(fork_params['force_replace'])).lower(), 'returnData': str(bool(fork_params['return_data'])).lower(), 'delete': str(bool(fork_params['delete'])).lower(), 'forceNext': str(bool(fork_params['force_next'])).lower(), 'nzbName': fork_params['nzbName']}
             else:

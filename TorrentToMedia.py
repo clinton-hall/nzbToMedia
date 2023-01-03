@@ -4,10 +4,11 @@ import os
 import sys
 
 import nzb2media
-from nzb2media import main_db
+import nzb2media.databases
+import nzb2media.torrent
 from nzb2media.auto_process import comics, games, movies, music, tv, books
 from nzb2media.auto_process.common import ProcessResult
-from nzb2media.plugins.plex import plex_update
+from nzb2media.plex import plex_update
 from nzb2media.user_scripts import external_script
 from nzb2media.utils.encoding import char_replace, convert_to_ascii
 from nzb2media.utils.links import replace_links
@@ -24,7 +25,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if client_agent != 'manual' and not nzb2media.DOWNLOAD_INFO:
         log.debug(f'Adding TORRENT download info for directory {input_directory} to database')
 
-        my_db = main_db.DBConnection()
+        my_db = nzb2media.databases.DBConnection()
 
         input_directory1 = input_directory
         input_name1 = input_name
@@ -116,7 +117,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     log.info(f'Output directory set to: {output_destination}')
 
-    if nzb2media.SAFE_MODE and output_destination == nzb2media.TORRENT_DEFAULT_DIRECTORY:
+    if nzb2media.SAFE_MODE and output_destination == nzb2media.torrent.DEFAULT_DIRECTORY:
         log.error(f'The output directory:[{input_directory}] is the Download Directory. Edit outputDirectory in autoProcessMedia.cfg. Exiting')
         return [-1, '']
 
@@ -124,7 +125,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     if section_name in {'HeadPhones', 'Lidarr'}:
         # Make sure we preserve folder structure for HeadPhones.
-        nzb2media.NOFLATTEN.extend(input_category)
+        nzb2media.torrent.NO_FLATTEN.extend(input_category)
 
     now = datetime.datetime.now()
 
@@ -143,7 +144,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         full_file_name = os.path.basename(input_file)
 
         target_file = nzb2media.os.path.join(output_destination, full_file_name)
-        if input_category in nzb2media.NOFLATTEN:
+        if input_category in nzb2media.torrent.NO_FLATTEN:
             if not os.path.basename(file_path) in output_destination:
                 target_file = nzb2media.os.path.join(
                     nzb2media.os.path.join(output_destination, os.path.basename(file_path)), full_file_name,
@@ -186,7 +187,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
         log.debug(f'Checking for archives to extract in directory: {input_directory}')
         nzb2media.extract_files(input_directory, output_destination, keep_archive)
 
-    if input_category not in nzb2media.NOFLATTEN:
+    if input_category not in nzb2media.torrent.NO_FLATTEN:
         # don't flatten hp in case multi cd albums, and we need to copy this back later.
         nzb2media.flatten(output_destination)
 
@@ -211,8 +212,8 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
 
     log.info(f'Calling {section_name}:{usercat} to post-process:{input_name}')
 
-    if nzb2media.TORRENT_CHMOD_DIRECTORY:
-        nzb2media.rchmod(output_destination, nzb2media.TORRENT_CHMOD_DIRECTORY)
+    if nzb2media.torrent.CHMOD_DIRECTORY:
+        nzb2media.rchmod(output_destination, nzb2media.torrent.CHMOD_DIRECTORY)
 
     if section_name == 'UserScript':
         result = external_script(output_destination, input_name, input_category, section)
@@ -247,7 +248,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     plex_update(input_category)
 
     if result.status_code:
-        if not nzb2media.TORRENT_RESUME_ON_FAILURE:
+        if not nzb2media.torrent.RESUME_ON_FAILURE:
             log.error(
                 'A problem was reported in the autoProcess* script. '
                 'Torrent won\'t resume seeding (settings)',
@@ -265,7 +266,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
             nzb2media.update_download_info_status(input_name, 1)
 
             # remove torrent
-            if nzb2media.USE_LINK == 'move-sym' and not nzb2media.DELETE_ORIGINAL == 1:
+            if nzb2media.USE_LINK == 'move-sym' and nzb2media.DELETE_ORIGINAL != 1:
                 log.debug(f'Checking for sym-links to re-direct in: {input_directory}')
                 for dirpath, _, files in os.walk(input_directory):
                     for file in files:
@@ -286,7 +287,7 @@ def main(args):
     nzb2media.initialize()
 
     # clientAgent for Torrents
-    client_agent = nzb2media.TORRENT_CLIENT_AGENT
+    client_agent = nzb2media.torrent.CLIENT_AGENT
 
     log.info('#########################################################')
     log.info(f'## ..::[{os.path.basename(__file__)}]::.. ##')
@@ -335,7 +336,7 @@ def main(args):
                         input_hash = ''
                         input_id = ''
 
-                    if client_agent.lower() not in nzb2media.TORRENT_CLIENTS:
+                    if client_agent.lower() not in nzb2media.torrent.CLIENTS:
                         continue
 
                     input_name = os.path.basename(dir_name)
@@ -352,7 +353,6 @@ def main(args):
         log.info(f'The {args[0]} script completed successfully.')
     else:
         log.error(f'A problem was reported in the {args[0]} script.')
-    del nzb2media.MYAPP
     return result.status_code
 
 

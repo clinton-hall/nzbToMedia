@@ -7,8 +7,7 @@ import re
 import subliminal
 from babelfish import Language
 
-from nzb2media import GETSUBS
-from nzb2media import SLANGUAGES
+from nzb2media.transcoder import GETSUBS, SLANGUAGES
 from nzb2media.utils.files import list_media_files
 
 log = logging.getLogger(__name__)
