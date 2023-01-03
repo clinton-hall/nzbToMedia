@@ -18,7 +18,6 @@ from subprocess import PIPE
 from babelfish import Language
 
 import nzb2media
-import nzb2media.tool
 from nzb2media.utils.files import list_media_files
 from nzb2media.utils.paths import make_dir
 

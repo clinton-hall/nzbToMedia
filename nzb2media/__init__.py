@@ -11,12 +11,10 @@ from typing import Any
 
 import setuptools_scm
 
-import nzb2media.databases
 import nzb2media.fork.medusa
 import nzb2media.fork.sickbeard
 import nzb2media.fork.sickchill
 import nzb2media.fork.sickgear
-import nzb2media.tool
 from nzb2media.configuration import Config
 from nzb2media.transcoder import configure_transcoder
 from nzb2media.utils.network import wake_up
@@ -107,7 +105,6 @@ def configure_general():
     global SAFE_MODE
     global NOEXTRACTFAILED
     FORCE_CLEAN = int(CFG['General']['force_clean'])
-    nzb2media.tool.FFMPEG_PATH = pathlib.Path(CFG['General']['ffmpeg_path'])
     SYS_PATH = CFG['General']['sys_path']
     CHECK_MEDIA = int(CFG['General']['check_media'])
     REQUIRE_LAN = None if not CFG['General']['require_lan'] else CFG['General']['require_lan'].split(',')
@@ -186,11 +183,9 @@ def initialize(section=None):
     configure_general()
     configure_wake_on_lan()
     configure_remote_paths()
-    nzb2media.tool.configure_niceness()
     configure_containers()
     configure_transcoder()
     configure_passwords_file()
-    nzb2media.tool.configure_utility_locations()
     configure_sections(section)
     __INITIALIZED__ = True
     # finished initializing

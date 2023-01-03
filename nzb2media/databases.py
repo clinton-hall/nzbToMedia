@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 import sqlite3
 import sys
 import time
 
-import nzb2media
 from nzb2media.utils.files import backup_versioned_file
 
 log = logging.getLogger(__name__)
@@ -115,17 +115,18 @@ class InitialSchema(SchemaUpgrade):
                     self.connection.action(query)
 
 
-def db_filename(filename: str = 'nzbtomedia.db', suffix: str | None = None):
+def db_filename(filename: str = 'nzbtomedia.db', suffix: str | None = None, root: os.PathLike | None = None):
     """Return the correct location of the database file.
 
     @param filename: The sqlite database filename to use. If not specified, will be made to be nzbtomedia.db
     @param suffix: The suffix to append to the filename. A '.' will be added
                    automatically, i.e. suffix='v0' will make dbfile.db.v0
+    @param root: The root path for the database.
     @return: the correct location of the database file.
     """
     if suffix:
         filename = f'{filename}.{suffix}'
-    return nzb2media.os.path.join(nzb2media.APP_ROOT, filename)
+    return os.path.join(root or '', filename)
 
 
 class DBConnection:
@@ -308,4 +309,4 @@ def _process_upgrade(connection, upgrade_class):
         _process_upgrade(connection, upgrade_sub_class)
 
 
-upgrade_database(nzb2media.databases.DBConnection(), nzb2media.databases.InitialSchema)
+upgrade_database(DBConnection(), InitialSchema)

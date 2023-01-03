@@ -136,11 +136,7 @@ def configure_utility_locations():
     FFMPEG = find_transcoder(FFMPEG_PATH)
     FFPROBE = find_video_corruption_detector(FFMPEG_PATH)
     PAR2CMD = find_archive_repairer()
-    if platform.system() == 'Windows':
-        path = nzb2media.APP_ROOT / f'nzb2media/extractor/bin/{platform.machine()}'
-    else:
-        path = None
-    SEVENZIP = find_unzip(path)
+    SEVENZIP = find_unzip()
 
 
 def extract(file_path, output_destination):
@@ -318,3 +314,6 @@ def configure_niceness():
 
 NICENESS: list[str] = []
 FFMPEG_PATH: pathlib.Path | None = None
+
+configure_niceness()
+configure_utility_locations()
