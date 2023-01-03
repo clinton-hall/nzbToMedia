@@ -13,6 +13,7 @@ rencode
 requests
 requests_oauthlib
 setuptools
+setuptools_scm
 subliminal != 2.1.0
 syno@git+https://github.com/labrys/syno.git@master
 transmission-rpc
