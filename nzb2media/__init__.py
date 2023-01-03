@@ -11,13 +11,12 @@ from typing import Any
 
 import setuptools_scm
 
+import nzb2media.databases
 import nzb2media.fork.medusa
 import nzb2media.fork.sickbeard
 import nzb2media.fork.sickchill
 import nzb2media.fork.sickgear
 import nzb2media.tool
-from nzb2media import databases
-from nzb2media import main_db
 from nzb2media.configuration import Config
 from nzb2media.transcoder import configure_transcoder
 from nzb2media.utils.network import wake_up
@@ -184,7 +183,6 @@ def initialize(section=None):
         return False
     configure_migration()
     # initialize the main SB database
-    main_db.upgrade_database(main_db.DBConnection(), databases.InitialSchema)
     configure_general()
     configure_wake_on_lan()
     configure_remote_paths()

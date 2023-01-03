@@ -4,8 +4,8 @@ import os
 import sys
 
 import nzb2media
+import nzb2media.databases
 import nzb2media.torrent
-from nzb2media import main_db
 from nzb2media.auto_process import comics, games, movies, music, tv, books
 from nzb2media.auto_process.common import ProcessResult
 from nzb2media.plex import plex_update
@@ -25,7 +25,7 @@ def process_torrent(input_directory, input_name, input_category, input_hash, inp
     if client_agent != 'manual' and not nzb2media.DOWNLOAD_INFO:
         log.debug(f'Adding TORRENT download info for directory {input_directory} to database')
 
-        my_db = main_db.DBConnection()
+        my_db = nzb2media.databases.DBConnection()
 
         input_directory1 = input_directory
         input_name1 = input_name

@@ -4,8 +4,8 @@ import datetime
 import logging
 
 import nzb2media
+import nzb2media.databases
 import nzb2media.nzb
-from nzb2media import main_db
 from nzb2media.auto_process import books
 from nzb2media.auto_process import comics
 from nzb2media.auto_process import games
@@ -34,7 +34,7 @@ def process(*, input_directory, input_name=None, status=0, client_agent='manual'
         download_id = get_nzoid(input_name)
     if client_agent != 'manual' and not nzb2media.DOWNLOAD_INFO:
         log.debug(f'Adding NZB download info for directory {input_directory} to database')
-        my_db = main_db.DBConnection()
+        my_db = nzb2media.databases.DBConnection()
         input_directory1 = input_directory
         input_name1 = input_name
         try:

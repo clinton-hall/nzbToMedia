@@ -135,9 +135,6 @@ def test_import_nzb2media():
     import nzb2media.databases
     assert nzb2media.databases
 
-    import nzb2media.main_db
-    assert nzb2media.main_db
-
     import nzb2media.scene_exceptions
     assert nzb2media.scene_exceptions
 
