@@ -317,9 +317,9 @@ def process(section, dir_name, input_name=None, failed=False, client_agent='manu
         else:
             url = '{0}{1}:{2}{3}/api/v{4}/{5}/'.format(protocol, host, port, web_root, api_version, apikey)
     elif section == 'NzbDrone':
-        url = '{0}{1}:{2}{3}/api/command'.format(protocol, host, port, web_root)
-        url2 = '{0}{1}:{2}{3}/api/config/downloadClient'.format(protocol, host, port, web_root)
-        headers = {'X-Api-Key': apikey}
+        url = '{0}{1}:{2}{3}/api/v3/command'.format(protocol, host, port, web_root)
+        url2 = '{0}{1}:{2}{3}/api/v3/config/downloadClient'.format(protocol, host, port, web_root)
+        headers = {'X-Api-Key': apikey, "Content-Type": "application/json"}
         # params = {'sortKey': 'series.title', 'page': 1, 'pageSize': 1, 'sortDir': 'asc'}
         if remote_path:
             logger.debug('remote_path: {0}'.format(remote_dir(dir_name)), section)
