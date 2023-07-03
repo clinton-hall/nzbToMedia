@@ -479,7 +479,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 burnt = 1
             if not core.ALLOWSUBS:
                 break
-            if sub['codec_name'] in ['dvd_subtitle', 'VobSub'] and core.SCODEC == 'mov_text':  # We can't convert these.
+            if sub['codec_name'] in ['dvd_subtitle', 'dvb_subtitle', 'VobSub'] and core.SCODEC == 'mov_text':  # We can't convert these.
                 continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub['index'])])
             s_mapped.extend([sub['index']])
@@ -490,7 +490,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 break
             if sub['index'] in s_mapped:
                 continue
-            if sub['codec_name'] in ['dvd_subtitle', 'VobSub'] and core.SCODEC == 'mov_text':  # We can't convert these.
+            if sub['codec_name'] in ['dvd_subtitle', 'dvb_subtitle', 'VobSub'] and core.SCODEC == 'mov_text':  # We can't convert these.
                 continue
             map_cmd.extend(['-map', '0:{index}'.format(index=sub['index'])])
             s_mapped.extend([sub['index']])
@@ -516,7 +516,7 @@ def build_commands(file, new_dir, movie_name, bitbucket):
                 continue
             if core.SCODEC == 'mov_text':
                 subcode = [stream['codec_name'] for stream in sub_details['streams']]
-                if set(subcode).intersection(['dvd_subtitle', 'VobSub']):  # We can't convert these.
+                if set(subcode).intersection(['dvd_subtitle', 'dvb_subtitle', 'VobSub']):  # We can't convert these.
                     continue
             command.extend(['-i', subfile])
             lan = os.path.splitext(os.path.splitext(subfile)[0])[1][1:].split('-')[0]
