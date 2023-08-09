@@ -1047,6 +1047,7 @@ def initialize(section=None):
     configure_utility_locations()
     configure_sections(section)
     configure_torrent_class()
+    configure_groups()
 
     __INITIALIZED__ = True
 
