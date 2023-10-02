@@ -27,14 +27,14 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
     if m:
         imdbid = m.group(1)
         logger.info('Found imdbID [{0}]'.format(imdbid))
-        return imdbid
+        return imdbid, dir_name
     if os.path.isdir(dir_name):
         for file in os.listdir(text_type(dir_name)):
             m = re.search(r'\b(tt\d{7,8})\b', file)
             if m:
                 imdbid = m.group(1)
                 logger.info('Found imdbID [{0}] via file name'.format(imdbid))
-                return imdbid
+                return imdbid, dir_name
     if 'NZBPR__DNZB_MOREINFO' in os.environ:
         dnzb_more_info = os.environ.get('NZBPR__DNZB_MOREINFO', '')
         if dnzb_more_info != '':
@@ -43,7 +43,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
             if m:
                 imdbid = m.group(1)
                 logger.info('Found imdbID [{0}] from DNZB-MoreInfo'.format(imdbid))
-                return imdbid
+                return imdbid, dir_name
     logger.info('Searching IMDB for imdbID ...')
     try:
         guess = guessit.guessit(input_name)
@@ -87,10 +87,12 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
         if imdbid:
             logger.info('Found imdbID [{0}]'.format(imdbid))
-            return imdbid
+            new_dir_name = '{}.cp({})'.format(dir_name, imdbid)
+            os.rename(dir_name, new_dir_name)
+            return imdbid, new_dir_name
 
     logger.warning('Unable to find a imdbID for {0}'.format(input_name))
-    return imdbid
+    return imdbid, dir_name
 
 
 def category_search(input_directory, input_name, input_category, root, categories):
