@@ -260,7 +260,10 @@ def process(section, dir_name, input_name=None, status=0, client_agent='manual',
                 )
         elif section == 'Radarr':
             try:
-                scan_id = int(result['id'])
+                if isinstance(result, list):
+                    scan_id = int(result[0]['id'])
+                else:
+                    scan_id = int(result['id'])
                 logger.debug('Scan started with id: {0}'.format(scan_id), section)
             except Exception as e:
                 logger.warning('No scan id was returned due to: {0}'.format(e), section)
