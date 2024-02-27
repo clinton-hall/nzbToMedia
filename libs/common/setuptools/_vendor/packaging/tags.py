@@ -2,25 +2,33 @@
 # 2.0, and the BSD License. See the LICENSE file in the root of this repository
 # for complete details.
 
-from __future__ import absolute_import
-
-import distutils.util
-
-try:
-    from importlib.machinery import EXTENSION_SUFFIXES
-except ImportError:  # pragma: no cover
-    import imp
-
-    EXTENSION_SUFFIXES = [x[0] for x in imp.get_suffixes()]
-    del imp
+import logging
 import platform
-import re
+import subprocess
 import sys
 import sysconfig
-import warnings
+from importlib.machinery import EXTENSION_SUFFIXES
+from typing import (
+    Dict,
+    FrozenSet,
+    Iterable,
+    Iterator,
+    List,
+    Optional,
+    Sequence,
+    Tuple,
+    Union,
+    cast,
+)
 
+from . import _manylinux, _musllinux
 
-INTERPRETER_SHORT_NAMES = {
+logger = logging.getLogger(__name__)
+
+PythonVersion = Sequence[int]
+MacVersion = Tuple[int, int]
+
+INTERPRETER_SHORT_NAMES: Dict[str, str] = {
     "python": "py",  # Generic.
     "cpython": "cp",
     "pypy": "pp",
@@ -29,48 +37,70 @@ INTERPRETER_SHORT_NAMES = {
 }
 
 
-_32_BIT_INTERPRETER = sys.maxsize <= 2 ** 32
+_32_BIT_INTERPRETER = sys.maxsize <= 2**32
 
 
-class Tag(object):
+class Tag:
+    """
+    A representation of the tag triple for a wheel.
 
-    __slots__ = ["_interpreter", "_abi", "_platform"]
+    Instances are considered immutable and thus are hashable. Equality checking
+    is also supported.
+    """
 
-    def __init__(self, interpreter, abi, platform):
+    __slots__ = ["_interpreter", "_abi", "_platform", "_hash"]
+
+    def __init__(self, interpreter: str, abi: str, platform: str) -> None:
         self._interpreter = interpreter.lower()
         self._abi = abi.lower()
         self._platform = platform.lower()
+        # The __hash__ of every single element in a Set[Tag] will be evaluated each time
+        # that a set calls its `.disjoint()` method, which may be called hundreds of
+        # times when scanning a page of links for packages with tags matching that
+        # Set[Tag]. Pre-computing the value here produces significant speedups for
+        # downstream consumers.
+        self._hash = hash((self._interpreter, self._abi, self._platform))
 
     @property
-    def interpreter(self):
+    def interpreter(self) -> str:
         return self._interpreter
 
     @property
-    def abi(self):
+    def abi(self) -> str:
         return self._abi
 
     @property
-    def platform(self):
+    def platform(self) -> str:
         return self._platform
 
-    def __eq__(self, other):
+    def __eq__(self, other: object) -> bool:
+        if not isinstance(other, Tag):
+            return NotImplemented
+
         return (
-            (self.platform == other.platform)
-            and (self.abi == other.abi)
-            and (self.interpreter == other.interpreter)
+            (self._hash == other._hash)  # Short-circuit ASAP for perf reasons.
+            and (self._platform == other._platform)
+            and (self._abi == other._abi)
+            and (self._interpreter == other._interpreter)
         )
 
-    def __hash__(self):
-        return hash((self._interpreter, self._abi, self._platform))
+    def __hash__(self) -> int:
+        return self._hash
 
-    def __str__(self):
-        return "{}-{}-{}".format(self._interpreter, self._abi, self._platform)
+    def __str__(self) -> str:
+        return f"{self._interpreter}-{self._abi}-{self._platform}"
 
-    def __repr__(self):
-        return "<{self} @ {self_id}>".format(self=self, self_id=id(self))
+    def __repr__(self) -> str:
+        return f"<{self} @ {id(self)}>"
 
 
-def parse_tag(tag):
+def parse_tag(tag: str) -> FrozenSet[Tag]:
+    """
+    Parses the provided tag (e.g. `py3-none-any`) into a frozenset of Tag instances.
+
+    Returning a set is required due to the possibility that the tag is a
+    compressed tag set.
+    """
     tags = set()
     interpreters, abis, platforms = tag.split("-")
     for interpreter in interpreters.split("."):
@@ -80,20 +110,34 @@ def parse_tag(tag):
     return frozenset(tags)
 
 
-def _normalize_string(string):
-    return string.replace(".", "_").replace("-", "_")
+def _get_config_var(name: str, warn: bool = False) -> Union[int, str, None]:
+    value: Union[int, str, None] = sysconfig.get_config_var(name)
+    if value is None and warn:
+        logger.debug(
+            "Config variable '%s' is unset, Python ABI tag may be incorrect", name
+        )
+    return value
 
 
-def _cpython_interpreter(py_version):
-    # TODO: Is using py_version_nodot for interpreter version critical?
-    return "cp{major}{minor}".format(major=py_version[0], minor=py_version[1])
+def _normalize_string(string: str) -> str:
+    return string.replace(".", "_").replace("-", "_").replace(" ", "_")
 
 
-def _cpython_abis(py_version):
+def _abi3_applies(python_version: PythonVersion) -> bool:
+    """
+    Determine if the Python version supports abi3.
+
+    PEP 384 was first implemented in Python 3.2.
+    """
+    return len(python_version) > 1 and tuple(python_version) >= (3, 2)
+
+
+def _cpython_abis(py_version: PythonVersion, warn: bool = False) -> List[str]:
+    py_version = tuple(py_version)  # To allow for version comparison.
     abis = []
-    version = "{}{}".format(*py_version[:2])
+    version = _version_nodot(py_version[:2])
     debug = pymalloc = ucs4 = ""
-    with_debug = sysconfig.get_config_var("Py_DEBUG")
+    with_debug = _get_config_var("Py_DEBUG", warn)
     has_refcount = hasattr(sys, "gettotalrefcount")
     # Windows doesn't set Py_DEBUG, so checking for support of debug-compiled
     # extension modules is the best option.
@@ -102,11 +146,11 @@ def _cpython_abis(py_version):
     if with_debug or (with_debug is None and (has_refcount or has_ext)):
         debug = "d"
     if py_version < (3, 8):
-        with_pymalloc = sysconfig.get_config_var("WITH_PYMALLOC")
+        with_pymalloc = _get_config_var("WITH_PYMALLOC", warn)
         if with_pymalloc or with_pymalloc is None:
             pymalloc = "m"
         if py_version < (3, 3):
-            unicode_size = sysconfig.get_config_var("Py_UNICODE_SIZE")
+            unicode_size = _get_config_var("Py_UNICODE_SIZE", warn)
             if unicode_size == 4 or (
                 unicode_size is None and sys.maxunicode == 0x10FFFF
             ):
@@ -114,7 +158,7 @@ def _cpython_abis(py_version):
     elif debug:
         # Debug builds can also load "normal" extension modules.
         # We can also assume no UCS-4 or pymalloc requirement.
-        abis.append("cp{version}".format(version=version))
+        abis.append(f"cp{version}")
     abis.insert(
         0,
         "cp{version}{debug}{pymalloc}{ucs4}".format(
@@ -124,86 +168,176 @@ def _cpython_abis(py_version):
     return abis
 
 
-def _cpython_tags(py_version, interpreter, abis, platforms):
+def cpython_tags(
+    python_version: Optional[PythonVersion] = None,
+    abis: Optional[Iterable[str]] = None,
+    platforms: Optional[Iterable[str]] = None,
+    *,
+    warn: bool = False,
+) -> Iterator[Tag]:
+    """
+    Yields the tags for a CPython interpreter.
+
+    The tags consist of:
+    - cp<python_version>-<abi>-<platform>
+    - cp<python_version>-abi3-<platform>
+    - cp<python_version>-none-<platform>
+    - cp<less than python_version>-abi3-<platform>  # Older Python versions down to 3.2.
+
+    If python_version only specifies a major version then user-provided ABIs and
+    the 'none' ABItag will be used.
+
+    If 'abi3' or 'none' are specified in 'abis' then they will be yielded at
+    their normal position and not at the beginning.
+    """
+    if not python_version:
+        python_version = sys.version_info[:2]
+
+    interpreter = f"cp{_version_nodot(python_version[:2])}"
+
+    if abis is None:
+        if len(python_version) > 1:
+            abis = _cpython_abis(python_version, warn)
+        else:
+            abis = []
+    abis = list(abis)
+    # 'abi3' and 'none' are explicitly handled later.
+    for explicit_abi in ("abi3", "none"):
+        try:
+            abis.remove(explicit_abi)
+        except ValueError:
+            pass
+
+    platforms = list(platforms or platform_tags())
     for abi in abis:
         for platform_ in platforms:
             yield Tag(interpreter, abi, platform_)
-    for tag in (Tag(interpreter, "abi3", platform_) for platform_ in platforms):
-        yield tag
-    for tag in (Tag(interpreter, "none", platform_) for platform_ in platforms):
-        yield tag
-    # PEP 384 was first implemented in Python 3.2.
-    for minor_version in range(py_version[1] - 1, 1, -1):
-        for platform_ in platforms:
-            interpreter = "cp{major}{minor}".format(
-                major=py_version[0], minor=minor_version
-            )
-            yield Tag(interpreter, "abi3", platform_)
+    if _abi3_applies(python_version):
+        yield from (Tag(interpreter, "abi3", platform_) for platform_ in platforms)
+    yield from (Tag(interpreter, "none", platform_) for platform_ in platforms)
+
+    if _abi3_applies(python_version):
+        for minor_version in range(python_version[1] - 1, 1, -1):
+            for platform_ in platforms:
+                interpreter = "cp{version}".format(
+                    version=_version_nodot((python_version[0], minor_version))
+                )
+                yield Tag(interpreter, "abi3", platform_)
 
 
-def _pypy_interpreter():
-    return "pp{py_major}{pypy_major}{pypy_minor}".format(
-        py_major=sys.version_info[0],
-        pypy_major=sys.pypy_version_info.major,
-        pypy_minor=sys.pypy_version_info.minor,
-    )
-
-
-def _generic_abi():
-    abi = sysconfig.get_config_var("SOABI")
-    if abi:
-        return _normalize_string(abi)
-    else:
-        return "none"
-
-
-def _pypy_tags(py_version, interpreter, abi, platforms):
-    for tag in (Tag(interpreter, abi, platform) for platform in platforms):
-        yield tag
-    for tag in (Tag(interpreter, "none", platform) for platform in platforms):
-        yield tag
-
-
-def _generic_tags(interpreter, py_version, abi, platforms):
-    for tag in (Tag(interpreter, abi, platform) for platform in platforms):
-        yield tag
-    if abi != "none":
-        tags = (Tag(interpreter, "none", platform_) for platform_ in platforms)
-        for tag in tags:
-            yield tag
-
-
-def _py_interpreter_range(py_version):
+def _generic_abi() -> List[str]:
     """
-    Yield Python versions in descending order.
+    Return the ABI tag based on EXT_SUFFIX.
+    """
+    # The following are examples of `EXT_SUFFIX`.
+    # We want to keep the parts which are related to the ABI and remove the
+    # parts which are related to the platform:
+    # - linux:   '.cpython-310-x86_64-linux-gnu.so' => cp310
+    # - mac:     '.cpython-310-darwin.so'           => cp310
+    # - win:     '.cp310-win_amd64.pyd'             => cp310
+    # - win:     '.pyd'                             => cp37 (uses _cpython_abis())
+    # - pypy:    '.pypy38-pp73-x86_64-linux-gnu.so' => pypy38_pp73
+    # - graalpy: '.graalpy-38-native-x86_64-darwin.dylib'
+    #                                               => graalpy_38_native
+
+    ext_suffix = _get_config_var("EXT_SUFFIX", warn=True)
+    if not isinstance(ext_suffix, str) or ext_suffix[0] != ".":
+        raise SystemError("invalid sysconfig.get_config_var('EXT_SUFFIX')")
+    parts = ext_suffix.split(".")
+    if len(parts) < 3:
+        # CPython3.7 and earlier uses ".pyd" on Windows.
+        return _cpython_abis(sys.version_info[:2])
+    soabi = parts[1]
+    if soabi.startswith("cpython"):
+        # non-windows
+        abi = "cp" + soabi.split("-")[1]
+    elif soabi.startswith("cp"):
+        # windows
+        abi = soabi.split("-")[0]
+    elif soabi.startswith("pypy"):
+        abi = "-".join(soabi.split("-")[:2])
+    elif soabi.startswith("graalpy"):
+        abi = "-".join(soabi.split("-")[:3])
+    elif soabi:
+        # pyston, ironpython, others?
+        abi = soabi
+    else:
+        return []
+    return [_normalize_string(abi)]
+
+
+def generic_tags(
+    interpreter: Optional[str] = None,
+    abis: Optional[Iterable[str]] = None,
+    platforms: Optional[Iterable[str]] = None,
+    *,
+    warn: bool = False,
+) -> Iterator[Tag]:
+    """
+    Yields the tags for a generic interpreter.
+
+    The tags consist of:
+    - <interpreter>-<abi>-<platform>
+
+    The "none" ABI will be added if it was not explicitly provided.
+    """
+    if not interpreter:
+        interp_name = interpreter_name()
+        interp_version = interpreter_version(warn=warn)
+        interpreter = "".join([interp_name, interp_version])
+    if abis is None:
+        abis = _generic_abi()
+    else:
+        abis = list(abis)
+    platforms = list(platforms or platform_tags())
+    if "none" not in abis:
+        abis.append("none")
+    for abi in abis:
+        for platform_ in platforms:
+            yield Tag(interpreter, abi, platform_)
+
+
+def _py_interpreter_range(py_version: PythonVersion) -> Iterator[str]:
+    """
+    Yields Python versions in descending order.
 
     After the latest version, the major-only version will be yielded, and then
-    all following versions up to 'end'.
+    all previous versions of that major version.
     """
-    yield "py{major}{minor}".format(major=py_version[0], minor=py_version[1])
-    yield "py{major}".format(major=py_version[0])
-    for minor in range(py_version[1] - 1, -1, -1):
-        yield "py{major}{minor}".format(major=py_version[0], minor=minor)
+    if len(py_version) > 1:
+        yield f"py{_version_nodot(py_version[:2])}"
+    yield f"py{py_version[0]}"
+    if len(py_version) > 1:
+        for minor in range(py_version[1] - 1, -1, -1):
+            yield f"py{_version_nodot((py_version[0], minor))}"
 
 
-def _independent_tags(interpreter, py_version, platforms):
+def compatible_tags(
+    python_version: Optional[PythonVersion] = None,
+    interpreter: Optional[str] = None,
+    platforms: Optional[Iterable[str]] = None,
+) -> Iterator[Tag]:
     """
-    Return the sequence of tags that are consistent across implementations.
+    Yields the sequence of tags that are compatible with a specific version of Python.
 
     The tags consist of:
     - py*-none-<platform>
-    - <interpreter>-none-any
+    - <interpreter>-none-any  # ... if `interpreter` is provided.
     - py*-none-any
     """
-    for version in _py_interpreter_range(py_version):
+    if not python_version:
+        python_version = sys.version_info[:2]
+    platforms = list(platforms or platform_tags())
+    for version in _py_interpreter_range(python_version):
         for platform_ in platforms:
             yield Tag(version, "none", platform_)
-    yield Tag(interpreter, "none", "any")
-    for version in _py_interpreter_range(py_version):
+    if interpreter:
+        yield Tag(interpreter, "none", "any")
+    for version in _py_interpreter_range(python_version):
         yield Tag(version, "none", "any")
 
 
-def _mac_arch(arch, is_32bit=_32_BIT_INTERPRETER):
+def _mac_arch(arch: str, is_32bit: bool = _32_BIT_INTERPRETER) -> str:
     if not is_32bit:
         return arch
 
@@ -213,7 +347,7 @@ def _mac_arch(arch, is_32bit=_32_BIT_INTERPRETER):
     return "i386"
 
 
-def _mac_binary_formats(version, cpu_arch):
+def _mac_binary_formats(version: MacVersion, cpu_arch: str) -> List[str]:
     formats = [cpu_arch]
     if cpu_arch == "x86_64":
         if version < (10, 4):
@@ -236,169 +370,177 @@ def _mac_binary_formats(version, cpu_arch):
             return []
         formats.extend(["fat32", "fat"])
 
-    formats.append("universal")
+    if cpu_arch in {"arm64", "x86_64"}:
+        formats.append("universal2")
+
+    if cpu_arch in {"x86_64", "i386", "ppc64", "ppc", "intel"}:
+        formats.append("universal")
+
     return formats
 
 
-def _mac_platforms(version=None, arch=None):
+def mac_platforms(
+    version: Optional[MacVersion] = None, arch: Optional[str] = None
+) -> Iterator[str]:
+    """
+    Yields the platform tags for a macOS system.
+
+    The `version` parameter is a two-item tuple specifying the macOS version to
+    generate platform tags for. The `arch` parameter is the CPU architecture to
+    generate platform tags for. Both parameters default to the appropriate value
+    for the current system.
+    """
     version_str, _, cpu_arch = platform.mac_ver()
     if version is None:
-        version = tuple(map(int, version_str.split(".")[:2]))
+        version = cast("MacVersion", tuple(map(int, version_str.split(".")[:2])))
+        if version == (10, 16):
+            # When built against an older macOS SDK, Python will report macOS 10.16
+            # instead of the real version.
+            version_str = subprocess.run(
+                [
+                    sys.executable,
+                    "-sS",
+                    "-c",
+                    "import platform; print(platform.mac_ver()[0])",
+                ],
+                check=True,
+                env={"SYSTEM_VERSION_COMPAT": "0"},
+                stdout=subprocess.PIPE,
+                universal_newlines=True,
+            ).stdout
+            version = cast("MacVersion", tuple(map(int, version_str.split(".")[:2])))
+    else:
+        version = version
     if arch is None:
         arch = _mac_arch(cpu_arch)
-    platforms = []
-    for minor_version in range(version[1], -1, -1):
-        compat_version = version[0], minor_version
-        binary_formats = _mac_binary_formats(compat_version, arch)
-        for binary_format in binary_formats:
-            platforms.append(
-                "macosx_{major}_{minor}_{binary_format}".format(
+    else:
+        arch = arch
+
+    if (10, 0) <= version and version < (11, 0):
+        # Prior to Mac OS 11, each yearly release of Mac OS bumped the
+        # "minor" version number.  The major version was always 10.
+        for minor_version in range(version[1], -1, -1):
+            compat_version = 10, minor_version
+            binary_formats = _mac_binary_formats(compat_version, arch)
+            for binary_format in binary_formats:
+                yield "macosx_{major}_{minor}_{binary_format}".format(
+                    major=10, minor=minor_version, binary_format=binary_format
+                )
+
+    if version >= (11, 0):
+        # Starting with Mac OS 11, each yearly release bumps the major version
+        # number.   The minor versions are now the midyear updates.
+        for major_version in range(version[0], 10, -1):
+            compat_version = major_version, 0
+            binary_formats = _mac_binary_formats(compat_version, arch)
+            for binary_format in binary_formats:
+                yield "macosx_{major}_{minor}_{binary_format}".format(
+                    major=major_version, minor=0, binary_format=binary_format
+                )
+
+    if version >= (11, 0):
+        # Mac OS 11 on x86_64 is compatible with binaries from previous releases.
+        # Arm64 support was introduced in 11.0, so no Arm binaries from previous
+        # releases exist.
+        #
+        # However, the "universal2" binary format can have a
+        # macOS version earlier than 11.0 when the x86_64 part of the binary supports
+        # that version of macOS.
+        if arch == "x86_64":
+            for minor_version in range(16, 3, -1):
+                compat_version = 10, minor_version
+                binary_formats = _mac_binary_formats(compat_version, arch)
+                for binary_format in binary_formats:
+                    yield "macosx_{major}_{minor}_{binary_format}".format(
+                        major=compat_version[0],
+                        minor=compat_version[1],
+                        binary_format=binary_format,
+                    )
+        else:
+            for minor_version in range(16, 3, -1):
+                compat_version = 10, minor_version
+                binary_format = "universal2"
+                yield "macosx_{major}_{minor}_{binary_format}".format(
                     major=compat_version[0],
                     minor=compat_version[1],
                     binary_format=binary_format,
                 )
-            )
-    return platforms
 
 
-# From PEP 513.
-def _is_manylinux_compatible(name, glibc_version):
-    # Check for presence of _manylinux module.
-    try:
-        import _manylinux
-
-        return bool(getattr(_manylinux, name + "_compatible"))
-    except (ImportError, AttributeError):
-        # Fall through to heuristic check below.
-        pass
-
-    return _have_compatible_glibc(*glibc_version)
-
-
-def _glibc_version_string():
-    # Returns glibc version string, or None if not using glibc.
-    import ctypes
-
-    # ctypes.CDLL(None) internally calls dlopen(NULL), and as the dlopen
-    # manpage says, "If filename is NULL, then the returned handle is for the
-    # main program". This way we can let the linker do the work to figure out
-    # which libc our process is actually using.
-    process_namespace = ctypes.CDLL(None)
-    try:
-        gnu_get_libc_version = process_namespace.gnu_get_libc_version
-    except AttributeError:
-        # Symbol doesn't exist -> therefore, we are not linked to
-        # glibc.
-        return None
-
-    # Call gnu_get_libc_version, which returns a string like "2.5"
-    gnu_get_libc_version.restype = ctypes.c_char_p
-    version_str = gnu_get_libc_version()
-    # py2 / py3 compatibility:
-    if not isinstance(version_str, str):
-        version_str = version_str.decode("ascii")
-
-    return version_str
+def _linux_platforms(is_32bit: bool = _32_BIT_INTERPRETER) -> Iterator[str]:
+    linux = _normalize_string(sysconfig.get_platform())
+    if is_32bit:
+        if linux == "linux_x86_64":
+            linux = "linux_i686"
+        elif linux == "linux_aarch64":
+            linux = "linux_armv7l"
+    _, arch = linux.split("_", 1)
+    yield from _manylinux.platform_tags(linux, arch)
+    yield from _musllinux.platform_tags(arch)
+    yield linux
 
 
-# Separated out from have_compatible_glibc for easier unit testing.
-def _check_glibc_version(version_str, required_major, minimum_minor):
-    # Parse string and check against requested version.
-    #
-    # We use a regexp instead of str.split because we want to discard any
-    # random junk that might come after the minor version -- this might happen
-    # in patched/forked versions of glibc (e.g. Linaro's version of glibc
-    # uses version strings like "2.20-2014.11"). See gh-3588.
-    m = re.match(r"(?P<major>[0-9]+)\.(?P<minor>[0-9]+)", version_str)
-    if not m:
-        warnings.warn(
-            "Expected glibc version with 2 components major.minor,"
-            " got: %s" % version_str,
-            RuntimeWarning,
-        )
-        return False
-    return (
-        int(m.group("major")) == required_major
-        and int(m.group("minor")) >= minimum_minor
-    )
+def _generic_platforms() -> Iterator[str]:
+    yield _normalize_string(sysconfig.get_platform())
 
 
-def _have_compatible_glibc(required_major, minimum_minor):
-    version_str = _glibc_version_string()
-    if version_str is None:
-        return False
-    return _check_glibc_version(version_str, required_major, minimum_minor)
-
-
-def _linux_platforms(is_32bit=_32_BIT_INTERPRETER):
-    linux = _normalize_string(distutils.util.get_platform())
-    if linux == "linux_x86_64" and is_32bit:
-        linux = "linux_i686"
-    manylinux_support = (
-        ("manylinux2014", (2, 17)),  # CentOS 7 w/ glibc 2.17 (PEP 599)
-        ("manylinux2010", (2, 12)),  # CentOS 6 w/ glibc 2.12 (PEP 571)
-        ("manylinux1", (2, 5)),  # CentOS 5 w/ glibc 2.5 (PEP 513)
-    )
-    manylinux_support_iter = iter(manylinux_support)
-    for name, glibc_version in manylinux_support_iter:
-        if _is_manylinux_compatible(name, glibc_version):
-            platforms = [linux.replace("linux", name)]
-            break
+def platform_tags() -> Iterator[str]:
+    """
+    Provides the platform tags for this installation.
+    """
+    if platform.system() == "Darwin":
+        return mac_platforms()
+    elif platform.system() == "Linux":
+        return _linux_platforms()
     else:
-        platforms = []
-    # Support for a later manylinux implies support for an earlier version.
-    platforms += [linux.replace("linux", name) for name, _ in manylinux_support_iter]
-    platforms.append(linux)
-    return platforms
+        return _generic_platforms()
 
 
-def _generic_platforms():
-    platform = _normalize_string(distutils.util.get_platform())
-    return [platform]
+def interpreter_name() -> str:
+    """
+    Returns the name of the running interpreter.
 
-
-def _interpreter_name():
-    name = platform.python_implementation().lower()
+    Some implementations have a reserved, two-letter abbreviation which will
+    be returned when appropriate.
+    """
+    name = sys.implementation.name
     return INTERPRETER_SHORT_NAMES.get(name) or name
 
 
-def _generic_interpreter(name, py_version):
-    version = sysconfig.get_config_var("py_version_nodot")
-    if not version:
-        version = "".join(map(str, py_version[:2]))
-    return "{name}{version}".format(name=name, version=version)
+def interpreter_version(*, warn: bool = False) -> str:
+    """
+    Returns the version of the running interpreter.
+    """
+    version = _get_config_var("py_version_nodot", warn=warn)
+    if version:
+        version = str(version)
+    else:
+        version = _version_nodot(sys.version_info[:2])
+    return version
 
 
-def sys_tags():
+def _version_nodot(version: PythonVersion) -> str:
+    return "".join(map(str, version))
+
+
+def sys_tags(*, warn: bool = False) -> Iterator[Tag]:
     """
     Returns the sequence of tag triples for the running interpreter.
 
     The order of the sequence corresponds to priority order for the
     interpreter, from most to least important.
     """
-    py_version = sys.version_info[:2]
-    interpreter_name = _interpreter_name()
-    if platform.system() == "Darwin":
-        platforms = _mac_platforms()
-    elif platform.system() == "Linux":
-        platforms = _linux_platforms()
-    else:
-        platforms = _generic_platforms()
 
-    if interpreter_name == "cp":
-        interpreter = _cpython_interpreter(py_version)
-        abis = _cpython_abis(py_version)
-        for tag in _cpython_tags(py_version, interpreter, abis, platforms):
-            yield tag
-    elif interpreter_name == "pp":
-        interpreter = _pypy_interpreter()
-        abi = _generic_abi()
-        for tag in _pypy_tags(py_version, interpreter, abi, platforms):
-            yield tag
+    interp_name = interpreter_name()
+    if interp_name == "cp":
+        yield from cpython_tags(warn=warn)
     else:
-        interpreter = _generic_interpreter(interpreter_name, py_version)
-        abi = _generic_abi()
-        for tag in _generic_tags(interpreter, py_version, abi, platforms):
-            yield tag
-    for tag in _independent_tags(interpreter, py_version, platforms):
-        yield tag
+        yield from generic_tags()
+
+    if interp_name == "pp":
+        interp = "pp3"
+    elif interp_name == "cp":
+        interp = "cp" + interpreter_version(warn=warn)
+    else:
+        interp = None
+    yield from compatible_tags(interpreter=interp)
