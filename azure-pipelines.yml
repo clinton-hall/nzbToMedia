@@ -63,6 +63,11 @@ jobs:
     vmImage: 'Ubuntu-latest'
 
   steps:
+  - script: |
+      sudo apt-get update
+      sudo apt-get install python3-setuptools
+    displayName: 'Install setuptools'
+  
   - task: UsePythonVersion@0
     inputs:
       versionSpec: '3.x'
