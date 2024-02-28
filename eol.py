@@ -28,6 +28,8 @@ def date(string, fmt='%Y-%m-%d'):
 # https://devguide.python.org/
 # https://devguide.python.org/devcycle/#devcycle
 PYTHON_EOL = {
+    (3, 13): date('2029-10-1'),
+    (3, 12): date('2028-10-1'),
     (3, 11): date('2027-10-1'),
     (3, 10): date('2026-10-01'),
     (3, 9): date('2025-10-05'),
@@ -99,7 +101,7 @@ def check(version=None, grace_period=0):
     :return: None
     """
     try:
-        warn_for_status(version, grace_period)
+        raise_for_status(version, grace_period)
     except LifetimeError as error:
         print('Please use a newer version of Python.')
         print_statuses()

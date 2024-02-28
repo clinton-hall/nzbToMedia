@@ -23,7 +23,7 @@ def read(*names, **kwargs):
 
 setup(
     name='nzbToMedia',
-    version='12.1.12',
+    version='12.1.13',
     license='GPLv3',
     description='Efficient on demand post processing',
     long_description="""
@@ -73,17 +73,12 @@ setup(
         'Operating System :: POSIX',
         'Operating System :: Unix',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2',
-        'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3',
-        'Programming Language :: Python :: 3.4',
-        'Programming Language :: Python :: 3.5',
-        'Programming Language :: Python :: 3.6',
-        'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
         'Programming Language :: Python :: 3.10',
         'Programming Language :: Python :: 3.11',
+        'Programming Language :: Python :: 3.12',
         'Topic :: Games/Entertainment',
         'Topic :: Multimedia',
         'Topic :: Multimedia :: Sound/Audio',
