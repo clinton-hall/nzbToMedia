@@ -47,6 +47,8 @@ def iglob(pathname, recursive=False):
 
 def _iglob(pathname, recursive):
     dirname, basename = os.path.split(pathname)
+    glob_in_dir = glob2 if recursive and _isrecursive(basename) else glob1
+
     if not has_magic(pathname):
         if basename:
             if os.path.lexists(pathname):
@@ -56,13 +58,9 @@ def _iglob(pathname, recursive):
             if os.path.isdir(dirname):
                 yield pathname
         return
+
     if not dirname:
-        if recursive and _isrecursive(basename):
-            for x in glob2(dirname, basename):
-                yield x
-        else:
-            for x in glob1(dirname, basename):
-                yield x
+        yield from glob_in_dir(dirname, basename)
         return
     # `os.path.split()` returns the argument itself as a dirname if it is a
     # drive or UNC path.  Prevent an infinite recursion if a drive or UNC path
@@ -71,12 +69,7 @@ def _iglob(pathname, recursive):
         dirs = _iglob(dirname, recursive)
     else:
         dirs = [dirname]
-    if has_magic(basename):
-        if recursive and _isrecursive(basename):
-            glob_in_dir = glob2
-        else:
-            glob_in_dir = glob1
-    else:
+    if not has_magic(basename):
         glob_in_dir = glob0
     for dirname in dirs:
         for name in glob_in_dir(dirname, basename):
@@ -120,8 +113,7 @@ def glob0(dirname, basename):
 def glob2(dirname, pattern):
     assert _isrecursive(pattern)
     yield pattern[:0]
-    for x in _rlistdir(dirname):
-        yield x
+    yield from _rlistdir(dirname)
 
 
 # Recursively yields relative pathnames inside a literal directory.
@@ -133,7 +125,7 @@ def _rlistdir(dirname):
             dirname = os.curdir
     try:
         names = os.listdir(dirname)
-    except os.error:
+    except OSError:
         return
     for x in names:
         yield x
@@ -162,13 +154,12 @@ def _isrecursive(pattern):
 
 
 def escape(pathname):
-    """Escape all special characters.
-    """
+    """Escape all special characters."""
     # Escaping is done by wrapping any of "*?[" between square brackets.
     # Metacharacters do not work in the drive part and shouldn't be escaped.
     drive, pathname = os.path.splitdrive(pathname)
     if isinstance(pathname, bytes):
-        pathname = magic_check_bytes.sub(br'[\1]', pathname)
+        pathname = magic_check_bytes.sub(rb'[\1]', pathname)
     else:
         pathname = magic_check.sub(r'[\1]', pathname)
     return drive + pathname

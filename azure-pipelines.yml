@@ -13,8 +13,6 @@ jobs:
     vmImage: 'Ubuntu-latest'
   strategy:
     matrix:
-      Python37:
-        python.version: '3.7'
       Python38:
         python.version: '3.8'
       Python39:
@@ -23,6 +21,8 @@ jobs:
         python.version: '3.10'
       Python311:
         python.version: '3.11'
+      Python312:
+        python.version: '3.12'
     maxParallel: 3
 
   steps:
@@ -68,5 +68,7 @@ jobs:
       versionSpec: '3.x'
       architecture: 'x64'
 
-  - script: python setup.py sdist
+  - script: |
+      python -m pip install setuptools
+      python setup.py sdist
     displayName: 'Build sdist'
