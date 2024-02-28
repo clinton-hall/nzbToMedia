@@ -64,7 +64,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
 
         if not omdb_api_key:
             logger.info('Unable to determine imdbID: No api key provided for omdbapi.com.')
-            return
+            return imdbid, dir_name
 
         logger.debug('Opening URL: {0}'.format(url))
 
@@ -73,7 +73,7 @@ def find_imdbid(dir_name, input_name, omdb_api_key):
                              verify=False, timeout=(60, 300))
         except requests.ConnectionError:
             logger.error('Unable to open URL {0}'.format(url))
-            return
+            return imdbid, dir_name
 
         try:
             results = r.json()
