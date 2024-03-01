@@ -11,7 +11,7 @@ import shutil
 import stat
 import time
 
-import beets.mediafile
+import mediafile as mediafiletool
 import guessit
 from six import text_type
 
@@ -28,7 +28,7 @@ def move_file(mediafile, path, link):
     file_ext = os.path.splitext(mediafile)[1]
     try:
         if file_ext in core.AUDIO_CONTAINER:
-            f = beets.mediafile.MediaFile(mediafile)
+            f = mediafiletool.MediaFile(mediafile)
 
             # get artist and album info
             artist = f.artist
