@@ -116,6 +116,7 @@ def clean_bytecode():
         result = git_clean(
             remove_directories=True,
             force=True,
+            ignore_rules=True,
             exclude=[
                 '*.*',  # exclude everything
                 '!*.py[co]',  # except bytecode
