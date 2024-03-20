@@ -311,7 +311,7 @@ class InitSickBeard(object):
             # Create the fork object and pass self (SickBeardInit) to it for all the data, like Config.
             self.fork_obj = mapped_forks[self.fork](self)
         else:
-            logger.info('{section}:{category} Could not create a fork object for {fork}. Probaly class not added yet.'.format(
+            logger.debug('{section}:{category} Could not create a fork object for {fork}. Probaly class not added yet.'.format(
                 section=self.section, category=self.input_category, fork=self.fork)
             )
 
