@@ -33,8 +33,6 @@ Internally ``MediaFile`` uses ``MediaField`` descriptors to access the
 data from the tags. In turn ``MediaField`` uses a number of
 ``StorageStyle`` strategies to handle format specific logic.
 """
-from __future__ import division, absolute_import, print_function
-
 import mutagen
 import mutagen.id3
 import mutagen.mp3
@@ -48,18 +46,17 @@ import binascii
 import codecs
 import datetime
 import enum
+import filetype
 import functools
-import imghdr
 import logging
 import math
 import os
 import re
-import six
 import struct
 import traceback
 
 
-__version__ = '0.10.1'
+__version__ = '0.13.0'
 __all__ = ['UnreadableFileError', 'FileTypeError', 'MediaFile']
 
 log = logging.getLogger(__name__)
@@ -80,8 +77,6 @@ TYPES = {
     'dsf':  'DSD Stream File',
     'wav':  'WAVE',
 }
-
-PREFERRED_IMAGE_EXTENSIONS = {'jpeg': 'jpg'}
 
 
 # Exceptions.
@@ -136,8 +131,8 @@ def mutagen_call(action, filename, func, *args, **kwargs):
     try:
         return func(*args, **kwargs)
     except mutagen.MutagenError as exc:
-        log.debug(u'%s failed: %s', action, six.text_type(exc))
-        raise UnreadableFileError(filename, six.text_type(exc))
+        log.debug(u'%s failed: %s', action, str(exc))
+        raise UnreadableFileError(filename, str(exc))
     except UnreadableFileError:
         # Reraise our errors without changes.
         # Used in case of decorating functions (e.g. by `loadfile`).
@@ -202,8 +197,8 @@ def _safe_cast(out_type, val):
             # Process any other type as a string.
             if isinstance(val, bytes):
                 val = val.decode('utf-8', 'ignore')
-            elif not isinstance(val, six.string_types):
-                val = six.text_type(val)
+            elif not isinstance(val, str):
+                val = str(val)
             # Get a number from the front of the string.
             match = re.match(r'[\+-]?[0-9]+', val.strip())
             return int(match.group(0)) if match else 0
@@ -215,13 +210,13 @@ def _safe_cast(out_type, val):
         except ValueError:
             return False
 
-    elif out_type == six.text_type:
+    elif out_type == str:
         if isinstance(val, bytes):
             return val.decode('utf-8', 'ignore')
-        elif isinstance(val, six.text_type):
+        elif isinstance(val, str):
             return val
         else:
-            return six.text_type(val)
+            return str(val)
 
     elif out_type == float:
         if isinstance(val, int) or isinstance(val, float):
@@ -230,7 +225,7 @@ def _safe_cast(out_type, val):
             if isinstance(val, bytes):
                 val = val.decode('utf-8', 'ignore')
             else:
-                val = six.text_type(val)
+                val = str(val)
             match = re.match(r'[\+-]?([0-9]+\.?[0-9]*|[0-9]*\.[0-9]+)',
                              val.strip())
             if match:
@@ -289,7 +284,7 @@ def _sc_decode(soundcheck):
     """
     # We decode binary data. If one of the formats gives us a text
     # string, interpret it as UTF-8.
-    if isinstance(soundcheck, six.text_type):
+    if isinstance(soundcheck, str):
         soundcheck = soundcheck.encode('utf-8')
 
     # SoundCheck tags consist of 10 numbers, each represented by 8
@@ -349,52 +344,15 @@ def _sc_encode(gain, peak):
 
 
 # Cover art and other images.
-def _imghdr_what_wrapper(data):
-    """A wrapper around imghdr.what to account for jpeg files that can only be
-    identified as such using their magic bytes
-    See #1545
-    See https://github.com/file/file/blob/master/magic/Magdir/jpeg#L12
-    """
-    # imghdr.what returns none for jpegs with only the magic bytes, so
-    # _wider_test_jpeg is run in that case. It still returns None if it didn't
-    # match such a jpeg file.
-    return imghdr.what(None, h=data) or _wider_test_jpeg(data)
-
-
-def _wider_test_jpeg(data):
-    """Test for a jpeg file following the UNIX file implementation which
-    uses the magic bytes rather than just looking for the bytes that
-    represent 'JFIF' or 'EXIF' at a fixed position.
-    """
-    if data[:2] == b'\xff\xd8':
-        return 'jpeg'
-
 
 def image_mime_type(data):
     """Return the MIME type of the image data (a bytestring).
     """
-    # This checks for a jpeg file with only the magic bytes (unrecognized by
-    # imghdr.what). imghdr.what returns none for that type of file, so
-    # _wider_test_jpeg is run in that case. It still returns None if it didn't
-    # match such a jpeg file.
-    kind = _imghdr_what_wrapper(data)
-    if kind in ['gif', 'jpeg', 'png', 'tiff', 'bmp']:
-        return 'image/{0}'.format(kind)
-    elif kind == 'pgm':
-        return 'image/x-portable-graymap'
-    elif kind == 'pbm':
-        return 'image/x-portable-bitmap'
-    elif kind == 'ppm':
-        return 'image/x-portable-pixmap'
-    elif kind == 'xbm':
-        return 'image/x-xbitmap'
-    else:
-        return 'image/x-{0}'.format(kind)
+    return filetype.guess_mime(data)
 
 
 def image_extension(data):
-    ext = _imghdr_what_wrapper(data)
-    return PREFERRED_IMAGE_EXTENSIONS.get(ext, ext)
+    return filetype.guess_extension(data)
 
 
 class ImageType(enum.Enum):
@@ -437,7 +395,7 @@ class Image(object):
     def __init__(self, data, desc=None, type=None):
         assert isinstance(data, bytes)
         if desc is not None:
-            assert isinstance(desc, six.text_type)
+            assert isinstance(desc, str)
         self.data = data
         self.desc = desc
         if isinstance(type, int):
@@ -495,7 +453,7 @@ class StorageStyle(object):
     """List of mutagen classes the StorageStyle can handle.
     """
 
-    def __init__(self, key, as_type=six.text_type, suffix=None,
+    def __init__(self, key, as_type=str, suffix=None,
                  float_places=2, read_only=False):
         """Create a basic storage strategy. Parameters:
 
@@ -520,8 +478,8 @@ class StorageStyle(object):
         self.read_only = read_only
 
         # Convert suffix to correct string type.
-        if self.suffix and self.as_type is six.text_type \
-           and not isinstance(self.suffix, six.text_type):
+        if self.suffix and self.as_type is str \
+           and not isinstance(self.suffix, str):
             self.suffix = self.suffix.decode('utf-8')
 
     # Getter.
@@ -544,7 +502,7 @@ class StorageStyle(object):
         """Given a raw value stored on a Mutagen object, decode and
         return the represented value.
         """
-        if self.suffix and isinstance(mutagen_value, six.text_type) \
+        if self.suffix and isinstance(mutagen_value, str) \
            and mutagen_value.endswith(self.suffix):
             return mutagen_value[:-len(self.suffix)]
         else:
@@ -566,17 +524,17 @@ class StorageStyle(object):
         """Convert the external Python value to a type that is suitable for
         storing in a Mutagen file object.
         """
-        if isinstance(value, float) and self.as_type is six.text_type:
+        if isinstance(value, float) and self.as_type is str:
             value = u'{0:.{1}f}'.format(value, self.float_places)
             value = self.as_type(value)
-        elif self.as_type is six.text_type:
+        elif self.as_type is str:
             if isinstance(value, bool):
                 # Store bools as 1/0 instead of True/False.
-                value = six.text_type(int(bool(value)))
+                value = str(int(bool(value)))
             elif isinstance(value, bytes):
                 value = value.decode('utf-8', 'ignore')
             else:
-                value = six.text_type(value)
+                value = str(value)
         else:
             value = self.as_type(value)
 
@@ -600,8 +558,8 @@ class ListStorageStyle(StorageStyle):
     object to each.
 
     Subclasses may overwrite ``fetch`` and ``store``.  ``fetch`` must
-    return a (possibly empty) list and ``store`` receives a serialized
-    list of values as the second argument.
+    return a (possibly empty) list or `None` if the tag does not exist.
+    ``store`` receives a serialized list of values as the second argument.
 
     The `serialize` and `deserialize` methods (from the base
     `StorageStyle`) are still called with individual values. This class
@@ -610,15 +568,23 @@ class ListStorageStyle(StorageStyle):
     def get(self, mutagen_file):
         """Get the first value in the field's value list.
         """
+        values = self.get_list(mutagen_file)
+        if values is None:
+            return None
+
         try:
-            return self.get_list(mutagen_file)[0]
+            return values[0]
         except IndexError:
             return None
 
     def get_list(self, mutagen_file):
         """Get a list of all values for the field using this style.
         """
-        return [self.deserialize(item) for item in self.fetch(mutagen_file)]
+        raw_values = self.fetch(mutagen_file)
+        if raw_values is None:
+            return None
+
+        return [self.deserialize(item) for item in raw_values]
 
     def fetch(self, mutagen_file):
         """Get the list of raw (serialized) values.
@@ -626,19 +592,27 @@ class ListStorageStyle(StorageStyle):
         try:
             return mutagen_file[self.key]
         except KeyError:
-            return []
+            return None
 
     def set(self, mutagen_file, value):
         """Set an individual value as the only value for the field using
         this style.
         """
-        self.set_list(mutagen_file, [value])
+        if value is None:
+            self.store(mutagen_file, None)
+        else:
+            self.set_list(mutagen_file, [value])
 
     def set_list(self, mutagen_file, values):
         """Set all values for the field using this style. `values`
         should be an iterable.
         """
-        self.store(mutagen_file, [self.serialize(value) for value in values])
+        if values is None:
+            self.delete(mutagen_file)
+        else:
+            self.store(
+                mutagen_file, [self.serialize(value) for value in values]
+            )
 
     def store(self, mutagen_file, values):
         """Set the list of all raw (serialized) values for this field.
@@ -686,7 +660,7 @@ class MP4StorageStyle(StorageStyle):
 
     def serialize(self, value):
         value = super(MP4StorageStyle, self).serialize(value)
-        if self.key.startswith('----:') and isinstance(value, six.text_type):
+        if self.key.startswith('----:') and isinstance(value, str):
             value = value.encode('utf-8')
         return value
 
@@ -865,7 +839,7 @@ class MP3UFIDStorageStyle(MP3StorageStyle):
 
     def store(self, mutagen_file, value):
         # This field type stores text data as encoded data.
-        assert isinstance(value, six.text_type)
+        assert isinstance(value, str)
         value = value.encode('utf-8')
 
         frames = mutagen_file.tags.getall(self.key)
@@ -889,7 +863,7 @@ class MP3DescStorageStyle(MP3StorageStyle):
     """
     def __init__(self, desc=u'', key='TXXX', attr='text', multispec=True,
                  **kwargs):
-        assert isinstance(desc, six.text_type)
+        assert isinstance(desc, str)
         self.description = desc
         self.attr = attr
         self.multispec = multispec
@@ -978,7 +952,7 @@ class MP3SlashPackStorageStyle(MP3StorageStyle):
     def _fetch_unpacked(self, mutagen_file):
         data = self.fetch(mutagen_file)
         if data:
-            items = six.text_type(data).split('/')
+            items = str(data).split('/')
         else:
             items = []
         packing_length = 2
@@ -994,7 +968,7 @@ class MP3SlashPackStorageStyle(MP3StorageStyle):
             items[0] = ''
         if items[1] is None:
             items.pop()  # Do not store last value
-        self.store(mutagen_file, '/'.join(map(six.text_type, items)))
+        self.store(mutagen_file, '/'.join(map(str, items)))
 
     def delete(self, mutagen_file):
         if self.pack_pos == 0:
@@ -1261,7 +1235,7 @@ class MediaField(object):
                          getting this property.
 
         """
-        self.out_type = kwargs.get('out_type', six.text_type)
+        self.out_type = kwargs.get('out_type', str)
         self._styles = styles
 
     def styles(self, mutagen_file):
@@ -1301,7 +1275,7 @@ class MediaField(object):
             return 0.0
         elif self.out_type == bool:
             return False
-        elif self.out_type == six.text_type:
+        elif self.out_type == str:
             return u''
 
 
@@ -1317,7 +1291,7 @@ class ListMediaField(MediaField):
             values = style.get_list(mediafile.mgfile)
             if values:
                 return [_safe_cast(self.out_type, value) for value in values]
-        return []
+        return None
 
     def __set__(self, mediafile, values):
         for style in self.styles(mediafile.mgfile):
@@ -1384,9 +1358,9 @@ class DateField(MediaField):
         """
         # Get the underlying data and split on hyphens and slashes.
         datestring = super(DateField, self).__get__(mediafile, None)
-        if isinstance(datestring, six.string_types):
-            datestring = re.sub(r'[Tt ].*$', '', six.text_type(datestring))
-            items = re.split('[-/]', six.text_type(datestring))
+        if isinstance(datestring, str):
+            datestring = re.sub(r'[Tt ].*$', '', str(datestring))
+            items = re.split('[-/]', str(datestring))
         else:
             items = []
 
@@ -1423,7 +1397,7 @@ class DateField(MediaField):
             date.append(u'{0:02d}'.format(int(month)))
         if month and day:
             date.append(u'{0:02d}'.format(int(day)))
-        date = map(six.text_type, date)
+        date = map(str, date)
         super(DateField, self).__set__(mediafile, u'-'.join(date))
 
         if hasattr(self, '_year_field'):
@@ -2071,6 +2045,7 @@ class MediaFile(object):
     original_date = DateField(
         MP3StorageStyle('TDOR'),
         MP4StorageStyle('----:com.apple.iTunes:ORIGINAL YEAR'),
+        MP4StorageStyle('----:com.apple.iTunes:ORIGINALDATE'),
         StorageStyle('ORIGINALDATE'),
         ASFStorageStyle('WM/OriginalReleaseYear'))
 
@@ -2085,11 +2060,35 @@ class MediaFile(object):
         StorageStyle('ARTIST_CREDIT'),
         ASFStorageStyle('beets/Artist Credit'),
     )
+    artists_credit = ListMediaField(
+        MP3ListDescStorageStyle(desc=u'ARTISTS_CREDIT'),
+        MP4ListStorageStyle('----:com.apple.iTunes:ARTISTS_CREDIT'),
+        ListStorageStyle('ARTISTS_CREDIT'),
+        ASFStorageStyle('beets/ArtistsCredit'),
+    )
+    artists_sort = ListMediaField(
+        MP3ListDescStorageStyle(desc=u'ARTISTS_SORT'),
+        MP4ListStorageStyle('----:com.apple.iTunes:ARTISTS_SORT'),
+        ListStorageStyle('ARTISTS_SORT'),
+        ASFStorageStyle('beets/ArtistsSort'),
+    )
     albumartist_credit = MediaField(
         MP3DescStorageStyle(u'Album Artist Credit'),
         MP4StorageStyle('----:com.apple.iTunes:Album Artist Credit'),
         StorageStyle('ALBUMARTIST_CREDIT'),
         ASFStorageStyle('beets/Album Artist Credit'),
+    )
+    albumartists_credit = ListMediaField(
+        MP3ListDescStorageStyle(desc=u'ALBUMARTISTS_CREDIT'),
+        MP4ListStorageStyle('----:com.apple.iTunes:ALBUMARTISTS_CREDIT'),
+        ListStorageStyle('ALBUMARTISTS_CREDIT'),
+        ASFStorageStyle('beets/AlbumArtistsCredit'),
+    )
+    albumartists_sort = ListMediaField(
+        MP3ListDescStorageStyle(desc=u'ALBUMARTISTS_SORT'),
+        MP4ListStorageStyle('----:com.apple.iTunes:ALBUMARTISTS_SORT'),
+        ListStorageStyle('ALBUMARTISTS_SORT'),
+        ASFStorageStyle('beets/AlbumArtistsSort'),
     )
 
     # Legacy album art field
