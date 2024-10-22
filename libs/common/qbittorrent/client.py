@@ -442,7 +442,9 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/stop', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/pause', data={'hashes': infohash.lower()})
@@ -451,7 +453,9 @@ class Client(object):
         """
         Pause all torrents.
         """
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/stop', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/pause', data={'hashes': infohash.lower()})
@@ -463,7 +467,9 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/stop', data=data)
         else:
             return self._post('torrents/pause', data=data)
@@ -506,7 +512,9 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/start', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/resume', data={'hashes': infohash.lower()})
@@ -515,7 +523,9 @@ class Client(object):
         """
         Resume all torrents.
         """
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/start', data={'hashes': 'all'})
         else:
             return self._post('torrents/resume', data={'hashes': 'all'})
@@ -527,7 +537,9 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        if self.qbittorrent_version >= 'v5.0':
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5.0:
             return self._post('torrents/start', data=data)
         else:
             return self._post('torrents/resume', data=data)
