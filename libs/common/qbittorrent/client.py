@@ -442,7 +442,7 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/stop', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/pause', data={'hashes': infohash.lower()})
@@ -451,7 +451,7 @@ class Client(object):
         """
         Pause all torrents.
         """
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/stop', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/pause', data={'hashes': infohash.lower()})
@@ -463,7 +463,7 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/stop', data=data)
         else:
             return self._post('torrents/pause', data=data)
@@ -506,7 +506,7 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/start', data={'hashes': infohash.lower()})
         else:
             return self._post('torrents/resume', data={'hashes': infohash.lower()})
@@ -515,7 +515,7 @@ class Client(object):
         """
         Resume all torrents.
         """
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/start', data={'hashes': 'all'})
         else:
             return self._post('torrents/resume', data={'hashes': 'all'})
@@ -527,7 +527,7 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        if self.api_version >= 'v5.0':
+        if self.qbittorrent_version >= 'v5.0':
             return self._post('torrents/start', data=data)
         else:
             return self._post('torrents/resume', data=data)
