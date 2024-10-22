@@ -442,13 +442,23 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        return self._post('torrents/pause', data={'hashes': infohash.lower()})
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/stop', data={'hashes': infohash.lower()})
+        else:
+            return self._post('torrents/pause', data={'hashes': infohash.lower()})
 
     def pause_all(self):
         """
         Pause all torrents.
         """
-        return self._post('torrents/pause', data={'hashes': 'all'})
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/stop', data={'hashes': infohash.lower()})
+        else:
+            return self._post('torrents/pause', data={'hashes': infohash.lower()})
 
     def pause_multiple(self, infohash_list):
         """
@@ -457,7 +467,12 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        return self._post('torrents/pause', data=data)
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/stop', data=data)
+        else:
+            return self._post('torrents/pause', data=data)
 
     def set_category(self, infohash_list, category):
         """
@@ -497,13 +512,23 @@ class Client(object):
 
         :param infohash: INFO HASH of torrent.
         """
-        return self._post('torrents/resume', data={'hashes': infohash.lower()})
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/start', data={'hashes': infohash.lower()})
+        else:
+            return self._post('torrents/resume', data={'hashes': infohash.lower()})
 
     def resume_all(self):
         """
         Resume all torrents.
         """
-        return self._post('torrents/resume', data={'hashes': 'all'})
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/start', data={'hashes': 'all'})
+        else:
+            return self._post('torrents/resume', data={'hashes': 'all'})
 
     def resume_multiple(self, infohash_list):
         """
@@ -512,7 +537,12 @@ class Client(object):
         :param infohash_list: Single or list() of infohashes.
         """
         data = self._process_infohash_list(infohash_list)
-        return self._post('torrents/resume', data=data)
+        app_ver = self.qbittorrent_version
+        maj_ver = int(app_ver.replace('v','').split('.')[0])
+        if maj_ver >= 5:
+            return self._post('torrents/start', data=data)
+        else:
+            return self._post('torrents/resume', data=data)
 
     def delete(self, infohash_list):
         """
