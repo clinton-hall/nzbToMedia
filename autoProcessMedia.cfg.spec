@@ -388,6 +388,35 @@
         ##### Set to path where download client places completed downloads locally for this category
         watch_dir =
 
+[Readarr]
+    #### autoProcessing for Books
+    #### raCategory - category that gets called for post-processing with Readarr
+    [[book]]
+        enabled = 0
+        apikey =
+        host = localhost
+        port = 8787
+        ###### ADVANCED USE - ONLY EDIT IF YOU KNOW WHAT YOU'RE DOING ######
+        web_root =
+        ssl = 0
+        delete_failed = 0
+        # Enable/Disable linking for Torrents
+        Torrent_NoLink = 0
+        keep_archive = 1
+        extract = 1
+        nzbExtractionBy = Downloader
+        # Minutes to wait after triggering the import before checking status
+        wait_for = 6
+        # Set this to minimum required size to consider a media file valid (in MB)
+        minSize = 0
+        # Enable/Disable deleting ignored files (samples and invalid files)
+        delete_ignored = 0
+        ##### Enable if Readarr is on a remote server for this category
+        remote_path = 0
+        ##### Set to path where download client places completed downloads locally for this category
+        watch_dir =
+        ##### Set to define import behaviour Move or Copy
+        importMode = Copy
 
 [Network]
     # Enter Mount points as LocalPath,RemotePath and separate each pair with '|'
