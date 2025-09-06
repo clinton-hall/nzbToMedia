@@ -4,9 +4,15 @@ import ssl
 import struct
 import warnings
 import zlib
-
+import io
+import os
+import platform
+from functools import wraps
+from threading import local as thread_local
 from .rencode import dumps, loads
 
+
+DEFAULT_LINUX_CONFIG_DIR_PATH = '~/.config/deluge'
 RPC_RESPONSE = 1
 RPC_ERROR = 2
 RPC_EVENT = 3
@@ -42,14 +48,15 @@ class RemoteException(DelugeClientException):
 
 
 class DelugeRPCClient(object):
-    timeout = 20
+				
 
-    def __init__(self, host, port, username, password, decode_utf8=False, automatic_reconnect=True):
+    def __init__(self, host, port, username, password, decode_utf8=False, automatic_reconnect=True, timeout=20):
         self.host = host
         self.port = port
         self.username = username
         self.password = password
         self.deluge_version = None
+        self.timeout = timeout
         # This is only applicable if deluge_version is 2
         self.deluge_protocol_version = None
 
@@ -62,13 +69,22 @@ class DelugeRPCClient(object):
 
         self.request_id = 1
         self.connected = False
+
         self._create_socket()
 
-    def _create_socket(self, ssl_version=None):
+    def _create_socket(self, ssl_version=None, ciphers=None):
+        # Insecure context without remote certificate verification
+        # This logic is a bit messy to try and support various configurations
         if ssl_version is not None:
-            self._socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM), ssl_version=ssl_version)
+            ssl_context = ssl.SSLContext(protocol=ssl_version)
         else:
-            self._socket = ssl.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
+            ssl_context = ssl.SSLContext(protocol=ssl.PROTOCOL_TLS_CLIENT)
+        ssl_context.check_hostname = False
+        ssl_context.verify_mode = ssl.CERT_NONE
+        if ciphers:
+            ssl_context.set_ciphers("AES256-SHA")
+
+        self._socket = ssl_context.wrap_socket(socket.socket(socket.AF_INET, socket.SOCK_STREAM))
         self._socket.settimeout(self.timeout)
 
     def connect(self):
@@ -98,7 +114,9 @@ class DelugeRPCClient(object):
                 self._create_socket(ssl_version=ssl.PROTOCOL_SSLv3)
                 self._socket.connect((self.host, self.port))
             else:
-                raise
+                logger.warning('Was unable to ssl handshake, trying to change cipher')
+                self._create_socket(ciphers="AES256-SHA")
+                self._socket.connect((self.host, self.port))
 
     def disconnect(self):
         """
@@ -166,6 +184,9 @@ class DelugeRPCClient(object):
                 d = self._socket.recv(READ_SIZE)
             except ssl.SSLError:
                 raise CallTimeoutException()
+
+            if len(d) == 0:
+                raise ConnectionLostException()
 
             data += d
             if deluge_version == 2:
@@ -262,6 +283,15 @@ class DelugeRPCClient(object):
     def __getattr__(self, item):
         return RPCCaller(self.call, item)
 
+    def __enter__(self):
+        """Connect to client while using with statement."""
+        self.connect()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        """Disconnect from client at end of with statement."""
+        self.disconnect()
+
 
 class RPCCaller(object):
     def __init__(self, caller, method=''):
@@ -273,3 +303,64 @@ class RPCCaller(object):
 
     def __call__(self, *args, **kwargs):
         return self.caller(self.method, *args, **kwargs)
+
+
+class LocalDelugeRPCClient(DelugeRPCClient):
+    """Client with auto discovery for the default local credentials"""
+    def __init__(
+        self,
+        host='127.0.0.1',
+        port=58846,
+        username='',
+        password='',
+        decode_utf8=True,
+        automatic_reconnect=True
+    ):
+        if (
+            host in ('localhost', '127.0.0.1', '::1') and
+            not username and not password
+        ):
+            username, password = self._get_local_auth()
+
+        super(LocalDelugeRPCClient, self).__init__(
+            host, port, username, password, decode_utf8, automatic_reconnect
+        )
+
+    def _cache_thread_local(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            if not hasattr(wrapper.cache, 'result'):
+                wrapper.cache.result = func(*args, **kwargs)
+            return wrapper.cache.result
+
+        wrapper.cache = thread_local()
+        return wrapper
+
+    @_cache_thread_local
+    def _get_local_auth(self):
+        auth_path = local_username = local_password = ''
+        os_family = platform.system()
+
+        if 'Windows' in os_family or 'CYGWIN' in os_family:
+            app_data_path = os.environ.get('APPDATA')
+            auth_path = os.path.join(app_data_path, 'deluge', 'auth')
+        elif 'Linux' in os_family:
+            config_path = os.path.expanduser(DEFAULT_LINUX_CONFIG_DIR_PATH)
+            auth_path = os.path.join(config_path, 'auth')
+
+        if os.path.exists(auth_path):
+            with io.open(auth_path, 'r', encoding='utf-8') as f:
+                for line in f:
+                    if not line or line.startswith('#'):
+                        continue
+
+                    auth_data = line.split(':')
+                    if len(auth_data) < 2:
+                        continue
+
+                    username, password = auth_data[:2]
+                    if username == 'localclient':
+                        local_username, local_password = username, password
+                        break
+
+        return local_username, local_password
