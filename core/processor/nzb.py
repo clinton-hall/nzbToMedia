@@ -131,7 +131,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         result = comics.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'Gamez':
         result = games.process(section_name, input_directory, input_name, status, client_agent, input_category)
-    elif section_name == 'LazyLibrarian':
+    elif section_name in ['LazyLibrarian', 'Readarr']:
         result = books.process(section_name, input_directory, input_name, status, client_agent, input_category)
     elif section_name == 'UserScript':
         result = external_script(input_directory, input_name, input_category, section[usercat])
@@ -147,7 +147,7 @@ def process(input_directory, input_name=None, status=0, client_agent='manual', d
         if client_agent != 'manual':
             # update download status in our DB
             update_download_info_status(input_name, 1)
-        if section_name not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr', 'Lidarr']:
+        if section_name not in ['UserScript', 'NzbDrone', 'Sonarr', 'Radarr', 'Lidarr', 'Readarr']:
             # cleanup our processing folders of any misc unwanted files and empty directories
             clean_dir(input_directory, section_name, input_category)
 
