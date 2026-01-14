@@ -58,7 +58,13 @@ def is_video_good(videofile, status, require_lan=None):
         logger.error('FAILED: [{0}] is corrupted!'.format(file_name_ext), 'TRANSCODER')
         return False
     if video_details.get('error'):
-        logger.info('FAILED: [{0}] returned error [{1}].'.format(file_name_ext, video_details.get('error')), 'TRANSCODER')
+        error_msg = video_details.get('error')
+        error_string = error_msg.get('string', '') if isinstance(error_msg, dict) else str(error_msg)
+        # Explicitly check for moov atom and invalid data errors
+        if 'moov atom' in error_string.lower() or 'invalid data' in error_string.lower():
+            logger.error('FAILED: [{0}] is corrupted - {1}'.format(file_name_ext, error_string), 'TRANSCODER')
+        else:
+            logger.info('FAILED: [{0}] returned error [{1}].'.format(file_name_ext, error_string), 'TRANSCODER')
         return False
     if video_details.get('streams'):
         video_streams = [item for item in video_details['streams'] if item['codec_type'] == 'video']
@@ -108,9 +114,13 @@ def get_video_details(videofile, img=None, bitbucket=None):
             proc = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=procin.stdout)
             procin.stdout.close()
         else:
-            proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+            proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out, err = proc.communicate()
         result = proc.returncode
+        # Check stderr for explicit corruption indicators
+        if err and (b'moov atom not found' in err.lower() or b'invalid data found when processing input' in err.lower()):
+            logger.error('FAILED: [{0}] is corrupted (moov atom missing or invalid data)'.format(os.path.basename(file)), 'TRANSCODER')
+            return video_details, 1
         video_details = json.loads(out.decode())
     except Exception:
         try: # try this again without -show error in case of ffmpeg limitation
@@ -118,12 +128,16 @@ def get_video_details(videofile, img=None, bitbucket=None):
             print_cmd(command)
             if img:
                 procin = zip_out(file, img, bitbucket)
-                proc = subprocess.Popen(command, stdout=subprocess.PIPE, stdin=procin.stdout)
+                proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, stdin=procin.stdout)
                 procin.stdout.close()
             else:
-                proc = subprocess.Popen(command, stdout=subprocess.PIPE)
+                proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate()
             result = proc.returncode
+            # Check stderr for explicit corruption indicators
+            if err and (b'moov atom not found' in err.lower() or b'invalid data found when processing input' in err.lower()):
+                logger.error('FAILED: [{0}] is corrupted (moov atom missing or invalid data)'.format(os.path.basename(file)), 'TRANSCODER')
+                return video_details, 1
             video_details = json.loads(out.decode())
         except Exception:
             logger.error('Checking [{0}] has failed'.format(file), 'TRANSCODER')
