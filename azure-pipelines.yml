@@ -13,8 +13,6 @@ jobs:
     vmImage: 'Ubuntu-latest'
   strategy:
     matrix:
-      Python39:
-        python.version: '3.9'
       Python310:
         python.version: '3.10'
       Python311:
