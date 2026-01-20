@@ -27,6 +27,7 @@ def date(string, fmt='%Y-%m-%d'):
 
 # https://devguide.python.org/
 # https://devguide.python.org/devcycle/#devcycle
+# https://devguide.python.org/versions/#supported-versions
 PYTHON_EOL = {
     (3, 14): date('2030-10-1'),
     (3, 13): date('2029-10-1'),
